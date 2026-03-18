@@ -1,0 +1,140 @@
+'use client';
+
+import { useState } from 'react';
+import { useParams } from 'next/navigation';
+import { AppShell } from '@/components/layout/AppShell';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { NoteEditor } from '@/components/notes/NoteEditor';
+import { NotesList } from '@/components/notes/NotesList';
+import { useAsync } from '@/hooks/useAsync';
+import { problemsApi, notesApi } from '@/lib/api';
+import { ExternalLink } from 'lucide-react';
+import type { Problem, Note } from '@/lib/types';
+import { cn } from '@/lib/cn';
+
+export default function ProblemDetailPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+  const [notesTab, setNotesTab] = useState<'personal' | 'group'>('personal');
+
+  const { data: problem, loading } = useAsync<Problem>(
+    () => problemsApi.getBySlug(slug).then((r) => r.data.problem),
+    [slug]
+  );
+
+  const {
+    data: personalNotes,
+    loading: notesLoading,
+    refetch: refetchNotes,
+  } = useAsync<Note[]>(
+    () =>
+      problem
+        ? notesApi.getPersonal(problem.id).then((r) => r.data.notes)
+        : Promise.resolve([]),
+    [problem?.id]
+  );
+
+  if (loading) {
+    return (
+      <AppShell>
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-40" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!problem) {
+    return (
+      <AppShell>
+        <p className="text-zinc-500">Problem not found.</p>
+      </AppShell>
+    );
+  }
+
+  return (
+    <AppShell>
+      <div className="space-y-8">
+        {/* Header */}
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-zinc-100">{problem.title}</h1>
+            <Badge variant={problem.difficulty}>{problem.difficulty}</Badge>
+          </div>
+          {problem.url && (
+            <a
+              href={problem.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300"
+            >
+              Open on LeetCode
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
+          {problem.tags && problem.tags.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {problem.tags.map((tag) => (
+                <Badge key={tag.id}>{tag.name}</Badge>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Notes Section */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-zinc-200">Notes</h2>
+            <div className="flex rounded-lg border border-zinc-800 bg-zinc-900 p-0.5">
+              {(['personal', 'group'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setNotesTab(tab)}
+                  className={cn(
+                    'rounded-md px-3 py-1 text-xs font-medium capitalize transition-colors',
+                    notesTab === tab
+                      ? 'bg-zinc-700 text-zinc-100'
+                      : 'text-zinc-500 hover:text-zinc-300'
+                  )}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {notesTab === 'personal' && (
+            <>
+              <NoteEditor
+                problemId={problem.id}
+                visibility="personal"
+                onSaved={refetchNotes}
+              />
+              {notesLoading ? (
+                <Skeleton className="h-24" />
+              ) : (
+                <NotesList
+                  notes={personalNotes || []}
+                  canDelete
+                  onDeleted={refetchNotes}
+                />
+              )}
+            </>
+          )}
+
+          {notesTab === 'group' && (
+            <Card>
+              <p className="text-sm text-zinc-500">
+                Select a group to view shared notes for this problem.
+              </p>
+            </Card>
+          )}
+        </div>
+      </div>
+    </AppShell>
+  );
+}

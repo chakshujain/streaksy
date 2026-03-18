@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+
+  /* Theme colors */
+  --accent: 16 185 129;          /* emerald-500 */
+  --accent-light: 52 211 153;    /* emerald-400 */
+  --accent-glow: 16 185 129;
+  --glass-bg: 24 24 27;          /* zinc-900 */
+  --glass-border: 63 63 70;      /* zinc-700 */
+}
+
+body {
+  @apply bg-zinc-950 text-zinc-100 antialiased;
+}
+
+/* ── Selection ── */
+::selection {
+  background: rgba(16, 185, 129, 0.3);
+  color: #fff;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-zinc-700;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-zinc-600;
+}
+
+/* ── Glassmorphism ── */
+@layer utilities {
+  .glass {
+    background: rgba(var(--glass-bg), 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(var(--glass-border), 0.3);
+  }
+
+  .glass-strong {
+    background: rgba(var(--glass-bg), 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(var(--glass-border), 0.4);
+  }
+
+  /* ── Gradient Text ── */
+  .gradient-text {
+    background: linear-gradient(135deg, #34d399, #22d3ee, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Glow Effects ── */
+  .glow-sm {
+    box-shadow: 0 0 10px rgba(var(--accent-glow), 0.15),
+                0 0 20px rgba(var(--accent-glow), 0.05);
+  }
+
+  .glow-md {
+    box-shadow: 0 0 15px rgba(var(--accent-glow), 0.2),
+                0 0 40px rgba(var(--accent-glow), 0.1);
+  }
+
+  .glow-lg {
+    box-shadow: 0 0 20px rgba(var(--accent-glow), 0.3),
+                0 0 60px rgba(var(--accent-glow), 0.15);
+  }
+
+  /* ── Animated Gradient Border ── */
+  .animated-border {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .animated-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      var(--border-angle, 0deg),
+      #34d399,
+      #22d3ee,
+      #a78bfa,
+      #34d399
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: border-rotate 4s linear infinite;
+  }
+
+  @keyframes border-rotate {
+    to {
+      --border-angle: 360deg;
+    }
+  }
+}
+
+/* ── Page Transitions ── */
+@layer base {
+  main {
+    animation: page-enter 0.3s ease-out;
+  }
+
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Register custom property for animated border */
+@property --border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
