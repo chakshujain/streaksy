@@ -66,6 +66,8 @@ export const syncService = {
       streak = await streakService.recordSolve(userId);
       // Check badges async
       badgeService.checkAndAward(userId).catch(() => {});
+      // Progress recovery challenge if active
+      import('../../poke/service/poke.service').then(m => m.pokeService.progressRecoveryChallenge(userId)).catch(() => {});
     }
 
     // 6. Update leaderboards

@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Card } from '@/components/ui/Card';
 import { cn } from '@/lib/cn';
 import { Flame, Target, BarChart3 } from 'lucide-react';
+import { RecoveryChallenge } from '@/components/poke/RecoveryChallenge';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -72,6 +73,9 @@ export default function DashboardPage() {
             {currentStreak > 2 && ' 🔥'}
           </p>
         </div>
+
+        {/* Recovery Challenge (shows if streak broke) */}
+        <RecoveryChallenge />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 animate-slide-up" style={{ animationDelay: '50ms' }}>

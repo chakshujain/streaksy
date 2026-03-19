@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { useAuthStore } from '@/lib/store';
 import { authApi } from '@/lib/api';
+import { StreakRiskBanner } from '@/components/poke/StreakRiskBanner';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading, hydrate } = useAuthStore();
@@ -48,6 +49,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
       <main className={`pl-64 ${user.emailVerified === false ? 'pt-10' : ''}`}>
+        {/* Streak risk banner — shows when streak is about to break */}
+        <StreakRiskBanner />
         <div className="mx-auto max-w-6xl px-8 py-8">{children}</div>
       </main>
     </div>

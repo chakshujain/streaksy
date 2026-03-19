@@ -226,6 +226,20 @@ export const badgesApi = {
   mine: () => api.get('/badges/mine'),
 };
 
+// ── Pokes ──
+export const pokesApi = {
+  poke: (toUserId: string, groupId?: string, message?: string) =>
+    api.post('/pokes', { toUserId, groupId, message }),
+  received: (params?: { limit?: number; offset?: number }) =>
+    api.get('/pokes/received', { params }),
+  inactiveMembers: (groupId: string, days?: number) =>
+    api.get(`/pokes/inactive/${groupId}`, { params: { days } }),
+  streakRisk: () =>
+    api.get('/pokes/streak-risk'),
+  activeChallenge: () =>
+    api.get('/pokes/challenge'),
+};
+
 // ── Rooms ──
 export const roomsApi = {
   create: (data: { name: string; problemId: string; timeLimitMinutes?: number }) =>
