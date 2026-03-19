@@ -17,6 +17,8 @@ export interface Problem {
   slug: string;
   difficulty: 'easy' | 'medium' | 'hard';
   url?: string;
+  youtube_url?: string | null;
+  video_title?: string | null;
   tags?: { id: string; name: string }[];
 }
 
@@ -268,6 +270,19 @@ export interface RoomParticipant {
   memory_kb: number | null;
   joined_at: string;
   display_name?: string;
+}
+
+export interface PeerSolution {
+  id: string;
+  language: string;
+  code: string;
+  runtime_ms: number | null;
+  runtime_percentile: number | null;
+  memory_kb: number | null;
+  memory_percentile: number | null;
+  submitted_at: string;
+  display_name: string;
+  user_id: string;
 }
 
 export interface RoomMessage {

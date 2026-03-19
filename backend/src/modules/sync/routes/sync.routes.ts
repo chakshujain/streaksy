@@ -20,5 +20,6 @@ router.post(
 router.get('/submissions', authenticate, asyncHandler(submissionController.getMySubmissions));
 router.get('/submissions/stats', authenticate, asyncHandler(submissionController.getStats));
 router.get('/submissions/:problemId', authenticate, asyncHandler(submissionController.getForProblem));
+router.get('/peer-solutions/:problemId', authenticate, asyncHandler(submissionController.getPeerSolutions));
 
 export default router;

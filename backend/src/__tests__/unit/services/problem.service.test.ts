@@ -11,7 +11,7 @@ describe('problemService', () => {
     title: 'Two Sum',
     slug: 'two-sum',
     difficulty: 'easy',
-    url: 'https://leetcode.com/problems/two-sum/',
+    url: 'https://leetcode.com/problems/two-sum/', youtube_url: null, video_title: null,
     created_at: new Date(),
   };
 

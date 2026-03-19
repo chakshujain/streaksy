@@ -6,6 +6,8 @@ export interface ProblemRow {
   slug: string;
   difficulty: string;
   url: string | null;
+  youtube_url: string | null;
+  video_title: string | null;
   created_at: Date;
 }
 

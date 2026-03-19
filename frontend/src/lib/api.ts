@@ -77,6 +77,8 @@ export const submissionsApi = {
     api.get(`/sync/submissions/${problemId}`),
   getStats: () =>
     api.get('/sync/submissions/stats'),
+  peerSolutions: (problemId: string) =>
+    api.get(`/sync/peer-solutions/${problemId}`),
 };
 
 // ── Groups ──

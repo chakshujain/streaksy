@@ -67,6 +67,19 @@ export const submissionRepository = {
     );
   },
 
+  async getPeerSolutions(problemId: string, excludeUserId: string, limit = 10): Promise<any[]> {
+    return query(
+      `SELECT s.id, s.language, s.code, s.runtime_ms, s.runtime_percentile, s.memory_kb, s.memory_percentile,
+              s.submitted_at, u.display_name, u.id as user_id
+       FROM submissions s
+       JOIN users u ON u.id = s.user_id
+       WHERE s.problem_id = $1 AND s.user_id != $2 AND s.status = 'Accepted' AND s.code IS NOT NULL
+       ORDER BY s.runtime_ms ASC NULLS LAST
+       LIMIT $3`,
+      [problemId, excludeUserId, limit]
+    );
+  },
+
   async getStats(userId: string): Promise<{
     totalSubmissions: number;
     acceptedSubmissions: number;

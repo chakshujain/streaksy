@@ -13,6 +13,8 @@ import { CommentThread } from '@/components/discussion/CommentThread';
 import { RevisionForm } from '@/components/revision/RevisionForm';
 import { useAsync } from '@/hooks/useAsync';
 import { problemsApi, notesApi, revisionApi, progressApi } from '@/lib/api';
+import { YouTubePlayer } from '@/components/problems/YouTubePlayer';
+import { PeerSolutions } from '@/components/problems/PeerSolutions';
 import { ExternalLink, RotateCcw, X } from 'lucide-react';
 import type { Problem, Note, RevisionNote, ProblemProgress } from '@/lib/types';
 import { cn } from '@/lib/cn';
@@ -105,6 +107,11 @@ export default function ProblemDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Video Solution */}
+        {problem.youtube_url && (
+          <YouTubePlayer url={problem.youtube_url} title={problem.video_title || undefined} />
+        )}
 
         {/* Revision Note section */}
         {isSolved && (
@@ -199,6 +206,11 @@ export default function ProblemDetailPage() {
 
         {/* Discussion Section */}
         <CommentThread problemSlug={slug} />
+
+        {/* Peer Solutions */}
+        {problem && (
+          <PeerSolutions problemId={problem.id} />
+        )}
       </div>
     </AppShell>
   );

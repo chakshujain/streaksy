@@ -24,4 +24,11 @@ export const submissionController = {
     const stats = await submissionRepository.getStats(user!.userId);
     res.json({ stats });
   },
+
+  async getPeerSolutions(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const problemId = param(req, 'problemId');
+    const solutions = await submissionRepository.getPeerSolutions(problemId, user!.userId);
+    res.json({ solutions });
+  },
 };
