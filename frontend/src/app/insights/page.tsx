@@ -326,7 +326,14 @@ export default function InsightsPage() {
   );
 
   const { data: tags, loading: tagsLoading } = useAsync<TagProgress[]>(
-    () => insightsApi.tags().then((r) => r.data.tags || r.data || []),
+    () => insightsApi.tags().then((r) => {
+      const raw: { tagName?: string; name?: string; solvedCount?: number; solved?: number; totalCount?: number; total?: number }[] = r.data.tags || r.data || [];
+      return raw.map((t) => ({
+        name: t.tagName ?? t.name ?? '',
+        solved: t.solvedCount ?? t.solved ?? 0,
+        total: t.totalCount ?? t.total ?? 0,
+      }));
+    }),
     []
   );
 

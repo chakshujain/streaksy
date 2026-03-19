@@ -28,7 +28,7 @@ export function ContributionHeatmap({ progress }: ContributionHeatmapProps) {
     const dateCounts = new Map<string, number>();
     for (const p of progress) {
       if (p.solved_at) {
-        const date = p.solved_at.split('T')[0];
+        const date = new Date(p.solved_at).toISOString().split('T')[0];
         dateCounts.set(date, (dateCounts.get(date) || 0) + 1);
       }
     }

@@ -28,7 +28,7 @@ export function RecentActivity({ progress }: RecentActivityProps) {
           No activity yet. Start solving!
         </p>
       ) : (
-        <div className="space-y-3">
+        <div className="max-h-[400px] overflow-y-auto space-y-3">
           {recent.map((item) => (
             <div
               key={item.problem_id}

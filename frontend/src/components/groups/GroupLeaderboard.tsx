@@ -3,14 +3,16 @@
 import { Card } from '@/components/ui/Card';
 import { Trophy, Flame } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { PokeButton } from '@/components/poke/PokeButton';
 import type { LeaderboardEntry } from '@/lib/types';
 
 interface GroupLeaderboardProps {
   entries: LeaderboardEntry[];
   currentUserId?: string;
+  groupId?: string;
 }
 
-export function GroupLeaderboard({ entries, currentUserId }: GroupLeaderboardProps) {
+export function GroupLeaderboard({ entries, currentUserId, groupId }: GroupLeaderboardProps) {
   return (
     <Card padding={false}>
       <div className="border-b border-zinc-800 px-6 py-4">
@@ -64,6 +66,15 @@ export function GroupLeaderboard({ entries, currentUserId }: GroupLeaderboardPro
                 {entry.currentStreak}
               </span>
             </div>
+
+            {/* Poke */}
+            {currentUserId && entry.userId !== currentUserId && (
+              <PokeButton
+                toUserId={entry.userId}
+                toName={entry.displayName}
+                groupId={groupId}
+              />
+            )}
 
             {/* Score */}
             <span className="w-16 text-right text-sm font-bold text-zinc-300">

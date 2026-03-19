@@ -361,6 +361,7 @@ export default function GroupDetailPage() {
               <GroupLeaderboard
                 entries={leaderboard || []}
                 currentUserId={user?.id}
+                groupId={groupId}
               />
             )}
           </div>
@@ -368,7 +369,7 @@ export default function GroupDetailPage() {
           {/* Members (1 col) */}
           <div>
             {group.members ? (
-              <MemberList members={group.members} />
+              <MemberList members={group.members} groupId={groupId} />
             ) : (
               <Skeleton className="h-40" />
             )}

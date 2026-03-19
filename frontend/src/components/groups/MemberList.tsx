@@ -2,13 +2,17 @@
 
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { PokeButton } from '@/components/poke/PokeButton';
+import { useAuthStore } from '@/lib/store';
 import type { GroupMember } from '@/lib/types';
 
 interface MemberListProps {
   members: GroupMember[];
+  groupId?: string;
 }
 
-export function MemberList({ members }: MemberListProps) {
+export function MemberList({ members, groupId }: MemberListProps) {
+  const { user } = useAuthStore();
   return (
     <Card padding={false}>
       <div className="border-b border-zinc-800 px-6 py-4">
@@ -28,7 +32,16 @@ export function MemberList({ members }: MemberListProps) {
                 <p className="text-xs text-zinc-500">{member.email}</p>
               </div>
             </div>
-            {member.role === 'admin' && <Badge>admin</Badge>}
+            <div className="flex items-center gap-2">
+              {member.role === 'admin' && <Badge>admin</Badge>}
+              {user && member.user_id !== user.id && (
+                <PokeButton
+                  toUserId={member.user_id}
+                  toName={member.display_name}
+                  groupId={groupId}
+                />
+              )}
+            </div>
           </div>
         ))}
       </div>
