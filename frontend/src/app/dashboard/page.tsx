@@ -168,7 +168,13 @@ export default function DashboardPage() {
 
   const difficultyBreakdown = useMemo(() => {
     const rates = insightsData?.solveRateByDifficulty;
-    if (rates) return { easy: rates.easy ?? 0, medium: rates.medium ?? 0, hard: rates.hard ?? 0 };
+    if (rates) {
+      const extract = (v: unknown): number => {
+        if (typeof v === 'object' && v !== null && 'count' in v) return Number((v as Record<string, number>).count);
+        return Number(v ?? 0);
+      };
+      return { easy: extract(rates.easy), medium: extract(rates.medium), hard: extract(rates.hard) };
+    }
     if (!progressData) return { easy: 0, medium: 0, hard: 0 };
     const solved = progressData.filter((p) => p.status === 'solved');
     return {
