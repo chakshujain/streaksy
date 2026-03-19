@@ -42,6 +42,7 @@ import {
   Radio,
 } from 'lucide-react';
 import { RecoveryChallenge } from '@/components/poke/RecoveryChallenge';
+import { HelpTooltip } from '@/components/onboarding/HelpTooltip';
 import { formatDistanceToNow } from 'date-fns';
 import type { ProblemProgress, Group, FeedEvent, LeaderboardEntry } from '@/lib/types';
 
@@ -236,7 +237,10 @@ function DailyProblemsSection({
             <Calendar className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-zinc-100">Today&apos;s Problems</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-zinc-100">Today&apos;s Problems</h2>
+              <HelpTooltip id="daily" text="We pick 4 problems daily based on your progress. Solve these to stay on track!" />
+            </div>
             <p className="text-xs text-zinc-500">Curated for you based on your progress</p>
           </div>
         </div>

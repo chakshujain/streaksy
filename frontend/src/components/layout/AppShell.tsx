@@ -11,6 +11,7 @@ import { SearchBar } from '@/components/search/SearchBar';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Menu } from 'lucide-react';
+import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading, hydrate } = useAuthStore();
@@ -74,6 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-zinc-950">
       <TopLoader />
+      <WelcomeModal />
 
       {/* Mobile overlay */}
       {mobileMenuOpen && (

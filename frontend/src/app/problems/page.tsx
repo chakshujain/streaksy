@@ -14,6 +14,7 @@ import { problemsApi, progressApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import type { Problem, ProblemProgress, Sheet } from '@/lib/types';
 import { Upload, ChevronDown, ChevronUp, BookOpen, CheckCircle2, Target, Search } from 'lucide-react';
+import { HelpTooltip } from '@/components/onboarding/HelpTooltip';
 
 export default function ProblemsPage() {
   const [selectedSheet, setSelectedSheet] = useState('all');
@@ -123,12 +124,13 @@ export default function ProblemsPage() {
 
           {/* Sheet tabs */}
           {!sheetsLoading && sheets && (
-            <div className="animate-slide-up" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
+            <div className="animate-slide-up flex items-center gap-2" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
               <SheetSelector
                 sheets={sheets}
                 selected={selectedSheet}
                 onSelect={setSelectedSheet}
               />
+              <HelpTooltip id="sheets" text="Switch between curated problem sheets. Each sheet is a focused set of problems for interview prep." />
             </div>
           )}
 

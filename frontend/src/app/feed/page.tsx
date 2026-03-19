@@ -11,6 +11,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { feedApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { Rss, Zap, ThumbsUp, MessageCircle, TrendingUp } from 'lucide-react';
+import { HelpTooltip } from '@/components/onboarding/HelpTooltip';
 import Link from 'next/link';
 import type { FeedEvent } from '@/lib/types';
 
@@ -56,7 +57,10 @@ export default function FeedPage() {
               <Rss className="h-6 w-6 text-cyan-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold gradient-text">Activity Feed</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold gradient-text">Activity Feed</h1>
+                <HelpTooltip id="feed" text="See what your group members are solving. Like and comment to encourage each other!" />
+              </div>
               <p className="text-sm text-zinc-500">See what your peers are up to</p>
             </div>
           </div>
