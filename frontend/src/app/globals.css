@@ -37,70 +37,94 @@ html:not(.dark) {
   --border: #e4e4e7;
 }
 
-/* Light mode overrides */
+/* Light mode — comprehensive text overrides */
 html:not(.dark) body {
   background-color: #fafafa;
-  color: #09090b;
+  color: #18181b;
 }
 
-html:not(.dark) .bg-zinc-950 {
-  background-color: #ffffff;
-}
-
-html:not(.dark) .bg-zinc-950\/70 {
-  background-color: rgba(255, 255, 255, 0.85);
-}
-
+/* Backgrounds */
+html:not(.dark) .bg-zinc-950 { background-color: #ffffff; }
+html:not(.dark) .bg-zinc-900 { background-color: #f4f4f5; }
 html:not(.dark) .bg-zinc-900\/50,
 html:not(.dark) .bg-zinc-900\/40,
 html:not(.dark) .bg-zinc-900\/80,
-html:not(.dark) .bg-zinc-900\/95 {
-  background-color: #f4f4f5;
-}
-
+html:not(.dark) .bg-zinc-900\/30 { background-color: rgba(244,244,245,0.8); }
+html:not(.dark) .bg-zinc-800,
 html:not(.dark) .bg-zinc-800\/50,
 html:not(.dark) .bg-zinc-800\/30,
-html:not(.dark) .bg-zinc-800\/60,
-html:not(.dark) .bg-zinc-800 {
-  background-color: #e4e4e7;
-}
+html:not(.dark) .bg-zinc-800\/60 { background-color: #e4e4e7; }
+html:not(.dark) .bg-zinc-950\/70,
+html:not(.dark) .bg-zinc-950\/80 { background-color: rgba(255,255,255,0.9); }
 
-html:not(.dark) .text-zinc-100,
-html:not(.dark) .text-zinc-200 {
-  color: #09090b;
-}
+/* Text colors — make everything readable */
+html:not(.dark) .text-zinc-100 { color: #18181b; }
+html:not(.dark) .text-zinc-200 { color: #27272a; }
+html:not(.dark) .text-zinc-300 { color: #3f3f46; }
+html:not(.dark) .text-zinc-400 { color: #52525b; }
+html:not(.dark) .text-zinc-500 { color: #71717a; }
+html:not(.dark) .text-zinc-600 { color: #a1a1aa; }
+html:not(.dark) .text-white { color: #18181b; }
+html:not(.dark) .text-zinc-100\/80 { color: rgba(24,24,27,0.8); }
 
-html:not(.dark) .text-zinc-300,
-html:not(.dark) .text-zinc-400 {
-  color: #3f3f46;
-}
-
-html:not(.dark) .text-zinc-500 {
-  color: #71717a;
-}
-
-html:not(.dark) .text-zinc-600 {
-  color: #52525b;
-}
-
+/* Borders */
 html:not(.dark) .border-zinc-800,
 html:not(.dark) .border-zinc-800\/40,
 html:not(.dark) .border-zinc-800\/50,
-html:not(.dark) .border-zinc-700 {
+html:not(.dark) .border-zinc-800\/60,
+html:not(.dark) .border-zinc-700,
+html:not(.dark) .border-zinc-700\/50 { border-color: #e4e4e7; }
+
+/* Inputs */
+html:not(.dark) input,
+html:not(.dark) textarea,
+html:not(.dark) select {
+  background-color: #ffffff;
+  color: #18181b;
+  border-color: #d4d4d8;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: #a1a1aa;
+}
+
+/* Cards and glass */
+html:not(.dark) .glass,
+html:not(.dark) .glass-strong {
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
   border-color: #e4e4e7;
 }
 
-html:not(.dark) .glass,
-html:not(.dark) .glass-strong {
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-}
-
+/* Skeleton shimmer for light mode */
 html:not(.dark) .skeleton-shimmer {
   background: linear-gradient(90deg, #e4e4e7 25%, #f4f4f5 50%, #e4e4e7 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
+
+/* Sidebar in light mode */
+html:not(.dark) .bg-zinc-950\/70 { background-color: rgba(255,255,255,0.95); }
+html:not(.dark) .border-zinc-800\/40 { border-color: #e4e4e7; }
+
+/* Gradient text still needs to be visible */
+html:not(.dark) .gradient-text {
+  background: linear-gradient(135deg, #059669, #0891b2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Hover states */
+html:not(.dark) .hover\:bg-zinc-800:hover,
+html:not(.dark) .hover\:bg-zinc-800\/60:hover,
+html:not(.dark) .hover\:bg-zinc-800\/30:hover,
+html:not(.dark) .hover\:bg-zinc-800\/50:hover { background-color: #e4e4e7; }
+
+/* Buttons */
+html:not(.dark) .bg-zinc-700 { background-color: #d4d4d8; }
+html:not(.dark) .hover\:bg-zinc-600:hover { background-color: #a1a1aa; }
+html:not(.dark) .bg-zinc-800\/50 { background-color: #f4f4f5; }
 
 html {
   scroll-behavior: smooth;

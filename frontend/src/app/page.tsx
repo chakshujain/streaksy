@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/cn';
 import Link from 'next/link';
 import {
@@ -27,6 +28,11 @@ import {
 /*  Navbar                                                             */
 /* ------------------------------------------------------------------ */
 function Navbar() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem('streaksy_token'));
+  }, []);
+
   return (
     <nav className="fixed top-0 inset-x-0 z-50 glass-strong">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -58,19 +64,31 @@ function Navbar() {
 
         {/* Auth buttons */}
         <div className="flex items-center gap-3">
-          <Link
-            href="/auth/login"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
-          >
-            Log in
-          </Link>
-          <Link
-            href="/auth/signup"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-[background-position] duration-500 hover:bg-right"
-          >
-            Sign Up
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-[background-position] duration-500 hover:bg-right"
+            >
+              Dashboard
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/auth/login"
+                className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-[background-position] duration-500 hover:bg-right"
+              >
+                Sign Up
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

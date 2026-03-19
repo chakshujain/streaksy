@@ -53,12 +53,12 @@ export function Sidebar({ onNavClick }: SidebarProps) {
 
       {/* Logo */}
       <div className="flex items-center border-b border-zinc-800/40 px-6 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/20">
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/20 transition-transform group-hover:scale-105">
             <Flame className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-bold gradient-text tracking-tight">Streaksy</span>
-        </div>
+        </Link>
       </div>
 
       {/* Nav */}
