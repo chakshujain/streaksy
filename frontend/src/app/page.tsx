@@ -408,12 +408,12 @@ function ExtensionSection() {
                 {
                   step: 1,
                   title: 'Download the extension',
-                  desc: 'Click the "Download Extension" button above to get the .zip file.',
+                  desc: 'Click the "Download Extension" button above to get the extension archive.',
                 },
                 {
                   step: 2,
-                  title: 'Extract the ZIP',
-                  desc: 'Unzip the downloaded file to a folder on your computer. Remember where you saved it.',
+                  title: 'Extract the archive',
+                  desc: 'Extract the downloaded file to a folder on your computer. Remember where you saved it.',
                 },
                 {
                   step: 3,
@@ -423,7 +423,7 @@ function ExtensionSection() {
                 {
                   step: 4,
                   title: 'Load the extension',
-                  desc: 'Click "Load unpacked" and select the folder where you extracted the ZIP. The Streaksy icon will appear in your toolbar.',
+                  desc: 'Click "Load unpacked" and select the folder where you extracted the archive. The Streaksy icon will appear in your toolbar.',
                 },
                 {
                   step: 5,

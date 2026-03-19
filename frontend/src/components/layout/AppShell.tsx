@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { useAuthStore } from '@/lib/store';
@@ -10,10 +10,12 @@ import { TopLoader } from '@/components/ui/TopLoader';
 import { SearchBar } from '@/components/search/SearchBar';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { Menu } from 'lucide-react';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading, hydrate } = useAuthStore();
   const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     hydrate();
@@ -59,10 +61,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-zinc-950">
       <TopLoader />
-      <Sidebar />
+
+      {/* Mobile overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
+          <div className="fixed left-0 top-0 h-full w-64 z-50">
+            <Sidebar onNavClick={() => setMobileMenuOpen(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+
       {/* Email verification banner */}
       {user.emailVerified === false && (
-        <div className="fixed top-0 left-64 right-0 z-30 bg-amber-500/10 border-b border-amber-500/20 px-8 py-2 flex items-center justify-between">
+        <div className="fixed top-0 lg:left-64 left-0 right-0 z-30 bg-amber-500/10 border-b border-amber-500/20 px-8 py-2 flex items-center justify-between">
           <p className="text-xs text-amber-400">
             Please verify your email address. Check your inbox for a verification link.
           </p>
@@ -74,10 +91,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       )}
-      <main className={`pl-64 ${user.emailVerified === false ? 'pt-10' : ''}`}>
+      <main className={`lg:pl-64 ${user.emailVerified === false ? 'pt-10' : ''}`}>
         {/* Top Bar */}
-        <div className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-zinc-800/40 bg-zinc-950/80 backdrop-blur-xl px-8 py-3">
-          <SearchBar />
+        <div className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-zinc-800/40 bg-zinc-950/80 backdrop-blur-xl px-4 lg:px-8 py-3">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden flex items-center justify-center h-9 w-9 rounded-lg text-zinc-400 hover:bg-zinc-800">
+              <Menu className="h-5 w-5" />
+            </button>
+            <SearchBar />
+          </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <NotificationBell />
@@ -85,7 +107,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         {/* Streak risk banner — shows when streak is about to break */}
         <StreakRiskBanner />
-        <div className="mx-auto max-w-6xl px-8 py-8">{children}</div>
+        <div className="mx-auto max-w-6xl px-4 lg:px-8 py-8">{children}</div>
       </main>
     </div>
   );

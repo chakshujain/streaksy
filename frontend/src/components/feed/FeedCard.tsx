@@ -17,7 +17,6 @@ import Link from 'next/link';
 
 interface FeedCardProps {
   event: FeedEvent;
-  onUpdate?: () => void;
 }
 
 const eventIcons: Record<string, { icon: typeof Code2; color: string }> = {

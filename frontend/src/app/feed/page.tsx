@@ -11,7 +11,7 @@ import { Rss } from 'lucide-react';
 import type { FeedEvent } from '@/lib/types';
 
 export default function FeedPage() {
-  const { data: events, loading, refetch } = useAsync<FeedEvent[]>(
+  const { data: events, loading } = useAsync<FeedEvent[]>(
     () => feedApi.getFeed({ limit: 30 }).then(r => r.data.events),
     []
   );
@@ -44,7 +44,7 @@ export default function FeedPage() {
                   className="animate-slide-up"
                   style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }}
                 >
-                  <FeedCard event={event} onUpdate={refetch} />
+                  <FeedCard event={event} />
                 </div>
               ))}
             </div>

@@ -30,7 +30,11 @@ const navItems = [
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  onNavClick?: () => void;
+}
+
+export function Sidebar({ onNavClick }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const { streak } = useDashboardStore();
@@ -65,6 +69,7 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={onNavClick}
               className={cn(
                 'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 ease-out',
                 active

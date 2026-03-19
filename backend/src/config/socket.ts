@@ -8,10 +8,25 @@ import { roomRepository } from '../modules/room/repository/room.repository';
 
 let io: Server;
 
+// Rate limiting for chat messages
+const chatRateLimit = new Map<string, number[]>();
+const CHAT_RATE_LIMIT = 10; // max messages per window
+const CHAT_RATE_WINDOW = 10_000; // 10 seconds
+
+function isRateLimited(userId: string): boolean {
+  const now = Date.now();
+  const timestamps = chatRateLimit.get(userId) || [];
+  const recent = timestamps.filter(t => now - t < CHAT_RATE_WINDOW);
+  chatRateLimit.set(userId, recent);
+  if (recent.length >= CHAT_RATE_LIMIT) return true;
+  recent.push(now);
+  return false;
+}
+
 export function initSocketServer(httpServer: HttpServer): Server {
   io = new Server(httpServer, {
     cors: {
-      origin: '*',
+      origin: [env.frontendUrl, 'http://localhost:3000'],
       methods: ['GET', 'POST'],
     },
   });
@@ -97,6 +112,10 @@ export function initSocketServer(httpServer: HttpServer): Server {
     socket.on('room:message', async (data: { roomId: string; content: string }) => {
       try {
         if (!data.content || data.content.length > 2000) return;
+        if (isRateLimited(userId)) {
+          socket.emit('room:error', { message: 'Slow down! Too many messages.' });
+          return;
+        }
         const message = await roomService.sendMessage(data.roomId, userId, data.content);
         // Get display name
         const enriched = { ...message, display_name: '' };

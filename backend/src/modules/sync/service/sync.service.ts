@@ -1,4 +1,3 @@
-import { transaction } from '../../../config/database';
 import { problemRepository } from '../../problem/repository/problem.repository';
 import { progressRepository } from '../../progress/repository/progress.repository';
 import { streakService } from '../../streak/service/streak.service';
@@ -10,6 +9,7 @@ import { badgeService } from '../../badge/service/badge.service';
 import { AppError } from '../../../common/errors/AppError';
 import { ProblemStatus } from '../../../common/types';
 import { invalidate } from '../../../common/utils/cache';
+import { logger } from '../../../config/logger';
 
 export const syncService = {
   async syncLeetcode(userId: string, problemSlug: string, status: ProblemStatus, extra?: {
@@ -65,9 +65,9 @@ export const syncService = {
     if (status === 'solved') {
       streak = await streakService.recordSolve(userId);
       // Check badges async
-      badgeService.checkAndAward(userId).catch(() => {});
+      badgeService.checkAndAward(userId).catch(err => logger.error({ err, userId }, 'Failed to check and award badges'));
       // Progress recovery challenge if active
-      import('../../poke/service/poke.service').then(m => m.pokeService.progressRecoveryChallenge(userId)).catch(() => {});
+      import('../../poke/service/poke.service').then(m => m.pokeService.progressRecoveryChallenge(userId)).catch(err => logger.error({ err, userId }, 'Failed to progress recovery challenge'));
       // Post to social feed
       import('../../feed/service/feed.service').then(m => {
         m.feedService.postEvent(userId, 'solve', `Solved "${problem.title}"`, undefined, {
@@ -75,7 +75,7 @@ export const syncService = {
           problemTitle: problem.title,
           difficulty: problem.difficulty,
         });
-      }).catch(() => {});
+      }).catch(err => logger.error({ err, userId }, 'Failed to post solve event to feed'));
     }
 
     // 6. Update leaderboards
@@ -85,7 +85,7 @@ export const syncService = {
     );
 
     // Invalidate user caches
-    invalidate(`insights:overview:${userId}`).catch(() => {});
+    invalidate(`insights:overview:${userId}`).catch(err => logger.error({ err, userId }, 'Failed to invalidate insights cache'));
 
     return {
       progress: {
