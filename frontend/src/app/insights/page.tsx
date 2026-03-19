@@ -3,12 +3,13 @@
 import { AppShell } from '@/components/layout/AppShell';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
-import { insightsApi } from '@/lib/api';
+import { insightsApi, feedApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { PageTransition } from '@/components/ui/PageTransition';
-import { BarChart3, Trophy, Flame, Calendar, TrendingUp, Tag, Zap, Target, Activity, Award } from 'lucide-react';
-import type { InsightsOverview, WeeklyData, TagProgress, DifficultyTrend } from '@/lib/types';
+import { BarChart3, Trophy, Flame, Calendar, TrendingUp, Tag, Zap, Target, Activity, Award, Users } from 'lucide-react';
+import type { InsightsOverview, WeeklyData, TagProgress, DifficultyTrend, FeedEvent } from '@/lib/types';
 import { useMemo } from 'react';
+import Link from 'next/link';
 
 /* ─── Helpers ─── */
 
@@ -242,55 +243,84 @@ function DifficultyBreakdown({ overview }: { overview: InsightsOverview }) {
   );
 }
 
-/* ─── Weekly Chart ─── */
+/* ─── Weekly Chart (Line Graph) ─── */
 
 function WeeklyChart({ data }: { data: WeeklyData[] }) {
-  const maxCount = Math.max(...data.map((d) => d.count), 1);
-  const total = data.reduce((s, w) => s + w.count, 0);
+  if (data.length === 0) return null;
+
+  const maxCount = Math.max(...data.map(d => d.count), 1);
+  const totalSolved = data.reduce((s, d) => s + d.count, 0);
+
+  // SVG dimensions
+  const width = 100; // percentage-based viewBox
+  const height = 50;
+  const padding = { top: 5, right: 5, bottom: 12, left: 8 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  const points = data.map((d, i) => ({
+    x: padding.left + (i / Math.max(data.length - 1, 1)) * chartW,
+    y: padding.top + chartH - (d.count / maxCount) * chartH,
+    count: d.count,
+    label: new Date(d.weekStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  }));
+
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const areaPath = linePath + ` L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
 
   return (
-    <div className="glass rounded-2xl border border-zinc-800/50 p-6 h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
+    <div className="glass rounded-2xl border border-zinc-800/50 p-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20">
             <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
           </div>
           <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Weekly Activity</h3>
         </div>
-        <span className="text-xs text-zinc-500 bg-zinc-800/50 rounded-lg px-2.5 py-1">{total} total</span>
+        <span className="text-xs text-zinc-500">{totalSolved} total</span>
       </div>
-      <div className="flex items-end gap-3 flex-1 min-h-[10rem]">
-        {data.map((week, i) => {
-          const height = (week.count / maxCount) * 100;
-          const weekLabel = new Date(week.weekStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-          const isMax = week.count === maxCount && week.count > 0;
-          return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group">
-              {/* Count label always visible */}
-              <span className={cn(
-                'text-xs font-semibold tabular-nums transition-colors',
-                isMax ? 'text-emerald-400' : 'text-zinc-500 group-hover:text-zinc-300'
-              )}>
-                {week.count}
-              </span>
-              <div className="relative w-full flex justify-center flex-1">
-                <div
-                  className={cn(
-                    'w-full rounded-lg bg-gradient-to-t transition-all duration-500 hover:shadow-lg hover:shadow-emerald-500/10',
-                    isMax
-                      ? 'from-emerald-500 to-cyan-300 shadow-lg shadow-emerald-500/15'
-                      : 'from-emerald-600/80 to-cyan-400/80 hover:from-emerald-500 hover:to-cyan-300',
-                  )}
-                  style={{
-                    height: `${Math.max(height, 4)}%`,
-                    marginTop: 'auto',
-                  }}
-                />
-              </div>
-              <span className="text-[10px] text-zinc-600 truncate w-full text-center">{weekLabel}</span>
-            </div>
-          );
-        })}
+
+      <div className="relative">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-48" preserveAspectRatio="none">
+          {/* Grid lines */}
+          {[0.25, 0.5, 0.75, 1].map(pct => (
+            <line
+              key={pct}
+              x1={padding.left} y1={padding.top + chartH * (1 - pct)}
+              x2={width - padding.right} y2={padding.top + chartH * (1 - pct)}
+              stroke="#27272a" strokeWidth="0.15" strokeDasharray="0.5 0.5"
+            />
+          ))}
+
+          {/* Area fill */}
+          <path d={areaPath} fill="url(#weeklyGradient)" opacity="0.3" />
+
+          {/* Line */}
+          <path d={linePath} fill="none" stroke="#10b981" strokeWidth="0.4" strokeLinecap="round" strokeLinejoin="round" />
+
+          {/* Dots */}
+          {points.map((p, i) => (
+            <g key={i}>
+              <circle cx={p.x} cy={p.y} r="0.8" fill="#10b981" stroke="#09090b" strokeWidth="0.3" />
+              {/* Count label above dot */}
+              <text x={p.x} y={p.y - 2} textAnchor="middle" className="fill-zinc-400" fontSize="2.5" fontWeight="600">
+                {p.count}
+              </text>
+              {/* Week label below */}
+              <text x={p.x} y={padding.top + chartH + 4} textAnchor="middle" className="fill-zinc-600" fontSize="2">
+                {p.label}
+              </text>
+            </g>
+          ))}
+
+          {/* Gradient definition */}
+          <defs>
+            <linearGradient id="weeklyGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
     </div>
   );
@@ -567,6 +597,66 @@ function PeriodComparison({ weekly }: { weekly: WeeklyData[] }) {
   );
 }
 
+/* ─── Peer Activity ─── */
+
+function PeerActivity({ events, loading }: { events: FeedEvent[] | null; loading: boolean }) {
+  if (loading) return <Skeleton className="h-64 rounded-2xl" />;
+  if (!events || events.length === 0) return null;
+
+  // Group by user — show what each peer is doing
+  const peerMap = new Map<string, { name: string; avatar: string | null; events: FeedEvent[] }>();
+  events.forEach(e => {
+    if (!peerMap.has(e.user_id)) {
+      peerMap.set(e.user_id, { name: e.display_name || 'Unknown', avatar: e.avatar_url || null, events: [] });
+    }
+    peerMap.get(e.user_id)!.events.push(e);
+  });
+
+  const peers = Array.from(peerMap.entries()).slice(0, 6);
+
+  return (
+    <div className="glass rounded-2xl border border-zinc-800/50 p-6">
+      <div className="flex items-center gap-2 mb-5">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+          <Users className="h-3.5 w-3.5 text-purple-400" />
+        </div>
+        <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">What Your Peers Are Doing</h3>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {peers.map(([userId, peer]) => {
+          const initials = peer.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+          const latestEvent = peer.events[0];
+          const solveCount = peer.events.filter(e => e.event_type === 'solve').length;
+
+          return (
+            <Link key={userId} href={`/user/${userId}`} className="group rounded-xl border border-zinc-800 bg-zinc-900/30 p-3 hover:border-emerald-500/20 hover:bg-zinc-900/50 transition-all duration-200">
+              <div className="flex items-center gap-2.5 mb-2">
+                {peer.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={peer.avatar} alt="" className="h-8 w-8 rounded-full object-cover border border-zinc-800" />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-[10px] font-bold text-emerald-400">
+                    {initials}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-zinc-200 group-hover:text-emerald-400 transition-colors truncate">{peer.name}</p>
+                  <p className="text-[10px] text-zinc-600">{solveCount} solves recently</p>
+                </div>
+              </div>
+              <p className="text-xs text-zinc-400 truncate">
+                {latestEvent.event_type === 'solve' ? `Solved "${String(latestEvent.metadata?.problemTitle || '')}"` :
+                 latestEvent.event_type === 'streak_milestone' ? `${String(latestEvent.metadata?.streakDays || '')} day streak!` :
+                 latestEvent.title}
+              </p>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Page ─── */
 
 export default function InsightsPage() {
@@ -604,6 +694,11 @@ export default function InsightsPage() {
         total: t.totalCount ?? t.total ?? 0,
       }));
     }),
+    []
+  );
+
+  const { data: peerActivity, loading: peerLoading } = useAsync(
+    () => feedApi.getFeed({ limit: 10 }).then((r) => (r.data.events ?? []) as FeedEvent[]),
     []
   );
 
@@ -687,6 +782,11 @@ export default function InsightsPage() {
               </div>
             </>
           )}
+        </div>
+
+        {/* Peer Activity */}
+        <div className="animate-slide-up" style={{ animationDelay: '175ms', animationFillMode: 'both' }}>
+          <PeerActivity events={peerActivity ?? null} loading={peerLoading} />
         </div>
 
         {/* Tags */}

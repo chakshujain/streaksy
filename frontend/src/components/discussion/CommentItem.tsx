@@ -8,6 +8,7 @@ import { MessageSquare, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Comment } from '@/lib/types';
 import { useAuthStore } from '@/lib/store';
+import Link from 'next/link';
 
 interface CommentItemProps {
   comment: Comment;
@@ -46,7 +47,7 @@ export function CommentItem({ comment, problemSlug, onUpdated, depth = 0 }: Comm
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-zinc-200">{comment.display_name}</span>
+            <Link href={`/user/${comment.user_id}`} className="text-sm font-medium text-zinc-200 hover:text-emerald-400 transition-colors">{comment.display_name}</Link>
             <span className="text-[11px] text-zinc-600">
               {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
             </span>

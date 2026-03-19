@@ -7,6 +7,7 @@ import { activityApi } from '@/lib/api';
 import { Activity } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { ActivityItem } from '@/lib/types';
+import Link from 'next/link';
 
 interface ActivityFeedProps {
   groupId: string;
@@ -53,7 +54,7 @@ export function ActivityFeed({ groupId }: ActivityFeedProps) {
             <div className="h-2 w-2 rounded-full bg-emerald-500/50 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-zinc-300">
-                <span className="font-medium text-zinc-200">{item.display_name}</span>
+                <Link href={`/user/${item.user_id}`} className="font-medium text-zinc-200 hover:text-emerald-400 transition-colors">{item.display_name}</Link>
                 {' '}
                 {actionLabels[item.action] || item.action}
                 {'problemTitle' in (item.metadata || {}) && (

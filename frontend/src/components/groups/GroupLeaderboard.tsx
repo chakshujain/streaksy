@@ -5,6 +5,7 @@ import { Trophy, Flame } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { PokeButton } from '@/components/poke/PokeButton';
 import type { LeaderboardEntry } from '@/lib/types';
+import Link from 'next/link';
 
 interface GroupLeaderboardProps {
   entries: LeaderboardEntry[];
@@ -45,15 +46,15 @@ export function GroupLeaderboard({ entries, currentUserId, groupId }: GroupLeade
 
             {/* Name */}
             <div className="flex-1 min-w-0">
-              <p className={cn(
-                'truncate text-sm font-medium',
+              <Link href={`/user/${entry.userId}`} className={cn(
+                'truncate text-sm font-medium block hover:text-emerald-400 transition-colors',
                 entry.userId === currentUserId ? 'text-emerald-400' : 'text-zinc-200'
               )}>
                 {entry.displayName}
                 {entry.userId === currentUserId && (
                   <span className="ml-2 text-xs text-zinc-500">(you)</span>
                 )}
-              </p>
+              </Link>
             </div>
 
             {/* Stats */}

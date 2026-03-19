@@ -387,7 +387,7 @@ function LeaderboardSection({
                 {idx + 1}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-zinc-200 truncate">{entry.displayName}</p>
+                <Link href={`/user/${entry.userId}`} className="text-sm font-medium text-zinc-200 truncate hover:text-emerald-400 transition-colors block">{entry.displayName}</Link>
               </div>
               <div className="flex items-center gap-3 text-xs text-zinc-500 shrink-0">
                 <span className="flex items-center gap-1">
@@ -450,7 +450,7 @@ function FeedSection({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-zinc-300 leading-snug">
-                  <span className="font-medium">{event.display_name}</span>{' '}
+                  <Link href={`/user/${event.user_id}`} className="font-medium hover:text-emerald-400 transition-colors">{event.display_name}</Link>{' '}
                   <span className="text-zinc-500">{event.title}</span>
                 </p>
                 <div className="flex items-center gap-3 mt-1 text-[11px] text-zinc-600">

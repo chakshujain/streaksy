@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import type { Room, RoomParticipant, RoomMessage, RoomProblem } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
+import Link from 'next/link';
 
 function generateGoogleCalendarUrl(title: string, scheduledAt: string, timeLimitMinutes: number, meetLink?: string | null): string {
   const start = new Date(scheduledAt);
@@ -442,7 +443,7 @@ export default function RoomDetailPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-medium text-zinc-200 truncate">{p.display_name}</span>
+                      <Link href={`/user/${p.user_id}`} className="text-sm font-medium text-zinc-200 truncate hover:text-emerald-400 transition-colors">{p.display_name}</Link>
                       {p.user_id === room.host_id && <Crown className="h-3 w-3 text-amber-400" />}
                     </div>
                     {p.solved_at && (

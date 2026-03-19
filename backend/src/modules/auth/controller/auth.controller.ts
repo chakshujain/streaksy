@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { authService } from '../service/auth.service';
 import { AuthRequest } from '../../../common/types';
+import { param } from '../../../common/utils/params';
 
 // Multer setup for avatar uploads
 const uploadsDir = path.join(__dirname, '..', '..', '..', '..', 'uploads', 'avatars');
@@ -85,6 +86,12 @@ export const authController = {
   async updateProfile(req: Request, res: Response) {
     const { user } = req as AuthRequest;
     const profile = await authService.updateProfile(user!.userId, req.body);
+    res.json({ profile });
+  },
+
+  async getPublicProfile(req: Request, res: Response) {
+    const userId = param(req, 'userId');
+    const profile = await authService.getPublicProfile(userId);
     res.json({ profile });
   },
 

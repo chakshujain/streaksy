@@ -31,6 +31,7 @@ router.post('/resend-verification', authenticate, asyncHandler(authController.re
 router.get('/profile', authenticate, asyncHandler(authController.getProfile));
 router.put('/profile', authenticate, validate(updateProfileSchema), asyncHandler(authController.updateProfile));
 router.post('/avatar', authenticate, avatarUpload.single('avatar'), asyncHandler(authController.uploadAvatar));
+router.get('/user/:userId', authenticate, asyncHandler(authController.getPublicProfile));
 
 // Google OAuth
 router.get('/google', passport.authenticate('google', { session: false, scope: ['profile', 'email'] }));

@@ -160,6 +160,30 @@ export const authService = {
     return avatarUrl;
   },
 
+  async getPublicProfile(userId: string) {
+    const user = await authRepository.findById(userId);
+    if (!user) throw AppError.notFound('User not found');
+
+    const streak = await import('../../streak/service/streak.service').then(m => m.streakService.getStreak(userId));
+    const solvedCount = await import('../../progress/repository/progress.repository').then(m => m.progressRepository.getTotalSolvedCount(userId));
+    const badges = await import('../../badge/repository/badge.repository').then(m => m.badgeRepository.getUserBadges(userId));
+
+    return {
+      id: user.id,
+      displayName: user.display_name,
+      avatarUrl: user.avatar_url,
+      bio: user.bio,
+      location: user.location,
+      githubUrl: user.github_url,
+      linkedinUrl: user.linkedin_url,
+      currentStreak: streak.currentStreak,
+      longestStreak: streak.longestStreak,
+      totalSolved: solvedCount,
+      badges,
+      joinedAt: user.created_at,
+    };
+  },
+
   generateToken(userId: string, email: string): string {
     return jwt.sign({ userId, email }, env.jwt.secret, {
       expiresIn: env.jwt.expiresIn,

@@ -349,6 +349,21 @@ export interface FeedEvent {
   liked_by_me: boolean;
 }
 
+export interface PublicProfile {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+  bio: string | null;
+  location: string | null;
+  githubUrl: string | null;
+  linkedinUrl: string | null;
+  currentStreak: number;
+  longestStreak: number;
+  totalSolved: number;
+  badges: UserBadge[];
+  joinedAt: string;
+}
+
 export interface FeedComment {
   id: string;
   feed_event_id: string;

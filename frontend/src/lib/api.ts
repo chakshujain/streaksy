@@ -46,6 +46,7 @@ export const authApi = {
     api.get('/auth/profile'),
   updateProfile: (data: { displayName?: string; bio?: string; location?: string; githubUrl?: string; linkedinUrl?: string }) =>
     api.put('/auth/profile', data),
+  getPublicProfile: (userId: string) => api.get(`/auth/user/${userId}`),
   uploadAvatar: (file: File) => {
     const formData = new FormData();
     formData.append('avatar', file);

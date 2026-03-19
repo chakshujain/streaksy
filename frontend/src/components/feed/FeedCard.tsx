@@ -103,7 +103,7 @@ export function FeedCard({ event }: FeedCardProps) {
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-zinc-200">{event.display_name}</span>
+            <Link href={`/user/${event.user_id}`} className="text-sm font-semibold text-zinc-200 hover:text-emerald-400 transition-colors">{event.display_name}</Link>
             <span className="text-[11px] text-zinc-600">{formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
