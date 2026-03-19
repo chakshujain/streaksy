@@ -10,6 +10,7 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import { useAsync } from '@/hooks/useAsync';
 import { authApi, badgesApi } from '@/lib/api';
 import { Camera, Save, Github, Linkedin, MapPin, User } from 'lucide-react';
+import { cn } from '@/lib/cn';
 import type { User as UserType, UserBadge } from '@/lib/types';
 
 export default function ProfilePage() {
@@ -17,8 +18,12 @@ export default function ProfilePage() {
     () => authApi.getProfile().then((r) => r.data.profile),
     []
   );
-  const { data: badges } = useAsync<UserBadge[]>(
+  const { data: myBadges } = useAsync<UserBadge[]>(
     () => badgesApi.mine().then((r) => r.data.badges),
+    []
+  );
+  const { data: allBadges } = useAsync<{ id: string; name: string; description: string; icon: string; category: string }[]>(
+    () => badgesApi.list().then((r) => r.data.badges),
     []
   );
 
@@ -132,20 +137,44 @@ export default function ProfilePage() {
                 <p className="text-sm text-zinc-500">{profile?.email}</p>
               </div>
 
-              {/* Badges */}
-              {badges && badges.length > 0 && (
+              {/* Badges Grid — all badges, earned highlighted */}
+              {allBadges && allBadges.length > 0 && (
                 <div className="mt-4 w-full px-4">
-                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">Badges</p>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {badges.map((b) => (
-                      <div
-                        key={b.badge_id}
-                        className="flex items-center gap-1.5 rounded-full bg-zinc-800 border border-zinc-700 px-3 py-1 transition-all duration-200 hover:border-emerald-500/30 hover:scale-105"
-                        title={b.description}
-                      >
-                        <span className="text-xs text-zinc-300">{b.name}</span>
-                      </div>
-                    ))}
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">
+                    Badges ({myBadges?.length || 0}/{allBadges.length})
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {allBadges.map((b) => {
+                      const earned = myBadges?.some((mb) => mb.name === b.name);
+                      return (
+                        <div
+                          key={b.id}
+                          className={cn(
+                            'flex flex-col items-center gap-1 rounded-xl border p-2 text-center transition-all duration-200',
+                            earned
+                              ? 'border-emerald-500/30 bg-emerald-500/10 hover:scale-105'
+                              : 'border-zinc-800 bg-zinc-900/30 opacity-40'
+                          )}
+                          title={b.description}
+                        >
+                          <span className="text-lg">{
+                            b.icon === 'trophy' ? '🏆' :
+                            b.icon === 'star' ? '⭐' :
+                            b.icon === 'award' ? '🎖️' :
+                            b.icon === 'crown' ? '👑' :
+                            b.icon === 'flame' ? '🔥' :
+                            b.icon === 'zap' ? '⚡' :
+                            b.icon === 'target' ? '🎯' :
+                            b.icon === 'shield' ? '🛡️' :
+                            b.icon === 'users' ? '👥' :
+                            b.icon === 'book-open' ? '📖' : '🏅'
+                          }</span>
+                          <span className={cn('text-[10px] font-medium leading-tight', earned ? 'text-zinc-200' : 'text-zinc-500')}>
+                            {b.name}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
