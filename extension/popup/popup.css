@@ -140,6 +140,72 @@ body {
   font-size: 12px;
 }
 
+/* ── OAuth ── */
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 16px 0;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: #27272a;
+}
+
+.divider-text {
+  font-size: 11px;
+  color: #52525b;
+  white-space: nowrap;
+}
+
+.oauth-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 10px 16px 0;
+}
+
+.btn-oauth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  background: #18181b;
+  color: #d4d4d8;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-oauth:hover {
+  background: #27272a;
+  color: #fafafa;
+  border-color: #3f3f46;
+}
+
+.signup-link {
+  text-align: center;
+  font-size: 11px;
+  color: #52525b;
+  padding: 12px 16px 16px;
+}
+
+.signup-link a {
+  color: #10b981;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signup-link a:hover {
+  color: #34d399;
+}
+
 /* ── Error ── */
 .error {
   background: rgba(239, 68, 68, 0.1);

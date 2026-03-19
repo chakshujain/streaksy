@@ -41,6 +41,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     handleLogout().then(() => sendResponse({ success: true }));
     return true;
   }
+
+  if (message.type === 'OAUTH_LOGIN') {
+    handleOAuthLogin(message.provider);
+    return false;
+  }
+
+  if (message.type === 'OPEN_SIGNUP') {
+    chrome.tabs.create({ url: `${API_BASE.replace('/api', '')}/auth/signup` });
+    return false;
+  }
 });
 
 // ── Sync a solved problem (enhanced with rich data) ──
@@ -148,7 +158,47 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   }
 });
 
-// ── Auth ──
+// ── OAuth Login ──
+const FRONTEND_URL = API_BASE.replace('/api', '');
+
+function handleOAuthLogin(provider) {
+  // Open the OAuth URL in a new browser tab
+  const oauthUrl = `${API_BASE}/auth/${provider}`;
+  chrome.tabs.create({ url: oauthUrl });
+}
+
+// Listen for the OAuth callback — the frontend callback page URL contains the token
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.url && changeInfo.url.includes('/auth/callback')) {
+    try {
+      const url = new URL(changeInfo.url);
+      const token = url.searchParams.get('token');
+      const userStr = url.searchParams.get('user');
+
+      if (token && userStr) {
+        const user = JSON.parse(decodeURIComponent(userStr));
+        chrome.storage.local.set({
+          auth: {
+            token,
+            userId: user.id,
+            email: user.email,
+            displayName: user.displayName,
+          },
+        });
+        console.log('[Streaksy BG] OAuth login successful:', user.email);
+
+        // Close the callback tab after a short delay
+        setTimeout(() => {
+          chrome.tabs.remove(tabId).catch(() => {});
+        }, 1000);
+      }
+    } catch (err) {
+      console.warn('[Streaksy BG] Failed to parse OAuth callback:', err);
+    }
+  }
+});
+
+// ── Email/Password Auth ──
 async function handleLogin(email, password) {
   const response = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',

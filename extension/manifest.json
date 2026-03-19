@@ -3,7 +3,7 @@
   "name": "Streaksy — LeetCode Sync",
   "version": "1.0.0",
   "description": "Automatically sync your LeetCode submissions to Streaksy.",
-  "permissions": ["storage", "alarms"],
+  "permissions": ["storage", "alarms", "tabs"],
   "host_permissions": ["https://leetcode.com/*", "https://streaksy.in/*"],
   "background": {
     "service_worker": "background.js"

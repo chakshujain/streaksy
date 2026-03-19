@@ -158,6 +158,27 @@
     loginError.classList.remove('hidden');
   }
 
+  // ── OAuth (Google / GitHub) ──
+  const googleBtn = document.getElementById('google-btn');
+  const githubBtn = document.getElementById('github-btn');
+  const signupLink = document.getElementById('signup-link');
+
+  googleBtn.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ type: 'OAUTH_LOGIN', provider: 'google' });
+    window.close();
+  });
+
+  githubBtn.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ type: 'OAUTH_LOGIN', provider: 'github' });
+    window.close();
+  });
+
+  signupLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    chrome.runtime.sendMessage({ type: 'OPEN_SIGNUP' });
+    window.close();
+  });
+
   // ── Logout ──
   logoutBtn.addEventListener('click', () => {
     chrome.runtime.sendMessage({ type: 'LOGOUT' }, () => {
