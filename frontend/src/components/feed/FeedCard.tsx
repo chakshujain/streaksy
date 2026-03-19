@@ -27,7 +27,7 @@ const eventIcons: Record<string, { icon: typeof Code2; color: string }> = {
   challenge_complete: { icon: Target, color: 'text-cyan-400' },
 };
 
-export function FeedCard({ event, onUpdate }: FeedCardProps) {
+export function FeedCard({ event }: FeedCardProps) {
   const { user } = useAuthStore();
   const [liked, setLiked] = useState(event.liked_by_me);
   const [likeCount, setLikeCount] = useState(event.like_count);
