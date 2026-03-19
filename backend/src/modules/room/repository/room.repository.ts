@@ -11,6 +11,9 @@ export interface RoomRow {
   started_at: Date | null;
   ended_at: Date | null;
   created_at: Date;
+  scheduled_at: Date | null;
+  sheet_id: string | null;
+  mode: string;
   problem_title?: string;
   problem_slug?: string;
   problem_difficulty?: string;
@@ -39,11 +42,28 @@ export interface MessageRow {
 }
 
 export const roomRepository = {
-  async create(name: string, code: string, problemId: string, hostId: string, timeLimitMinutes: number): Promise<RoomRow> {
+  async create(
+    name: string,
+    code: string,
+    problemId: string | null,
+    hostId: string,
+    timeLimitMinutes: number,
+    opts?: { mode?: string; scheduledAt?: string | null; sheetId?: string | null; status?: string }
+  ): Promise<RoomRow> {
     const rows = await query<RoomRow>(
-      `INSERT INTO rooms (name, code, problem_id, host_id, time_limit_minutes)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [name, code, problemId, hostId, timeLimitMinutes]
+      `INSERT INTO rooms (name, code, problem_id, host_id, time_limit_minutes, mode, scheduled_at, sheet_id, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [
+        name,
+        code,
+        problemId,
+        hostId,
+        timeLimitMinutes,
+        opts?.mode || 'single',
+        opts?.scheduledAt || null,
+        opts?.sheetId || null,
+        opts?.status || 'waiting',
+      ]
     );
     return rows[0];
   },
@@ -51,7 +71,7 @@ export const roomRepository = {
   async findByCode(code: string): Promise<RoomRow | null> {
     return queryOne<RoomRow>(
       `SELECT r.*, p.title as problem_title, p.slug as problem_slug, p.difficulty as problem_difficulty
-       FROM rooms r JOIN problems p ON p.id = r.problem_id
+       FROM rooms r LEFT JOIN problems p ON p.id = r.problem_id
        WHERE r.code = $1`,
       [code]
     );
@@ -60,7 +80,7 @@ export const roomRepository = {
   async findById(id: string): Promise<RoomRow | null> {
     return queryOne<RoomRow>(
       `SELECT r.*, p.title as problem_title, p.slug as problem_slug, p.difficulty as problem_difficulty
-       FROM rooms r JOIN problems p ON p.id = r.problem_id
+       FROM rooms r LEFT JOIN problems p ON p.id = r.problem_id
        WHERE r.id = $1`,
       [id]
     );
@@ -116,7 +136,7 @@ export const roomRepository = {
     return query<RoomRow>(
       `SELECT r.*, p.title as problem_title, p.slug as problem_slug, p.difficulty as problem_difficulty
        FROM rooms r
-       JOIN problems p ON p.id = r.problem_id
+       LEFT JOIN problems p ON p.id = r.problem_id
        JOIN room_participants rp ON rp.room_id = r.id
        WHERE rp.user_id = $1 AND r.status IN ('waiting', 'active')
        ORDER BY r.created_at DESC`,
@@ -128,11 +148,92 @@ export const roomRepository = {
     return query<RoomRow>(
       `SELECT r.*, p.title as problem_title, p.slug as problem_slug, p.difficulty as problem_difficulty
        FROM rooms r
-       JOIN problems p ON p.id = r.problem_id
+       LEFT JOIN problems p ON p.id = r.problem_id
        JOIN room_participants rp ON rp.room_id = r.id
        WHERE rp.user_id = $1
        ORDER BY r.created_at DESC LIMIT $2`,
       [userId, limit]
+    );
+  },
+
+  async addProblems(roomId: string, problemIds: string[]): Promise<void> {
+    for (let i = 0; i < problemIds.length; i++) {
+      await query('INSERT INTO room_problems (room_id, problem_id, position) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [roomId, problemIds[i], i]);
+    }
+  },
+
+  async getRoomProblems(roomId: string): Promise<{ problem_id: string; title: string; slug: string; difficulty: string; position: number }[]> {
+    return query(
+      `SELECT p.id as problem_id, p.title, p.slug, p.difficulty, rp.position
+       FROM room_problems rp JOIN problems p ON p.id = rp.problem_id
+       WHERE rp.room_id = $1 ORDER BY rp.position`,
+      [roomId]
+    );
+  },
+
+  async markProblemSolved(roomId: string, userId: string, problemId: string, code: string | null, language: string | null, runtimeMs: number | null, memoryKb: number | null): Promise<void> {
+    await query(
+      `INSERT INTO room_participant_solves (room_id, user_id, problem_id, code, language, runtime_ms, memory_kb)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING`,
+      [roomId, userId, problemId, code, language, runtimeMs, memoryKb]
+    );
+  },
+
+  async getParticipantSolves(roomId: string): Promise<{ user_id: string; problem_id: string; solved_at: Date; display_name?: string }[]> {
+    return query(
+      `SELECT rps.*, u.display_name FROM room_participant_solves rps
+       JOIN users u ON u.id = rps.user_id WHERE rps.room_id = $1 ORDER BY rps.solved_at ASC`,
+      [roomId]
+    );
+  },
+
+  async getScheduledReady(): Promise<RoomRow[]> {
+    return query<RoomRow>(
+      `SELECT r.*, p.title as problem_title, p.slug as problem_slug, p.difficulty as problem_difficulty
+       FROM rooms r LEFT JOIN problems p ON p.id = r.problem_id
+       WHERE r.status = 'scheduled' AND r.scheduled_at <= NOW()`,
+      []
+    );
+  },
+
+  async getUpcoming(limit = 10): Promise<RoomRow[]> {
+    return query<RoomRow>(
+      `SELECT r.*, p.title as problem_title, p.slug as problem_slug, p.difficulty as problem_difficulty
+       FROM rooms r LEFT JOIN problems p ON p.id = r.problem_id
+       WHERE r.status = 'scheduled' AND r.scheduled_at > NOW()
+       ORDER BY r.scheduled_at ASC LIMIT $1`,
+      [limit]
+    );
+  },
+
+  async updateStats(userId: string): Promise<void> {
+    await query(
+      `INSERT INTO room_user_stats (user_id, rooms_participated, rooms_won, total_solves, avg_solve_time_seconds)
+       SELECT
+         $1,
+         (SELECT COUNT(DISTINCT room_id) FROM room_participants WHERE user_id = $1),
+         (SELECT COUNT(*) FROM (
+           SELECT rp.room_id FROM room_participants rp
+           WHERE rp.user_id = $1 AND rp.solved_at IS NOT NULL
+           AND rp.solved_at = (SELECT MIN(rp2.solved_at) FROM room_participants rp2 WHERE rp2.room_id = rp.room_id AND rp2.solved_at IS NOT NULL)
+         ) wins),
+         (SELECT COUNT(*) FROM room_participants WHERE user_id = $1 AND solved_at IS NOT NULL),
+         NULL
+       ON CONFLICT (user_id) DO UPDATE SET
+         rooms_participated = EXCLUDED.rooms_participated,
+         rooms_won = EXCLUDED.rooms_won,
+         total_solves = EXCLUDED.total_solves,
+         updated_at = NOW()`,
+      [userId]
+    );
+  },
+
+  async getLeaderboard(limit = 20): Promise<{ user_id: string; display_name: string; rooms_participated: number; rooms_won: number; total_solves: number }[]> {
+    return query(
+      `SELECT rus.*, u.display_name FROM room_user_stats rus
+       JOIN users u ON u.id = rus.user_id
+       ORDER BY rus.rooms_won DESC, rus.total_solves DESC LIMIT $1`,
+      [limit]
     );
   },
 };

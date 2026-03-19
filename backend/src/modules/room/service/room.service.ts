@@ -3,10 +3,34 @@ import { roomRepository } from '../repository/room.repository';
 import { AppError } from '../../../common/errors/AppError';
 
 export const roomService = {
-  async createRoom(hostId: string, name: string, problemId: string, timeLimitMinutes: number) {
+  async createRoom(
+    hostId: string,
+    name: string,
+    problemId: string | null,
+    timeLimitMinutes: number,
+    opts?: { problemIds?: string[]; sheetId?: string; scheduledAt?: string; mode?: string }
+  ) {
     const code = crypto.randomBytes(4).toString('hex').toUpperCase();
-    const room = await roomRepository.create(name, code, problemId, hostId, timeLimitMinutes);
+    const mode = opts?.mode || 'single';
+    const scheduledAt = opts?.scheduledAt || null;
+    const sheetId = opts?.sheetId || null;
+    const status = scheduledAt ? 'scheduled' : 'waiting';
+
+    const room = await roomRepository.create(name, code, problemId, hostId, timeLimitMinutes, {
+      mode,
+      scheduledAt,
+      sheetId,
+      status,
+    });
     await roomRepository.addParticipant(room.id, hostId);
+
+    // Add multiple problems if provided
+    if (opts?.problemIds && opts.problemIds.length > 0) {
+      await roomRepository.addProblems(room.id, opts.problemIds);
+    } else if (problemId) {
+      await roomRepository.addProblems(room.id, [problemId]);
+    }
+
     return roomRepository.findById(room.id);
   },
 
@@ -15,6 +39,12 @@ export const roomService = {
     if (!room) throw AppError.notFound('Room not found');
     if (room.status === 'finished') throw AppError.badRequest('Room has ended');
     await roomRepository.addParticipant(room.id, userId);
+
+    // Notify host
+    import('../../notification/service/notification.service').then(m => {
+      m.notificationService.notify(room.host_id, 'room_join', 'Someone joined your room!', `A participant joined "${room.name}"`, { roomId: room.id });
+    }).catch(() => {});
+
     return room;
   },
 
@@ -30,8 +60,19 @@ export const roomService = {
     const room = await roomRepository.findById(roomId);
     if (!room) throw AppError.notFound('Room not found');
     if (room.host_id !== userId) throw AppError.forbidden('Only the host can start the room');
-    if (room.status !== 'waiting') throw AppError.badRequest('Room already started');
+    if (room.status !== 'waiting' && room.status !== 'scheduled') throw AppError.badRequest('Room already started');
     await roomRepository.updateStatus(roomId, 'active');
+
+    // Notify all participants
+    const participants = await roomRepository.getParticipants(roomId);
+    import('../../notification/service/notification.service').then(m => {
+      participants.forEach(p => {
+        if (p.user_id !== userId) {
+          m.notificationService.notify(p.user_id, 'room_start', 'Room started! \u{1F3C1}', `"${room!.name}" has started. Time to solve!`, { roomId });
+        }
+      });
+    }).catch(() => {});
+
     return roomRepository.findById(roomId);
   },
 
@@ -40,6 +81,22 @@ export const roomService = {
     if (!room) throw AppError.notFound('Room not found');
     if (room.host_id !== userId) throw AppError.forbidden('Only the host can end the room');
     await roomRepository.updateStatus(roomId, 'finished');
+
+    // Update stats for all participants
+    const participants = await roomRepository.getParticipants(roomId);
+    for (const p of participants) {
+      await roomRepository.updateStats(p.user_id);
+    }
+
+    // Notify all participants
+    import('../../notification/service/notification.service').then(m => {
+      participants.forEach(p => {
+        if (p.user_id !== userId) {
+          m.notificationService.notify(p.user_id, 'room_end', 'Room ended! \u{1F3C6}', `"${room!.name}" has ended. Check the results!`, { roomId });
+        }
+      });
+    }).catch(() => {});
+
     return roomRepository.findById(roomId);
   },
 
@@ -48,7 +105,36 @@ export const roomService = {
     if (!room) throw AppError.notFound('Room not found');
     if (room.status !== 'active') throw AppError.badRequest('Room is not active');
     await roomRepository.markSolved(roomId, userId, data?.code || null, data?.language || null, data?.runtimeMs || null, data?.memoryKb || null);
-    return roomRepository.getParticipants(roomId);
+
+    // Trigger full sync pipeline (progress, streak, badges, feed, leaderboard)
+    const roomData = await roomRepository.findById(roomId);
+    if (roomData?.problem_slug) {
+      import('../../../modules/sync/service/sync.service').then(m => {
+        m.syncService.syncLeetcode(userId, roomData.problem_slug!, 'solved', {
+          language: data?.language,
+          code: data?.code,
+          runtimeMs: data?.runtimeMs,
+          memoryKb: data?.memoryKb,
+        }).catch(() => {});
+      }).catch(() => {});
+    }
+
+    // Also track per-problem solve if room has problem_id
+    if (roomData?.problem_id) {
+      await roomRepository.markProblemSolved(roomId, userId, roomData.problem_id, data?.code || null, data?.language || null, data?.runtimeMs || null, data?.memoryKb || null);
+    }
+
+    // Notify all participants
+    const participants = await roomRepository.getParticipants(roomId);
+    import('../../notification/service/notification.service').then(m => {
+      participants.forEach(p => {
+        if (p.user_id !== userId) {
+          m.notificationService.notify(p.user_id, 'room_solve', 'Someone solved it! \u{1F389}', `A participant solved the problem in "${roomData?.name}"`, { roomId });
+        }
+      });
+    }).catch(() => {});
+
+    return participants;
   },
 
   async sendMessage(roomId: string, userId: string, content: string) {
@@ -61,5 +147,33 @@ export const roomService = {
 
   async getActiveRooms(userId: string) {
     return roomRepository.getUserActiveRooms(userId);
+  },
+
+  async autoStartScheduledRooms() {
+    const rooms = await roomRepository.getScheduledReady();
+    for (const room of rooms) {
+      await roomRepository.updateStatus(room.id, 'active');
+      const participants = await roomRepository.getParticipants(room.id);
+      import('../../notification/service/notification.service').then(m => {
+        participants.forEach(p => {
+          m.notificationService.notify(p.user_id, 'room_start', 'Room started! \u{1F3C1}', `"${room.name}" has started. Time to solve!`, { roomId: room.id });
+        });
+      }).catch(() => {});
+    }
+    return rooms.length;
+  },
+
+  async getUpcoming() {
+    return roomRepository.getUpcoming();
+  },
+
+  async getLeaderboard() {
+    return roomRepository.getLeaderboard();
+  },
+
+  async getUserStats(userId: string) {
+    await roomRepository.updateStats(userId);
+    const lb = await roomRepository.getLeaderboard(1000);
+    return lb.find(e => e.user_id === userId) || null;
   },
 };

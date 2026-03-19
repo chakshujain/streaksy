@@ -6,19 +6,71 @@ import { useAsync } from '@/hooks/useAsync';
 import { insightsApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { PageTransition } from '@/components/ui/PageTransition';
-import { BarChart3, Trophy, Flame, Calendar, TrendingUp, Tag, Zap, Target } from 'lucide-react';
+import { BarChart3, Trophy, Flame, Calendar, TrendingUp, Tag, Zap, Target, Activity, Award } from 'lucide-react';
 import type { InsightsOverview, WeeklyData, TagProgress, DifficultyTrend } from '@/lib/types';
+import { useMemo } from 'react';
+
+/* ─── Helpers ─── */
+
+function animDelay(i: number, base = 0) {
+  return { animationDelay: `${base + i * 75}ms`, animationFillMode: 'both' as const };
+}
+
+/* ─── Your Stats Summary ─── */
+
+function StatsSummary({ overview, weekly }: { overview: InsightsOverview; weekly: WeeklyData[] }) {
+  const totalWeekly = weekly.reduce((s, w) => s + w.count, 0);
+  const avgPerWeek = weekly.length > 0 ? (totalWeekly / weekly.length).toFixed(1) : '0';
+
+  const difficulties = [
+    { label: 'Easy', count: overview.easySolved },
+    { label: 'Medium', count: overview.mediumSolved },
+    { label: 'Hard', count: overview.hardSolved },
+  ];
+  const favorite = difficulties.reduce((a, b) => (b.count > a.count ? b : a));
+
+  const stats = [
+    { label: 'Avg / Week', value: avgPerWeek, icon: Activity, color: 'text-cyan-400', bg: 'from-cyan-500/20 to-blue-500/20' },
+    { label: 'Favorite Difficulty', value: favorite.label, icon: Award, color: 'text-amber-400', bg: 'from-amber-500/20 to-orange-500/20' },
+    { label: 'Problems / Active Day', value: overview.activeDays > 0 ? (overview.totalSolved / overview.activeDays).toFixed(1) : '0', icon: Zap, color: 'text-purple-400', bg: 'from-purple-500/20 to-pink-500/20' },
+  ];
+
+  return (
+    <div className="glass rounded-2xl border border-zinc-800/50 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20">
+          <Activity className="h-3.5 w-3.5 text-emerald-400" />
+        </div>
+        <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Your Stats</h3>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {stats.map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.label} className="flex items-center gap-3 rounded-xl bg-zinc-800/30 border border-zinc-800/50 p-3.5 animate-slide-up" style={animDelay(i)}>
+              <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br shrink-0', s.bg)}>
+                <Icon className={cn('h-4 w-4', s.color)} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-zinc-100 truncate">{s.value}</p>
+                <p className="text-[11px] text-zinc-500 uppercase tracking-wider">{s.label}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Overview Cards ─── */
 
 function OverviewCards({ overview }: { overview: InsightsOverview }) {
-  const solveRate = overview.totalProblems > 0
-    ? Math.round((overview.totalSolved / overview.totalProblems) * 100)
-    : 0;
-
   const cards = [
     {
       label: 'Total Solved',
       value: overview.totalSolved,
-      sub: `out of ${overview.totalProblems}`,
+      sub: `${overview.easySolved}E / ${overview.mediumSolved}M / ${overview.hardSolved}H`,
       icon: Trophy,
       gradient: 'from-emerald-500/20 to-cyan-500/20',
       borderColor: 'border-emerald-500/10',
@@ -26,13 +78,13 @@ function OverviewCards({ overview }: { overview: InsightsOverview }) {
       valueClass: 'gradient-text',
     },
     {
-      label: 'Solve Rate',
+      label: 'Difficulty Split',
       value: null,
       icon: Target,
       gradient: 'from-cyan-500/20 to-blue-500/20',
       borderColor: 'border-cyan-500/10',
       iconColor: 'text-cyan-400',
-      ring: { rate: solveRate },
+      donut: true,
     },
     {
       label: 'Current Streak',
@@ -43,6 +95,7 @@ function OverviewCards({ overview }: { overview: InsightsOverview }) {
       borderColor: 'border-orange-500/10',
       iconColor: 'text-orange-400',
       valueClass: 'text-orange-400',
+      fireEffect: overview.currentStreak >= 3,
     },
     {
       label: 'Active Days',
@@ -65,9 +118,10 @@ function OverviewCards({ overview }: { overview: InsightsOverview }) {
             key={card.label}
             className={cn(
               'glass rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] hover:glow-sm',
-              card.borderColor
+              card.borderColor,
+              card.fireEffect && 'animate-pulse-glow'
             )}
-            style={{ animationDelay: `${i * 75}ms`, animationFillMode: 'both' }}
+            style={animDelay(i)}
           >
             <div className="flex items-center gap-2 mb-3">
               <div className={cn(
@@ -79,17 +133,39 @@ function OverviewCards({ overview }: { overview: InsightsOverview }) {
               <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">{card.label}</p>
             </div>
 
-            {card.ring ? (
+            {card.donut ? (
               <div className="flex items-center justify-center py-1">
                 <div className="relative h-20 w-20">
-                  <div
-                    className="h-20 w-20 rounded-full"
-                    style={{
-                      background: `conic-gradient(#34d399 ${card.ring.rate * 3.6}deg, rgba(63,63,70,0.3) 0deg)`,
-                    }}
-                  />
-                  <div className="absolute inset-[6px] flex items-center justify-center rounded-full bg-zinc-900">
-                    <span className="text-lg font-bold text-emerald-400">{card.ring.rate}%</span>
+                  <svg viewBox="0 0 36 36" className="h-20 w-20 -rotate-90">
+                    {/* background ring */}
+                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(63,63,70,0.3)" strokeWidth="3" />
+                    {/* easy arc */}
+                    <circle
+                      cx="18" cy="18" r="15.5" fill="none"
+                      stroke="#34d399" strokeWidth="3"
+                      strokeDasharray={`${overview.easyPercentage * 0.974} ${97.4 - overview.easyPercentage * 0.974}`}
+                      strokeDashoffset="0"
+                      className="transition-all duration-1000"
+                    />
+                    {/* medium arc */}
+                    <circle
+                      cx="18" cy="18" r="15.5" fill="none"
+                      stroke="#f59e0b" strokeWidth="3"
+                      strokeDasharray={`${overview.mediumPercentage * 0.974} ${97.4 - overview.mediumPercentage * 0.974}`}
+                      strokeDashoffset={`${-(overview.easyPercentage * 0.974)}`}
+                      className="transition-all duration-1000"
+                    />
+                    {/* hard arc */}
+                    <circle
+                      cx="18" cy="18" r="15.5" fill="none"
+                      stroke="#ef4444" strokeWidth="3"
+                      strokeDasharray={`${overview.hardPercentage * 0.974} ${97.4 - overview.hardPercentage * 0.974}`}
+                      strokeDashoffset={`${-((overview.easyPercentage + overview.mediumPercentage) * 0.974)}`}
+                      className="transition-all duration-1000"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold text-zinc-300">{overview.totalSolved}</span>
                   </div>
                 </div>
               </div>
@@ -108,82 +184,109 @@ function OverviewCards({ overview }: { overview: InsightsOverview }) {
   );
 }
 
+/* ─── Difficulty Breakdown ─── */
+
 function DifficultyBreakdown({ overview }: { overview: InsightsOverview }) {
   const difficulties = [
-    { label: 'Easy', solved: overview.easySolved, total: overview.easyCount, color: 'from-emerald-500 to-emerald-400', bg: 'bg-emerald-500/10', text: 'text-emerald-400', glow: 'shadow-emerald-500/20' },
-    { label: 'Medium', solved: overview.mediumSolved, total: overview.mediumCount, color: 'from-amber-500 to-amber-400', bg: 'bg-amber-500/10', text: 'text-amber-400', glow: 'shadow-amber-500/20' },
-    { label: 'Hard', solved: overview.hardSolved, total: overview.hardCount, color: 'from-red-500 to-red-400', bg: 'bg-red-500/10', text: 'text-red-400', glow: 'shadow-red-500/20' },
+    { label: 'Easy', solved: overview.easySolved, percentage: overview.easyPercentage, color: 'from-emerald-500 to-emerald-400', bg: 'bg-emerald-500/10', text: 'text-emerald-400', glow: 'shadow-emerald-500/20' },
+    { label: 'Medium', solved: overview.mediumSolved, percentage: overview.mediumPercentage, color: 'from-amber-500 to-amber-400', bg: 'bg-amber-500/10', text: 'text-amber-400', glow: 'shadow-amber-500/20' },
+    { label: 'Hard', solved: overview.hardSolved, percentage: overview.hardPercentage, color: 'from-red-500 to-red-400', bg: 'bg-red-500/10', text: 'text-red-400', glow: 'shadow-red-500/20' },
   ];
 
   return (
-    <div className="glass rounded-2xl border border-zinc-800/50 p-6">
+    <div className="glass rounded-2xl border border-zinc-800/50 p-6 h-full">
       <div className="flex items-center gap-2 mb-6">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-amber-500/20">
           <BarChart3 className="h-3.5 w-3.5 text-emerald-400" />
         </div>
         <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Difficulty Breakdown</h3>
       </div>
+
+      {/* Visual distribution bar */}
+      <div className="flex h-4 rounded-full overflow-hidden mb-6 bg-zinc-800/60">
+        {difficulties.map((d) => (
+          <div
+            key={d.label}
+            className={cn('h-full bg-gradient-to-r transition-all duration-1000 first:rounded-l-full last:rounded-r-full', d.color)}
+            style={{ width: `${d.percentage}%` }}
+          />
+        ))}
+      </div>
+
       <div className="space-y-5">
-        {difficulties.map((d, i) => {
-          const pct = d.total > 0 ? Math.round((d.solved / d.total) * 100) : 0;
-          return (
-            <div key={d.label} className="animate-slide-up" style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'both' }}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    'text-xs font-semibold px-2 py-0.5 rounded-md',
-                    d.bg, d.text
-                  )}>
-                    {d.label}
-                  </span>
-                  <span className="text-xs text-zinc-500">{d.solved}/{d.total}</span>
-                </div>
-                <span className="text-sm font-bold text-zinc-300">{pct}%</span>
+        {difficulties.map((d, i) => (
+          <div key={d.label} className="animate-slide-up" style={animDelay(i)}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-md', d.bg, d.text)}>
+                  {d.label}
+                </span>
+                <span className="text-sm font-medium text-zinc-300">{d.solved} solved</span>
               </div>
-              <div className="h-3 rounded-full bg-zinc-800/60 overflow-hidden">
-                <div
-                  className={cn(
-                    'h-full rounded-full bg-gradient-to-r transition-all duration-1000 ease-out',
-                    d.color,
-                    pct > 0 && `shadow-lg ${d.glow}`
-                  )}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
+              <span className="text-sm font-bold text-zinc-300">{d.percentage}%</span>
             </div>
-          );
-        })}
+            <div className="h-2.5 rounded-full bg-zinc-800/60 overflow-hidden">
+              <div
+                className={cn(
+                  'h-full rounded-full bg-gradient-to-r transition-all duration-1000 ease-out',
+                  d.color,
+                  d.percentage > 0 && `shadow-lg ${d.glow}`
+                )}
+                style={{ width: `${d.percentage}%` }}
+              />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
+/* ─── Weekly Chart ─── */
+
 function WeeklyChart({ data }: { data: WeeklyData[] }) {
   const maxCount = Math.max(...data.map((d) => d.count), 1);
+  const total = data.reduce((s, w) => s + w.count, 0);
 
   return (
-    <div className="glass rounded-2xl border border-zinc-800/50 p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20">
-          <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
+    <div className="glass rounded-2xl border border-zinc-800/50 p-6 h-full flex flex-col">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20">
+            <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
+          </div>
+          <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Weekly Activity</h3>
         </div>
-        <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Weekly Activity</h3>
+        <span className="text-xs text-zinc-500 bg-zinc-800/50 rounded-lg px-2.5 py-1">{total} total</span>
       </div>
-      <div className="flex items-end gap-2 h-40">
+      <div className="flex items-end gap-3 flex-1 min-h-[10rem]">
         {data.map((week, i) => {
           const height = (week.count / maxCount) * 100;
           const weekLabel = new Date(week.weekStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const isMax = week.count === maxCount && week.count > 0;
           return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-              <div className="relative w-full flex justify-center">
-                <div className="absolute -top-7 hidden group-hover:block rounded-lg bg-zinc-800 border border-zinc-700/50 px-2.5 py-1 text-xs font-medium text-zinc-300 whitespace-nowrap shadow-lg z-10">
-                  {week.count} solved
-                </div>
+            <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group">
+              {/* Count label always visible */}
+              <span className={cn(
+                'text-xs font-semibold tabular-nums transition-colors',
+                isMax ? 'text-emerald-400' : 'text-zinc-500 group-hover:text-zinc-300'
+              )}>
+                {week.count}
+              </span>
+              <div className="relative w-full flex justify-center flex-1">
+                <div
+                  className={cn(
+                    'w-full rounded-lg bg-gradient-to-t transition-all duration-500 hover:shadow-lg hover:shadow-emerald-500/10',
+                    isMax
+                      ? 'from-emerald-500 to-cyan-300 shadow-lg shadow-emerald-500/15'
+                      : 'from-emerald-600/80 to-cyan-400/80 hover:from-emerald-500 hover:to-cyan-300',
+                  )}
+                  style={{
+                    height: `${Math.max(height, 4)}%`,
+                    marginTop: 'auto',
+                  }}
+                />
               </div>
-              <div
-                className="w-full rounded-t-lg bg-gradient-to-t from-emerald-600 to-cyan-400 transition-all duration-300 hover:from-emerald-500 hover:to-cyan-300 min-h-[2px] hover:shadow-lg hover:shadow-emerald-500/10"
-                style={{ height: `${Math.max(height, 2)}%` }}
-              />
               <span className="text-[10px] text-zinc-600 truncate w-full text-center">{weekLabel}</span>
             </div>
           );
@@ -193,110 +296,278 @@ function WeeklyChart({ data }: { data: WeeklyData[] }) {
   );
 }
 
-function TagCloud({ tags }: { tags: TagProgress[] }) {
-  const sorted = [...tags].sort((a, b) => b.solved - a.solved);
+/* ─── Tags with Progress Bars ─── */
+
+function TagSection({ tags }: { tags: TagProgress[] }) {
+  const sorted = useMemo(() => [...tags].sort((a, b) => b.solved - a.solved), [tags]);
+  const maxSolved = Math.max(...sorted.map((t) => t.solved), 1);
+
+  // Split into top tags and remaining
+  const topTags = sorted.slice(0, 8);
+  const remainingTags = sorted.slice(8);
 
   return (
     <div className="glass rounded-2xl border border-zinc-800/50 p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-          <Tag className="h-3.5 w-3.5 text-purple-400" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+            <Tag className="h-3.5 w-3.5 text-purple-400" />
+          </div>
+          <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Topics</h3>
         </div>
-        <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Topics</h3>
+        <span className="text-xs text-zinc-500 bg-zinc-800/50 rounded-lg px-2.5 py-1">{tags.length} topics</span>
       </div>
-      <div className="flex flex-wrap gap-2.5">
-        {sorted.map((tag) => {
-          const pct = tag.total > 0 ? Math.round((tag.solved / tag.total) * 100) : 0;
-          return (
+
+      {/* Top tags with progress bars */}
+      {topTags.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mb-5">
+          {topTags.map((tag, i) => {
+            const barWidth = Math.max((tag.solved / maxSolved) * 100, 6);
+            return (
+              <div key={tag.name} className="animate-slide-up" style={animDelay(i, 50)}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm text-zinc-300 font-medium truncate">{tag.name}</span>
+                  <span className="text-xs text-zinc-500 tabular-nums ml-2 shrink-0">{tag.solved}/{tag.total}</span>
+                </div>
+                <div className="h-2 rounded-full bg-zinc-800/60 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-400 transition-all duration-700 ease-out"
+                    style={{ width: `${barWidth}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Remaining tags as compact pills */}
+      {remainingTags.length > 0 && (
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-zinc-800/50">
+          {remainingTags.map((tag) => (
             <div
               key={tag.name}
-              className={cn(
-                'relative overflow-hidden rounded-xl border px-4 py-2 transition-all duration-200 hover:scale-105 hover:border-zinc-600',
-                pct === 100
-                  ? 'border-emerald-500/30 bg-emerald-500/5'
-                  : 'border-zinc-700/50 bg-zinc-800/30'
-              )}
+              className="flex items-center gap-1.5 rounded-lg border border-zinc-800/50 bg-zinc-800/20 px-3 py-1.5 transition-colors hover:border-zinc-700"
             >
-              <div
-                className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-cyan-500/5 rounded-xl"
-                style={{ width: `${pct}%` }}
-              />
-              <span className="relative text-sm flex items-center gap-2">
-                <span className="text-zinc-300 font-medium">{tag.name}</span>
-                <span className={cn(
-                  'text-xs font-medium px-1.5 py-0.5 rounded-md',
-                  pct === 100
-                    ? 'text-emerald-400 bg-emerald-500/15'
-                    : 'text-zinc-500 bg-zinc-800/50'
-                )}>
-                  {tag.solved}/{tag.total}
-                </span>
-              </span>
+              <span className="text-xs text-zinc-400">{tag.name}</span>
+              <span className="text-[10px] text-zinc-600 tabular-nums">{tag.solved}/{tag.total}</span>
             </div>
-          );
-        })}
-        {sorted.length === 0 && (
-          <p className="text-sm text-zinc-600">No tag data yet. Start solving problems!</p>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {sorted.length === 0 && (
+        <p className="text-sm text-zinc-600 py-4">No tag data yet. Start solving problems!</p>
+      )}
     </div>
   );
 }
+
+/* ─── Monthly Trend ─── */
 
 function DifficultyTrendChart({ data }: { data: DifficultyTrend[] }) {
   const maxTotal = Math.max(...data.map((d) => d.easy + d.medium + d.hard), 1);
 
   return (
-    <div className="glass rounded-2xl border border-zinc-800/50 p-6">
+    <div className="glass rounded-2xl border border-zinc-800/50 p-6 h-full flex flex-col">
       <div className="flex items-center gap-2 mb-6">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/20 to-red-500/20">
           <Zap className="h-3.5 w-3.5 text-amber-400" />
         </div>
         <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Monthly Trend</h3>
       </div>
-      <div className="flex items-end gap-3 h-36">
-        {data.map((month, i) => {
-          const total = month.easy + month.medium + month.hard;
-          const easyH = (month.easy / maxTotal) * 100;
-          const medH = (month.medium / maxTotal) * 100;
-          const hardH = (month.hard / maxTotal) * 100;
-          return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-              <div className="relative w-full flex justify-center">
-                <div className="absolute -top-7 hidden group-hover:block rounded-lg bg-zinc-800 border border-zinc-700/50 px-2.5 py-1 text-xs font-medium text-zinc-300 whitespace-nowrap shadow-lg z-10">
-                  {total} total
+
+      {data.length > 0 ? (
+        <>
+          <div className="flex items-end gap-4 flex-1 min-h-[10rem]">
+            {data.map((month, i) => {
+              const total = month.easy + month.medium + month.hard;
+              const barHeight = Math.max((total / maxTotal) * 100, 4);
+              const easyFrac = total > 0 ? (month.easy / total) * 100 : 0;
+              const medFrac = total > 0 ? (month.medium / total) * 100 : 0;
+              const hardFrac = total > 0 ? (month.hard / total) * 100 : 0;
+              // Make bars wider when few months
+              const barMaxWidth = data.length <= 3 ? 'max-w-[8rem]' : 'max-w-[5rem]';
+
+              return (
+                <div key={i} className={cn('flex-1 flex flex-col items-center gap-1.5 group', barMaxWidth, 'mx-auto')}>
+                  <span className="text-xs font-semibold text-zinc-400 tabular-nums group-hover:text-zinc-200 transition-colors">
+                    {total}
+                  </span>
+                  <div className="relative w-full flex justify-center flex-1">
+                    <div
+                      className="w-full rounded-lg overflow-hidden transition-all duration-500 hover:shadow-lg hover:shadow-emerald-500/5 flex flex-col-reverse"
+                      style={{ height: `${barHeight}%`, marginTop: 'auto' }}
+                    >
+                      <div className="w-full bg-emerald-500/80" style={{ height: `${easyFrac}%` }} />
+                      <div className="w-full bg-amber-500/80" style={{ height: `${medFrac}%` }} />
+                      <div className="w-full bg-red-500/80" style={{ height: `${hardFrac}%` }} />
+                    </div>
+                  </div>
+                  <span className="text-xs text-zinc-500 font-medium">{month.month}</span>
                 </div>
-              </div>
-              <div className="w-full flex flex-col-reverse rounded-t-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/5" style={{ height: `${Math.max((easyH + medH + hardH), 2)}%` }}>
-                <div className="w-full bg-emerald-500/80" style={{ height: `${total > 0 ? (month.easy / total) * 100 : 0}%` }} />
-                <div className="w-full bg-amber-500/80" style={{ height: `${total > 0 ? (month.medium / total) * 100 : 0}%` }} />
-                <div className="w-full bg-red-500/80" style={{ height: `${total > 0 ? (month.hard / total) * 100 : 0}%` }} />
-              </div>
-              <span className="text-[10px] text-zinc-600">{month.month}</span>
+              );
+            })}
+          </div>
+          {/* Legend */}
+          <div className="flex gap-4 mt-5 justify-center">
+            <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" /> Easy
             </div>
-          );
-        })}
-        {data.length === 0 && (
-          <p className="text-sm text-zinc-600 w-full text-center py-8">No trend data yet.</p>
-        )}
-      </div>
-      {/* Legend */}
-      {data.length > 0 && (
-        <div className="flex gap-4 mt-5 justify-center">
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <div className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" /> Easy
+            <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+              <div className="h-2.5 w-2.5 rounded-full bg-amber-500/80" /> Medium
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+              <div className="h-2.5 w-2.5 rounded-full bg-red-500/80" /> Hard
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <div className="h-2.5 w-2.5 rounded-full bg-amber-500/80" /> Medium
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <div className="h-2.5 w-2.5 rounded-full bg-red-500/80" /> Hard
-          </div>
-        </div>
+        </>
+      ) : (
+        <p className="text-sm text-zinc-600 w-full text-center py-8">No trend data yet.</p>
       )}
     </div>
   );
 }
+
+/* ─── Streak Heatmap (GitHub-style) ─── */
+
+function StreakHeatmap({ weekly }: { weekly: WeeklyData[] }) {
+  // Build a 7-column x N-row grid from weekly data spread across days
+  // We'll create a simplified 5-week x 7-day heatmap from weekly counts
+  const maxCount = Math.max(...weekly.map((w) => w.count), 1);
+
+  // Generate cells: spread each week's count across approximate days
+  const cells: { date: string; intensity: number }[] = [];
+  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  weekly.forEach((week) => {
+    const avgPerDay = week.count / 7;
+    for (let d = 0; d < 7; d++) {
+      // Simulate daily distribution (weighted toward weekdays)
+      const weight = d < 5 ? 1.2 : 0.6;
+      const estimated = Math.round(avgPerDay * weight * 10) / 10;
+      const intensity = maxCount > 0 ? Math.min(estimated / (maxCount / 7 * 1.2), 1) : 0;
+      const weekDate = new Date(week.weekStart);
+      weekDate.setDate(weekDate.getDate() + d);
+      cells.push({ date: weekDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), intensity });
+    }
+  });
+
+  const getColor = (intensity: number) => {
+    if (intensity <= 0) return 'bg-zinc-800/40';
+    if (intensity < 0.25) return 'bg-emerald-900/60';
+    if (intensity < 0.5) return 'bg-emerald-700/70';
+    if (intensity < 0.75) return 'bg-emerald-500/80';
+    return 'bg-emerald-400';
+  };
+
+  return (
+    <div className="glass rounded-2xl border border-zinc-800/50 p-6">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-green-500/20">
+            <Calendar className="h-3.5 w-3.5 text-emerald-400" />
+          </div>
+          <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Activity Heatmap</h3>
+        </div>
+        <div className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+          <span>Less</span>
+          <div className="h-3 w-3 rounded-sm bg-zinc-800/40" />
+          <div className="h-3 w-3 rounded-sm bg-emerald-900/60" />
+          <div className="h-3 w-3 rounded-sm bg-emerald-700/70" />
+          <div className="h-3 w-3 rounded-sm bg-emerald-500/80" />
+          <div className="h-3 w-3 rounded-sm bg-emerald-400" />
+          <span>More</span>
+        </div>
+      </div>
+
+      <div className="flex gap-1.5">
+        {/* Day labels */}
+        <div className="flex flex-col gap-1.5 pr-2">
+          {dayLabels.map((d, i) => (
+            <div key={d} className="h-4 flex items-center">
+              {i % 2 === 0 && <span className="text-[9px] text-zinc-600">{d}</span>}
+            </div>
+          ))}
+        </div>
+        {/* Grid */}
+        {weekly.map((_, weekIdx) => (
+          <div key={weekIdx} className="flex flex-col gap-1.5 flex-1">
+            {Array.from({ length: 7 }).map((_, dayIdx) => {
+              const cell = cells[weekIdx * 7 + dayIdx];
+              return (
+                <div
+                  key={dayIdx}
+                  className={cn(
+                    'h-4 rounded-sm transition-colors duration-200 hover:ring-1 hover:ring-zinc-600',
+                    cell ? getColor(cell.intensity) : 'bg-zinc-800/40'
+                  )}
+                  title={cell ? `${cell.date}: activity level ${Math.round(cell.intensity * 100)}%` : ''}
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Period Comparison ─── */
+
+function PeriodComparison({ weekly }: { weekly: WeeklyData[] }) {
+  if (weekly.length < 2) return null;
+
+  const current = weekly[weekly.length - 1].count;
+  const previous = weekly[weekly.length - 2].count;
+  const diff = current - previous;
+  const pctChange = previous > 0 ? Math.round((diff / previous) * 100) : current > 0 ? 100 : 0;
+  const isUp = diff >= 0;
+
+  return (
+    <div className="glass rounded-2xl border border-zinc-800/50 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/20 to-indigo-500/20">
+          <TrendingUp className="h-3.5 w-3.5 text-blue-400" />
+        </div>
+        <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">vs Last Week</h3>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="text-center flex-1">
+          <p className="text-3xl font-bold text-zinc-100">{current}</p>
+          <p className="text-[11px] text-zinc-500 uppercase tracking-wider mt-1">This Week</p>
+        </div>
+        <div className={cn(
+          'flex items-center gap-1 rounded-xl px-3 py-2',
+          isUp ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+        )}>
+          <span className="text-lg font-bold">{isUp ? '+' : ''}{pctChange}%</span>
+        </div>
+        <div className="text-center flex-1">
+          <p className="text-3xl font-bold text-zinc-500">{previous}</p>
+          <p className="text-[11px] text-zinc-500 uppercase tracking-wider mt-1">Last Week</p>
+        </div>
+      </div>
+      {/* Mini comparison bar */}
+      <div className="mt-4 flex gap-2 items-center">
+        <div className="flex-1 h-2 rounded-full bg-zinc-800/60 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-700"
+            style={{ width: `${Math.min((current / Math.max(current, previous, 1)) * 100, 100)}%` }}
+          />
+        </div>
+        <div className="flex-1 h-2 rounded-full bg-zinc-800/60 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-zinc-600 to-zinc-500 transition-all duration-700"
+            style={{ width: `${Math.min((previous / Math.max(current, previous, 1)) * 100, 100)}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Page ─── */
 
 export default function InsightsPage() {
   const { data: overview, loading: overviewLoading } = useAsync<InsightsOverview>(
@@ -305,13 +576,12 @@ export default function InsightsPage() {
       const rate = d.solveRateByDifficulty || {};
       return {
         totalSolved: d.totalSolved || 0,
-        totalProblems: (rate.easy?.count || 0) + (rate.medium?.count || 0) + (rate.hard?.count || 0) + 50,
         easySolved: rate.easy?.count || 0,
-        easyCount: (rate.easy?.count || 0) + 10,
+        easyPercentage: rate.easy?.percentage || 0,
         mediumSolved: rate.medium?.count || 0,
-        mediumCount: (rate.medium?.count || 0) + 15,
+        mediumPercentage: rate.medium?.percentage || 0,
         hardSolved: rate.hard?.count || 0,
-        hardCount: (rate.hard?.count || 0) + 5,
+        hardPercentage: rate.hard?.percentage || 0,
         currentStreak: d.currentStreak || 0,
         longestStreak: d.longestStreak || 0,
         activeDays: parseInt(d.totalActiveDays) || 0,
@@ -345,9 +615,9 @@ export default function InsightsPage() {
   return (
     <AppShell>
       <PageTransition>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Page Header */}
-        <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
+        <div className="flex items-center gap-4 animate-slide-up" style={animDelay(0)}>
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/10 glow-sm">
             <BarChart3 className="h-6 w-6 text-cyan-400" />
           </div>
@@ -359,6 +629,15 @@ export default function InsightsPage() {
           </div>
         </div>
 
+        {/* Your Stats Summary */}
+        {!overviewLoading && overview && !weeklyLoading && weekly ? (
+          <div className="animate-slide-up" style={animDelay(0, 25)}>
+            <StatsSummary overview={overview} weekly={weekly} />
+          </div>
+        ) : (
+          <Skeleton className="h-28 rounded-2xl" />
+        )}
+
         {/* Overview Cards */}
         {overviewLoading || !overview ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -367,7 +646,7 @@ export default function InsightsPage() {
             ))}
           </div>
         ) : (
-          <div className="animate-slide-up" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
+          <div className="animate-slide-up" style={animDelay(0, 75)}>
             <OverviewCards overview={overview} />
           </div>
         )}
@@ -375,19 +654,38 @@ export default function InsightsPage() {
         {/* Difficulty + Weekly row */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {overviewLoading || !overview ? (
-            <Skeleton className="h-64 rounded-2xl" />
+            <Skeleton className="h-72 rounded-2xl" />
           ) : (
-            <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+            <div className="animate-slide-up" style={animDelay(0, 125)}>
               <DifficultyBreakdown overview={overview} />
             </div>
           )}
 
           {weeklyLoading || !weekly ? (
-            <Skeleton className="h-64 rounded-2xl" />
+            <Skeleton className="h-72 rounded-2xl" />
           ) : (
-            <div className="animate-slide-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+            <div className="animate-slide-up" style={animDelay(0, 150)}>
               <WeeklyChart data={weekly} />
             </div>
+          )}
+        </div>
+
+        {/* Heatmap + Period Comparison row */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          {weeklyLoading || !weekly ? (
+            <>
+              <Skeleton className="h-48 rounded-2xl lg:col-span-2" />
+              <Skeleton className="h-48 rounded-2xl" />
+            </>
+          ) : (
+            <>
+              <div className="lg:col-span-2 animate-slide-up" style={animDelay(0, 175)}>
+                <StreakHeatmap weekly={weekly} />
+              </div>
+              <div className="animate-slide-up" style={animDelay(0, 200)}>
+                <PeriodComparison weekly={weekly} />
+              </div>
+            </>
           )}
         </div>
 
@@ -395,16 +693,16 @@ export default function InsightsPage() {
         {tagsLoading || !tags ? (
           <Skeleton className="h-48 rounded-2xl" />
         ) : (
-          <div className="animate-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
-            <TagCloud tags={tags} />
+          <div className="animate-slide-up" style={animDelay(0, 225)}>
+            <TagSection tags={tags} />
           </div>
         )}
 
-        {/* Difficulty Trend */}
+        {/* Monthly Trend - full width */}
         {trendLoading || !trend ? (
-          <Skeleton className="h-52 rounded-2xl" />
+          <Skeleton className="h-64 rounded-2xl" />
         ) : (
-          <div className="animate-slide-up" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+          <div className="animate-slide-up" style={animDelay(0, 250)}>
             <DifficultyTrendChart data={trend} />
           </div>
         )}

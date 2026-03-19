@@ -1,13 +1,19 @@
 import { Request, Response } from 'express';
 import { roomService } from '../service/room.service';
+import { roomRepository } from '../repository/room.repository';
 import { AuthRequest } from '../../../common/types';
 import { param } from '../../../common/utils/params';
 
 export const roomController = {
   async create(req: Request, res: Response) {
     const { user } = req as AuthRequest;
-    const { name, problemId, timeLimitMinutes } = req.body;
-    const room = await roomService.createRoom(user!.userId, name, problemId, timeLimitMinutes || 30);
+    const { name, problemId, timeLimitMinutes, problemIds, sheetId, scheduledAt, mode } = req.body;
+    const room = await roomService.createRoom(user!.userId, name, problemId || null, timeLimitMinutes || 30, {
+      problemIds,
+      sheetId,
+      scheduledAt,
+      mode,
+    });
     res.status(201).json({ room });
   },
 
@@ -55,5 +61,21 @@ export const roomController = {
     const { user } = req as AuthRequest;
     const rooms = await roomService.getActiveRooms(user!.userId);
     res.json({ rooms });
+  },
+
+  async upcoming(req: Request, res: Response) {
+    const rooms = await roomService.getUpcoming();
+    res.json({ rooms });
+  },
+
+  async leaderboard(req: Request, res: Response) {
+    const leaderboard = await roomService.getLeaderboard();
+    res.json({ leaderboard });
+  },
+
+  async getProblems(req: Request, res: Response) {
+    const roomId = param(req, 'id');
+    const problems = await roomRepository.getRoomProblems(roomId);
+    res.json({ problems });
   },
 };

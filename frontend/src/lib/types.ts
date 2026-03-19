@@ -94,13 +94,12 @@ export interface Note {
 
 export interface InsightsOverview {
   totalSolved: number;
-  totalProblems: number;
-  easyCount: number;
   easySolved: number;
-  mediumCount: number;
+  easyPercentage: number;
   mediumSolved: number;
-  hardCount: number;
+  mediumPercentage: number;
   hardSolved: number;
+  hardPercentage: number;
   currentStreak: number;
   longestStreak: number;
   activeDays: number;
@@ -258,16 +257,35 @@ export interface Room {
   code: string;
   problem_id: string;
   host_id: string;
-  status: 'waiting' | 'active' | 'finished';
+  status: 'waiting' | 'active' | 'finished' | 'scheduled';
   time_limit_minutes: number;
   started_at: string | null;
   ended_at: string | null;
   created_at: string;
+  scheduled_at: string | null;
+  mode: 'single' | 'multi';
+  sheet_id: string | null;
   problem_title?: string;
   problem_slug?: string;
   problem_difficulty?: string;
   participants?: RoomParticipant[];
   messages?: RoomMessage[];
+}
+
+export interface RoomLeaderboardEntry {
+  user_id: string;
+  display_name: string;
+  rooms_participated: number;
+  rooms_won: number;
+  total_solves: number;
+}
+
+export interface RoomProblem {
+  problem_id: string;
+  title: string;
+  slug: string;
+  difficulty: string;
+  position: number;
 }
 
 export interface RoomParticipant {

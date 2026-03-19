@@ -273,7 +273,7 @@ export const dailyApi = {
 
 // ── Rooms ──
 export const roomsApi = {
-  create: (data: { name: string; problemId: string; timeLimitMinutes?: number }) =>
+  create: (data: { name: string; problemId?: string; problemIds?: string[]; sheetId?: string; scheduledAt?: string; mode?: string; timeLimitMinutes?: number }) =>
     api.post('/rooms', data),
   join: (code: string) =>
     api.post('/rooms/join', { code }),
@@ -289,6 +289,12 @@ export const roomsApi = {
     api.get('/rooms/mine'),
   active: () =>
     api.get('/rooms/active'),
+  upcoming: () =>
+    api.get('/rooms/upcoming'),
+  leaderboard: () =>
+    api.get('/rooms/leaderboard'),
+  getProblems: (id: string) =>
+    api.get(`/rooms/${id}/problems`),
 };
 
 export default api;

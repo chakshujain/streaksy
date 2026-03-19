@@ -2,7 +2,11 @@ import { z } from 'zod';
 
 export const createRoomSchema = z.object({
   name: z.string().min(1).max(100),
-  problemId: z.string().uuid(),
+  problemId: z.string().uuid().optional(),
+  problemIds: z.array(z.string().uuid()).optional(),
+  sheetId: z.string().uuid().optional(),
+  scheduledAt: z.string().optional(),
+  mode: z.enum(['single', 'multi']).optional(),
   timeLimitMinutes: z.number().int().min(5).max(120).optional(),
 });
 
