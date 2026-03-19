@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar';
 import { useAuthStore } from '@/lib/store';
 import { authApi } from '@/lib/api';
 import { StreakRiskBanner } from '@/components/poke/StreakRiskBanner';
+import { TopLoader } from '@/components/ui/TopLoader';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading, hydrate } = useAuthStore();
@@ -23,8 +24,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-zinc-950">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+      <div className="min-h-screen bg-zinc-950 flex">
+        {/* Sidebar skeleton */}
+        <div className="w-64 border-r border-zinc-800/40 bg-zinc-950/70 p-6 space-y-4 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl skeleton-shimmer" />
+            <div className="h-5 w-20 rounded skeleton-shimmer" />
+          </div>
+          <div className="space-y-2 mt-8">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="h-10 rounded-xl skeleton-shimmer" />
+            ))}
+          </div>
+        </div>
+        {/* Content skeleton */}
+        <div className="flex-1 p-8 space-y-6">
+          <div className="h-8 w-48 rounded-lg skeleton-shimmer" />
+          <div className="grid grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-24 rounded-2xl skeleton-shimmer" />
+            ))}
+          </div>
+          <div className="h-64 rounded-2xl skeleton-shimmer" />
+        </div>
       </div>
     );
   }
@@ -33,6 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-zinc-950">
+      <TopLoader />
       <Sidebar />
       {/* Email verification banner */}
       {user.emailVerified === false && (

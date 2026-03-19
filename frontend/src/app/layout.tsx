@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { TopLoader } from '@/components/ui/TopLoader';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -76,7 +77,10 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#09090b" />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <TopLoader />
+        {children}
+      </body>
     </html>
   );
 }
