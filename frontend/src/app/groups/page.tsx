@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
 import { groupsApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { Users, Plus, LogIn, Sparkles, UserPlus, ArrowRight } from 'lucide-react';
 import type { Group } from '@/lib/types';
 
@@ -23,9 +24,10 @@ export default function GroupsPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 animate-slide-up">
+      <PageTransition>
+      <div className="space-y-6">
         {/* Page Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between animate-slide-up" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/10 glow-sm">
               <Users className="h-6 w-6 text-purple-400" />
@@ -66,21 +68,21 @@ export default function GroupsPage() {
 
         {/* Create / Join modals inline */}
         {showCreate && (
-          <div className="animate-slide-up">
+          <div className="animate-scale-in">
             <CreateGroupForm onDone={() => { setShowCreate(false); refetch(); }} onCancel={() => setShowCreate(false)} />
           </div>
         )}
         {showJoin && (
-          <div className="animate-slide-up">
+          <div className="animate-scale-in">
             <JoinGroupForm onDone={() => { setShowJoin(false); refetch(); }} onCancel={() => setShowJoin(false)} />
           </div>
         )}
 
         {/* Group list */}
-        <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
+        <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
           {loading ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              {Array.from({ length: 4 }).map((_, i) => (
+              {Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="h-28 rounded-2xl" />
               ))}
             </div>
@@ -90,7 +92,7 @@ export default function GroupsPage() {
                 <div
                   key={group.id}
                   className="animate-slide-up"
-                  style={{ animationDelay: `${(i + 1) * 50}ms` }}
+                  style={{ animationDelay: `${(i + 1) * 50}ms`, animationFillMode: 'both' }}
                 >
                   <GroupCard group={group} />
                 </div>
@@ -128,6 +130,7 @@ export default function GroupsPage() {
           )}
         </div>
       </div>
+      </PageTransition>
     </AppShell>
   );
 }

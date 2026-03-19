@@ -8,6 +8,7 @@ import { SheetSelector } from '@/components/problems/SheetSelector';
 import { SheetUpload } from '@/components/problems/SheetUpload';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { useAsync } from '@/hooks/useAsync';
 import { problemsApi, progressApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
@@ -67,112 +68,114 @@ export default function ProblemsPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 animate-slide-up">
-        {/* Page Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/10 glow-sm">
-              <BookOpen className="h-6 w-6 text-emerald-400" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold gradient-text">Problems</h1>
-              <p className="mt-0.5 text-sm text-zinc-500">
-                Browse and track your progress across problem sets
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowUpload(!showUpload)}
-            className={cn(
-              'gap-2 rounded-xl border border-zinc-800 transition-all duration-200',
-              showUpload && 'border-emerald-500/30 bg-emerald-500/5'
-            )}
-          >
-            <Upload className="h-4 w-4" />
-            Upload Sheet
-            {showUpload ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-          </Button>
-        </div>
-
-        {/* Sheet Upload */}
-        {showUpload && (
-          <div className="animate-slide-up">
-            <SheetUpload onSuccess={refetchSheets} />
-          </div>
-        )}
-
-        {/* Sheet tabs */}
-        {!sheetsLoading && sheets && (
-          <div className="animate-slide-up" style={{ animationDelay: '50ms' }}>
-            <SheetSelector
-              sheets={sheets}
-              selected={selectedSheet}
-              onSelect={setSelectedSheet}
-            />
-          </div>
-        )}
-
-        {/* Filters */}
-        <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
-          <ProblemFilters
-            difficulty={difficulty}
-            onDifficultyChange={setDifficulty}
-            tag={tag}
-            onTagChange={setTag}
-            availableTags={allTags}
-          />
-        </div>
-
-        {/* Progress bar */}
-        {!loading && filtered.length > 0 && (
-          <div className="glass rounded-2xl p-4 animate-slide-up" style={{ animationDelay: '150ms' }}>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex gap-6 text-sm text-zinc-500">
-                <span className="flex items-center gap-1.5">
-                  <Target className="h-3.5 w-3.5 text-zinc-400" />
-                  <span className="font-medium text-zinc-300">{filtered.length}</span> problems
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                  <span className="font-medium text-emerald-400">{solvedCount}</span> solved
-                </span>
+      <PageTransition>
+        <div className="space-y-6">
+          {/* Page Header */}
+          <div className="flex items-start justify-between animate-slide-up" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/10 glow-sm">
+                <BookOpen className="h-6 w-6 text-emerald-400" />
               </div>
-              <span className={cn(
-                'text-sm font-bold px-2.5 py-0.5 rounded-lg',
-                solvePercent === 100
-                  ? 'text-emerald-300 bg-emerald-500/15'
-                  : 'text-emerald-400 bg-emerald-500/10'
-              )}>
-                {solvePercent}%
-              </span>
+              <div>
+                <h1 className="text-2xl font-bold gradient-text">Problems</h1>
+                <p className="mt-0.5 text-sm text-zinc-500">
+                  Browse and track your progress across problem sets
+                </p>
+              </div>
             </div>
-            <div className="h-2.5 rounded-full bg-zinc-800/80 overflow-hidden">
-              <div
-                className={cn(
-                  'h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-cyan-400 transition-all duration-1000 ease-out',
-                  solvePercent > 0 && 'glow-sm'
-                )}
-                style={{ width: `${solvePercent}%` }}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowUpload(!showUpload)}
+              className={cn(
+                'gap-2 rounded-xl border border-zinc-800 transition-all duration-200',
+                showUpload && 'border-emerald-500/30 bg-emerald-500/5'
+              )}
+            >
+              <Upload className="h-4 w-4" />
+              Upload Sheet
+              {showUpload ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            </Button>
+          </div>
+
+          {/* Sheet Upload */}
+          {showUpload && (
+            <div className="animate-scale-in">
+              <SheetUpload onSuccess={refetchSheets} />
+            </div>
+          )}
+
+          {/* Sheet tabs */}
+          {!sheetsLoading && sheets && (
+            <div className="animate-slide-up" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
+              <SheetSelector
+                sheets={sheets}
+                selected={selectedSheet}
+                onSelect={setSelectedSheet}
               />
             </div>
-          </div>
-        )}
-
-        {/* Table */}
-        <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
-          {loading ? (
-            <div className="space-y-2">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-12" />
-              ))}
-            </div>
-          ) : (
-            <ProblemTable problems={filtered} progressMap={progressMap} />
           )}
+
+          {/* Filters */}
+          <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+            <ProblemFilters
+              difficulty={difficulty}
+              onDifficultyChange={setDifficulty}
+              tag={tag}
+              onTagChange={setTag}
+              availableTags={allTags}
+            />
+          </div>
+
+          {/* Progress bar */}
+          {!loading && filtered.length > 0 && (
+            <div className="glass rounded-2xl p-4 animate-slide-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex gap-6 text-sm text-zinc-500">
+                  <span className="flex items-center gap-1.5">
+                    <Target className="h-3.5 w-3.5 text-zinc-400" />
+                    <span className="font-medium text-zinc-300">{filtered.length}</span> problems
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="font-medium text-emerald-400">{solvedCount}</span> solved
+                  </span>
+                </div>
+                <span className={cn(
+                  'text-sm font-bold px-2.5 py-0.5 rounded-lg',
+                  solvePercent === 100
+                    ? 'text-emerald-300 bg-emerald-500/15'
+                    : 'text-emerald-400 bg-emerald-500/10'
+                )}>
+                  {solvePercent}%
+                </span>
+              </div>
+              <div className="h-2.5 rounded-full bg-zinc-800/80 overflow-hidden">
+                <div
+                  className={cn(
+                    'h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-cyan-400 transition-all duration-1000 ease-out',
+                    solvePercent > 0 && 'glow-sm'
+                  )}
+                  style={{ width: `${solvePercent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Table */}
+          <div className="animate-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+            {loading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-12 rounded-xl" />
+                ))}
+              </div>
+            ) : (
+              <ProblemTable problems={filtered} progressMap={progressMap} />
+            )}
+          </div>
         </div>
-      </div>
+      </PageTransition>
     </AppShell>
   );
 }

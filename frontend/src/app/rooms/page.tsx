@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { useAsync } from '@/hooks/useAsync';
 import { roomsApi, problemsApi } from '@/lib/api';
 import { Swords, Plus, LogIn } from 'lucide-react';
@@ -83,11 +84,17 @@ export default function RoomsPage() {
 
   return (
     <AppShell>
+      <PageTransition>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-zinc-100">Live Solve Rooms</h1>
-            <p className="text-sm text-zinc-500 mt-1">Solve problems together in real-time</p>
+        <div className="flex items-center justify-between animate-slide-up" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/10 glow-sm">
+              <Swords className="h-6 w-6 text-red-400" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold gradient-text">Live Solve Rooms</h1>
+              <p className="text-sm text-zinc-500 mt-0.5">Solve problems together in real-time</p>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={() => { setShowJoin(true); setShowCreate(false); }} className="flex items-center gap-1.5">
@@ -101,121 +108,132 @@ export default function RoomsPage() {
 
         {/* Join Room */}
         {showJoin && (
-          <Card>
-            <h2 className="text-lg font-semibold text-zinc-200 mb-4">Join a Room</h2>
-            <div className="flex gap-3">
-              <Input
-                id="join-code"
-                placeholder="Enter room code (e.g. A1B2C3D4)"
-                value={joinCode}
-                onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                className="flex-1 font-mono tracking-widest uppercase"
-              />
-              <Button onClick={handleJoin} loading={joinLoading}>Join</Button>
-            </div>
-            {joinError && <p className="text-sm text-red-400 mt-2">{joinError}</p>}
-          </Card>
+          <div className="animate-scale-in">
+            <Card>
+              <h2 className="text-lg font-semibold text-zinc-200 mb-4">Join a Room</h2>
+              <div className="flex gap-3">
+                <Input
+                  id="join-code"
+                  placeholder="Enter room code (e.g. A1B2C3D4)"
+                  value={joinCode}
+                  onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                  className="flex-1 font-mono tracking-widest uppercase"
+                />
+                <Button onClick={handleJoin} loading={joinLoading}>Join</Button>
+              </div>
+              {joinError && <p className="text-sm text-red-400 mt-2">{joinError}</p>}
+            </Card>
+          </div>
         )}
 
         {/* Create Room */}
         {showCreate && (
-          <Card className="space-y-4">
-            <h2 className="text-lg font-semibold text-zinc-200">Create a Room</h2>
-            {createError && <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">{createError}</div>}
-            <Input id="room-name" label="Room Name" value={roomName} onChange={e => setRoomName(e.target.value)} placeholder="Friday Night Grind" />
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-zinc-300">Problem</label>
-              <input
-                value={searchQuery}
-                onChange={e => handleSearch(e.target.value)}
-                placeholder="Search for a problem..."
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-              {searchResults.length > 0 && (
-                <div className="rounded-lg border border-zinc-700 bg-zinc-800/80 overflow-hidden max-h-40 overflow-y-auto">
-                  {searchResults.map(p => (
-                    <button key={p.id} onClick={() => { setSelectedProblem(p.id); setSearchQuery(p.title); setSearchResults([]); }}
-                      className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-zinc-700/50 text-sm">
-                      <span className="text-zinc-200">{p.title}</span>
-                      <Badge variant={p.difficulty}>{p.difficulty}</Badge>
+          <div className="animate-scale-in">
+            <Card className="space-y-4">
+              <h2 className="text-lg font-semibold text-zinc-200">Create a Room</h2>
+              {createError && <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">{createError}</div>}
+              <Input id="room-name" label="Room Name" value={roomName} onChange={e => setRoomName(e.target.value)} placeholder="Friday Night Grind" />
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-zinc-300">Problem</label>
+                <input
+                  value={searchQuery}
+                  onChange={e => handleSearch(e.target.value)}
+                  placeholder="Search for a problem..."
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
+                />
+                {searchResults.length > 0 && (
+                  <div className="rounded-lg border border-zinc-700 bg-zinc-800/80 overflow-hidden max-h-40 overflow-y-auto animate-fade-in">
+                    {searchResults.map(p => (
+                      <button key={p.id} onClick={() => { setSelectedProblem(p.id); setSearchQuery(p.title); setSearchResults([]); }}
+                        className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-zinc-700/50 text-sm transition-colors duration-150">
+                        <span className="text-zinc-200">{p.title}</span>
+                        <Badge variant={p.difficulty}>{p.difficulty}</Badge>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-zinc-300">Time Limit</label>
+                <div className="flex gap-2">
+                  {[15, 30, 45, 60].map(t => (
+                    <button key={t} onClick={() => setTimeLimit(t)}
+                      className={cn('rounded-lg border px-4 py-2 text-sm font-medium transition-all duration-200',
+                        timeLimit === t ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-400' : 'border-zinc-700 text-zinc-400 hover:text-zinc-200'
+                      )}>
+                      {t}min
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-zinc-300">Time Limit</label>
-              <div className="flex gap-2">
-                {[15, 30, 45, 60].map(t => (
-                  <button key={t} onClick={() => setTimeLimit(t)}
-                    className={cn('rounded-lg border px-4 py-2 text-sm font-medium transition-colors',
-                      timeLimit === t ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-400' : 'border-zinc-700 text-zinc-400 hover:text-zinc-200'
-                    )}>
-                    {t}min
-                  </button>
-                ))}
               </div>
-            </div>
-            <Button onClick={handleCreate} loading={createLoading} disabled={!roomName.trim() || !selectedProblem}>Create Room</Button>
-          </Card>
+              <Button onClick={handleCreate} loading={createLoading} disabled={!roomName.trim() || !selectedProblem}>Create Room</Button>
+            </Card>
+          </div>
         )}
 
         {/* Active Rooms */}
-        {loading ? (
-          <div className="space-y-3">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-20" />)}</div>
-        ) : (
-          <>
-            {activeRooms.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Active Rooms</h2>
-                {activeRooms.map(room => (
-                  <Card key={room.id} className="cursor-pointer hover:border-emerald-500/30 transition-all" onClick={() => router.push(`/rooms/${room.id}`)}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={cn('h-3 w-3 rounded-full', room.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500')} />
-                        <div>
-                          <h3 className="text-sm font-semibold text-zinc-100">{room.name}</h3>
-                          <p className="text-xs text-zinc-500">{room.problem_title} · {room.time_limit_minutes}min</p>
+        <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+          {loading ? (
+            <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}</div>
+          ) : (
+            <>
+              {activeRooms.length > 0 && (
+                <div className="space-y-3">
+                  <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Active Rooms</h2>
+                  {activeRooms.map((room, i) => (
+                    <div key={room.id} className="animate-slide-up" style={{ animationDelay: `${100 + i * 50}ms`, animationFillMode: 'both' }}>
+                      <Card className="cursor-pointer hover:border-emerald-500/30 hover:scale-[1.01] transition-all duration-200" onClick={() => router.push(`/rooms/${room.id}`)}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={cn('h-3 w-3 rounded-full', room.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500')} />
+                            <div>
+                              <h3 className="text-sm font-semibold text-zinc-100">{room.name}</h3>
+                              <p className="text-xs text-zinc-500">{room.problem_title} · {room.time_limit_minutes}min</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge variant={room.problem_difficulty as 'easy' | 'medium' | 'hard'}>{room.problem_difficulty}</Badge>
+                            <span className="text-xs font-mono text-zinc-500">{room.code}</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Badge variant={room.problem_difficulty as 'easy' | 'medium' | 'hard'}>{room.problem_difficulty}</Badge>
-                        <span className="text-xs font-mono text-zinc-500">{room.code}</span>
-                      </div>
+                      </Card>
                     </div>
-                  </Card>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {pastRooms.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Past Rooms</h2>
-                {pastRooms.slice(0, 10).map(room => (
-                  <Card key={room.id} className="cursor-pointer hover:border-zinc-700 transition-all opacity-60 hover:opacity-100" onClick={() => router.push(`/rooms/${room.id}`)}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-sm font-medium text-zinc-300">{room.name}</h3>
-                        <p className="text-xs text-zinc-600">{room.problem_title}</p>
-                      </div>
-                      <Badge variant={room.problem_difficulty as 'easy' | 'medium' | 'hard'}>{room.problem_difficulty}</Badge>
+              {pastRooms.length > 0 && (
+                <div className="space-y-3 mt-6">
+                  <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Past Rooms</h2>
+                  {pastRooms.slice(0, 10).map((room, i) => (
+                    <div key={room.id} className="animate-slide-up" style={{ animationDelay: `${200 + i * 50}ms`, animationFillMode: 'both' }}>
+                      <Card className="cursor-pointer hover:border-zinc-700 hover:scale-[1.01] transition-all duration-200 opacity-60 hover:opacity-100" onClick={() => router.push(`/rooms/${room.id}`)}>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-sm font-medium text-zinc-300">{room.name}</h3>
+                            <p className="text-xs text-zinc-600">{room.problem_title}</p>
+                          </div>
+                          <Badge variant={room.problem_difficulty as 'easy' | 'medium' | 'hard'}>{room.problem_difficulty}</Badge>
+                        </div>
+                      </Card>
                     </div>
-                  </Card>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {rooms && rooms.length === 0 && (
-              <EmptyState
-                icon={<Swords className="h-10 w-10" />}
-                title="No rooms yet"
-                description="Create a room to solve problems together with friends in real-time."
-                action={<Button onClick={() => setShowCreate(true)}>Create Your First Room</Button>}
-              />
-            )}
-          </>
-        )}
+              {rooms && rooms.length === 0 && (
+                <EmptyState
+                  icon={<Swords className="h-10 w-10" />}
+                  title="No rooms yet"
+                  description="Create a room to solve problems together with friends in real-time."
+                  action={<Button onClick={() => setShowCreate(true)}>Create Your First Room</Button>}
+                />
+              )}
+            </>
+          )}
+        </div>
       </div>
+      </PageTransition>
     </AppShell>
   );
 }

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { useAsync } from '@/hooks/useAsync';
 import { roomsApi } from '@/lib/api';
 import { getSocket, disconnectSocket } from '@/lib/socket';
@@ -31,6 +32,7 @@ export default function RoomDetailPage() {
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [connected, setConnected] = useState(false);
+  const [celebrateUser, setCelebrateUser] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
   // Initial fetch
@@ -68,8 +70,10 @@ export default function RoomDetailPage() {
       setParticipants(data.participants);
     });
 
-    socket.on('room:solve_event', () => {
-      // Refresh participants on solve event
+    socket.on('room:solve_event', (data: { userId: string }) => {
+      // Celebration animation for solve events
+      setCelebrateUser(data.userId);
+      setTimeout(() => setCelebrateUser(null), 2000);
     });
 
     socket.on('room:new_message', (msg: RoomMessage) => {
@@ -93,9 +97,6 @@ export default function RoomDetailPage() {
     const tick = () => {
       const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
       setTimeLeft(remaining);
-      if (remaining === 0 && room.status === 'active') {
-        // Auto-end could be triggered here
-      }
     };
     tick();
     const interval = setInterval(tick, 1000);
@@ -148,7 +149,20 @@ export default function RoomDetailPage() {
   };
 
   if (loading) {
-    return <AppShell><div className="space-y-4"><Skeleton className="h-10 w-48" /><Skeleton className="h-64" /></div></AppShell>;
+    return (
+      <AppShell>
+        <PageTransition>
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-48 rounded-xl" />
+            <Skeleton className="h-16 rounded-2xl" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Skeleton className="h-64 rounded-2xl" />
+              <Skeleton className="h-64 rounded-2xl lg:col-span-2" />
+            </div>
+          </div>
+        </PageTransition>
+      </AppShell>
+    );
   }
 
   if (!room) {
@@ -165,9 +179,10 @@ export default function RoomDetailPage() {
 
   return (
     <AppShell>
+      <PageTransition>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between animate-slide-up" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-zinc-100">{room.name}</h1>
@@ -177,7 +192,7 @@ export default function RoomDetailPage() {
             </div>
             <div className="flex items-center gap-4 mt-2">
               <a href={`https://leetcode.com/problems/${room.problem_slug}`} target="_blank" rel="noopener noreferrer"
-                className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors duration-200">
                 {room.problem_title} <ExternalLink className="h-3 w-3" />
               </a>
               <Badge variant={room.problem_difficulty as 'easy' | 'medium' | 'hard'}>{room.problem_difficulty}</Badge>
@@ -186,9 +201,9 @@ export default function RoomDetailPage() {
 
           <div className="flex items-center gap-3">
             {/* Room code */}
-            <button onClick={copyCode} className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2 text-sm font-mono tracking-widest text-zinc-300 hover:border-zinc-600 transition-colors">
+            <button onClick={copyCode} className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2 text-sm font-mono tracking-widest text-zinc-300 hover:border-zinc-600 transition-all duration-200 hover:scale-[1.02]">
               {room.code}
-              {copied ? <CheckCircle className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5 text-zinc-500" />}
+              {copied ? <CheckCircle className="h-3.5 w-3.5 text-emerald-400 animate-bounce-in" /> : <Copy className="h-3.5 w-3.5 text-zinc-500" />}
             </button>
 
             {/* Host controls */}
@@ -208,34 +223,50 @@ export default function RoomDetailPage() {
         {/* Timer */}
         {room.status === 'active' && timeLeft !== null && (
           <div className={cn(
-            'flex items-center justify-center gap-3 rounded-xl p-4 border',
-            timeLeft < 60 ? 'border-red-500/30 bg-red-500/10' : timeLeft < 300 ? 'border-amber-500/30 bg-amber-500/10' : 'border-emerald-500/30 bg-emerald-500/10'
-          )}>
-            <Timer className={cn('h-6 w-6', timeLeft < 60 ? 'text-red-400' : timeLeft < 300 ? 'text-amber-400' : 'text-emerald-400')} />
-            <span className={cn('text-3xl font-mono font-bold', timeLeft < 60 ? 'text-red-400' : timeLeft < 300 ? 'text-amber-400' : 'text-emerald-400')}>
+            'flex items-center justify-center gap-3 rounded-xl p-4 border animate-slide-up transition-all duration-300',
+            timeLeft < 60 ? 'border-red-500/30 bg-red-500/10 animate-pulse-glow' : timeLeft < 300 ? 'border-amber-500/30 bg-amber-500/10' : 'border-emerald-500/30 bg-emerald-500/10'
+          )} style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
+            <Timer className={cn('h-6 w-6 transition-colors duration-300', timeLeft < 60 ? 'text-red-400 animate-pulse' : timeLeft < 300 ? 'text-amber-400' : 'text-emerald-400')} />
+            <span className={cn('text-3xl font-mono font-bold tabular-nums transition-colors duration-300', timeLeft < 60 ? 'text-red-400' : timeLeft < 300 ? 'text-amber-400' : 'text-emerald-400')}>
               {formatTime(timeLeft)}
             </span>
           </div>
         )}
 
+        {/* Celebration overlay */}
+        {celebrateUser && (
+          <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+            <div className="animate-bounce-in text-center">
+              <div className="text-6xl mb-2">🎉</div>
+              <p className="text-lg font-bold text-emerald-400 animate-pulse-glow rounded-xl bg-zinc-900/90 px-6 py-3 border border-emerald-500/30">
+                Someone solved it!
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Waiting state */}
         {room.status === 'waiting' && (
-          <Card className="text-center py-10">
-            <Swords className="h-10 w-10 text-zinc-500 mx-auto mb-4" />
-            <h2 className="text-lg font-semibold text-zinc-200">Waiting for host to start...</h2>
-            <p className="text-sm text-zinc-500 mt-1">Share the room code <span className="font-mono text-emerald-400">{room.code}</span> with friends</p>
-            <p className="text-xs text-zinc-600 mt-3">{participants.length} participant{participants.length !== 1 ? 's' : ''} joined</p>
-          </Card>
+          <div className="animate-slide-up" style={{ animationDelay: '75ms', animationFillMode: 'both' }}>
+            <Card className="text-center py-10">
+              <Swords className="h-10 w-10 text-zinc-500 mx-auto mb-4 animate-float" />
+              <h2 className="text-lg font-semibold text-zinc-200">Waiting for host to start...</h2>
+              <p className="text-sm text-zinc-500 mt-1">Share the room code <span className="font-mono text-emerald-400">{room.code}</span> with friends</p>
+              <p className="text-xs text-zinc-600 mt-3">{participants.length} participant{participants.length !== 1 ? 's' : ''} joined</p>
+            </Card>
+          </div>
         )}
 
         {/* Solve button (active room, not yet solved) */}
         {room.status === 'active' && !mySolve?.solved_at && (
-          <Button onClick={handleSolve} size="lg" className="w-full flex items-center justify-center gap-2">
-            <CheckCircle className="h-5 w-5" /> I Solved It!
-          </Button>
+          <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+            <Button onClick={handleSolve} size="lg" className="w-full flex items-center justify-center gap-2 hover:scale-[1.01] transition-transform duration-200">
+              <CheckCircle className="h-5 w-5" /> I Solved It!
+            </Button>
+          </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up" style={{ animationDelay: '125ms', animationFillMode: 'both' }}>
           {/* Participants / Leaderboard */}
           <Card className="lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
@@ -247,9 +278,10 @@ export default function RoomDetailPage() {
             <div className="space-y-2">
               {ranked.map((p, i) => (
                 <div key={p.user_id} className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2',
-                  p.solved_at ? 'bg-emerald-500/5 border border-emerald-500/10' : 'bg-zinc-800/30'
-                )}>
+                  'flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-300',
+                  p.solved_at ? 'bg-emerald-500/5 border border-emerald-500/10' : 'bg-zinc-800/30',
+                  p.user_id === celebrateUser && 'animate-celebrate border-emerald-500/30 shadow-lg shadow-emerald-500/10'
+                )} style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }}>
                   {/* Rank / status */}
                   <div className="w-6 text-center">
                     {p.solved_at ? (
@@ -288,7 +320,7 @@ export default function RoomDetailPage() {
             <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
               <MessageSquare className="h-4 w-4 text-zinc-400" />
               <h2 className="text-sm font-semibold text-zinc-200">Discussion</h2>
-              {!connected && <span className="text-[10px] text-amber-400">reconnecting...</span>}
+              {!connected && <span className="text-[10px] text-amber-400 animate-pulse">reconnecting...</span>}
             </div>
 
             <div ref={chatRef} className="flex-1 min-h-[300px] max-h-[500px] overflow-y-auto px-4 py-3 space-y-3">
@@ -297,10 +329,14 @@ export default function RoomDetailPage() {
                   {room.status === 'waiting' ? 'Chat will be available during and after the solve session.' : 'No messages yet. Start the discussion!'}
                 </p>
               ) : (
-                messages.map(msg => (
-                  <div key={msg.id} className={cn('flex gap-2', msg.user_id === user?.id ? 'flex-row-reverse' : '')}>
+                messages.map((msg, i) => (
+                  <div key={msg.id} className={cn(
+                    'flex gap-2',
+                    msg.user_id === user?.id ? 'flex-row-reverse' : '',
+                    i === messages.length - 1 ? 'animate-slide-in-right' : ''
+                  )}>
                     <div className={cn(
-                      'max-w-[70%] rounded-lg px-3 py-2',
+                      'max-w-[70%] rounded-lg px-3 py-2 transition-all duration-200',
                       msg.user_id === user?.id ? 'bg-emerald-500/10 border border-emerald-500/10' : 'bg-zinc-800/50'
                     )}>
                       <p className="text-[11px] font-medium text-zinc-400 mb-0.5">{msg.display_name}</p>
@@ -316,13 +352,14 @@ export default function RoomDetailPage() {
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
                 placeholder="Type a message..."
-                className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
               />
               <Button type="submit" size="sm"><Send className="h-4 w-4" /></Button>
             </form>
           </Card>
         </div>
       </div>
+      </PageTransition>
     </AppShell>
   );
 }

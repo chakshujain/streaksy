@@ -83,7 +83,7 @@ function Navbar() {
 /* ------------------------------------------------------------------ */
 function Hero() {
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-16">
+    <section aria-label="Hero" className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-16">
       {/* Background effects */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/4 top-1/4 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-[120px]" />
@@ -238,7 +238,7 @@ const features = [
 
 function Features() {
   return (
-    <section id="features" className="relative px-6 py-32">
+    <section id="features" aria-label="Features" className="relative px-6 py-32">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-emerald-400">
@@ -292,7 +292,7 @@ function ExtensionSection() {
   ];
 
   return (
-    <section id="extension" className="relative px-6 py-32">
+    <section id="extension" aria-label="Chrome Extension" className="relative px-6 py-32">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute right-1/4 top-1/2 h-[500px] w-[600px] -translate-y-1/2 rounded-full bg-cyan-500/5 blur-[120px]" />
       </div>
@@ -461,7 +461,7 @@ const stats = [
 
 function Stats() {
   return (
-    <section id="stats" className="relative px-6 py-32">
+    <section id="stats" aria-label="Community" className="relative px-6 py-32">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-1/2 h-[500px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/5 blur-[120px]" />
       </div>
@@ -700,6 +700,40 @@ function Footer() {
 export default function Home() {
   return (
     <div className="min-h-screen bg-zinc-950">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: 'Streaksy',
+            url: 'https://streaksy.in',
+            description: 'Master Data Structures & Algorithms with auto LeetCode sync, study groups, streaks, revision flashcards, and live solve rooms.',
+            applicationCategory: 'EducationalApplication',
+            operatingSystem: 'Web',
+            offers: {
+              '@type': 'Offer',
+              price: '0',
+              priceCurrency: 'USD',
+            },
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: '4.8',
+              ratingCount: '2500',
+            },
+            featureList: [
+              'LeetCode Auto-Sync',
+              'Study Groups & Leaderboards',
+              'Daily Streak Tracking',
+              'Revision Flashcards',
+              'Live Solve Rooms',
+              'Problem Sheets (Blind 75, NeetCode 150, Striver SDE)',
+              'Chrome Extension',
+              'Badges & Achievements',
+            ],
+          }),
+        }}
+      />
       <Navbar />
       <main>
         <Hero />

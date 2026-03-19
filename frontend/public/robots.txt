@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/callback
+Disallow: /auth/verify-email
+Disallow: /auth/reset-password
+
+Sitemap: https://streaksy.in/sitemap.xml

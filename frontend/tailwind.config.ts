@@ -15,8 +15,10 @@ const config: Config = {
       animation: {
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
         'float': 'float 3s ease-in-out infinite',
-        'slide-up': 'slide-up 0.5s ease-out',
+        'slide-up': 'slide-up 0.5s ease-out both',
         'shimmer': 'shimmer 2s linear infinite',
+        'fade-in': 'fade-in 0.3s ease-out both',
+        'scale-in': 'scale-in 0.3s ease-out both',
       },
       keyframes: {
         'glow-pulse': {

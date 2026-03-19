@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
 import { preferencesApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { Settings, Palette, LayoutGrid, Eye, Target, Check, Save } from 'lucide-react';
 import type { UserPreferences } from '@/lib/types';
 
@@ -120,21 +121,24 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <AppShell>
-        <div className="max-w-2xl space-y-6">
-          <Skeleton className="h-10 w-48" />
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-48 rounded-2xl" />
-          ))}
-        </div>
+        <PageTransition>
+          <div className="max-w-2xl space-y-6">
+            <Skeleton className="h-10 w-48 rounded-xl" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-48 rounded-2xl" />
+            ))}
+          </div>
+        </PageTransition>
       </AppShell>
     );
   }
 
   return (
     <AppShell>
-      <div className="max-w-2xl space-y-8 animate-slide-up">
+      <PageTransition>
+      <div className="max-w-2xl space-y-8">
         {/* Page Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-zinc-500/20 to-zinc-400/10 border border-zinc-700/30 glow-sm">
             <Settings className="h-6 w-6 text-zinc-300" />
           </div>
@@ -147,7 +151,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Accent Color */}
-        <div className="animate-slide-up" style={{ animationDelay: '50ms' }}>
+        <div className="animate-slide-up" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
           <SectionCard icon={Palette} iconGradient="from-pink-500/30 to-purple-500/30" title="Accent Color">
             <div className="flex flex-wrap gap-3">
               {accentSwatches.map((swatch) => (
@@ -182,7 +186,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Dashboard Layout */}
-        <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
+        <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
           <SectionCard icon={LayoutGrid} iconGradient="from-blue-500/30 to-cyan-500/30" title="Dashboard Layout">
             <div className="flex gap-3">
               {['default', 'compact'].map((layout) => (
@@ -204,7 +208,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Toggles */}
-        <div className="animate-slide-up" style={{ animationDelay: '150ms' }}>
+        <div className="animate-slide-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
           <SectionCard icon={Eye} iconGradient="from-amber-500/30 to-orange-500/30" title="Display Options">
             <Toggle
               label="Streak Animation"
@@ -222,7 +226,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Weekly Goal */}
-        <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
+        <div className="animate-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
           <SectionCard icon={Target} iconGradient="from-emerald-500/30 to-cyan-500/30" title="Weekly Goal">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -246,7 +250,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="animate-slide-up sticky bottom-6 pt-2" style={{ animationDelay: '250ms' }}>
+        <div className="animate-slide-up sticky bottom-6 pt-2" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
           <div className="glass-strong rounded-2xl border border-zinc-800/50 p-4 flex items-center justify-between">
             <p className="text-sm text-zinc-500">
               {saved ? 'Preferences saved successfully.' : 'Save your changes to apply them.'}
@@ -272,6 +276,7 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+      </PageTransition>
     </AppShell>
   );
 }

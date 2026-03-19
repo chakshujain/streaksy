@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
 import { insightsApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { BarChart3, Trophy, Flame, Calendar, TrendingUp, Tag, Zap, Target } from 'lucide-react';
 import type { InsightsOverview, WeeklyData, TagProgress, DifficultyTrend } from '@/lib/types';
 
@@ -66,7 +67,7 @@ function OverviewCards({ overview }: { overview: InsightsOverview }) {
               'glass rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] hover:glow-sm',
               card.borderColor
             )}
-            style={{ animationDelay: `${i * 75}ms` }}
+            style={{ animationDelay: `${i * 75}ms`, animationFillMode: 'both' }}
           >
             <div className="flex items-center gap-2 mb-3">
               <div className={cn(
@@ -126,7 +127,7 @@ function DifficultyBreakdown({ overview }: { overview: InsightsOverview }) {
         {difficulties.map((d, i) => {
           const pct = d.total > 0 ? Math.round((d.solved / d.total) * 100) : 0;
           return (
-            <div key={d.label} className="animate-slide-up" style={{ animationDelay: `${i * 100}ms` }}>
+            <div key={d.label} className="animate-slide-up" style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'both' }}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className={cn(
@@ -336,9 +337,10 @@ export default function InsightsPage() {
 
   return (
     <AppShell>
-      <div className="space-y-8 animate-slide-up">
+      <PageTransition>
+      <div className="space-y-8">
         {/* Page Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/10 glow-sm">
             <BarChart3 className="h-6 w-6 text-cyan-400" />
           </div>
@@ -358,7 +360,7 @@ export default function InsightsPage() {
             ))}
           </div>
         ) : (
-          <div className="animate-slide-up" style={{ animationDelay: '50ms' }}>
+          <div className="animate-slide-up" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
             <OverviewCards overview={overview} />
           </div>
         )}
@@ -368,7 +370,7 @@ export default function InsightsPage() {
           {overviewLoading || !overview ? (
             <Skeleton className="h-64 rounded-2xl" />
           ) : (
-            <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
+            <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
               <DifficultyBreakdown overview={overview} />
             </div>
           )}
@@ -376,7 +378,7 @@ export default function InsightsPage() {
           {weeklyLoading || !weekly ? (
             <Skeleton className="h-64 rounded-2xl" />
           ) : (
-            <div className="animate-slide-up" style={{ animationDelay: '150ms' }}>
+            <div className="animate-slide-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
               <WeeklyChart data={weekly} />
             </div>
           )}
@@ -386,7 +388,7 @@ export default function InsightsPage() {
         {tagsLoading || !tags ? (
           <Skeleton className="h-48 rounded-2xl" />
         ) : (
-          <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
+          <div className="animate-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
             <TagCloud tags={tags} />
           </div>
         )}
@@ -395,11 +397,12 @@ export default function InsightsPage() {
         {trendLoading || !trend ? (
           <Skeleton className="h-52 rounded-2xl" />
         ) : (
-          <div className="animate-slide-up" style={{ animationDelay: '250ms' }}>
+          <div className="animate-slide-up" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
             <DifficultyTrendChart data={trend} />
           </div>
         )}
       </div>
+      </PageTransition>
     </AppShell>
   );
 }
