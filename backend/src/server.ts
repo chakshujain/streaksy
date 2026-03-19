@@ -4,6 +4,7 @@ import { env } from './config/env';
 import { connectRedis, redis } from './config/redis';
 import { pool } from './config/database';
 import { logger } from './config/logger';
+import { initSocketServer } from './config/socket';
 
 let server: http.Server;
 
@@ -20,8 +21,12 @@ async function start() {
   // Connect Redis
   await connectRedis();
 
-  server = app.listen(env.port, '0.0.0.0', () => {
-    logger.info(`Streaksy API running on 0.0.0.0:${env.port} [${env.nodeEnv}]`);
+  // Create HTTP server and attach Socket.IO
+  server = http.createServer(app);
+  initSocketServer(server);
+
+  server.listen(env.port, '0.0.0.0', () => {
+    logger.info(`Streaksy API + WebSocket running on 0.0.0.0:${env.port} [${env.nodeEnv}]`);
   });
 }
 

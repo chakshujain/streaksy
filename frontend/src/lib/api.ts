@@ -226,4 +226,24 @@ export const badgesApi = {
   mine: () => api.get('/badges/mine'),
 };
 
+// ── Rooms ──
+export const roomsApi = {
+  create: (data: { name: string; problemId: string; timeLimitMinutes?: number }) =>
+    api.post('/rooms', data),
+  join: (code: string) =>
+    api.post('/rooms/join', { code }),
+  get: (id: string) =>
+    api.get(`/rooms/${id}`),
+  start: (id: string) =>
+    api.post(`/rooms/${id}/start`),
+  end: (id: string) =>
+    api.post(`/rooms/${id}/end`),
+  solve: (id: string, data?: { code?: string; language?: string; runtimeMs?: number; memoryKb?: number }) =>
+    api.post(`/rooms/${id}/solve`, data || {}),
+  mine: () =>
+    api.get('/rooms/mine'),
+  active: () =>
+    api.get('/rooms/active'),
+};
+
 export default api;

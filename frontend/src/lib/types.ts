@@ -238,3 +238,43 @@ export interface UserBadge extends Badge {
   badge_id: string;
   earned_at: string;
 }
+
+export interface Room {
+  id: string;
+  name: string;
+  code: string;
+  problem_id: string;
+  host_id: string;
+  status: 'waiting' | 'active' | 'finished';
+  time_limit_minutes: number;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+  problem_title?: string;
+  problem_slug?: string;
+  problem_difficulty?: string;
+  participants?: RoomParticipant[];
+  messages?: RoomMessage[];
+}
+
+export interface RoomParticipant {
+  room_id: string;
+  user_id: string;
+  status: string;
+  solved_at: string | null;
+  code: string | null;
+  language: string | null;
+  runtime_ms: number | null;
+  memory_kb: number | null;
+  joined_at: string;
+  display_name?: string;
+}
+
+export interface RoomMessage {
+  id: string;
+  room_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  display_name?: string;
+}

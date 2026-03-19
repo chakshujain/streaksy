@@ -29,6 +29,7 @@ import activityRoutes from './modules/activity/routes/activity.routes';
 import revisionRoutes from './modules/revision/routes/revision.routes';
 import contestRoutes from './modules/contest/routes/contest.routes';
 import badgeRoutes from './modules/badge/routes/badge.routes';
+import roomRoutes from './modules/room/routes/room.routes';
 
 const app = express();
 
@@ -100,6 +101,7 @@ app.use('/api/revisions', revisionRoutes);
 app.use('/api/groups', contestRoutes);
 app.use('/api/contests', contestRoutes);
 app.use('/api/badges', badgeRoutes);
+app.use('/api/rooms', roomRoutes);
 
 // Problem search route (added in Phase 4.3)
 import { problemController } from './modules/problem/controller/problem.controller';

@@ -1,0 +1,328 @@
+'use client';
+
+import { useEffect, useState, useRef } from 'react';
+import { useParams } from 'next/navigation';
+import { AppShell } from '@/components/layout/AppShell';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { useAsync } from '@/hooks/useAsync';
+import { roomsApi } from '@/lib/api';
+import { getSocket, disconnectSocket } from '@/lib/socket';
+import { useAuthStore } from '@/lib/store';
+import { cn } from '@/lib/cn';
+import {
+  Play, Square, Copy, CheckCircle, Clock, MessageSquare, Send, ExternalLink,
+  Crown, Users, Swords, Timer,
+} from 'lucide-react';
+import type { Room, RoomParticipant, RoomMessage } from '@/lib/types';
+import { formatDistanceToNow } from 'date-fns';
+
+export default function RoomDetailPage() {
+  const params = useParams();
+  const roomId = params.id as string;
+  const { user } = useAuthStore();
+
+  const [room, setRoom] = useState<Room | null>(null);
+  const [participants, setParticipants] = useState<RoomParticipant[]>([]);
+  const [messages, setMessages] = useState<RoomMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [connected, setConnected] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  // Initial fetch
+  const { loading } = useAsync<Room>(
+    () => roomsApi.get(roomId).then(r => {
+      const data = r.data.room;
+      setRoom(data);
+      setParticipants(data.participants || []);
+      setMessages(data.messages || []);
+      return data;
+    }),
+    [roomId]
+  );
+
+  // Socket connection
+  useEffect(() => {
+    const socket = getSocket();
+    socket.connect();
+
+    socket.on('connect', () => {
+      setConnected(true);
+      socket.emit('room:join', roomId);
+    });
+
+    socket.on('room:participants', (data: RoomParticipant[]) => {
+      setParticipants(data);
+    });
+
+    socket.on('room:started', (data: Room) => {
+      setRoom(data);
+    });
+
+    socket.on('room:ended', (data: { room: Room; participants: RoomParticipant[] }) => {
+      setRoom(data.room);
+      setParticipants(data.participants);
+    });
+
+    socket.on('room:solve_event', () => {
+      // Refresh participants on solve event
+    });
+
+    socket.on('room:new_message', (msg: RoomMessage) => {
+      setMessages(prev => [...prev, msg]);
+    });
+
+    socket.on('disconnect', () => setConnected(false));
+
+    return () => {
+      socket.emit('room:leave', roomId);
+      disconnectSocket();
+    };
+  }, [roomId]);
+
+  // Timer countdown
+  useEffect(() => {
+    if (!room?.started_at || room.status !== 'active') { setTimeLeft(null); return; }
+
+    const endTime = new Date(room.started_at).getTime() + room.time_limit_minutes * 60 * 1000;
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining === 0 && room.status === 'active') {
+        // Auto-end could be triggered here
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [room?.started_at, room?.time_limit_minutes, room?.status]);
+
+  // Auto-scroll chat
+  useEffect(() => {
+    chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' });
+  }, [messages]);
+
+  const isHost = user?.id === room?.host_id;
+  const mySolve = participants.find(p => p.user_id === user?.id);
+
+  const handleStart = () => {
+    const socket = getSocket();
+    socket.emit('room:start', roomId);
+  };
+
+  const handleEnd = () => {
+    const socket = getSocket();
+    socket.emit('room:end', roomId);
+  };
+
+  const handleSolve = () => {
+    const socket = getSocket();
+    socket.emit('room:solved', { roomId });
+  };
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    const socket = getSocket();
+    socket.emit('room:message', { roomId, content: chatInput.trim() });
+    setChatInput('');
+  };
+
+  const copyCode = () => {
+    if (room?.code) {
+      navigator.clipboard.writeText(room.code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  if (loading) {
+    return <AppShell><div className="space-y-4"><Skeleton className="h-10 w-48" /><Skeleton className="h-64" /></div></AppShell>;
+  }
+
+  if (!room) {
+    return <AppShell><p className="text-zinc-500">Room not found.</p></AppShell>;
+  }
+
+  // Rank participants by solve time
+  const ranked = [...participants].sort((a, b) => {
+    if (a.solved_at && !b.solved_at) return -1;
+    if (!a.solved_at && b.solved_at) return 1;
+    if (a.solved_at && b.solved_at) return new Date(a.solved_at).getTime() - new Date(b.solved_at).getTime();
+    return 0;
+  });
+
+  return (
+    <AppShell>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-zinc-100">{room.name}</h1>
+              <Badge variant={room.status === 'active' ? 'easy' : room.status === 'waiting' ? 'medium' : 'default'}>
+                {room.status}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-4 mt-2">
+              <a href={`https://leetcode.com/problems/${room.problem_slug}`} target="_blank" rel="noopener noreferrer"
+                className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                {room.problem_title} <ExternalLink className="h-3 w-3" />
+              </a>
+              <Badge variant={room.problem_difficulty as 'easy' | 'medium' | 'hard'}>{room.problem_difficulty}</Badge>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Room code */}
+            <button onClick={copyCode} className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2 text-sm font-mono tracking-widest text-zinc-300 hover:border-zinc-600 transition-colors">
+              {room.code}
+              {copied ? <CheckCircle className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5 text-zinc-500" />}
+            </button>
+
+            {/* Host controls */}
+            {isHost && room.status === 'waiting' && (
+              <Button onClick={handleStart} className="flex items-center gap-1.5">
+                <Play className="h-4 w-4" /> Start
+              </Button>
+            )}
+            {isHost && room.status === 'active' && (
+              <Button variant="danger" onClick={handleEnd} className="flex items-center gap-1.5">
+                <Square className="h-4 w-4" /> End
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Timer */}
+        {room.status === 'active' && timeLeft !== null && (
+          <div className={cn(
+            'flex items-center justify-center gap-3 rounded-xl p-4 border',
+            timeLeft < 60 ? 'border-red-500/30 bg-red-500/10' : timeLeft < 300 ? 'border-amber-500/30 bg-amber-500/10' : 'border-emerald-500/30 bg-emerald-500/10'
+          )}>
+            <Timer className={cn('h-6 w-6', timeLeft < 60 ? 'text-red-400' : timeLeft < 300 ? 'text-amber-400' : 'text-emerald-400')} />
+            <span className={cn('text-3xl font-mono font-bold', timeLeft < 60 ? 'text-red-400' : timeLeft < 300 ? 'text-amber-400' : 'text-emerald-400')}>
+              {formatTime(timeLeft)}
+            </span>
+          </div>
+        )}
+
+        {/* Waiting state */}
+        {room.status === 'waiting' && (
+          <Card className="text-center py-10">
+            <Swords className="h-10 w-10 text-zinc-500 mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-zinc-200">Waiting for host to start...</h2>
+            <p className="text-sm text-zinc-500 mt-1">Share the room code <span className="font-mono text-emerald-400">{room.code}</span> with friends</p>
+            <p className="text-xs text-zinc-600 mt-3">{participants.length} participant{participants.length !== 1 ? 's' : ''} joined</p>
+          </Card>
+        )}
+
+        {/* Solve button (active room, not yet solved) */}
+        {room.status === 'active' && !mySolve?.solved_at && (
+          <Button onClick={handleSolve} size="lg" className="w-full flex items-center justify-center gap-2">
+            <CheckCircle className="h-5 w-5" /> I Solved It!
+          </Button>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Participants / Leaderboard */}
+          <Card className="lg:col-span-1">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="h-5 w-5 text-zinc-400" />
+              <h2 className="text-sm font-semibold text-zinc-200">
+                {room.status === 'finished' ? 'Results' : 'Participants'} ({participants.length})
+              </h2>
+            </div>
+            <div className="space-y-2">
+              {ranked.map((p, i) => (
+                <div key={p.user_id} className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2',
+                  p.solved_at ? 'bg-emerald-500/5 border border-emerald-500/10' : 'bg-zinc-800/30'
+                )}>
+                  {/* Rank / status */}
+                  <div className="w-6 text-center">
+                    {p.solved_at ? (
+                      <span className={cn('text-sm font-bold', i === 0 ? 'text-amber-400' : i === 1 ? 'text-zinc-300' : i === 2 ? 'text-orange-400' : 'text-zinc-500')}>
+                        {i === 0 ? '\u{1F947}' : i === 1 ? '\u{1F948}' : i === 2 ? '\u{1F949}' : `#${i + 1}`}
+                      </span>
+                    ) : (
+                      <Clock className="h-4 w-4 text-zinc-600 mx-auto" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-medium text-zinc-200 truncate">{p.display_name}</span>
+                      {p.user_id === room.host_id && <Crown className="h-3 w-3 text-amber-400" />}
+                    </div>
+                    {p.solved_at && (
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {p.language && <span className="text-[10px] text-zinc-500">{p.language}</span>}
+                        {p.runtime_ms && <span className="text-[10px] text-zinc-500">{p.runtime_ms}ms</span>}
+                        <span className="text-[10px] text-emerald-400/70">
+                          {room.started_at && formatDistanceToNow(new Date(p.solved_at), { addSuffix: false })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {p.solved_at && <CheckCircle className="h-4 w-4 text-emerald-400 flex-shrink-0" />}
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Chat */}
+          <Card className="lg:col-span-2 flex flex-col" padding={false}>
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
+              <MessageSquare className="h-4 w-4 text-zinc-400" />
+              <h2 className="text-sm font-semibold text-zinc-200">Discussion</h2>
+              {!connected && <span className="text-[10px] text-amber-400">reconnecting...</span>}
+            </div>
+
+            <div ref={chatRef} className="flex-1 min-h-[300px] max-h-[500px] overflow-y-auto px-4 py-3 space-y-3">
+              {messages.length === 0 ? (
+                <p className="text-sm text-zinc-600 text-center py-8">
+                  {room.status === 'waiting' ? 'Chat will be available during and after the solve session.' : 'No messages yet. Start the discussion!'}
+                </p>
+              ) : (
+                messages.map(msg => (
+                  <div key={msg.id} className={cn('flex gap-2', msg.user_id === user?.id ? 'flex-row-reverse' : '')}>
+                    <div className={cn(
+                      'max-w-[70%] rounded-lg px-3 py-2',
+                      msg.user_id === user?.id ? 'bg-emerald-500/10 border border-emerald-500/10' : 'bg-zinc-800/50'
+                    )}>
+                      <p className="text-[11px] font-medium text-zinc-400 mb-0.5">{msg.display_name}</p>
+                      <p className="text-sm text-zinc-200 whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <form onSubmit={handleSendMessage} className="flex gap-2 px-4 py-3 border-t border-zinc-800">
+              <input
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                placeholder="Type a message..."
+                className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+              <Button type="submit" size="sm"><Send className="h-4 w-4" /></Button>
+            </form>
+          </Card>
+        </div>
+      </div>
+    </AppShell>
+  );
+}
