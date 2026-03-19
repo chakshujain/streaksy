@@ -54,6 +54,7 @@ app.use(
     max: env.rateLimit.max,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.path.startsWith('/api/sync') || req.path === '/health',
   })
 );
 
