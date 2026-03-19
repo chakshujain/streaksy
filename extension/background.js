@@ -161,41 +161,53 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 // ── OAuth Login ──
 const FRONTEND_URL = API_BASE.replace('/api', '');
 
+// Track tabs opened by the extension for OAuth
+const oauthTabIds = new Set();
+
 function handleOAuthLogin(provider) {
-  // Open the OAuth URL in a new browser tab
   const oauthUrl = `${API_BASE}/auth/${provider}`;
-  chrome.tabs.create({ url: oauthUrl });
+  chrome.tabs.create({ url: oauthUrl }, (tab) => {
+    if (tab?.id) oauthTabIds.add(tab.id);
+  });
 }
 
-// Listen for the OAuth callback — the frontend callback page URL contains the token
+// Listen for OAuth callback ONLY on tabs we opened
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.url && changeInfo.url.includes('/auth/callback')) {
-    try {
-      const url = new URL(changeInfo.url);
-      const token = url.searchParams.get('token');
-      const userStr = url.searchParams.get('user');
+  // Only intercept tabs that the extension opened for OAuth
+  if (!oauthTabIds.has(tabId)) return;
+  if (!changeInfo.url || !changeInfo.url.includes('/auth/callback')) return;
 
-      if (token && userStr) {
-        const user = JSON.parse(decodeURIComponent(userStr));
-        chrome.storage.local.set({
-          auth: {
-            token,
-            userId: user.id,
-            email: user.email,
-            displayName: user.displayName,
-          },
-        });
-        console.log('[Streaksy BG] OAuth login successful:', user.email);
+  try {
+    const url = new URL(changeInfo.url);
+    const token = url.searchParams.get('token');
+    const userStr = url.searchParams.get('user');
 
-        // Close the callback tab after a short delay
-        setTimeout(() => {
-          chrome.tabs.remove(tabId).catch(() => {});
-        }, 1000);
-      }
-    } catch (err) {
-      console.warn('[Streaksy BG] Failed to parse OAuth callback:', err);
+    if (token && userStr) {
+      const user = JSON.parse(decodeURIComponent(userStr));
+      chrome.storage.local.set({
+        auth: {
+          token,
+          userId: user.id,
+          email: user.email,
+          displayName: user.displayName,
+        },
+      });
+      console.log('[Streaksy BG] OAuth login successful:', user.email);
+
+      // Close ONLY the extension-opened tab
+      oauthTabIds.delete(tabId);
+      setTimeout(() => {
+        chrome.tabs.remove(tabId).catch(() => {});
+      }, 1000);
     }
+  } catch (err) {
+    console.warn('[Streaksy BG] Failed to parse OAuth callback:', err);
   }
+});
+
+// Clean up if OAuth tab is closed manually
+chrome.tabs.onRemoved.addListener((tabId) => {
+  oauthTabIds.delete(tabId);
 });
 
 // ── Email/Password Auth ──
