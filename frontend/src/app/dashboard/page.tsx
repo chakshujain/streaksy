@@ -15,6 +15,7 @@ import {
   insightsApi,
   badgesApi,
   roomsApi,
+  dailyApi,
 } from '@/lib/api';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Card } from '@/components/ui/Card';
@@ -156,6 +157,11 @@ export default function DashboardPage() {
 
   const { data: activeRooms, loading: roomsLoading } = useAsync(
     () => roomsApi.active().then((r) => r.data.rooms ?? []),
+    []
+  );
+
+  const { data: dailyProblems, loading: dailyLoading } = useAsync(
+    () => dailyApi.getProblems(4).then((r) => r.data.problems ?? []),
     []
   );
 
@@ -316,6 +322,49 @@ export default function DashboardPage() {
                   </Link>
                 ))}
               </div>
+            </Card>
+          </div>
+
+          {/* ─── Today's Problems ──────────────────────────── */}
+          <div className="animate-slide-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+            <Card className="border-emerald-500/10 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15">
+                    <Calendar className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold text-zinc-100">Today&apos;s Problems</h2>
+                    <p className="text-xs text-zinc-500">Curated for you based on your progress</p>
+                  </div>
+                </div>
+              </div>
+
+              {dailyLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="h-24 rounded-xl" />
+                  ))}
+                </div>
+              ) : dailyProblems && dailyProblems.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {dailyProblems.map((p: { id: string; title: string; slug: string; difficulty: string; sheet_name: string | null }, i: number) => (
+                    <Link key={p.id} href={`/problems/${p.slug}`}
+                      className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all duration-200">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-zinc-800 text-[10px] font-bold text-zinc-400 group-hover:bg-emerald-500/15 group-hover:text-emerald-400 transition-colors">
+                          {i + 1}
+                        </span>
+                        <Badge variant={p.difficulty as 'easy' | 'medium' | 'hard'}>{p.difficulty}</Badge>
+                      </div>
+                      <p className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors truncate">{p.title}</p>
+                      {p.sheet_name && <p className="text-[10px] text-zinc-600 mt-1 truncate">{p.sheet_name}</p>}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-zinc-500 text-center py-4">No problems to suggest — you&apos;re crushing it!</p>
+              )}
             </Card>
           </div>
 

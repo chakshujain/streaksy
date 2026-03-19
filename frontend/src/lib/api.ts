@@ -266,6 +266,11 @@ export const feedApi = {
     api.delete(`/feed/comments/${commentId}`),
 };
 
+// ── Daily ──
+export const dailyApi = {
+  getProblems: (count?: number) => api.get('/daily', { params: { count } }),
+};
+
 // ── Rooms ──
 export const roomsApi = {
   create: (data: { name: string; problemId: string; timeLimitMinutes?: number }) =>
