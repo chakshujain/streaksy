@@ -35,10 +35,11 @@ function useIsLoggedIn() {
   return isLoggedIn;
 }
 
-function SmartLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
+function SmartLink({ href, children, loggedInText, className }: { href: string; children: React.ReactNode; loggedInText?: React.ReactNode; className?: string }) {
   const isLoggedIn = useIsLoggedIn();
-  const target = isLoggedIn && (href === '/auth/signup' || href === '/auth/login') ? '/dashboard' : href;
-  return <Link href={target} className={className}>{children}</Link>;
+  const isAuthLink = href === '/auth/signup' || href === '/auth/login';
+  const target = isLoggedIn && isAuthLink ? '/dashboard' : href;
+  return <Link href={target} className={className}>{isLoggedIn && isAuthLink && loggedInText ? loggedInText : children}</Link>;
 }
 
 function Navbar() {
@@ -160,6 +161,7 @@ function Hero() {
           <SmartLink
             href="/auth/signup"
             className="glow-md inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-[length:200%_100%] px-8 py-4 text-base font-semibold text-white transition-all duration-500 hover:bg-right hover:shadow-emerald-500/25"
+            loggedInText={<>Go to Dashboard <ArrowRight className="h-4 w-4" /></>}
           >
             Start for Free
             <ArrowRight className="h-4 w-4" />
@@ -655,13 +657,14 @@ function CTA() {
               </p>
 
               <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-                <Link
+                <SmartLink
                   href="/auth/signup"
                   className="glow-lg inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-[length:200%_100%] px-8 py-4 text-base font-semibold text-white transition-all duration-500 hover:bg-right"
+                  loggedInText={<>Go to Dashboard <ArrowRight className="h-4 w-4" /></>}
                 >
                   Get Started — It&apos;s Free
                   <ArrowRight className="h-4 w-4" />
-                </Link>
+                </SmartLink>
               </div>
 
               <p className="mt-6 text-xs text-zinc-600">
@@ -696,10 +699,10 @@ function Footer() {
           <a href="/streaksy-extension.tar.gz" download className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
             Download Extension
           </a>
-          <SmartLink href="/auth/login" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+          <SmartLink href="/auth/login" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors" loggedInText="Dashboard">
             Log in
           </SmartLink>
-          <SmartLink href="/auth/signup" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+          <SmartLink href="/auth/signup" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors" loggedInText="Dashboard">
             Sign up
           </SmartLink>
         </div>
