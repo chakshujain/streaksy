@@ -15,10 +15,24 @@ import { useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/cn';
 import {
   Play, Square, Copy, CheckCircle, Clock, MessageSquare, Send, ExternalLink,
-  Crown, Users, Swords, Timer, List, Trophy,
+  Crown, Users, Swords, Timer, List, Trophy, Video, CalendarPlus, Repeat,
 } from 'lucide-react';
 import type { Room, RoomParticipant, RoomMessage, RoomProblem } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
+
+function generateGoogleCalendarUrl(title: string, scheduledAt: string, timeLimitMinutes: number, meetLink?: string | null): string {
+  const start = new Date(scheduledAt);
+  const end = new Date(start.getTime() + timeLimitMinutes * 60 * 1000);
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${fmt(start)}/${fmt(end)}`,
+    details: `Streaksy Solve Room${meetLink ? `\nJoin: ${meetLink}` : ''}`,
+  });
+  if (meetLink) params.set('location', meetLink);
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
 
 export default function RoomDetailPage() {
   const params = useParams();
@@ -223,6 +237,12 @@ export default function RoomDetailPage() {
               {room.mode === 'multi' && (
                 <Badge variant="default">Multi-Problem</Badge>
               )}
+              {room.recurrence && (
+                <Badge variant="default">
+                  <Repeat className="h-3 w-3 mr-1 inline" />
+                  {room.recurrence}
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-4 mt-2">
               {room.problem_slug && (
@@ -234,6 +254,28 @@ export default function RoomDetailPage() {
               {room.problem_difficulty && <Badge variant={room.problem_difficulty as 'easy' | 'medium' | 'hard'}>{room.problem_difficulty}</Badge>}
               {!room.problem_slug && problems.length > 0 && (
                 <span className="text-sm text-zinc-400">{problems.length} problems</span>
+              )}
+              {room.meet_link && (
+                <a
+                  href={room.meet_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-sm font-medium text-blue-400 hover:bg-blue-500/20 transition-all duration-200"
+                >
+                  <Video className="h-4 w-4" />
+                  Join Meet
+                </a>
+              )}
+              {room.scheduled_at && (
+                <a
+                  href={generateGoogleCalendarUrl(room.name, room.scheduled_at, room.time_limit_minutes, room.meet_link)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-1.5 text-sm font-medium text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 transition-all duration-200"
+                >
+                  <CalendarPlus className="h-4 w-4" />
+                  Add to Calendar
+                </a>
               )}
             </div>
           </div>

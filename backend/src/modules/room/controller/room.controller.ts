@@ -7,12 +7,14 @@ import { param } from '../../../common/utils/params';
 export const roomController = {
   async create(req: Request, res: Response) {
     const { user } = req as AuthRequest;
-    const { name, problemId, timeLimitMinutes, problemIds, sheetId, scheduledAt, mode } = req.body;
+    const { name, problemId, timeLimitMinutes, problemIds, sheetId, scheduledAt, mode, recurrence, meetLink } = req.body;
     const room = await roomService.createRoom(user!.userId, name, problemId || null, timeLimitMinutes || 30, {
       problemIds,
       sheetId,
       scheduledAt,
       mode,
+      recurrence,
+      meetLink,
     });
     res.status(201).json({ room });
   },

@@ -273,7 +273,7 @@ export const dailyApi = {
 
 // ── Rooms ──
 export const roomsApi = {
-  create: (data: { name: string; problemId?: string; problemIds?: string[]; sheetId?: string; scheduledAt?: string; mode?: string; timeLimitMinutes?: number }) =>
+  create: (data: { name: string; problemId?: string; problemIds?: string[]; sheetId?: string; scheduledAt?: string; mode?: string; timeLimitMinutes?: number; recurrence?: string; meetLink?: string }) =>
     api.post('/rooms', data),
   join: (code: string) =>
     api.post('/rooms/join', { code }),

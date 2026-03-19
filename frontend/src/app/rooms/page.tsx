@@ -13,13 +13,27 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import { ProblemPicker } from '@/components/search/ProblemPicker';
 import { useAsync } from '@/hooks/useAsync';
 import { roomsApi, problemsApi } from '@/lib/api';
-import { Swords, Plus, LogIn, Calendar, Trophy, Clock } from 'lucide-react';
+import { Swords, Plus, LogIn, Calendar, Trophy, Clock, Video, CalendarPlus } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import type { Room, Problem, Sheet, RoomLeaderboardEntry } from '@/lib/types';
 import { useAuthStore } from '@/lib/store';
 import { formatDistanceToNow } from 'date-fns';
 
 type Tab = 'rooms' | 'upcoming' | 'leaderboard';
+
+function generateGoogleCalendarUrl(title: string, scheduledAt: string, timeLimitMinutes: number, meetLink?: string): string {
+  const start = new Date(scheduledAt);
+  const end = new Date(start.getTime() + timeLimitMinutes * 60 * 1000);
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${fmt(start)}/${fmt(end)}`,
+    details: `Streaksy Solve Room${meetLink ? `\nJoin: ${meetLink}` : ''}`,
+  });
+  if (meetLink) params.set('location', meetLink);
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
 
 export default function RoomsPage() {
   const router = useRouter();
@@ -40,6 +54,8 @@ export default function RoomsPage() {
   const [scheduledAt, setScheduledAt] = useState('');
   const [selectedSheet, setSelectedSheet] = useState('');
   const [roomMode, setRoomMode] = useState<'single' | 'multi'>('single');
+  const [recurrence, setRecurrence] = useState('');
+  const [meetLink, setMeetLink] = useState('');
 
   const { data: rooms, loading } = useAsync<Room[]>(
     () => roomsApi.mine().then(r => r.data.rooms),
@@ -73,6 +89,8 @@ export default function RoomsPage() {
         timeLimitMinutes: timeLimit,
         scheduledAt: scheduledAt || undefined,
         mode: roomMode,
+        recurrence: recurrence || undefined,
+        meetLink: meetLink || undefined,
       });
       router.push(`/rooms/${data.room.id}`);
     } catch (err: unknown) {
@@ -232,6 +250,51 @@ export default function RoomsPage() {
                   className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
                 />
               </div>
+
+              {/* Recurrence */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-zinc-300">Recurrence</label>
+                <select
+                  value={recurrence}
+                  onChange={e => setRecurrence(e.target.value)}
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
+                >
+                  <option value="">One-time</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekdays">Weekdays only</option>
+                  <option value="weekends">Weekends only</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+
+              {/* Google Meet Link */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-zinc-300">Google Meet Link (optional)</label>
+                <div className="flex items-center gap-2">
+                  <Video className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+                  <input
+                    type="url"
+                    value={meetLink}
+                    onChange={e => setMeetLink(e.target.value)}
+                    placeholder="https://meet.google.com/abc-defg-hij"
+                    className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
+                  />
+                </div>
+              </div>
+
+              {/* Add to Google Calendar */}
+              {scheduledAt && (
+                <a
+                  href={generateGoogleCalendarUrl(roomName || 'Solve Room', scheduledAt, timeLimit, meetLink || undefined)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400 hover:bg-blue-500/20 transition-all duration-200"
+                >
+                  <CalendarPlus className="h-4 w-4" />
+                  Add to Google Calendar
+                </a>
+              )}
 
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-zinc-300">Time Limit</label>

@@ -8,6 +8,8 @@ export const createRoomSchema = z.object({
   scheduledAt: z.string().optional(),
   mode: z.enum(['single', 'multi']).optional(),
   timeLimitMinutes: z.number().int().min(5).max(120).optional(),
+  recurrence: z.enum(['daily', 'weekdays', 'weekends', 'weekly', 'monthly']).optional(),
+  meetLink: z.string().url().max(500).optional(),
 });
 
 export const joinRoomSchema = z.object({

@@ -8,19 +8,23 @@ export const roomService = {
     name: string,
     problemId: string | null,
     timeLimitMinutes: number,
-    opts?: { problemIds?: string[]; sheetId?: string; scheduledAt?: string; mode?: string }
+    opts?: { problemIds?: string[]; sheetId?: string; scheduledAt?: string; mode?: string; recurrence?: string; meetLink?: string }
   ) {
     const code = crypto.randomBytes(4).toString('hex').toUpperCase();
     const mode = opts?.mode || 'single';
     const scheduledAt = opts?.scheduledAt || null;
     const sheetId = opts?.sheetId || null;
     const status = scheduledAt ? 'scheduled' : 'waiting';
+    const recurrence = opts?.recurrence || null;
+    const meetLink = opts?.meetLink || null;
 
     const room = await roomRepository.create(name, code, problemId, hostId, timeLimitMinutes, {
       mode,
       scheduledAt,
       sheetId,
       status,
+      recurrence,
+      meetLink,
     });
     await roomRepository.addParticipant(room.id, hostId);
 
@@ -97,7 +101,65 @@ export const roomService = {
       });
     }).catch(() => {});
 
+    // Create next recurrence if applicable
+    if (room.recurrence) {
+      this.createNextRecurrence(room).catch(() => {});
+    }
+
     return roomRepository.findById(roomId);
+  },
+
+  async createNextRecurrence(room: { id: string; name: string; host_id: string; problem_id: string; time_limit_minutes: number; mode: string; sheet_id: string | null; recurrence: string | null; meet_link: string | null; scheduled_at: Date | null }) {
+    if (!room.recurrence || !room.scheduled_at) return null;
+
+    const prev = new Date(room.scheduled_at);
+    let next: Date;
+
+    switch (room.recurrence) {
+      case 'daily':
+        next = new Date(prev.getTime() + 24 * 60 * 60 * 1000);
+        break;
+      case 'weekdays': {
+        next = new Date(prev.getTime() + 24 * 60 * 60 * 1000);
+        // Skip weekends
+        while (next.getDay() === 0 || next.getDay() === 6) {
+          next = new Date(next.getTime() + 24 * 60 * 60 * 1000);
+        }
+        break;
+      }
+      case 'weekends': {
+        next = new Date(prev.getTime() + 24 * 60 * 60 * 1000);
+        // Skip weekdays
+        while (next.getDay() !== 0 && next.getDay() !== 6) {
+          next = new Date(next.getTime() + 24 * 60 * 60 * 1000);
+        }
+        break;
+      }
+      case 'weekly':
+        next = new Date(prev.getTime() + 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'monthly': {
+        next = new Date(prev);
+        next.setMonth(next.getMonth() + 1);
+        break;
+      }
+      default:
+        return null;
+    }
+
+    return this.createRoom(
+      room.host_id,
+      room.name,
+      room.problem_id || null,
+      room.time_limit_minutes,
+      {
+        mode: room.mode,
+        scheduledAt: next.toISOString(),
+        sheetId: room.sheet_id || undefined,
+        recurrence: room.recurrence,
+        meetLink: room.meet_link || undefined,
+      }
+    );
   },
 
   async markSolved(roomId: string, userId: string, data?: { code?: string; language?: string; runtimeMs?: number; memoryKb?: number }) {

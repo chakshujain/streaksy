@@ -265,6 +265,9 @@ export interface Room {
   scheduled_at: string | null;
   mode: 'single' | 'multi';
   sheet_id: string | null;
+  recurrence: string | null;
+  meet_link: string | null;
+  calendar_event_id: string | null;
   problem_title?: string;
   problem_slug?: string;
   problem_difficulty?: string;

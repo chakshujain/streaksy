@@ -63,9 +63,17 @@ export default function ProblemsPage() {
     return list;
   }, [problems, difficulty, tag]);
 
+  const filteredProblems = useMemo(() => {
+    if (!searchQuery) return filtered;
+    const q = searchQuery.toLowerCase();
+    return filtered.filter(
+      (p) => p.title.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q)
+    );
+  }, [filtered, searchQuery]);
+
   const loading = sheetsLoading || problemsLoading;
-  const solvedCount = filtered.filter((p) => progressMap.get(p.id)?.status === 'solved').length;
-  const solvePercent = filtered.length > 0 ? Math.round((solvedCount / filtered.length) * 100) : 0;
+  const solvedCount = filteredProblems.filter((p) => progressMap.get(p.id)?.status === 'solved').length;
+  const solvePercent = filteredProblems.length > 0 ? Math.round((solvedCount / filteredProblems.length) * 100) : 0;
 
   return (
     <AppShell>
@@ -117,6 +125,19 @@ export default function ProblemsPage() {
             </div>
           )}
 
+          {/* Search */}
+          <div className="animate-slide-up" style={{ animationDelay: '75ms', animationFillMode: 'both' }}>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search problems by name..."
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 pl-10 pr-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+
           {/* Filters */}
           <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
             <ProblemFilters
@@ -129,13 +150,13 @@ export default function ProblemsPage() {
           </div>
 
           {/* Progress bar */}
-          {!loading && filtered.length > 0 && (
+          {!loading && filteredProblems.length > 0 && (
             <div className="glass rounded-2xl p-4 animate-slide-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex gap-6 text-sm text-zinc-500">
                   <span className="flex items-center gap-1.5">
                     <Target className="h-3.5 w-3.5 text-zinc-400" />
-                    <span className="font-medium text-zinc-300">{filtered.length}</span> problems
+                    <span className="font-medium text-zinc-300">{filteredProblems.length}</span> problems
                   </span>
                   <span className="flex items-center gap-1.5">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
@@ -172,7 +193,7 @@ export default function ProblemsPage() {
                 ))}
               </div>
             ) : (
-              <ProblemTable problems={filtered} progressMap={progressMap} />
+              <ProblemTable problems={filteredProblems} progressMap={progressMap} />
             )}
           </div>
         </div>
