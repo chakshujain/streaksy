@@ -45,6 +45,13 @@ export const streakService = {
       EX: 86400, // 24 hours
     });
 
+    // Post streak milestone to feed
+    if ([3, 7, 14, 30, 50, 100].includes(currentStreak)) {
+      import('../../feed/service/feed.service').then(m => {
+        m.feedService.postEvent(userId, 'streak_milestone', `Reached a ${currentStreak}-day streak! 🔥`, undefined, { streakDays: currentStreak });
+      }).catch(() => {});
+    }
+
     return { currentStreak, longestStreak };
   },
 

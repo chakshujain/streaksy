@@ -68,6 +68,14 @@ export const syncService = {
       badgeService.checkAndAward(userId).catch(() => {});
       // Progress recovery challenge if active
       import('../../poke/service/poke.service').then(m => m.pokeService.progressRecoveryChallenge(userId)).catch(() => {});
+      // Post to social feed
+      import('../../feed/service/feed.service').then(m => {
+        m.feedService.postEvent(userId, 'solve', `Solved "${problem.title}"`, undefined, {
+          problemSlug: problem.slug,
+          problemTitle: problem.title,
+          difficulty: problem.difficulty,
+        });
+      }).catch(() => {});
     }
 
     // 6. Update leaderboards

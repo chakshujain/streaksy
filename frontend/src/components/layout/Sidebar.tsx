@@ -14,6 +14,7 @@ import {
   RotateCcw,
   User,
   Swords,
+  Rss,
 } from 'lucide-react';
 import { useAuthStore, useDashboardStore } from '@/lib/store';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -21,6 +22,7 @@ import { SearchBar } from '@/components/search/SearchBar';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/feed', label: 'Feed', icon: Rss },
   { href: '/problems', label: 'Problems', icon: BookOpen },
   { href: '/revision', label: 'Revision', icon: RotateCcw },
   { href: '/rooms', label: 'Solve Rooms', icon: Swords },

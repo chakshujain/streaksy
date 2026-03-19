@@ -293,3 +293,27 @@ export interface RoomMessage {
   created_at: string;
   display_name?: string;
 }
+
+export interface FeedEvent {
+  id: string;
+  user_id: string;
+  event_type: string;
+  title: string;
+  description: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  display_name?: string;
+  avatar_url?: string;
+  like_count: number;
+  comment_count: number;
+  liked_by_me: boolean;
+}
+
+export interface FeedComment {
+  id: string;
+  feed_event_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  display_name?: string;
+}

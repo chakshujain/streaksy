@@ -242,6 +242,22 @@ export const pokesApi = {
     api.get('/pokes/challenge'),
 };
 
+// ── Feed ──
+export const feedApi = {
+  getFeed: (params?: { limit?: number; offset?: number }) =>
+    api.get('/feed', { params }),
+  getUserFeed: (userId: string, params?: { limit?: number; offset?: number }) =>
+    api.get(`/feed/user/${userId}`, { params }),
+  toggleLike: (eventId: string) =>
+    api.post(`/feed/${eventId}/like`),
+  addComment: (eventId: string, content: string) =>
+    api.post(`/feed/${eventId}/comments`, { content }),
+  getComments: (eventId: string) =>
+    api.get(`/feed/${eventId}/comments`),
+  deleteComment: (commentId: string) =>
+    api.delete(`/feed/comments/${commentId}`),
+};
+
 // ── Rooms ──
 export const roomsApi = {
   create: (data: { name: string; problemId: string; timeLimitMinutes?: number }) =>
