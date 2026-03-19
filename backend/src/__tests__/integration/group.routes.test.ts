@@ -16,6 +16,9 @@ describe('Group Routes', () => {
     invite_code: 'abc123',
     created_by: 'user-1',
     created_at: new Date(),
+    plan: null,
+    objective: null,
+    target_date: null,
   };
 
   beforeEach(() => {

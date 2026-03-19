@@ -36,6 +36,17 @@ export interface Group {
   invite_code: string;
   created_by: string;
   members?: GroupMember[];
+  plan?: string;
+  objective?: string;
+  target_date?: string;
+}
+
+export interface GroupSheet {
+  sheet_id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  assigned_at: string;
 }
 
 export interface GroupMember {

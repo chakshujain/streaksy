@@ -31,4 +31,26 @@ export const groupService = {
   async getUserGroups(userId: string) {
     return groupRepository.getUserGroups(userId);
   },
+
+  async updatePlan(groupId: string, userId: string, data: { plan?: string; objective?: string; targetDate?: string }) {
+    const member = await groupRepository.getMember(groupId, userId);
+    if (!member || member.role !== 'admin') throw AppError.forbidden('Only admins can update the group plan');
+    return groupRepository.updateGroupPlan(groupId, data);
+  },
+
+  async assignSheet(groupId: string, userId: string, sheetId: string) {
+    const member = await groupRepository.getMember(groupId, userId);
+    if (!member || member.role !== 'admin') throw AppError.forbidden('Only admins can assign sheets');
+    await groupRepository.assignSheet(groupId, sheetId, userId);
+  },
+
+  async removeSheet(groupId: string, userId: string, sheetId: string) {
+    const member = await groupRepository.getMember(groupId, userId);
+    if (!member || member.role !== 'admin') throw AppError.forbidden('Only admins can remove sheets');
+    await groupRepository.removeSheet(groupId, sheetId);
+  },
+
+  async getGroupSheets(groupId: string) {
+    return groupRepository.getGroupSheets(groupId);
+  },
 };

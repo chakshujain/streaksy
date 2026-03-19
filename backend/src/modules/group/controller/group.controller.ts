@@ -25,4 +25,30 @@ export const groupController = {
     const groups = await groupService.getUserGroups(req.user!.userId);
     res.json({ groups });
   },
+
+  async updatePlan(req: AuthRequest, res: Response) {
+    const groupId = param(req, 'id');
+    const group = await groupService.updatePlan(groupId, req.user!.userId, req.body);
+    res.json({ group });
+  },
+
+  async assignSheet(req: AuthRequest, res: Response) {
+    const groupId = param(req, 'id');
+    const { sheetId } = req.body;
+    await groupService.assignSheet(groupId, req.user!.userId, sheetId);
+    res.json({ message: 'Sheet assigned' });
+  },
+
+  async removeSheet(req: AuthRequest, res: Response) {
+    const groupId = param(req, 'id');
+    const sheetId = param(req, 'sheetId');
+    await groupService.removeSheet(groupId, req.user!.userId, sheetId);
+    res.json({ message: 'Sheet removed' });
+  },
+
+  async getGroupSheets(req: AuthRequest, res: Response) {
+    const groupId = param(req, 'id');
+    const sheets = await groupService.getGroupSheets(groupId);
+    res.json({ sheets });
+  },
 };

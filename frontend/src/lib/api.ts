@@ -89,6 +89,14 @@ export const groupsApi = {
     api.post('/groups', data),
   join: (inviteCode: string) =>
     api.post('/groups/join', { inviteCode }),
+  updatePlan: (id: string, data: { plan?: string; objective?: string; targetDate?: string }) =>
+    api.put(`/groups/${id}/plan`, data),
+  assignSheet: (id: string, sheetId: string) =>
+    api.post(`/groups/${id}/sheets`, { sheetId }),
+  removeSheet: (id: string, sheetId: string) =>
+    api.delete(`/groups/${id}/sheets/${sheetId}`),
+  getSheets: (id: string) =>
+    api.get(`/groups/${id}/sheets`),
 };
 
 // ── Progress ──

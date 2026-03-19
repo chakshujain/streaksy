@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { groupController } from '../controller/group.controller';
 import { authenticate } from '../../../middleware/auth';
 import { validate } from '../../../middleware/validate';
-import { createGroupSchema, joinGroupSchema } from '../validation/group.schema';
+import { createGroupSchema, joinGroupSchema, updatePlanSchema, assignSheetSchema } from '../validation/group.schema';
 import { asyncHandler } from '../../../common/utils/asyncHandler';
 
 const router = Router();
@@ -13,5 +13,9 @@ router.post('/', validate(createGroupSchema), asyncHandler(groupController.creat
 router.post('/join', validate(joinGroupSchema), asyncHandler(groupController.join as any));
 router.get('/', asyncHandler(groupController.getUserGroups as any));
 router.get('/:id', asyncHandler(groupController.getDetails as any));
+router.put('/:id/plan', validate(updatePlanSchema), asyncHandler(groupController.updatePlan as any));
+router.post('/:id/sheets', validate(assignSheetSchema), asyncHandler(groupController.assignSheet as any));
+router.delete('/:id/sheets/:sheetId', asyncHandler(groupController.removeSheet as any));
+router.get('/:id/sheets', asyncHandler(groupController.getGroupSheets as any));
 
 export default router;

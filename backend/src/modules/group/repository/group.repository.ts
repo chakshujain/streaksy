@@ -8,6 +8,9 @@ export interface GroupRow {
   invite_code: string;
   created_by: string;
   created_at: Date;
+  plan: string | null;
+  objective: string | null;
+  target_date: Date | null;
 }
 
 export interface MemberRow {
@@ -81,6 +84,45 @@ export const groupRepository = {
        WHERE gm.user_id = $1
        ORDER BY g.created_at DESC`,
       [userId]
+    );
+  },
+
+  async getMember(groupId: string, userId: string): Promise<{ group_id: string; user_id: string; role: string } | null> {
+    return queryOne<{ group_id: string; user_id: string; role: string }>(
+      'SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2',
+      [groupId, userId]
+    );
+  },
+
+  async updateGroupPlan(groupId: string, data: { plan?: string; objective?: string; targetDate?: string }): Promise<GroupRow> {
+    const rows = await query<GroupRow>(
+      `UPDATE groups SET
+        plan = COALESCE($2, plan),
+        objective = COALESCE($3, objective),
+        target_date = COALESCE($4::date, target_date)
+       WHERE id = $1 RETURNING *`,
+      [groupId, data.plan || null, data.objective || null, data.targetDate || null]
+    );
+    return rows[0];
+  },
+
+  async assignSheet(groupId: string, sheetId: string, assignedBy: string): Promise<void> {
+    await query(
+      'INSERT INTO group_sheets (group_id, sheet_id, assigned_by) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+      [groupId, sheetId, assignedBy]
+    );
+  },
+
+  async removeSheet(groupId: string, sheetId: string): Promise<void> {
+    await query('DELETE FROM group_sheets WHERE group_id = $1 AND sheet_id = $2', [groupId, sheetId]);
+  },
+
+  async getGroupSheets(groupId: string): Promise<{ sheet_id: string; name: string; slug: string; description: string | null; assigned_at: Date }[]> {
+    return query(
+      `SELECT s.id as sheet_id, s.name, s.slug, s.description, gs.assigned_at
+       FROM group_sheets gs JOIN sheets s ON s.id = gs.sheet_id
+       WHERE gs.group_id = $1 ORDER BY gs.assigned_at DESC`,
+      [groupId]
     );
   },
 
