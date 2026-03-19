@@ -110,12 +110,6 @@ app.use('/api/pokes', pokeRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/daily', dailyRoutes);
 
-// Problem search route (added in Phase 4.3)
-import { problemController } from './modules/problem/controller/problem.controller';
-import { asyncHandler } from './common/utils/asyncHandler';
-import { authenticate } from './middleware/auth';
-app.get('/api/problems/search', authenticate, asyncHandler(problemController.search as any));
-
 // Error handler (must be last)
 app.use(errorHandler);
 

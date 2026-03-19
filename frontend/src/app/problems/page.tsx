@@ -13,13 +13,14 @@ import { useAsync } from '@/hooks/useAsync';
 import { problemsApi, progressApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import type { Problem, ProblemProgress, Sheet } from '@/lib/types';
-import { Upload, ChevronDown, ChevronUp, BookOpen, CheckCircle2, Target } from 'lucide-react';
+import { Upload, ChevronDown, ChevronUp, BookOpen, CheckCircle2, Target, Search } from 'lucide-react';
 
 export default function ProblemsPage() {
   const [selectedSheet, setSelectedSheet] = useState('all');
   const [difficulty, setDifficulty] = useState('all');
   const [tag, setTag] = useState('all');
   const [showUpload, setShowUpload] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: sheets, loading: sheetsLoading, refetch: refetchSheets } = useAsync<Sheet[]>(
     () => problemsApi.getSheets().then((r) => r.data.sheets),
