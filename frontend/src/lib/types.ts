@@ -142,6 +142,34 @@ export interface Comment {
   updated_at: string;
 }
 
+export interface Submission {
+  id: string;
+  user_id: string;
+  problem_id: string;
+  status: string;
+  language: string;
+  code: string | null;
+  runtime_ms: number | null;
+  runtime_percentile: number | null;
+  memory_kb: number | null;
+  memory_percentile: number | null;
+  time_spent_seconds: number | null;
+  leetcode_submission_id: string | null;
+  submitted_at: string;
+  problem_title?: string;
+  problem_slug?: string;
+  problem_difficulty?: string;
+}
+
+export interface SubmissionStats {
+  totalSubmissions: number;
+  acceptedSubmissions: number;
+  avgRuntime: number | null;
+  avgMemory: number | null;
+  avgTimeSpent: number | null;
+  languages: { language: string; count: number }[];
+}
+
 export interface ActivityItem {
   id: string;
   group_id: string;

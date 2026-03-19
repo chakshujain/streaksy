@@ -69,6 +69,16 @@ export const problemsApi = {
     api.get('/problems/search', { params: { q, limit } }),
 };
 
+// ── Submissions ──
+export const submissionsApi = {
+  list: (params?: { limit?: number; offset?: number }) =>
+    api.get('/sync/submissions', { params }),
+  getForProblem: (problemId: string) =>
+    api.get(`/sync/submissions/${problemId}`),
+  getStats: () =>
+    api.get('/sync/submissions/stats'),
+};
+
 // ── Groups ──
 export const groupsApi = {
   list: () => api.get('/groups'),

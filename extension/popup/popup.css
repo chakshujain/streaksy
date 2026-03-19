@@ -300,6 +300,22 @@ body {
   flex-shrink: 0;
 }
 
+.history-meta {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.meta-tag {
+  font-size: 9px;
+  color: #a1a1aa;
+  background: #27272a;
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
 .empty-state {
   text-align: center;
   padding: 20px;

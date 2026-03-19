@@ -1,9 +1,9 @@
 /**
- * Streaksy Background Service Worker
+ * Streaksy Background Service Worker (Enhanced)
  *
  * Responsibilities:
- *   - Receive SUBMISSION_ACCEPTED messages from content script
- *   - Call POST /api/sync/leetcode with JWT auth
+ *   - Receive SUBMISSION_ACCEPTED messages from content script (with rich data)
+ *   - Call POST /api/sync/leetcode with JWT auth + submission details
  *   - Retry on failure (up to 3 attempts with exponential backoff)
  *   - Deduplicate syncs (track recently synced slugs)
  *   - Store sync history for popup UI
@@ -19,7 +19,7 @@ const SYNC_COOLDOWN_MS = 30_000;
 // ── Message handler ──
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SUBMISSION_ACCEPTED') {
-    handleAccepted(message.problemSlug)
+    handleAccepted(message)
       .then((result) => sendResponse({ success: true, ...result }))
       .catch((err) => sendResponse({ success: false, error: err.message }));
     return true; // keep message channel open for async response
@@ -43,8 +43,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// ── Sync a solved problem ──
-async function handleAccepted(problemSlug) {
+// ── Sync a solved problem (enhanced with rich data) ──
+async function handleAccepted(data) {
+  const { problemSlug } = data;
+
   // Dedup check
   const lastSync = recentSyncs.get(problemSlug);
   if (lastSync && Date.now() - lastSync < SYNC_COOLDOWN_MS) {
@@ -63,6 +65,25 @@ async function handleAccepted(problemSlug) {
   await updateStatus('syncing', null, problemSlug);
   recentSyncs.set(problemSlug, Date.now());
 
+  // Build request payload with all captured data
+  const payload = {
+    userId: auth.userId,
+    problemSlug: problemSlug,
+    status: 'solved',
+    // Enhanced fields
+    language: data.language || undefined,
+    code: data.code || undefined,
+    runtimeMs: data.runtimeMs || undefined,
+    runtimePercentile: data.runtimePercentile || undefined,
+    memoryKb: data.memoryKb || undefined,
+    memoryPercentile: data.memoryPercentile || undefined,
+    timeSpentSeconds: data.timeSpentSeconds || undefined,
+    leetcodeSubmissionId: data.leetcodeSubmissionId || undefined,
+  };
+
+  // Clean undefined values
+  Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+
   // Retry loop
   let lastError = null;
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -73,11 +94,7 @@ async function handleAccepted(problemSlug) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${auth.token}`,
         },
-        body: JSON.stringify({
-          userId: auth.userId,
-          problemSlug: problemSlug,
-          status: 'solved',
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -85,26 +102,30 @@ async function handleAccepted(problemSlug) {
         throw new Error(body.error || `HTTP ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log('[Streaksy BG] Synced:', problemSlug, data);
+      const result = await response.json();
+      console.log('[Streaksy BG] Synced:', problemSlug, result);
 
       await updateStatus('synced', null, problemSlug);
-      await addToHistory(problemSlug);
+      await addToHistory(problemSlug, {
+        language: data.language,
+        runtimeMs: data.runtimeMs,
+        memoryKb: data.memoryKb,
+        timeSpentSeconds: data.timeSpentSeconds,
+      });
 
-      return { synced: true, data };
+      return { synced: true, data: result };
     } catch (err) {
       lastError = err;
       console.warn(`[Streaksy BG] Attempt ${attempt}/${MAX_RETRIES} failed:`, err.message);
 
       if (attempt < MAX_RETRIES) {
-        // Exponential backoff: 1s, 2s, 4s
         await sleep(1000 * Math.pow(2, attempt - 1));
       }
     }
   }
 
   // All retries failed
-  recentSyncs.delete(problemSlug); // allow retry later
+  recentSyncs.delete(problemSlug);
   await updateStatus('error', lastError?.message || 'Sync failed', problemSlug);
 
   // Schedule a retry via alarm
@@ -118,9 +139,9 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name.startsWith('retry:')) {
     const slug = alarm.name.slice(6);
     console.log('[Streaksy BG] Retrying sync for:', slug);
-    recentSyncs.delete(slug); // clear cooldown
+    recentSyncs.delete(slug);
     try {
-      await handleAccepted(slug);
+      await handleAccepted({ problemSlug: slug });
     } catch {
       // already handled inside handleAccepted
     }
@@ -184,17 +205,24 @@ async function getStatus() {
   };
 }
 
-// ── Sync history (last 20) ──
-async function addToHistory(problemSlug) {
+// ── Sync history (last 50, with rich data) ──
+async function addToHistory(problemSlug, extra) {
   const result = await chrome.storage.local.get('syncHistory');
   const history = result.syncHistory || [];
-  history.unshift({ slug: problemSlug, timestamp: Date.now() });
-  // Keep only last 20
-  await chrome.storage.local.set({ syncHistory: history.slice(0, 20) });
+  history.unshift({
+    slug: problemSlug,
+    timestamp: Date.now(),
+    language: extra?.language || null,
+    runtimeMs: extra?.runtimeMs || null,
+    memoryKb: extra?.memoryKb || null,
+    timeSpentSeconds: extra?.timeSpentSeconds || null,
+  });
+  // Keep last 50
+  await chrome.storage.local.set({ syncHistory: history.slice(0, 50) });
 }
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-console.log('[Streaksy BG] Service worker started');
+console.log('[Streaksy BG] Service worker started (enhanced)');

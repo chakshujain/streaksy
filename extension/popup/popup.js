@@ -1,8 +1,7 @@
 /**
- * Streaksy Popup UI
+ * Streaksy Popup UI (Enhanced)
  *
- * Shows login form or authenticated state with sync status + history.
- * Communicates with the background service worker via chrome.runtime.sendMessage.
+ * Shows login form or authenticated state with sync status + rich history.
  */
 (function () {
   'use strict';
@@ -94,7 +93,7 @@
 
   function renderHistory(history) {
     if (history.length === 0) {
-      syncHistory.innerHTML = '<div class="empty-state">No syncs yet</div>';
+      syncHistory.innerHTML = '<div class="empty-state">No syncs yet — solve a LeetCode problem!</div>';
       return;
     }
 
@@ -102,11 +101,19 @@
       .map(
         (item) => `
       <div class="history-item">
-        <div style="display:flex;align-items:center;min-width:0">
+        <div style="display:flex;align-items:center;min-width:0;flex:1">
           <svg class="history-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span class="history-slug">${escapeHtml(formatSlug(item.slug))}</span>
+          <div style="min-width:0">
+            <span class="history-slug">${escapeHtml(formatSlug(item.slug))}</span>
+            <div class="history-meta">
+              ${item.language ? `<span class="meta-tag">${escapeHtml(item.language)}</span>` : ''}
+              ${item.runtimeMs ? `<span class="meta-tag">${item.runtimeMs}ms</span>` : ''}
+              ${item.memoryKb ? `<span class="meta-tag">${formatMemory(item.memoryKb)}</span>` : ''}
+              ${item.timeSpentSeconds ? `<span class="meta-tag">${formatDuration(item.timeSpentSeconds)}</span>` : ''}
+            </div>
+          </div>
         </div>
         <span class="history-time">${timeAgo(item.timestamp)}</span>
       </div>
@@ -162,6 +169,20 @@
   function formatSlug(slug) {
     if (!slug) return '—';
     return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  function formatMemory(kb) {
+    if (kb >= 1024) return (kb / 1024).toFixed(1) + ' MB';
+    return kb + ' KB';
+  }
+
+  function formatDuration(seconds) {
+    if (seconds < 60) return seconds + 's';
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    if (m < 60) return m + 'm ' + s + 's';
+    const h = Math.floor(m / 60);
+    return h + 'h ' + (m % 60) + 'm';
   }
 
   function timeAgo(timestamp) {

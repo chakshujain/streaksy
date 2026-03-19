@@ -15,8 +15,13 @@ import {
   TrendingUp,
   Sparkles,
   GitBranch,
-  BookOpen,
   Star,
+  Chrome,
+  Download,
+  Clock,
+  Brain,
+  Shield,
+  ChevronRight,
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
@@ -40,6 +45,9 @@ function Navbar() {
         <div className="hidden items-center gap-8 md:flex">
           <a href="#features" className="text-sm text-zinc-400 transition-colors hover:text-white">
             Features
+          </a>
+          <a href="#extension" className="text-sm text-zinc-400 transition-colors hover:text-white">
+            Extension
           </a>
           <a href="#stats" className="text-sm text-zinc-400 transition-colors hover:text-white">
             Community
@@ -78,11 +86,9 @@ function Hero() {
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-16">
       {/* Background effects */}
       <div className="pointer-events-none absolute inset-0">
-        {/* Radial gradient orbs */}
         <div className="absolute left-1/4 top-1/4 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-[120px]" />
         <div className="absolute right-1/4 top-1/3 h-[500px] w-[500px] translate-x-1/2 rounded-full bg-cyan-500/8 blur-[100px]" />
         <div className="absolute bottom-1/4 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-purple-500/8 blur-[100px]" />
-        {/* Grid pattern */}
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -114,7 +120,7 @@ function Hero() {
           className="animate-slide-up mx-auto mt-6 max-w-2xl text-lg text-zinc-400 sm:text-xl md:mt-8 md:text-2xl"
           style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
         >
-          Track your LeetCode progress, compete in study groups, maintain
+          Track your LeetCode progress, capture every submission, compete in study groups, maintain
           streaks, and level up your interview prep — all in one place.
         </p>
 
@@ -130,33 +136,26 @@ function Hero() {
             Start for Free
             <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link
-            href="#features"
+          <a
+            href="#extension"
             className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/50 px-8 py-4 text-base font-semibold text-zinc-300 backdrop-blur-sm transition-all hover:border-zinc-600 hover:text-white"
           >
-            See Features
-          </Link>
+            <Chrome className="h-4 w-4" />
+            Get the Extension
+          </a>
         </div>
 
-        {/* Floating code snippets for visual interest */}
+        {/* Floating code snippets */}
         <div className="pointer-events-none mt-16 hidden md:block">
           <div className="relative mx-auto h-64 max-w-3xl">
-            {/* Floating card left */}
-            <div
-              className="animate-float glass absolute left-0 top-4 rounded-xl p-4 text-left"
-              style={{ animationDelay: '0s' }}
-            >
+            <div className="animate-float glass absolute left-0 top-4 rounded-xl p-4 text-left" style={{ animationDelay: '0s' }}>
               <div className="flex items-center gap-2 text-sm text-emerald-400">
                 <CheckCircle className="h-4 w-4" />
                 <span className="font-mono">Two Sum</span>
               </div>
-              <p className="mt-1 text-xs text-zinc-500">Solved in 4 min</p>
+              <p className="mt-1 text-xs text-zinc-500">Python3 · 4ms · 16.2 MB</p>
             </div>
-            {/* Floating card center */}
-            <div
-              className="animate-float glass absolute left-1/2 top-0 -translate-x-1/2 rounded-xl p-4 text-left"
-              style={{ animationDelay: '0.5s' }}
-            >
+            <div className="animate-float glass absolute left-1/2 top-0 -translate-x-1/2 rounded-xl p-4 text-left" style={{ animationDelay: '0.5s' }}>
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
                   <div className="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400" />
@@ -169,11 +168,7 @@ function Hero() {
                 </div>
               </div>
             </div>
-            {/* Floating card right */}
-            <div
-              className="animate-float glass absolute right-0 top-8 rounded-xl p-4 text-left"
-              style={{ animationDelay: '1s' }}
-            >
+            <div className="animate-float glass absolute right-0 top-8 rounded-xl p-4 text-left" style={{ animationDelay: '1s' }}>
               <div className="flex items-center gap-2 text-sm text-orange-400">
                 <Flame className="h-4 w-4" />
                 <span className="font-semibold">42-day streak!</span>
@@ -193,9 +188,9 @@ function Hero() {
 const features = [
   {
     icon: Zap,
-    title: 'LeetCode Sync',
+    title: 'Smart LeetCode Sync',
     description:
-      'Automatically sync your LeetCode submissions. See your solved problems, topics, and difficulty breakdown in real time.',
+      'Auto-capture every submission — code, language, runtime, memory usage, and time spent. No manual logging needed.',
     color: 'text-yellow-400',
     glow: 'group-hover:shadow-yellow-500/10',
   },
@@ -219,23 +214,23 @@ const features = [
     icon: BarChart3,
     title: 'Deep Insights',
     description:
-      'Visualize your strengths and weaknesses across topics, difficulty levels, and time. Know exactly where to focus.',
+      'Visualize strengths across topics, languages, and difficulty. See avg solve time, runtime percentiles, and trends.',
     color: 'text-emerald-400',
     glow: 'group-hover:shadow-emerald-500/10',
   },
   {
-    icon: BookOpen,
-    title: 'Problem Sheets',
+    icon: Brain,
+    title: 'Revision Hub',
     description:
-      'Follow curated problem lists like Neetcode 150, Blind 75, or create your own custom sheets for targeted practice.',
+      'Save key takeaways for every problem you solve. Quiz yourself with spaced-repetition flashcards before interviews.',
     color: 'text-purple-400',
     glow: 'group-hover:shadow-purple-500/10',
   },
   {
     icon: Trophy,
-    title: 'Leaderboards',
+    title: 'Badges & Contests',
     description:
-      'Compete with friends and group members. Rankings update live as you solve problems and climb the ladder.',
+      'Earn badges for milestones, compete in timed group contests, and climb the leaderboard.',
     color: 'text-amber-400',
     glow: 'group-hover:shadow-amber-500/10',
   },
@@ -245,7 +240,6 @@ function Features() {
   return (
     <section id="features" className="relative px-6 py-32">
       <div className="mx-auto max-w-7xl">
-        {/* Section header */}
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-emerald-400">
             Everything you need
@@ -260,9 +254,8 @@ function Features() {
           </p>
         </div>
 
-        {/* Feature grid */}
         <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, i) => (
+          {features.map((feature) => (
             <div
               key={feature.title}
               className={cn(
@@ -271,27 +264,185 @@ function Features() {
                 feature.glow,
                 'hover:shadow-lg'
               )}
-              style={{
-                animationDelay: `${i * 0.1}s`,
-              }}
             >
-              {/* Icon */}
-              <div
-                className={cn(
-                  'mb-4 inline-flex rounded-xl border border-zinc-800 bg-zinc-900 p-3 transition-colors group-hover:border-zinc-700',
-                )}
-              >
+              <div className={cn('mb-4 inline-flex rounded-xl border border-zinc-800 bg-zinc-900 p-3 transition-colors group-hover:border-zinc-700')}>
                 <feature.icon className={cn('h-6 w-6', feature.color)} />
               </div>
-
-              <h3 className="text-lg font-semibold text-white">
-                {feature.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                {feature.description}
-              </p>
+              <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">{feature.description}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Chrome Extension Section                                           */
+/* ------------------------------------------------------------------ */
+function ExtensionSection() {
+  const captures = [
+    { icon: Code2, label: 'Submitted Code', desc: 'Full solution source code in any language' },
+    { icon: Clock, label: 'Time Spent', desc: 'How long you took from opening to solving' },
+    { icon: Zap, label: 'Runtime & Memory', desc: 'Execution time, memory, and percentile rank' },
+    { icon: Target, label: 'Language Stats', desc: 'Track which languages you use most' },
+    { icon: BarChart3, label: 'Submission History', desc: 'Every attempt logged — not just accepts' },
+    { icon: Shield, label: 'Private & Secure', desc: 'Your code stays yours — encrypted and private' },
+  ];
+
+  return (
+    <section id="extension" className="relative px-6 py-32">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute right-1/4 top-1/2 h-[500px] w-[600px] -translate-y-1/2 rounded-full bg-cyan-500/5 blur-[120px]" />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl">
+        <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
+          {/* Left: Info */}
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 text-sm text-cyan-400 mb-6">
+              <Chrome className="h-3.5 w-3.5" />
+              Chrome Extension
+            </div>
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
+              Capture <span className="gradient-text">everything</span> from LeetCode
+            </h2>
+            <p className="mt-4 text-lg text-zinc-400">
+              Our Chrome extension silently watches your LeetCode sessions and captures rich data
+              from every submission — code, performance, time spent, and more.
+            </p>
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {captures.map((c) => (
+                <div key={c.label} className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900">
+                    <c.icon className="h-4 w-4 text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{c.label}</p>
+                    <p className="text-xs text-zinc-500">{c.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="/streaksy-extension.zip"
+                download
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
+              >
+                <Download className="h-4 w-4" />
+                Download Extension
+              </a>
+              <a
+                href="#install-guide"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/50 px-6 py-3 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-600 hover:text-white"
+              >
+                Installation Guide
+                <ChevronRight className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+
+          {/* Right: Visual mockup */}
+          <div className="relative">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-6 backdrop-blur-sm">
+              {/* Fake browser bar */}
+              <div className="flex items-center gap-2 mb-4 pb-4 border-b border-zinc-800">
+                <div className="flex gap-1.5">
+                  <div className="h-3 w-3 rounded-full bg-zinc-700" />
+                  <div className="h-3 w-3 rounded-full bg-zinc-700" />
+                  <div className="h-3 w-3 rounded-full bg-zinc-700" />
+                </div>
+                <div className="flex-1 mx-4 h-7 rounded-lg bg-zinc-800 flex items-center px-3">
+                  <span className="text-[10px] text-zinc-500">leetcode.com/problems/two-sum</span>
+                </div>
+              </div>
+              {/* Fake submission result */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-emerald-400" />
+                  <span className="text-lg font-semibold text-emerald-400">Accepted</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg bg-zinc-800/80 p-3">
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Runtime</p>
+                    <p className="text-lg font-bold text-white">4 ms</p>
+                    <p className="text-xs text-emerald-400">Beats 95.2%</p>
+                  </div>
+                  <div className="rounded-lg bg-zinc-800/80 p-3">
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Memory</p>
+                    <p className="text-lg font-bold text-white">16.2 MB</p>
+                    <p className="text-xs text-cyan-400">Beats 87.1%</p>
+                  </div>
+                  <div className="rounded-lg bg-zinc-800/80 p-3">
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Time Spent</p>
+                    <p className="text-lg font-bold text-white">4m 32s</p>
+                    <p className="text-xs text-zinc-400">Since page open</p>
+                  </div>
+                  <div className="rounded-lg bg-zinc-800/80 p-3">
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Language</p>
+                    <p className="text-lg font-bold text-white">Python3</p>
+                    <p className="text-xs text-zinc-400">12 lines</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
+                  <Zap className="h-4 w-4 text-emerald-400" />
+                  <span className="text-xs text-emerald-400">Synced to Streaksy automatically</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Installation Guide */}
+        <div id="install-guide" className="mt-24">
+          <div className="mx-auto max-w-3xl">
+            <h3 className="text-2xl font-bold text-white text-center mb-2">How to Install</h3>
+            <p className="text-center text-zinc-400 mb-10">Get set up in under 2 minutes</p>
+
+            <div className="space-y-6">
+              {[
+                {
+                  step: 1,
+                  title: 'Download the extension',
+                  desc: 'Click the "Download Extension" button above to get the .zip file.',
+                },
+                {
+                  step: 2,
+                  title: 'Extract the ZIP',
+                  desc: 'Unzip the downloaded file to a folder on your computer. Remember where you saved it.',
+                },
+                {
+                  step: 3,
+                  title: 'Open Chrome Extensions',
+                  desc: 'Go to chrome://extensions in your browser. Enable "Developer mode" using the toggle in the top-right corner.',
+                },
+                {
+                  step: 4,
+                  title: 'Load the extension',
+                  desc: 'Click "Load unpacked" and select the folder where you extracted the ZIP. The Streaksy icon will appear in your toolbar.',
+                },
+                {
+                  step: 5,
+                  title: 'Sign in & start solving',
+                  desc: 'Click the Streaksy icon, sign in with your account, then head to LeetCode. Every accepted submission will be auto-synced with full details!',
+                },
+              ].map((s) => (
+                <div key={s.step} className="flex gap-4">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 text-sm font-bold text-white">
+                    {s.step}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-white">{s.title}</h4>
+                    <p className="mt-1 text-sm text-zinc-400">{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -311,7 +462,6 @@ const stats = [
 function Stats() {
   return (
     <section id="stats" className="relative px-6 py-32">
-      {/* Background accent */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-1/2 h-[500px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/5 blur-[120px]" />
       </div>
@@ -331,7 +481,6 @@ function Stats() {
           </p>
         </div>
 
-        {/* Stats grid */}
         <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
             <div
@@ -347,7 +496,6 @@ function Stats() {
           ))}
         </div>
 
-        {/* Testimonial-style blurbs */}
         <div className="mt-16 grid gap-6 md:grid-cols-3">
           {[
             {
@@ -359,14 +507,14 @@ function Stats() {
             },
             {
               quote:
-                'The LeetCode sync is seamless. I just solve problems and Streaksy tracks everything automatically.',
+                'The LeetCode sync is seamless. I just solve problems and Streaksy tracks everything automatically — even my code!',
               name: 'Priya M.',
               role: 'CS Student, Stanford',
               stars: 5,
             },
             {
               quote:
-                'My 90-day streak was the push I needed to finally crack my FAANG interviews. Streaksy made it fun.',
+                'The revision hub helped me nail my FAANG interviews. Being able to quiz myself on past problems was a game changer.',
               name: 'James L.',
               role: 'SDE II @ Amazon',
               stars: 5,
@@ -378,10 +526,7 @@ function Stats() {
             >
               <div className="mb-3 flex gap-0.5">
                 {Array.from({ length: t.stars }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-4 w-4 fill-amber-400 text-amber-400"
-                  />
+                  <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                 ))}
               </div>
               <p className="text-sm leading-relaxed text-zinc-300">
@@ -415,20 +560,20 @@ function HowItWorks() {
     },
     {
       step: '02',
-      title: 'Connect LeetCode',
-      description: 'Link your LeetCode profile and we auto-sync your progress.',
-      icon: Zap,
+      title: 'Install the extension',
+      description: 'Add our Chrome extension to auto-capture your LeetCode submissions.',
+      icon: Chrome,
     },
     {
       step: '03',
-      title: 'Join a study group',
-      description: 'Find or create a group. Assign sheets and start grinding.',
-      icon: Users,
+      title: 'Solve problems',
+      description: 'Just solve on LeetCode as usual. We capture code, time, runtime, memory — everything.',
+      icon: Zap,
     },
     {
       step: '04',
       title: 'Level up',
-      description: 'Track streaks, climb leaderboards, and ace your interviews.',
+      description: 'Track streaks, review with flashcards, compete in groups, and ace your interviews.',
       icon: TrendingUp,
     },
   ];
@@ -449,7 +594,6 @@ function HowItWorks() {
         <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s, i) => (
             <div key={s.step} className="relative text-center">
-              {/* Connector line */}
               {i < steps.length - 1 && (
                 <div className="absolute right-0 top-8 hidden h-px w-full translate-x-1/2 bg-gradient-to-r from-zinc-700 to-transparent lg:block" />
               )}
@@ -476,10 +620,8 @@ function CTA() {
   return (
     <section id="cta" className="relative px-6 py-32">
       <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl">
-        {/* Animated border */}
         <div className="animated-border rounded-3xl">
           <div className="relative rounded-3xl bg-zinc-950 px-8 py-20 text-center sm:px-16">
-            {/* Background glow */}
             <div className="pointer-events-none absolute inset-0">
               <div className="absolute left-1/2 top-1/2 h-[300px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-[80px]" />
             </div>
@@ -537,6 +679,9 @@ function Footer() {
           grinders.
         </p>
         <div className="flex gap-6">
+          <a href="/streaksy-extension.zip" download className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+            Download Extension
+          </a>
           <Link href="/auth/login" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
             Log in
           </Link>
@@ -559,6 +704,7 @@ export default function Home() {
       <main>
         <Hero />
         <Features />
+        <ExtensionSection />
         <Stats />
         <HowItWorks />
         <CTA />
