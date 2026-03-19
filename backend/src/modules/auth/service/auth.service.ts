@@ -24,6 +24,11 @@ export const authService = {
     // Generate email verification token
     this.sendVerificationEmail(user.id, email, displayName).catch(() => {});
 
+    // Auto-join "Streaksy Global" group so new users see feed content
+    import('../../group/repository/group.repository').then(m => {
+      m.groupRepository.joinByInviteCode?.('STREAKSY', user.id).catch(() => {});
+    }).catch(() => {});
+
     return {
       user: { id: user.id, email: user.email, displayName: user.display_name, emailVerified: false },
       token: this.generateToken(user.id, user.email),

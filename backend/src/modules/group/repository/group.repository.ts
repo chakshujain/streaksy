@@ -83,4 +83,14 @@ export const groupRepository = {
       [userId]
     );
   },
+
+  async joinByInviteCode(inviteCode: string, userId: string): Promise<void> {
+    const group = await queryOne<GroupRow>('SELECT * FROM groups WHERE invite_code = $1', [inviteCode]);
+    if (group) {
+      await query(
+        'INSERT INTO group_members (group_id, user_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+        [group.id, userId, 'member']
+      );
+    }
+  },
 };
