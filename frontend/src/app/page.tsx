@@ -329,7 +329,7 @@ function ExtensionSection() {
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <a
-                href="/streaksy-extension.zip"
+                href="/streaksy-extension.tar.gz"
                 download
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
               >
@@ -679,7 +679,7 @@ function Footer() {
           grinders.
         </p>
         <div className="flex gap-6">
-          <a href="/streaksy-extension.zip" download className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+          <a href="/streaksy-extension.tar.gz" download className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
             Download Extension
           </a>
           <Link href="/auth/login" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
