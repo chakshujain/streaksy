@@ -163,7 +163,7 @@ export function SearchBar() {
           onKeyDown={handleKeyDown}
           onFocus={handleFocus}
           placeholder="Search problems..."
-          className="w-64 rounded-lg border border-zinc-700 bg-zinc-800/50 pl-10 pr-10 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="flex-1 max-w-md w-full rounded-lg border border-zinc-700 bg-zinc-800/50 pl-10 pr-10 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
         />
         {loading ? (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 animate-spin" />

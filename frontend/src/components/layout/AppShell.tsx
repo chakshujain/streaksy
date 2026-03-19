@@ -7,6 +7,9 @@ import { useAuthStore } from '@/lib/store';
 import { authApi } from '@/lib/api';
 import { StreakRiskBanner } from '@/components/poke/StreakRiskBanner';
 import { TopLoader } from '@/components/ui/TopLoader';
+import { SearchBar } from '@/components/search/SearchBar';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading, hydrate } = useAuthStore();
@@ -72,6 +75,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
       <main className={`pl-64 ${user.emailVerified === false ? 'pt-10' : ''}`}>
+        {/* Top Bar */}
+        <div className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-zinc-800/40 bg-zinc-950/80 backdrop-blur-xl px-8 py-3">
+          <SearchBar />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <NotificationBell />
+          </div>
+        </div>
         {/* Streak risk banner — shows when streak is about to break */}
         <StreakRiskBanner />
         <div className="mx-auto max-w-6xl px-8 py-8">{children}</div>

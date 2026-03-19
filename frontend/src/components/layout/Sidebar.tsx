@@ -17,9 +17,6 @@ import {
   Rss,
 } from 'lucide-react';
 import { useAuthStore, useDashboardStore } from '@/lib/store';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { SearchBar } from '@/components/search/SearchBar';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -50,23 +47,14 @@ export function Sidebar() {
       {/* Gradient border accent on the right edge */}
       <div className="absolute right-0 top-0 h-full w-px bg-gradient-to-b from-emerald-500/20 via-cyan-500/10 to-transparent" />
 
-      {/* Logo + Search + Notifications */}
-      <div className="flex items-center justify-between border-b border-zinc-800/40 px-6 py-5">
+      {/* Logo */}
+      <div className="flex items-center border-b border-zinc-800/40 px-6 py-5">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/20">
             <Flame className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-bold gradient-text tracking-tight">Streaksy</span>
         </div>
-        <div className="flex items-center gap-1">
-          <ThemeToggle />
-          <NotificationBell />
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="px-3 py-3 border-b border-zinc-800/40">
-        <SearchBar />
       </div>
 
       {/* Nav */}

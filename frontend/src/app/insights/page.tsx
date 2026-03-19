@@ -459,90 +459,6 @@ function DifficultyTrendChart({ data }: { data: DifficultyTrend[] }) {
   );
 }
 
-/* ─── Streak Heatmap (GitHub-style) ─── */
-
-function StreakHeatmap({ weekly }: { weekly: WeeklyData[] }) {
-  // Build a 7-column x N-row grid from weekly data spread across days
-  // We'll create a simplified 5-week x 7-day heatmap from weekly counts
-  const maxCount = Math.max(...weekly.map((w) => w.count), 1);
-
-  // Generate cells: spread each week's count across approximate days
-  const cells: { date: string; intensity: number }[] = [];
-  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-  weekly.forEach((week) => {
-    const avgPerDay = week.count / 7;
-    for (let d = 0; d < 7; d++) {
-      // Simulate daily distribution (weighted toward weekdays)
-      const weight = d < 5 ? 1.2 : 0.6;
-      const estimated = Math.round(avgPerDay * weight * 10) / 10;
-      const intensity = maxCount > 0 ? Math.min(estimated / (maxCount / 7 * 1.2), 1) : 0;
-      const weekDate = new Date(week.weekStart);
-      weekDate.setDate(weekDate.getDate() + d);
-      cells.push({ date: weekDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), intensity });
-    }
-  });
-
-  const getColor = (intensity: number) => {
-    if (intensity <= 0) return 'bg-zinc-800/40';
-    if (intensity < 0.25) return 'bg-emerald-900/60';
-    if (intensity < 0.5) return 'bg-emerald-700/70';
-    if (intensity < 0.75) return 'bg-emerald-500/80';
-    return 'bg-emerald-400';
-  };
-
-  return (
-    <div className="glass rounded-2xl border border-zinc-800/50 p-6">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-green-500/20">
-            <Calendar className="h-3.5 w-3.5 text-emerald-400" />
-          </div>
-          <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Activity Heatmap</h3>
-        </div>
-        <div className="flex items-center gap-1.5 text-[10px] text-zinc-500">
-          <span>Less</span>
-          <div className="h-3 w-3 rounded-sm bg-zinc-800/40" />
-          <div className="h-3 w-3 rounded-sm bg-emerald-900/60" />
-          <div className="h-3 w-3 rounded-sm bg-emerald-700/70" />
-          <div className="h-3 w-3 rounded-sm bg-emerald-500/80" />
-          <div className="h-3 w-3 rounded-sm bg-emerald-400" />
-          <span>More</span>
-        </div>
-      </div>
-
-      <div className="flex gap-1.5">
-        {/* Day labels */}
-        <div className="flex flex-col gap-1.5 pr-2">
-          {dayLabels.map((d, i) => (
-            <div key={d} className="h-4 flex items-center">
-              {i % 2 === 0 && <span className="text-[9px] text-zinc-600">{d}</span>}
-            </div>
-          ))}
-        </div>
-        {/* Grid */}
-        {weekly.map((_, weekIdx) => (
-          <div key={weekIdx} className="flex flex-col gap-1.5 flex-1">
-            {Array.from({ length: 7 }).map((_, dayIdx) => {
-              const cell = cells[weekIdx * 7 + dayIdx];
-              return (
-                <div
-                  key={dayIdx}
-                  className={cn(
-                    'h-4 rounded-sm transition-colors duration-200 hover:ring-1 hover:ring-zinc-600',
-                    cell ? getColor(cell.intensity) : 'bg-zinc-800/40'
-                  )}
-                  title={cell ? `${cell.date}: activity level ${Math.round(cell.intensity * 100)}%` : ''}
-                />
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 /* ─── Period Comparison ─── */
 
 function PeriodComparison({ weekly }: { weekly: WeeklyData[] }) {
@@ -724,15 +640,6 @@ export default function InsightsPage() {
           </div>
         </div>
 
-        {/* Your Stats Summary */}
-        {!overviewLoading && overview && !weeklyLoading && weekly ? (
-          <div className="animate-slide-up" style={animDelay(0, 25)}>
-            <StatsSummary overview={overview} weekly={weekly} />
-          </div>
-        ) : (
-          <Skeleton className="h-28 rounded-2xl" />
-        )}
-
         {/* Overview Cards */}
         {overviewLoading || !overview ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -746,7 +653,16 @@ export default function InsightsPage() {
           </div>
         )}
 
-        {/* Difficulty + Weekly row */}
+        {/* Your Stats Summary */}
+        {!overviewLoading && overview && !weeklyLoading && weekly ? (
+          <div className="animate-slide-up" style={animDelay(0, 100)}>
+            <StatsSummary overview={overview} weekly={weekly} />
+          </div>
+        ) : (
+          <Skeleton className="h-28 rounded-2xl" />
+        )}
+
+        {/* Difficulty Breakdown + Weekly Line Graph */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {overviewLoading || !overview ? (
             <Skeleton className="h-72 rounded-2xl" />
@@ -765,47 +681,38 @@ export default function InsightsPage() {
           )}
         </div>
 
-        {/* Heatmap + Period Comparison row */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          {weeklyLoading || !weekly ? (
-            <>
-              <Skeleton className="h-48 rounded-2xl lg:col-span-2" />
-              <Skeleton className="h-48 rounded-2xl" />
-            </>
-          ) : (
-            <>
-              <div className="lg:col-span-2 animate-slide-up" style={animDelay(0, 175)}>
-                <StreakHeatmap weekly={weekly} />
-              </div>
-              <div className="animate-slide-up" style={animDelay(0, 200)}>
-                <PeriodComparison weekly={weekly} />
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Peer Activity */}
-        <div className="animate-slide-up" style={{ animationDelay: '175ms', animationFillMode: 'both' }}>
+        {/* What Your Peers Are Doing */}
+        <div className="animate-slide-up" style={animDelay(0, 175)}>
           <PeerActivity events={peerActivity ?? null} loading={peerLoading} />
         </div>
 
-        {/* Tags */}
+        {/* Topics */}
         {tagsLoading || !tags ? (
           <Skeleton className="h-48 rounded-2xl" />
         ) : (
-          <div className="animate-slide-up" style={animDelay(0, 225)}>
+          <div className="animate-slide-up" style={animDelay(0, 200)}>
             <TagSection tags={tags} />
           </div>
         )}
 
-        {/* Monthly Trend - full width */}
-        {trendLoading || !trend ? (
-          <Skeleton className="h-64 rounded-2xl" />
-        ) : (
-          <div className="animate-slide-up" style={animDelay(0, 250)}>
-            <DifficultyTrendChart data={trend} />
-          </div>
-        )}
+        {/* Monthly Trend + Period Comparison */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {trendLoading || !trend ? (
+            <Skeleton className="h-64 rounded-2xl" />
+          ) : (
+            <div className="animate-slide-up" style={animDelay(0, 225)}>
+              <DifficultyTrendChart data={trend} />
+            </div>
+          )}
+
+          {weeklyLoading || !weekly ? (
+            <Skeleton className="h-48 rounded-2xl" />
+          ) : (
+            <div className="animate-slide-up" style={animDelay(0, 250)}>
+              <PeriodComparison weekly={weekly} />
+            </div>
+          )}
+        </div>
       </div>
       </PageTransition>
     </AppShell>

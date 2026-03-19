@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { ContributionHeatmap } from '@/components/dashboard/ContributionHeatmap';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { DashboardGrid } from '@/components/dashboard/DashboardGrid';
-import type { DashboardWidget } from '@/components/dashboard/DashboardGrid';
 import { useDashboardStore, useAuthStore } from '@/lib/store';
 import { useAsync } from '@/hooks/useAsync';
 import {
@@ -753,127 +751,11 @@ export default function DashboardPage() {
 
   const showRooms = !roomsLoading && activeRooms && activeRooms.length > 0;
 
-  const widgets: DashboardWidget[] = [
-    {
-      id: 'stats',
-      title: 'Stats',
-      defaultLayout: { x: 0, y: 0, w: 12, h: 2, minH: 2, minW: 6 },
-      component: (
-        <StatsSection
-          currentStreak={currentStreak}
-          longestStreak={longestStreak}
-          totalSolved={totalSolved}
-          activeDays={activeDays}
-          weeklySolves={weeklySolves}
-          insightsLoading={insightsLoading}
-          progressLoading={progressLoading}
-        />
-      ),
-    },
-    {
-      id: 'quick-actions',
-      title: 'Quick Actions',
-      defaultLayout: { x: 0, y: 2, w: 12, h: 1, minH: 1, minW: 4 },
-      component: <QuickActionsSection />,
-    },
-    {
-      id: 'daily',
-      title: "Today's Problems",
-      defaultLayout: { x: 0, y: 3, w: 12, h: 3, minH: 2, minW: 4 },
-      component: (
-        <DailyProblemsSection
-          dailyLoading={dailyLoading}
-          dailyProblems={dailyProblems}
-        />
-      ),
-    },
-    {
-      id: 'groups',
-      title: 'My Groups',
-      defaultLayout: { x: 0, y: 6, w: 4, h: 4, minH: 3, minW: 3 },
-      component: (
-        <GroupsSection
-          groupsLoading={groupsLoading}
-          groups={groups}
-        />
-      ),
-    },
-    {
-      id: 'leaderboard',
-      title: 'Leaderboard',
-      defaultLayout: { x: 4, y: 6, w: 4, h: 4, minH: 3, minW: 3 },
-      component: (
-        <LeaderboardSection
-          lbLoading={lbLoading}
-          leaderboard={leaderboard}
-          firstGroupId={firstGroupId}
-        />
-      ),
-    },
-    {
-      id: 'feed',
-      title: 'Recent Feed',
-      defaultLayout: { x: 8, y: 6, w: 4, h: 4, minH: 3, minW: 3 },
-      component: (
-        <FeedSection
-          feedLoading={feedLoading}
-          feedEvents={feedEvents}
-        />
-      ),
-    },
-    {
-      id: 'heatmap',
-      title: 'Heatmap',
-      defaultLayout: { x: 0, y: 10, w: 8, h: 4, minH: 3, minW: 4 },
-      component: (
-        <HeatmapSection
-          progressLoading={progressLoading}
-          progressData={progressData}
-        />
-      ),
-    },
-    {
-      id: 'badges-difficulty',
-      title: 'Badges & Difficulty',
-      defaultLayout: { x: 8, y: 10, w: 4, h: 4, minH: 3, minW: 3 },
-      component: (
-        <BadgesDifficultySection
-          badgesLoading={badgesLoading}
-          badges={badges}
-          insightsLoading={insightsLoading}
-          difficultyBreakdown={difficultyBreakdown}
-          diffTotal={diffTotal}
-        />
-      ),
-    },
-    ...(showRooms
-      ? [
-          {
-            id: 'active-rooms',
-            title: 'Active Rooms',
-            defaultLayout: { x: 0, y: 14, w: 12, h: 3, minH: 2, minW: 4 },
-            component: <ActiveRoomsSection activeRooms={activeRooms} />,
-          },
-        ]
-      : []),
-    {
-      id: 'recent-activity',
-      title: 'Recent Activity',
-      defaultLayout: { x: 0, y: showRooms ? 17 : 14, w: 12, h: 5, minH: 3, minW: 4 },
-      component: (
-        <RecentActivitySection
-          progressLoading={progressLoading}
-          progressData={progressData}
-        />
-      ),
-    },
-  ];
-
   return (
     <AppShell>
       <PageTransition>
-        <div className="space-y-4">
-          {/* ─── 1. Welcome Header ─────────────────────────── */}
+        <div className="space-y-6">
+          {/* ─── Welcome Header ─────────────────────────── */}
           <div className="animate-slide-up" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
             <div className="flex items-baseline gap-2">
               <h1 className="text-3xl font-bold tracking-tight">
@@ -890,11 +772,75 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* ─── 2. Recovery Challenge ─────────────────────── */}
+          {/* ─── Recovery Challenge ─────────────────────── */}
           <RecoveryChallenge />
 
-          {/* ─── 3. Draggable Grid ─────────────────────────── */}
-          <DashboardGrid widgets={widgets} />
+          {/* ─── Stats ─────────────────────────────────── */}
+          <StatsSection
+            currentStreak={currentStreak}
+            longestStreak={longestStreak}
+            totalSolved={totalSolved}
+            activeDays={activeDays}
+            weeklySolves={weeklySolves}
+            insightsLoading={insightsLoading}
+            progressLoading={progressLoading}
+          />
+
+          {/* ─── Quick Actions ──────────────────────────── */}
+          <QuickActionsSection />
+
+          {/* ─── Today's Problems ───────────────────────── */}
+          <DailyProblemsSection
+            dailyLoading={dailyLoading}
+            dailyProblems={dailyProblems}
+          />
+
+          {/* ─── Groups + Leaderboard + Feed ────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <GroupsSection
+              groupsLoading={groupsLoading}
+              groups={groups}
+            />
+            <LeaderboardSection
+              lbLoading={lbLoading}
+              leaderboard={leaderboard}
+              firstGroupId={firstGroupId}
+            />
+            <FeedSection
+              feedLoading={feedLoading}
+              feedEvents={feedEvents}
+            />
+          </div>
+
+          {/* ─── Heatmap + Badges & Difficulty ──────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
+              <HeatmapSection
+                progressLoading={progressLoading}
+                progressData={progressData}
+              />
+            </div>
+            <div>
+              <BadgesDifficultySection
+                badgesLoading={badgesLoading}
+                badges={badges}
+                insightsLoading={insightsLoading}
+                difficultyBreakdown={difficultyBreakdown}
+                diffTotal={diffTotal}
+              />
+            </div>
+          </div>
+
+          {/* ─── Active Rooms (conditional) ─────────────── */}
+          {showRooms && (
+            <ActiveRoomsSection activeRooms={activeRooms} />
+          )}
+
+          {/* ─── Recent Activity ────────────────────────── */}
+          <RecentActivitySection
+            progressLoading={progressLoading}
+            progressData={progressData}
+          />
         </div>
       </PageTransition>
     </AppShell>
