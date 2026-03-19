@@ -15,9 +15,9 @@ import { useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/cn';
 import {
   Play, Square, Copy, CheckCircle, Clock, MessageSquare, Send, ExternalLink,
-  Crown, Users, Swords, Timer,
+  Crown, Users, Swords, Timer, List, Trophy,
 } from 'lucide-react';
-import type { Room, RoomParticipant, RoomMessage } from '@/lib/types';
+import type { Room, RoomParticipant, RoomMessage, RoomProblem } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function RoomDetailPage() {
@@ -28,9 +28,11 @@ export default function RoomDetailPage() {
   const [room, setRoom] = useState<Room | null>(null);
   const [participants, setParticipants] = useState<RoomParticipant[]>([]);
   const [messages, setMessages] = useState<RoomMessage[]>([]);
+  const [problems, setProblems] = useState<RoomProblem[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [scheduledTimeLeft, setScheduledTimeLeft] = useState<number | null>(null);
   const [connected, setConnected] = useState(false);
   const [celebrateUser, setCelebrateUser] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -46,6 +48,15 @@ export default function RoomDetailPage() {
     }),
     [roomId]
   );
+
+  // Fetch problems for multi-problem rooms
+  useEffect(() => {
+    if (room?.mode === 'multi' || room) {
+      roomsApi.getProblems(roomId).then(r => {
+        setProblems(r.data.problems || []);
+      }).catch(() => {});
+    }
+  }, [room?.id, room?.mode, roomId]);
 
   // Socket connection
   useEffect(() => {
@@ -103,6 +114,21 @@ export default function RoomDetailPage() {
     return () => clearInterval(interval);
   }, [room?.started_at, room?.time_limit_minutes, room?.status]);
 
+  // Scheduled countdown
+  useEffect(() => {
+    if (!room?.scheduled_at || room.status !== 'scheduled') { setScheduledTimeLeft(null); return; }
+
+    const startTime = new Date(room.scheduled_at).getTime();
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.floor((startTime - Date.now()) / 1000));
+      setScheduledTimeLeft(remaining);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [room?.scheduled_at, room?.status]);
+
   // Auto-scroll chat
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' });
@@ -143,8 +169,10 @@ export default function RoomDetailPage() {
   };
 
   const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
     const sec = s % 60;
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
@@ -177,6 +205,9 @@ export default function RoomDetailPage() {
     return 0;
   });
 
+  const solvedCount = participants.filter(p => p.solved_at).length;
+  const winner = ranked.length > 0 && ranked[0].solved_at ? ranked[0] : null;
+
   return (
     <AppShell>
       <PageTransition>
@@ -186,16 +217,24 @@ export default function RoomDetailPage() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-zinc-100">{room.name}</h1>
-              <Badge variant={room.status === 'active' ? 'easy' : room.status === 'waiting' ? 'medium' : 'default'}>
+              <Badge variant={room.status === 'active' ? 'easy' : room.status === 'waiting' ? 'medium' : room.status === 'scheduled' ? 'default' : 'default'}>
                 {room.status}
               </Badge>
+              {room.mode === 'multi' && (
+                <Badge variant="default">Multi-Problem</Badge>
+              )}
             </div>
             <div className="flex items-center gap-4 mt-2">
-              <a href={`https://leetcode.com/problems/${room.problem_slug}`} target="_blank" rel="noopener noreferrer"
-                className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors duration-200">
-                {room.problem_title} <ExternalLink className="h-3 w-3" />
-              </a>
-              <Badge variant={room.problem_difficulty as 'easy' | 'medium' | 'hard'}>{room.problem_difficulty}</Badge>
+              {room.problem_slug && (
+                <a href={`https://leetcode.com/problems/${room.problem_slug}`} target="_blank" rel="noopener noreferrer"
+                  className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors duration-200">
+                  {room.problem_title} <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+              {room.problem_difficulty && <Badge variant={room.problem_difficulty as 'easy' | 'medium' | 'hard'}>{room.problem_difficulty}</Badge>}
+              {!room.problem_slug && problems.length > 0 && (
+                <span className="text-sm text-zinc-400">{problems.length} problems</span>
+              )}
             </div>
           </div>
 
@@ -207,7 +246,7 @@ export default function RoomDetailPage() {
             </button>
 
             {/* Host controls */}
-            {isHost && room.status === 'waiting' && (
+            {isHost && (room.status === 'waiting' || room.status === 'scheduled') && (
               <Button onClick={handleStart} className="flex items-center gap-1.5">
                 <Play className="h-4 w-4" /> Start
               </Button>
@@ -219,6 +258,19 @@ export default function RoomDetailPage() {
             )}
           </div>
         </div>
+
+        {/* Scheduled countdown */}
+        {room.status === 'scheduled' && scheduledTimeLeft !== null && (
+          <div className="flex items-center justify-center gap-3 rounded-xl p-6 border border-blue-500/30 bg-blue-500/5 animate-slide-up" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
+            <Clock className="h-6 w-6 text-blue-400" />
+            <div className="text-center">
+              <p className="text-sm text-blue-400 mb-1">Starting in</p>
+              <span className="text-3xl font-mono font-bold tabular-nums text-blue-400">
+                {formatTime(scheduledTimeLeft)}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Timer */}
         {room.status === 'active' && timeLeft !== null && (
@@ -237,11 +289,37 @@ export default function RoomDetailPage() {
         {celebrateUser && (
           <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
             <div className="animate-bounce-in text-center">
-              <div className="text-6xl mb-2">🎉</div>
+              <div className="text-6xl mb-2">{'\u{1F389}'}</div>
               <p className="text-lg font-bold text-emerald-400 animate-pulse-glow rounded-xl bg-zinc-900/90 px-6 py-3 border border-emerald-500/30">
                 Someone solved it!
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Results summary for finished rooms */}
+        {room.status === 'finished' && (
+          <div className="animate-slide-up" style={{ animationDelay: '75ms', animationFillMode: 'both' }}>
+            <Card className="border-amber-500/10 bg-gradient-to-br from-amber-500/5 to-transparent">
+              <div className="flex items-center gap-3 mb-4">
+                <Trophy className="h-5 w-5 text-amber-400" />
+                <h2 className="text-lg font-semibold text-zinc-200">Results</h2>
+              </div>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-zinc-100">{participants.length}</p>
+                  <p className="text-xs text-zinc-500 uppercase mt-1">Participants</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-emerald-400">{solvedCount}</p>
+                  <p className="text-xs text-zinc-500 uppercase mt-1">Solved</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-amber-400">{winner?.display_name || '--'}</p>
+                  <p className="text-xs text-zinc-500 uppercase mt-1">Winner</p>
+                </div>
+              </div>
+            </Card>
           </div>
         )}
 
@@ -266,7 +344,34 @@ export default function RoomDetailPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up" style={{ animationDelay: '125ms', animationFillMode: 'both' }}>
+        <div className={cn('grid grid-cols-1 gap-6 animate-slide-up', problems.length > 1 ? 'lg:grid-cols-4' : 'lg:grid-cols-3')} style={{ animationDelay: '125ms', animationFillMode: 'both' }}>
+          {/* Problem list sidebar for multi-problem rooms */}
+          {problems.length > 1 && (
+            <Card className="lg:col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                <List className="h-5 w-5 text-zinc-400" />
+                <h2 className="text-sm font-semibold text-zinc-200">Problems ({problems.length})</h2>
+              </div>
+              <div className="space-y-2">
+                {problems.map((p, i) => (
+                  <a
+                    key={p.problem_id}
+                    href={`https://leetcode.com/problems/${p.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 bg-zinc-800/30 hover:bg-zinc-700/30 transition-all duration-200"
+                  >
+                    <span className="text-xs font-mono text-zinc-500 w-5">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-zinc-200 truncate">{p.title}</p>
+                    </div>
+                    <Badge variant={p.difficulty as 'easy' | 'medium' | 'hard'}>{p.difficulty}</Badge>
+                  </a>
+                ))}
+              </div>
+            </Card>
+          )}
+
           {/* Participants / Leaderboard */}
           <Card className="lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
@@ -316,7 +421,7 @@ export default function RoomDetailPage() {
           </Card>
 
           {/* Chat */}
-          <Card className="lg:col-span-2 flex flex-col" padding={false}>
+          <Card className={cn('flex flex-col', problems.length > 1 ? 'lg:col-span-2' : 'lg:col-span-2')} padding={false}>
             <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
               <MessageSquare className="h-4 w-4 text-zinc-400" />
               <h2 className="text-sm font-semibold text-zinc-200">Discussion</h2>
@@ -326,7 +431,7 @@ export default function RoomDetailPage() {
             <div ref={chatRef} className="flex-1 min-h-[300px] max-h-[500px] overflow-y-auto px-4 py-3 space-y-3">
               {messages.length === 0 ? (
                 <p className="text-sm text-zinc-600 text-center py-8">
-                  {room.status === 'waiting' ? 'Chat will be available during and after the solve session.' : 'No messages yet. Start the discussion!'}
+                  {room.status === 'waiting' || room.status === 'scheduled' ? 'Chat will be available during and after the solve session.' : 'No messages yet. Start the discussion!'}
                 </p>
               ) : (
                 messages.map((msg, i) => (
