@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: solvo
+      POSTGRES_DB: streaksy
     ports:
       - '5432:5432'
     volumes:
@@ -26,7 +26,7 @@ services:
     ports:
       - '3000:3000'
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/solvo
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/streaksy
       REDIS_URL: redis://redis:6379
       JWT_SECRET: change-this-in-production
       NODE_ENV: production

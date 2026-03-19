@@ -27,4 +27,15 @@ export const problemController = {
     const problems = await problemService.getSheetProblems(param(req, 'slug'));
     res.json({ problems });
   },
+
+  async search(req: Request, res: Response) {
+    const q = req.query.q as string;
+    if (!q || q.trim().length === 0) {
+      res.json({ problems: [] });
+      return;
+    }
+    const limit = parseInt(req.query.limit as string) || 20;
+    const problems = await problemService.search(q, limit);
+    res.json({ problems });
+  },
 };

@@ -8,7 +8,7 @@ import { asyncHandler } from '../../../common/utils/asyncHandler';
 import { AppError } from '../../../common/errors/AppError';
 
 const upload = multer({
-  dest: path.join(os.tmpdir(), 'solvo-uploads'),
+  dest: path.join(os.tmpdir(), 'streaksy-uploads'),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (_req, file, cb) => {
     const allowed = [

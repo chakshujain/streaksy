@@ -5,7 +5,7 @@ export const env = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
   database: {
-    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/solvo',
+    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/streaksy',
   },
   redis: {
     url: process.env.REDIS_URL || 'redis://localhost:6379',
@@ -18,4 +18,23 @@ export const env = {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
     max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
   },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3001/api/auth/google/callback',
+  },
+  github: {
+    clientId: process.env.GITHUB_CLIENT_ID || '',
+    clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+    callbackUrl: process.env.GITHUB_CALLBACK_URL || 'http://localhost:3001/api/auth/github/callback',
+  },
+  email: {
+    host: process.env.SMTP_HOST || '',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    from: process.env.SMTP_FROM || 'Streaksy <noreply@streaksy.in>',
+  },
+  logLevel: process.env.LOG_LEVEL || 'info',
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 } as const;

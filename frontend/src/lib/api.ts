@@ -7,7 +7,7 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('solvo_token');
+    const token = localStorage.getItem('streaksy_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -19,7 +19,7 @@ api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('solvo_token');
+      localStorage.removeItem('streaksy_token');
       window.location.href = '/auth/login';
     }
     return Promise.reject(error);
@@ -34,6 +34,25 @@ export const authApi = {
     api.post('/auth/login', data),
   connectLeetcode: (leetcodeUsername: string) =>
     api.post('/auth/connect-leetcode', { leetcodeUsername }),
+  forgotPassword: (email: string) =>
+    api.post('/auth/forgot-password', { email }),
+  resetPassword: (token: string, password: string) =>
+    api.post('/auth/reset-password', { token, password }),
+  verifyEmail: (token: string) =>
+    api.post('/auth/verify-email', { token }),
+  resendVerification: () =>
+    api.post('/auth/resend-verification'),
+  getProfile: () =>
+    api.get('/auth/profile'),
+  updateProfile: (data: { displayName?: string; bio?: string; location?: string; githubUrl?: string; linkedinUrl?: string }) =>
+    api.put('/auth/profile', data),
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return api.post('/auth/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 // ── Problems ──
@@ -46,6 +65,8 @@ export const problemsApi = {
     api.get('/problems/sheets'),
   getSheetProblems: (slug: string) =>
     api.get(`/problems/sheets/${slug}`),
+  search: (q: string, limit?: number) =>
+    api.get('/problems/search', { params: { q, limit } }),
 };
 
 // ── Groups ──
@@ -120,6 +141,79 @@ export const sheetsApi = {
 export const preferencesApi = {
   get: () => api.get('/preferences'),
   update: (prefs: Record<string, unknown>) => api.put('/preferences', prefs),
+};
+
+// ── Notifications ──
+export const notificationsApi = {
+  list: (params?: { limit?: number; offset?: number }) =>
+    api.get('/notifications', { params }),
+  unreadCount: () =>
+    api.get('/notifications/unread-count'),
+  markRead: (id: string) =>
+    api.patch(`/notifications/${id}/read`),
+  markAllRead: () =>
+    api.patch('/notifications/read-all'),
+};
+
+// ── Discussions ──
+export const discussionsApi = {
+  getComments: (slug: string, params?: { limit?: number; offset?: number }) =>
+    api.get(`/problems/${slug}/comments`, { params }),
+  createComment: (slug: string, data: { content: string; parentId?: string }) =>
+    api.post(`/problems/${slug}/comments`, data),
+  getReplies: (commentId: string) =>
+    api.get(`/comments/${commentId}/replies`),
+  updateComment: (id: string, content: string) =>
+    api.put(`/comments/${id}`, { content }),
+  deleteComment: (id: string) =>
+    api.delete(`/comments/${id}`),
+};
+
+// ── Activity ──
+export const activityApi = {
+  getGroupActivity: (groupId: string, params?: { limit?: number; offset?: number }) =>
+    api.get(`/groups/${groupId}/activity`, { params }),
+};
+
+// ── Revisions ──
+export const revisionApi = {
+  list: (params?: { tag?: string; difficulty?: string; limit?: number; offset?: number }) =>
+    api.get('/revisions', { params }),
+  quiz: (count?: number) =>
+    api.get('/revisions/quiz', { params: { count } }),
+  get: (problemId: string) =>
+    api.get(`/revisions/${problemId}`),
+  createOrUpdate: (data: {
+    problemId: string;
+    keyTakeaway: string;
+    approach?: string;
+    timeComplexity?: string;
+    spaceComplexity?: string;
+    tags?: string[];
+    difficultyRating?: string;
+  }) => api.post('/revisions', data),
+  markRevised: (id: string) =>
+    api.patch(`/revisions/${id}/revised`),
+  delete: (id: string) =>
+    api.delete(`/revisions/${id}`),
+};
+
+// ── Contests ──
+export const contestsApi = {
+  getForGroup: (groupId: string) =>
+    api.get(`/groups/${groupId}/contests`),
+  getDetails: (contestId: string) =>
+    api.get(`/contests/${contestId}`),
+  create: (groupId: string, data: { title: string; description?: string; startsAt: string; endsAt: string; problemIds?: string[] }) =>
+    api.post(`/groups/${groupId}/contests`, data),
+  submit: (contestId: string, problemId: string) =>
+    api.post(`/contests/${contestId}/submit`, { problemId }),
+};
+
+// ── Badges ──
+export const badgesApi = {
+  list: () => api.get('/badges'),
+  mine: () => api.get('/badges/mine'),
 };
 
 export default api;

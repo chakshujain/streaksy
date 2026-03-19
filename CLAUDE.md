@@ -1,0 +1,132 @@
+# Streaksy - Claude Code Context
+
+Multiplayer DSA prep platform with LeetCode sync, groups, streaks, insights, and revision hub.
+
+## Project Structure
+
+```
+streaksy/
+  backend/        # Node.js + Express 5 + TypeScript API (port 3001)
+  frontend/       # Next.js 14 + React 18 + Tailwind CSS (port 3000)
+  extension/      # Chrome Manifest V3 extension for LeetCode sync
+```
+
+## Tech Stack
+
+- **Backend**: Express 5, TypeScript, PostgreSQL 16, Redis 7, Passport (OAuth), JWT, Zod, Pino (logging), Multer
+- **Frontend**: Next.js 14 (App Router), Zustand, Axios, Tailwind CSS, Lucide icons, date-fns
+- **Extension**: Chrome MV3 service worker + content scripts
+
+## Key Commands
+
+```bash
+# Backend
+cd backend && npm run dev          # Start dev server (tsx watch)
+cd backend && npm run build        # Compile TypeScript
+cd backend && npm test             # Run Jest tests (29 suites, 205 tests)
+
+# Frontend
+cd frontend && npm run dev         # Start Next.js dev server
+cd frontend && npm run build       # Production build
+
+# Database
+cd backend && psql $DATABASE_URL -f scripts/schema.sql      # Init schema
+cd backend && psql $DATABASE_URL -f scripts/002-preferences.sql
+cd backend && psql $DATABASE_URL -f scripts/003-oauth.sql
+cd backend && psql $DATABASE_URL -f scripts/004-password-reset.sql
+cd backend && psql $DATABASE_URL -f scripts/005-email-verification.sql
+cd backend && psql $DATABASE_URL -f scripts/006-notifications.sql
+cd backend && psql $DATABASE_URL -f scripts/007-discussions.sql
+cd backend && psql $DATABASE_URL -f scripts/008-activity-feed.sql
+cd backend && psql $DATABASE_URL -f scripts/009-profile.sql
+cd backend && psql $DATABASE_URL -f scripts/010-revisions.sql
+cd backend && psql $DATABASE_URL -f scripts/011-contests.sql
+cd backend && psql $DATABASE_URL -f scripts/012-badges.sql
+cd backend && psql $DATABASE_URL -f scripts/013-search.sql
+cd backend && psql $DATABASE_URL -f scripts/seed.sql         # Seed data
+
+# Docker (PostgreSQL + Redis)
+cd backend/docker && docker compose up -d postgres redis
+```
+
+## Backend Architecture
+
+Modular structure: `backend/src/modules/{domain}/` with subdirectories:
+- `controller/` - Request handling
+- `service/` - Business logic
+- `repository/` - Database queries
+- `routes/` - Express route definitions
+- `validation/` - Zod schemas
+
+### Modules
+- **Core**: auth, problem, group, progress, sync, streak, leaderboard, notes, insights, sheets, preferences
+- **New**: notification, discussion, activity, revision, contest, badge
+
+### Infrastructure
+- **Logging**: Pino structured logging (`backend/src/config/logger.ts`), JSON in prod, pretty in dev
+- **Request ID**: `backend/src/middleware/requestId.ts` — X-Request-ID header, child logger on `req.log`
+- **Caching**: Redis cache-aside via `backend/src/common/utils/cache.ts` (`cached<T>()`, `invalidate()`)
+- **Health Check**: `GET /health` — deep check pinging DB + Redis, returns 200/503 with per-component status
+- **Graceful Shutdown**: SIGTERM/SIGINT handlers in server.ts, 10s timeout
+
+## Config Files
+
+- `backend/.env` - Backend env vars (DB, Redis, JWT, OAuth credentials, SMTP)
+- `frontend/.env.local` - Frontend env vars (NEXT_PUBLIC_API_URL)
+- `extension/background.js` - API_BASE constant (hardcoded)
+- `extension/manifest.json` - host_permissions for API access
+
+## Domain & Server
+
+- **Domain**: `streaksy.in` (GoDaddy)
+- **Server IP**: `56.228.57.11`
+- **Frontend**: `http://streaksy.in:3000`
+- **Backend API**: `http://streaksy.in:3001`
+
+## Auth
+
+- JWT-based with Bearer tokens
+- OAuth via Passport (Google + GitHub) — strategies in `backend/src/config/passport.ts`
+- Password reset flow: token-based with 1hr expiry, email delivery
+- Email verification: token on signup, non-blocking banner in AppShell
+- Profile management: avatar upload (multer), bio, location, social links
+- Frontend stores token in localStorage as `streaksy_token`
+
+## Database
+
+PostgreSQL database name: `streaksy`. Extensions: uuid-ossp, pgcrypto. All PKs are UUIDs.
+
+### Key Tables
+- **Core**: users, problems, tags, sheets, groups, group_members, user_problem_status, user_streaks, notes, user_preferences
+- **Auth**: password_reset_tokens (004), email verification columns on users (005)
+- **Features**: notifications (006), comments (007), group_activity (008), revision_notes (010)
+- **Engagement**: contests + contest_problems + contest_submissions (011), badges + user_badges (012)
+- **Search**: search_vector tsvector column + GIN index on problems (013)
+- **Profile**: avatar_url, bio, location, github_url, linkedin_url columns on users (009)
+
+## Frontend Pages
+
+- `/` — Landing page
+- `/auth/login`, `/auth/signup` — Auth with OAuth (Google/GitHub)
+- `/auth/forgot-password`, `/auth/reset-password` — Password reset flow
+- `/auth/verify-email` — Email verification
+- `/dashboard` — Stats, streak, heatmap, recent activity
+- `/problems` — Problem listing with sheets, filters
+- `/problems/[slug]` — Problem detail with notes, discussions, revision notes
+- `/revision` — Revision Hub (browse + quiz mode)
+- `/insights` — Charts and analytics
+- `/groups` — Group listing, creation, detail with activity feed
+- `/profile` — Avatar upload, bio, social links, badges
+- `/settings` — User preferences
+
+## Conventions
+
+- Async route handlers wrapped with `asyncHandler`
+- Errors use `AppError` class (badRequest, unauthorized, notFound, conflict, forbidden)
+- Global error handler middleware catches AppError and returns structured JSON
+- Validation via Zod schemas + `validate` middleware
+- Logging via Pino (`logger` from config, `req.log` child logger per request)
+- Caching via `cached(key, ttl, fn)` utility with Redis
+- Frontend uses `cn()` utility (clsx + tailwind-merge) for conditional classes
+- State management via Zustand stores in `lib/store.ts`
+- Data fetching via `useAsync` hook in `hooks/useAsync.ts`

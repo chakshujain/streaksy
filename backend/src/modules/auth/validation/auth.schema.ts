@@ -14,3 +14,24 @@ export const loginSchema = z.object({
 export const connectLeetcodeSchema = z.object({
   leetcodeUsername: z.string().min(1).max(100),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8).max(128),
+});
+
+export const verifyEmailSchema = z.object({
+  token: z.string().min(1),
+});
+
+export const updateProfileSchema = z.object({
+  displayName: z.string().min(1).max(100).optional(),
+  bio: z.string().max(500).optional(),
+  location: z.string().max(100).optional(),
+  githubUrl: z.string().max(500).optional(),
+  linkedinUrl: z.string().max(500).optional(),
+});

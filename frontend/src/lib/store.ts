@@ -10,6 +10,7 @@ interface AuthState {
   signup: (email: string, password: string, displayName: string) => Promise<void>;
   logout: () => void;
   hydrate: () => void;
+  setUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -19,29 +20,34 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async (email, password) => {
     const { data } = await authApi.login({ email, password });
-    localStorage.setItem('solvo_token', data.token);
-    localStorage.setItem('solvo_user', JSON.stringify(data.user));
+    localStorage.setItem('streaksy_token', data.token);
+    localStorage.setItem('streaksy_user', JSON.stringify(data.user));
     set({ user: data.user, token: data.token });
   },
 
   signup: async (email, password, displayName) => {
     const { data } = await authApi.signup({ email, password, displayName });
-    localStorage.setItem('solvo_token', data.token);
-    localStorage.setItem('solvo_user', JSON.stringify(data.user));
+    localStorage.setItem('streaksy_token', data.token);
+    localStorage.setItem('streaksy_user', JSON.stringify(data.user));
     set({ user: data.user, token: data.token });
   },
 
   logout: () => {
-    localStorage.removeItem('solvo_token');
-    localStorage.removeItem('solvo_user');
+    localStorage.removeItem('streaksy_token');
+    localStorage.removeItem('streaksy_user');
     set({ user: null, token: null });
   },
 
   hydrate: () => {
-    const token = localStorage.getItem('solvo_token');
-    const userStr = localStorage.getItem('solvo_user');
+    const token = localStorage.getItem('streaksy_token');
+    const userStr = localStorage.getItem('streaksy_user');
     const user = userStr ? JSON.parse(userStr) : null;
     set({ user, token, loading: false });
+  },
+
+  setUser: (user) => {
+    localStorage.setItem('streaksy_user', JSON.stringify(user));
+    set({ user });
   },
 }));
 

@@ -61,4 +61,14 @@ export const problemRepository = {
       [problemId]
     );
   },
+
+  async search(q: string, limit = 20): Promise<ProblemRow[]> {
+    return query<ProblemRow>(
+      `SELECT *, ts_rank(search_vector, plainto_tsquery('english', $1)) as rank
+       FROM problems
+       WHERE search_vector @@ plainto_tsquery('english', $1)
+       ORDER BY rank DESC LIMIT $2`,
+      [q, limit]
+    );
+  },
 };

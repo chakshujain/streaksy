@@ -9,7 +9,9 @@ export const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { logger } = require('./logger');
+  logger.fatal({ err }, 'Unexpected error on idle client');
   process.exit(-1);
 });
 

@@ -7,6 +7,7 @@ import { groupRepository } from '../../group/repository/group.repository';
 import { authRepository } from '../../auth/repository/auth.repository';
 import { AppError } from '../../../common/errors/AppError';
 import { ProblemStatus } from '../../../common/types';
+import { invalidate } from '../../../common/utils/cache';
 
 export const syncService = {
   /**
@@ -41,6 +42,9 @@ export const syncService = {
     await Promise.all(
       groups.map((g) => leaderboardService.updateUserScore(userId, g.id))
     );
+
+    // Invalidate user caches
+    invalidate(`insights:overview:${userId}`).catch(() => {});
 
     return {
       progress: {

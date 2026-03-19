@@ -1,7 +1,12 @@
 import { insightsRepository } from '../repository/insights.repository';
+import { cached } from '../../../common/utils/cache';
 
 export const insightsService = {
   async getOverview(userId: string) {
+    return cached(`insights:overview:${userId}`, 300, () => this._getOverviewUncached(userId));
+  },
+
+  async _getOverviewUncached(userId: string) {
     const [overview, streak, activeDays] = await Promise.all([
       insightsRepository.getOverview(userId),
       insightsRepository.getStreak(userId),

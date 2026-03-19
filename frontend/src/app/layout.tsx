@@ -5,7 +5,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Solvo — DSA Prep, Together',
+  title: 'Streaksy — DSA Prep, Together',
   description: 'Multiplayer DSA preparation platform with progress tracking, groups, and streaks.',
 };
 

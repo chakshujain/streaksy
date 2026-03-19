@@ -1,9 +1,11 @@
 import { problemRepository } from '../repository/problem.repository';
 import { AppError } from '../../../common/errors/AppError';
+import { cached } from '../../../common/utils/cache';
 
 export const problemService = {
   async list(difficulty?: string, limit?: number, offset?: number) {
-    return problemRepository.list(difficulty, limit, offset);
+    const cacheKey = `problems:list:${difficulty || 'all'}:${limit || 0}:${offset || 0}`;
+    return cached(cacheKey, 600, () => problemRepository.list(difficulty, limit, offset));
   },
 
   async getBySlug(slug: string) {
@@ -15,10 +17,14 @@ export const problemService = {
   },
 
   async getSheets() {
-    return problemRepository.getSheets();
+    return cached('sheets:list', 600, () => problemRepository.getSheets());
   },
 
   async getSheetProblems(sheetSlug: string) {
     return problemRepository.getSheetProblems(sheetSlug);
+  },
+
+  async search(query: string, limit = 20) {
+    return problemRepository.search(query, limit);
   },
 };

@@ -1,0 +1,117 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { notificationsApi } from '@/lib/api';
+import { Bell, Check } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/cn';
+import type { Notification } from '@/lib/types';
+
+export function NotificationBell() {
+  const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const fetchUnread = async () => {
+    try {
+      const { data } = await notificationsApi.unreadCount();
+      setUnreadCount(data.count);
+    } catch {}
+  };
+
+  const fetchList = async () => {
+    try {
+      const { data } = await notificationsApi.list({ limit: 10 });
+      setNotifications(data.notifications);
+    } catch {}
+  };
+
+  useEffect(() => {
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (open) fetchList();
+  }, [open]);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const markAllRead = async () => {
+    await notificationsApi.markAllRead();
+    setUnreadCount(0);
+    setNotifications(notifications.map((n) => ({ ...n, read_at: new Date().toISOString() })));
+  };
+
+  const markRead = async (id: string) => {
+    await notificationsApi.markRead(id);
+    setNotifications(notifications.map((n) => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
+    setUnreadCount(Math.max(0, unreadCount - 1));
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="relative flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+      >
+        <Bell className="h-[18px] w-[18px]" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold text-white">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-zinc-800 bg-zinc-900/95 backdrop-blur-xl shadow-xl z-50 overflow-hidden animate-slide-up">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+            <span className="text-sm font-semibold text-zinc-200">Notifications</span>
+            {unreadCount > 0 && (
+              <button onClick={markAllRead} className="flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300">
+                <Check className="h-3 w-3" /> Mark all read
+              </button>
+            )}
+          </div>
+
+          <div className="max-h-80 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <p className="py-8 text-center text-sm text-zinc-500">No notifications</p>
+            ) : (
+              notifications.map((n) => (
+                <button
+                  key={n.id}
+                  onClick={() => !n.read_at && markRead(n.id)}
+                  className={cn(
+                    'w-full px-4 py-3 text-left border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30',
+                    !n.read_at && 'bg-emerald-500/5'
+                  )}
+                >
+                  <div className="flex items-start gap-2">
+                    {!n.read_at && <div className="mt-1.5 h-2 w-2 rounded-full bg-emerald-500 flex-shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-zinc-200 truncate">{n.title}</p>
+                      {n.body && <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{n.body}</p>}
+                      <p className="text-[10px] text-zinc-600 mt-1">
+                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

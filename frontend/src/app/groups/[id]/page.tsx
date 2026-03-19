@@ -29,8 +29,22 @@ export default function GroupDetailPage() {
   );
 
   const copyCode = () => {
-    if (group) {
-      navigator.clipboard.writeText(group.invite_code);
+    if (!group) return;
+    const text = group.invite_code;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

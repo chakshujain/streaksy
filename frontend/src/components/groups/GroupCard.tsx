@@ -15,9 +15,24 @@ export function GroupCard({ group }: GroupCardProps) {
 
   const copyCode = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigator.clipboard.writeText(group.invite_code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const text = group.invite_code;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (

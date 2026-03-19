@@ -5,19 +5,23 @@ import { useParams } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { NoteEditor } from '@/components/notes/NoteEditor';
 import { NotesList } from '@/components/notes/NotesList';
+import { CommentThread } from '@/components/discussion/CommentThread';
+import { RevisionForm } from '@/components/revision/RevisionForm';
 import { useAsync } from '@/hooks/useAsync';
-import { problemsApi, notesApi } from '@/lib/api';
-import { ExternalLink } from 'lucide-react';
-import type { Problem, Note } from '@/lib/types';
+import { problemsApi, notesApi, revisionApi, progressApi } from '@/lib/api';
+import { ExternalLink, RotateCcw, X } from 'lucide-react';
+import type { Problem, Note, RevisionNote, ProblemProgress } from '@/lib/types';
 import { cn } from '@/lib/cn';
 
 export default function ProblemDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   const [notesTab, setNotesTab] = useState<'personal' | 'group'>('personal');
+  const [showRevisionForm, setShowRevisionForm] = useState(false);
 
   const { data: problem, loading } = useAsync<Problem>(
     () => problemsApi.getBySlug(slug).then((r) => r.data.problem),
@@ -34,6 +38,23 @@ export default function ProblemDetailPage() {
         ? notesApi.getPersonal(problem.id).then((r) => r.data.notes)
         : Promise.resolve([]),
     [problem?.id]
+  );
+
+  const { data: revision, refetch: refetchRevision } = useAsync<RevisionNote | null>(
+    () =>
+      problem
+        ? revisionApi.get(problem.id).then((r) => r.data.note)
+        : Promise.resolve(null),
+    [problem?.id]
+  );
+
+  const { data: progress } = useAsync<ProblemProgress[]>(
+    () => progressApi.get().then((r) => r.data.progress),
+    []
+  );
+
+  const isSolved = problem && progress?.some(
+    (p) => p.problem_id === problem.id && p.status === 'solved'
   );
 
   if (loading) {
@@ -85,6 +106,47 @@ export default function ProblemDetailPage() {
           )}
         </div>
 
+        {/* Revision Note section */}
+        {isSolved && (
+          <div>
+            {showRevisionForm ? (
+              <Card>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-zinc-200">
+                    {revision ? 'Edit Revision Note' : 'Add Revision Note'}
+                  </h2>
+                  <button onClick={() => setShowRevisionForm(false)} className="text-zinc-500 hover:text-zinc-300">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <RevisionForm
+                  problemId={problem.id}
+                  existing={revision}
+                  onSaved={() => { setShowRevisionForm(false); refetchRevision(); }}
+                  onCancel={() => setShowRevisionForm(false)}
+                />
+              </Card>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowRevisionForm(true)}
+                  className="flex items-center gap-1.5"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {revision ? 'Edit Revision Note' : 'Add Revision Note'}
+                </Button>
+                {revision && (
+                  <span className="text-xs text-zinc-500">
+                    Revised {revision.revision_count} times
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Notes Section */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -134,6 +196,9 @@ export default function ProblemDetailPage() {
             </Card>
           )}
         </div>
+
+        {/* Discussion Section */}
+        <CommentThread problemSlug={slug} />
       </div>
     </AppShell>
   );

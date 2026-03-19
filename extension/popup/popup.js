@@ -1,5 +1,5 @@
 /**
- * Solvo Popup UI
+ * Streaksy Popup UI
  *
  * Shows login form or authenticated state with sync status + history.
  * Communicates with the background service worker via chrome.runtime.sendMessage.

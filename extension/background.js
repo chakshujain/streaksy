@@ -1,5 +1,5 @@
 /**
- * Solvo Background Service Worker
+ * Streaksy Background Service Worker
  *
  * Responsibilities:
  *   - Receive SUBMISSION_ACCEPTED messages from content script
@@ -9,7 +9,7 @@
  *   - Store sync history for popup UI
  */
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'http://streaksy.in:3001/api';
 const MAX_RETRIES = 3;
 
 // ── Recently synced slugs (prevent duplicate API calls) ──
@@ -48,13 +48,13 @@ async function handleAccepted(problemSlug) {
   // Dedup check
   const lastSync = recentSyncs.get(problemSlug);
   if (lastSync && Date.now() - lastSync < SYNC_COOLDOWN_MS) {
-    console.log('[Solvo BG] Skipping duplicate sync for:', problemSlug);
+    console.log('[Streaksy BG] Skipping duplicate sync for:', problemSlug);
     return { skipped: true };
   }
 
   const auth = await getAuth();
   if (!auth?.token || !auth?.userId) {
-    console.warn('[Solvo BG] Not authenticated, skipping sync');
+    console.warn('[Streaksy BG] Not authenticated, skipping sync');
     await updateStatus('error', 'Not logged in', problemSlug);
     return { error: 'Not authenticated' };
   }
@@ -86,7 +86,7 @@ async function handleAccepted(problemSlug) {
       }
 
       const data = await response.json();
-      console.log('[Solvo BG] Synced:', problemSlug, data);
+      console.log('[Streaksy BG] Synced:', problemSlug, data);
 
       await updateStatus('synced', null, problemSlug);
       await addToHistory(problemSlug);
@@ -94,7 +94,7 @@ async function handleAccepted(problemSlug) {
       return { synced: true, data };
     } catch (err) {
       lastError = err;
-      console.warn(`[Solvo BG] Attempt ${attempt}/${MAX_RETRIES} failed:`, err.message);
+      console.warn(`[Streaksy BG] Attempt ${attempt}/${MAX_RETRIES} failed:`, err.message);
 
       if (attempt < MAX_RETRIES) {
         // Exponential backoff: 1s, 2s, 4s
@@ -117,7 +117,7 @@ async function handleAccepted(problemSlug) {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name.startsWith('retry:')) {
     const slug = alarm.name.slice(6);
-    console.log('[Solvo BG] Retrying sync for:', slug);
+    console.log('[Streaksy BG] Retrying sync for:', slug);
     recentSyncs.delete(slug); // clear cooldown
     try {
       await handleAccepted(slug);
@@ -197,4 +197,4 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-console.log('[Solvo BG] Service worker started');
+console.log('[Streaksy BG] Service worker started');

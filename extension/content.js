@@ -1,5 +1,5 @@
 /**
- * Solvo Content Script — injected into LeetCode problem pages.
+ * Streaksy Content Script — injected into LeetCode problem pages.
  *
  * Detection strategies:
  *   1. Injects injected.js into the page to intercept fetch/XHR submission responses
@@ -29,12 +29,12 @@
     lastSyncedSlug = slug;
     lastSyncTimestamp = now;
 
-    console.log('[Solvo] Accepted detected:', slug);
+    console.log('[Streaksy] Accepted detected:', slug);
     chrome.runtime.sendMessage(
       { type: 'SUBMISSION_ACCEPTED', problemSlug: slug },
       (response) => {
         if (chrome.runtime.lastError) {
-          console.warn('[Solvo] Message send failed:', chrome.runtime.lastError.message);
+          console.warn('[Streaksy] Message send failed:', chrome.runtime.lastError.message);
         }
       }
     );
@@ -50,7 +50,7 @@
 
   // ── Listen for messages from injected page script ──
   window.addEventListener('message', (event) => {
-    if (event.source !== window || event.data?.type !== 'SOLVO_ACCEPTED') return;
+    if (event.source !== window || event.data?.type !== 'STREAKSY_ACCEPTED') return;
     const slug = event.data.problemSlug;
     if (slug) notifyAccepted(slug);
   });
@@ -117,7 +117,7 @@
   const slug = getProblemSlug();
   if (!slug) return;
 
-  console.log('[Solvo] Loaded for problem:', slug);
+  console.log('[Streaksy] Loaded for problem:', slug);
   injectPageScript();
   startDomObserver();
 })();

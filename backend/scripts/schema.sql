@@ -1,4 +1,4 @@
--- Solvo Database Schema
+-- Streaksy Database Schema
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";

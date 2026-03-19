@@ -11,7 +11,7 @@
   }
 
   function notifyAccepted(slug) {
-    window.postMessage({ type: 'SOLVO_ACCEPTED', problemSlug: slug }, '*');
+    window.postMessage({ type: 'STREAKSY_ACCEPTED', problemSlug: slug }, '*');
   }
 
   // ── Intercept fetch ──
@@ -40,13 +40,13 @@
   const originalSend = XMLHttpRequest.prototype.send;
 
   XMLHttpRequest.prototype.open = function (method, url, ...rest) {
-    this._solvoUrl = url;
+    this._streaksyUrl = url;
     return originalOpen.call(this, method, url, ...rest);
   };
 
   XMLHttpRequest.prototype.send = function (...args) {
-    if (this._solvoUrl?.includes('/submissions/detail/') &&
-        this._solvoUrl?.includes('/check/')) {
+    if (this._streaksyUrl?.includes('/submissions/detail/') &&
+        this._streaksyUrl?.includes('/check/')) {
       this.addEventListener('load', function () {
         try {
           const data = JSON.parse(this.responseText);
@@ -62,5 +62,5 @@
     return originalSend.apply(this, args);
   };
 
-  console.log('[Solvo] Network interceptors installed');
+  console.log('[Streaksy] Network interceptors installed');
 })();

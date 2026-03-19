@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Solvo — LeetCode Sync",
+  "name": "Streaksy — LeetCode Sync",
   "version": "1.0.0",
-  "description": "Automatically sync your LeetCode submissions to Solvo.",
+  "description": "Automatically sync your LeetCode submissions to Streaksy.",
   "permissions": ["storage", "alarms"],
-  "host_permissions": ["https://leetcode.com/*"],
+  "host_permissions": ["https://leetcode.com/*", "http://streaksy.in:3001/*"],
   "background": {
     "service_worker": "background.js"
   },
