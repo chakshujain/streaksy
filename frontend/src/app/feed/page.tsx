@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { FeedCard } from '@/components/feed/FeedCard';
@@ -11,9 +13,23 @@ import { Rss } from 'lucide-react';
 import type { FeedEvent } from '@/lib/types';
 
 export default function FeedPage() {
-  const { data: events, loading } = useAsync<FeedEvent[]>(
-    () => feedApi.getFeed({ limit: 30 }).then(r => r.data.events),
-    []
+  const [allEvents, setAllEvents] = useState<FeedEvent[]>([]);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const LIMIT = 20;
+
+  const { loading } = useAsync(
+    () => feedApi.getFeed({ limit: LIMIT, offset }).then(r => {
+      const newEvents = (r.data.events ?? []) as FeedEvent[];
+      if (offset === 0) {
+        setAllEvents(newEvents);
+      } else {
+        setAllEvents(prev => [...prev, ...newEvents]);
+      }
+      setHasMore(newEvents.length === LIMIT);
+      return newEvents;
+    }),
+    [offset]
   );
 
   return (
@@ -30,23 +46,29 @@ export default function FeedPage() {
             </div>
           </div>
 
-          {loading ? (
+          {loading && offset === 0 ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Skeleton key={i} className="h-32 rounded-2xl" />
               ))}
             </div>
-          ) : events && events.length > 0 ? (
+          ) : allEvents.length > 0 ? (
             <div className="space-y-4">
-              {events.map((event, i) => (
+              {allEvents.map((event, i) => (
                 <div
                   key={event.id}
                   className="animate-slide-up"
-                  style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }}
+                  style={{ animationDelay: `${Math.min(i, 10) * 50}ms`, animationFillMode: 'both' }}
                 >
                   <FeedCard event={event} />
                 </div>
               ))}
+
+              {hasMore && (
+                <Button variant="ghost" onClick={() => setOffset(o => o + LIMIT)} loading={loading && offset > 0} className="w-full">
+                  Load More
+                </Button>
+              )}
             </div>
           ) : (
             <EmptyState

@@ -198,6 +198,7 @@ export default function RevisionPage() {
                       <RevisionCard
                         note={note}
                         onClick={() => setEditingNote(note)}
+                        onDelete={refetch}
                       />
                     </div>
                   ))}

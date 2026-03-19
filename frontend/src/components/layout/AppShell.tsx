@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { useAuthStore } from '@/lib/store';
-import { authApi } from '@/lib/api';
+import { authApi, preferencesApi } from '@/lib/api';
 import { StreakRiskBanner } from '@/components/poke/StreakRiskBanner';
 import { TopLoader } from '@/components/ui/TopLoader';
 import { SearchBar } from '@/components/search/SearchBar';
@@ -26,6 +26,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       router.push('/auth/login');
     }
   }, [loading, user, router]);
+
+  useEffect(() => {
+    if (user) {
+      preferencesApi.get().then(({ data }) => {
+        const prefs = data.preferences;
+        if (prefs?.accent_color && prefs.accent_color !== 'emerald') {
+          document.documentElement.setAttribute('data-accent', prefs.accent_color);
+        } else {
+          document.documentElement.removeAttribute('data-accent');
+        }
+      }).catch(() => {});
+    }
+  }, [user]);
 
   if (loading) {
     return (

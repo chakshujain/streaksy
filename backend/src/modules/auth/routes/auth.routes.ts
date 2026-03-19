@@ -5,7 +5,7 @@ import { validate } from '../../../middleware/validate';
 import { authenticate } from '../../../middleware/auth';
 import {
   signupSchema, loginSchema, connectLeetcodeSchema,
-  forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema, updateProfileSchema,
+  forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema, changePasswordSchema, updateProfileSchema,
 } from '../validation/auth.schema';
 import { asyncHandler } from '../../../common/utils/asyncHandler';
 import { env } from '../../../config/env';
@@ -27,10 +27,12 @@ router.post(
   validate(connectLeetcodeSchema),
   asyncHandler(authController.connectLeetcode)
 );
+router.post('/change-password', authenticate, validate(changePasswordSchema), asyncHandler(authController.changePassword));
 router.post('/resend-verification', authenticate, asyncHandler(authController.resendVerification));
 router.get('/profile', authenticate, asyncHandler(authController.getProfile));
 router.put('/profile', authenticate, validate(updateProfileSchema), asyncHandler(authController.updateProfile));
 router.post('/avatar', authenticate, avatarUpload.single('avatar'), asyncHandler(authController.uploadAvatar));
+router.get('/export', authenticate, asyncHandler(authController.exportData));
 router.get('/user/:userId', authenticate, asyncHandler(authController.getPublicProfile));
 
 // Google OAuth

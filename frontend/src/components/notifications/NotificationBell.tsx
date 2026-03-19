@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { notificationsApi } from '@/lib/api';
+import { getSocket } from '@/lib/socket';
 import { Bell, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/cn';
@@ -31,6 +32,24 @@ export function NotificationBell() {
     fetchUnread();
     const interval = setInterval(fetchUnread, 30000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Real-time notifications via WebSocket
+  useEffect(() => {
+    try {
+      const socket = getSocket();
+      if (!socket.connected) socket.connect();
+
+      socket.on('notification', () => {
+        // Increment unread count and refresh the list
+        setUnreadCount(prev => prev + 1);
+        fetchList();
+      });
+
+      return () => {
+        socket.off('notification');
+      };
+    } catch {}
   }, []);
 
   useEffect(() => {

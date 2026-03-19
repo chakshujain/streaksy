@@ -8,6 +8,21 @@ import { Button } from '@/components/ui/Button';
 import { authApi } from '@/lib/api';
 import { Flame, Lock, CheckCircle } from 'lucide-react';
 
+function getPasswordStrength(password: string): { label: string; color: string; width: string } {
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+
+  if (score <= 1) return { label: 'Weak', color: 'bg-red-500', width: '20%' };
+  if (score <= 2) return { label: 'Fair', color: 'bg-amber-500', width: '40%' };
+  if (score <= 3) return { label: 'Good', color: 'bg-emerald-500', width: '60%' };
+  if (score <= 4) return { label: 'Strong', color: 'bg-cyan-500', width: '80%' };
+  return { label: 'Very Strong', color: 'bg-emerald-400', width: '100%' };
+}
+
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -83,6 +98,17 @@ function ResetPasswordForm() {
                     required
                     minLength={8}
                   />
+                  {password && (() => {
+                    const strength = getPasswordStrength(password);
+                    return (
+                      <div className="mt-1.5 space-y-1">
+                        <div className="h-1 rounded-full bg-zinc-800 overflow-hidden">
+                          <div className={`h-full rounded-full transition-all ${strength.color}`} style={{ width: strength.width }} />
+                        </div>
+                        <p className={`text-[10px] ${strength.color.replace('bg-', 'text-')}`}>{strength.label}</p>
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="relative">
                   <Lock className="pointer-events-none absolute left-3 top-[38px] h-4 w-4 text-zinc-500" />

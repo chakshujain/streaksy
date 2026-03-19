@@ -126,6 +126,35 @@ export const groupRepository = {
     );
   },
 
+  async removeMember(groupId: string, userId: string): Promise<void> {
+    await query('DELETE FROM group_members WHERE group_id = $1 AND user_id = $2', [groupId, userId]);
+  },
+
+  async deleteGroup(groupId: string): Promise<void> {
+    await query('DELETE FROM groups WHERE id = $1', [groupId]);
+  },
+
+  async getMemberCount(groupId: string): Promise<number> {
+    const row = await queryOne<{ count: string }>('SELECT COUNT(*) as count FROM group_members WHERE group_id = $1', [groupId]);
+    return Number(row?.count || 0);
+  },
+
+  async getMemberSheetProgress(groupId: string, sheetId: string): Promise<{ user_id: string; display_name: string; solved: number; total: number }[]> {
+    return query(
+      `SELECT gm.user_id, u.display_name,
+              COUNT(CASE WHEN ups.status = 'solved' THEN 1 END)::int as solved,
+              COUNT(sp.problem_id)::int as total
+       FROM group_members gm
+       JOIN users u ON u.id = gm.user_id
+       CROSS JOIN sheet_problems sp
+       LEFT JOIN user_problem_status ups ON ups.user_id = gm.user_id AND ups.problem_id = sp.problem_id
+       WHERE gm.group_id = $1 AND sp.sheet_id = $2
+       GROUP BY gm.user_id, u.display_name
+       ORDER BY solved DESC`,
+      [groupId, sheetId]
+    );
+  },
+
   async joinByInviteCode(inviteCode: string, userId: string): Promise<void> {
     const group = await queryOne<GroupRow>('SELECT * FROM groups WHERE invite_code = $1', [inviteCode]);
     if (group) {

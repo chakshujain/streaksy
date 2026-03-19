@@ -15,7 +15,10 @@ router.get('/', asyncHandler(groupController.getUserGroups as any));
 router.get('/:id', asyncHandler(groupController.getDetails as any));
 router.put('/:id/plan', validate(updatePlanSchema), asyncHandler(groupController.updatePlan as any));
 router.post('/:id/sheets', validate(assignSheetSchema), asyncHandler(groupController.assignSheet as any));
+router.get('/:id/sheets/:sheetId/progress', asyncHandler(groupController.getMemberSheetProgress as any));
 router.delete('/:id/sheets/:sheetId', asyncHandler(groupController.removeSheet as any));
 router.get('/:id/sheets', asyncHandler(groupController.getGroupSheets as any));
+router.post('/:id/leave', asyncHandler(groupController.leaveGroup as any));
+router.delete('/:id', asyncHandler(groupController.deleteGroup as any));
 
 export default router;

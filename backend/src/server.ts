@@ -25,6 +25,16 @@ async function start() {
   server = http.createServer(app);
   initSocketServer(server);
 
+  // Check for scheduled rooms every 30 seconds
+  const { roomService } = await import('./modules/room/service/room.service');
+  setInterval(async () => {
+    try {
+      await roomService.autoStartScheduledRooms();
+    } catch (err) {
+      logger.error({ err }, 'Failed to auto-start scheduled rooms');
+    }
+  }, 30_000);
+
   server.listen(env.port, '0.0.0.0', () => {
     logger.info(`Streaksy API + WebSocket running on 0.0.0.0:${env.port} [${env.nodeEnv}]`);
   });

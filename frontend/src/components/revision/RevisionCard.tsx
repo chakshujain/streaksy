@@ -2,16 +2,34 @@
 
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { useState } from 'react';
 import type { RevisionNote } from '@/lib/types';
-import { Clock, RotateCcw } from 'lucide-react';
+import { revisionApi } from '@/lib/api';
+import { Clock, RotateCcw, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface RevisionCardProps {
   note: RevisionNote;
   onClick?: () => void;
+  onDelete?: () => void;
 }
 
-export function RevisionCard({ note, onClick }: RevisionCardProps) {
+export function RevisionCard({ note, onClick, onDelete }: RevisionCardProps) {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await revisionApi.delete(note.id);
+      onDelete?.();
+    } catch {
+      // error handled by interceptor
+    } finally {
+      setDeleting(false);
+    }
+  };
   return (
     <Card
       className="cursor-pointer hover:border-emerald-500/30 transition-all duration-200"
@@ -29,6 +47,16 @@ export function RevisionCard({ note, onClick }: RevisionCardProps) {
           </div>
           <p className="text-sm text-zinc-400 line-clamp-2">{note.key_takeaway}</p>
         </div>
+        {onDelete && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="shrink-0 p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-50"
+            title="Delete note"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       <div className="mt-3 flex items-center gap-4 text-xs text-zinc-500">

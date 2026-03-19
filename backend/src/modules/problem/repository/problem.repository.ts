@@ -40,6 +40,13 @@ export const problemRepository = {
     );
   },
 
+  async count(difficulty?: string): Promise<number> {
+    const row = difficulty
+      ? await queryOne<{ count: string }>('SELECT COUNT(*) as count FROM problems WHERE difficulty = $1', [difficulty])
+      : await queryOne<{ count: string }>('SELECT COUNT(*) as count FROM problems');
+    return Number(row?.count || 0);
+  },
+
   async getSheets(): Promise<SheetRow[]> {
     return query<SheetRow>('SELECT * FROM sheets ORDER BY name');
   },

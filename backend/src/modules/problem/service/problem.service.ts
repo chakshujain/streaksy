@@ -8,6 +8,10 @@ export const problemService = {
     return cached(cacheKey, 600, () => problemRepository.list(difficulty, limit, offset));
   },
 
+  async count(difficulty?: string) {
+    return problemRepository.count(difficulty);
+  },
+
   async getBySlug(slug: string) {
     const problem = await problemRepository.findBySlug(slug);
     if (!problem) throw AppError.notFound('Problem not found');

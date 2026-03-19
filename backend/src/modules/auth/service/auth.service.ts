@@ -184,6 +184,18 @@ export const authService = {
     };
   },
 
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await authRepository.findById(userId);
+    if (!user) throw AppError.notFound('User not found');
+    if (!user.password_hash) throw AppError.badRequest('OAuth accounts cannot change password');
+
+    const valid = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!valid) throw AppError.unauthorized('Current password is incorrect');
+
+    const newHash = await bcrypt.hash(newPassword, 12);
+    await authRepository.updatePassword(userId, newHash);
+  },
+
   generateToken(userId: string, email: string): string {
     return jwt.sign({ userId, email }, env.jwt.secret, {
       expiresIn: env.jwt.expiresIn,

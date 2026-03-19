@@ -21,19 +21,26 @@ export default function ProblemsPage() {
   const [tag, setTag] = useState('all');
   const [showUpload, setShowUpload] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(0);
+  const LIMIT = 50;
 
   const { data: sheets, loading: sheetsLoading, refetch: refetchSheets } = useAsync<Sheet[]>(
     () => problemsApi.getSheets().then((r) => r.data.sheets),
     []
   );
 
-  const { data: problems, loading: problemsLoading } = useAsync<Problem[]>(
+  const difficultyFilter = difficulty !== 'all' ? difficulty : undefined;
+
+  const { data: problemsData, loading: problemsLoading } = useAsync<{ problems: Problem[]; total: number }>(
     () =>
       selectedSheet === 'all'
-        ? problemsApi.list().then((r) => r.data.problems)
-        : problemsApi.getSheetProblems(selectedSheet).then((r) => r.data.problems),
-    [selectedSheet]
+        ? problemsApi.list({ difficulty: difficultyFilter, limit: LIMIT, offset: page * LIMIT })
+            .then((r) => ({ problems: r.data.problems, total: r.data.total || r.data.problems?.length || 0 }))
+        : problemsApi.getSheetProblems(selectedSheet).then((r) => ({ problems: r.data.problems, total: r.data.problems?.length || 0 })),
+    [selectedSheet, difficultyFilter, page]
   );
+
+  const problems = problemsData?.problems ?? null;
 
   const { data: progress } = useAsync<ProblemProgress[]>(
     () => progressApi.get().then((r) => r.data.progress),
@@ -196,6 +203,23 @@ export default function ProblemsPage() {
               <ProblemTable problems={filteredProblems} progressMap={progressMap} />
             )}
           </div>
+
+          {/* Pagination */}
+          {problemsData && problemsData.total > LIMIT && (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-zinc-500">
+                Showing {page * LIMIT + 1}-{Math.min((page + 1) * LIMIT, problemsData.total)} of {problemsData.total}
+              </span>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
+                  Previous
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setPage(p => p + 1)} disabled={(page + 1) * LIMIT >= problemsData.total}>
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </PageTransition>
     </AppShell>

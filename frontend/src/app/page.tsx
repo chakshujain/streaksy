@@ -15,7 +15,6 @@ import {
   TrendingUp,
   Sparkles,
   GitBranch,
-  Star,
   Chrome,
   Download,
   Clock,
@@ -453,10 +452,10 @@ function ExtensionSection() {
 /*  Stats / Social Proof Section                                       */
 /* ------------------------------------------------------------------ */
 const stats = [
-  { value: '10K+', label: 'Problems Tracked', icon: Target },
-  { value: '2.5K+', label: 'Active Users', icon: Users },
-  { value: '500+', label: 'Study Groups', icon: GitBranch },
-  { value: '1M+', label: 'Submissions Synced', icon: TrendingUp },
+  { value: '350+', label: 'Problems Available', icon: Target },
+  { value: '60+', label: 'Active Users', icon: Users },
+  { value: '5', label: 'Curated Sheets', icon: GitBranch },
+  { value: 'Free', label: 'Forever', icon: TrendingUp },
 ];
 
 function Stats() {
@@ -469,14 +468,14 @@ function Stats() {
       <div className="relative mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-emerald-400">
-            Trusted by grinders
+            By the numbers
           </p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
             Join a growing{' '}
             <span className="gradient-text">community</span>
           </h2>
           <p className="mt-4 text-lg text-zinc-400">
-            Thousands of developers are already leveling up their DSA game with
+            A focused community of developers leveling up their DSA game with
             Streaksy.
           </p>
         </div>
@@ -499,46 +498,32 @@ function Stats() {
         <div className="mt-16 grid gap-6 md:grid-cols-3">
           {[
             {
-              quote:
-                'Streaksy turned my solo grind into a team sport. The group leaderboard keeps me motivated every day.',
-              name: 'Alex K.',
-              role: 'SWE @ Google',
-              stars: 5,
+              title: 'Track Every Submission',
+              description: 'Auto-capture code, runtime, memory, and time spent from LeetCode with our Chrome extension.',
+              icon: Zap,
             },
             {
-              quote:
-                'The LeetCode sync is seamless. I just solve problems and Streaksy tracks everything automatically — even my code!',
-              name: 'Priya M.',
-              role: 'CS Student, Stanford',
-              stars: 5,
+              title: 'Compete with Friends',
+              description: 'Create study groups, assign problem sheets, and climb the leaderboard together.',
+              icon: Users,
             },
             {
-              quote:
-                'The revision hub helped me nail my FAANG interviews. Being able to quiz myself on past problems was a game changer.',
-              name: 'James L.',
-              role: 'SDE II @ Amazon',
-              stars: 5,
+              title: 'Master with Revision',
+              description: 'Save key takeaways and quiz yourself with spaced-repetition flashcards before interviews.',
+              icon: Brain,
             },
-          ].map((t) => (
+          ].map((item) => (
             <div
-              key={t.name}
+              key={item.title}
               className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 backdrop-blur-sm"
             >
-              <div className="mb-3 flex gap-0.5">
-                {Array.from({ length: t.stars }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                ))}
+              <div className="mb-3 inline-flex rounded-xl border border-zinc-800 bg-zinc-900 p-3">
+                <item.icon className="h-6 w-6 text-emerald-400" />
               </div>
-              <p className="text-sm leading-relaxed text-zinc-300">
-                &ldquo;{t.quote}&rdquo;
+              <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                {item.description}
               </p>
-              <div className="mt-4 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400" />
-                <div>
-                  <p className="text-sm font-medium text-white">{t.name}</p>
-                  <p className="text-xs text-zinc-500">{t.role}</p>
-                </div>
-              </div>
             </div>
           ))}
         </div>

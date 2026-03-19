@@ -8,6 +8,9 @@ import { roomRepository } from '../modules/room/repository/room.repository';
 
 let io: Server;
 
+// Map of userId -> socketIds for notification routing
+const userSockets = new Map<string, Set<string>>();
+
 // Rate limiting for chat messages
 const chatRateLimit = new Map<string, number[]>();
 const CHAT_RATE_LIMIT = 10; // max messages per window
@@ -49,6 +52,10 @@ export function initSocketServer(httpServer: HttpServer): Server {
   io.on('connection', (socket: Socket) => {
     const userId = (socket as any).userId;
     logger.info({ userId }, 'Socket connected');
+
+    // Register user for notification routing
+    if (!userSockets.has(userId)) userSockets.set(userId, new Set());
+    userSockets.get(userId)!.add(socket.id);
 
     // Join a room
     socket.on('room:join', async (roomId: string) => {
@@ -134,6 +141,8 @@ export function initSocketServer(httpServer: HttpServer): Server {
     });
 
     socket.on('disconnect', () => {
+      userSockets.get(userId)?.delete(socket.id);
+      if (userSockets.get(userId)?.size === 0) userSockets.delete(userId);
       logger.info({ userId }, 'Socket disconnected');
     });
   });
@@ -143,4 +152,13 @@ export function initSocketServer(httpServer: HttpServer): Server {
 
 export function getIO(): Server {
   return io;
+}
+
+export function pushNotification(userId: string, notification: { type: string; title: string; body?: string }) {
+  const sockets = userSockets.get(userId);
+  if (sockets && io) {
+    sockets.forEach(socketId => {
+      io.to(socketId).emit('notification', notification);
+    });
+  }
 }

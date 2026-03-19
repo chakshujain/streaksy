@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { groupService } from '../service/group.service';
 import { AuthRequest } from '../../../common/types';
 import { param } from '../../../common/utils/params';
@@ -50,5 +50,26 @@ export const groupController = {
     const groupId = param(req, 'id');
     const sheets = await groupService.getGroupSheets(groupId);
     res.json({ sheets });
+  },
+
+  async getMemberSheetProgress(req: Request, res: Response) {
+    const groupId = param(req, 'id');
+    const sheetId = param(req, 'sheetId');
+    const progress = await groupService.getMemberSheetProgress(groupId, sheetId);
+    res.json({ progress });
+  },
+
+  async leaveGroup(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const groupId = param(req, 'id');
+    await groupService.leaveGroup(groupId, user!.userId);
+    res.json({ message: 'Left the group' });
+  },
+
+  async deleteGroup(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const groupId = param(req, 'id');
+    await groupService.deleteGroup(groupId, user!.userId);
+    res.json({ message: 'Group deleted' });
   },
 };

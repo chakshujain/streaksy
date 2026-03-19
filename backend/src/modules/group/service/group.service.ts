@@ -53,4 +53,24 @@ export const groupService = {
   async getGroupSheets(groupId: string) {
     return groupRepository.getGroupSheets(groupId);
   },
+
+  async getMemberSheetProgress(groupId: string, sheetId: string) {
+    return groupRepository.getMemberSheetProgress(groupId, sheetId);
+  },
+
+  async leaveGroup(groupId: string, userId: string) {
+    const member = await groupRepository.getMember(groupId, userId);
+    if (!member) throw AppError.notFound('Not a member of this group');
+    if (member.role === 'admin') {
+      const count = await groupRepository.getMemberCount(groupId);
+      if (count > 1) throw AppError.badRequest('Transfer admin role before leaving, or remove all members first');
+    }
+    await groupRepository.removeMember(groupId, userId);
+  },
+
+  async deleteGroup(groupId: string, userId: string) {
+    const member = await groupRepository.getMember(groupId, userId);
+    if (!member || member.role !== 'admin') throw AppError.forbidden('Only admin can delete the group');
+    await groupRepository.deleteGroup(groupId);
+  },
 };

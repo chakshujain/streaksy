@@ -7,17 +7,25 @@ import { MemberList } from '@/components/groups/MemberList';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
-import { groupsApi, leaderboardApi, problemsApi } from '@/lib/api';
+import { groupsApi, leaderboardApi, problemsApi, activityApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
-import { Copy, Check, Target, FileText, Calendar, Plus, X, BookOpen } from 'lucide-react';
+import { Copy, Check, Target, FileText, Calendar, Plus, X, BookOpen, LogOut, Trash2, Activity, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { formatDistanceToNow } from 'date-fns';
 import type { Group, LeaderboardEntry, GroupSheet, Sheet } from '@/lib/types';
+
+type SheetMemberProgress = { user_id: string; display_name: string; solved: number; total: number };
 
 export default function GroupDetailPage() {
   const params = useParams();
   const groupId = params.id as string;
   const { user } = useAuthStore();
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Plan editing state
   const [editingPlan, setEditingPlan] = useState(false);
@@ -27,6 +35,30 @@ export default function GroupDetailPage() {
   // Sheet assignment state
   const [showSheetSelector, setShowSheetSelector] = useState(false);
   const [assigningSheet, setAssigningSheet] = useState(false);
+
+  // Sheet progress state
+  const [sheetProgressMap, setSheetProgressMap] = useState<Record<string, SheetMemberProgress[]>>({});
+  const [loadingProgress, setLoadingProgress] = useState<Record<string, boolean>>({});
+
+  const toggleSheetProgress = async (sheetId: string) => {
+    if (sheetProgressMap[sheetId]) {
+      setSheetProgressMap((prev) => {
+        const next = { ...prev };
+        delete next[sheetId];
+        return next;
+      });
+      return;
+    }
+    setLoadingProgress((prev) => ({ ...prev, [sheetId]: true }));
+    try {
+      const { data } = await groupsApi.getSheetProgress(groupId, sheetId);
+      setSheetProgressMap((prev) => ({ ...prev, [sheetId]: data.progress }));
+    } catch {
+      // error handled by interceptor
+    } finally {
+      setLoadingProgress((prev) => ({ ...prev, [sheetId]: false }));
+    }
+  };
 
   const { data: group, loading: groupLoading, refetch: refetchGroup } = useAsync<Group>(
     () => groupsApi.get(groupId).then((r) => r.data.group),
@@ -46,6 +78,11 @@ export default function GroupDetailPage() {
   const { data: allSheets } = useAsync<Sheet[]>(
     () => problemsApi.getSheets().then((r) => r.data.sheets || r.data),
     []
+  );
+
+  const { data: activity } = useAsync<{ id: string; user_display_name: string; action: string; detail: string; created_at: string }[]>(
+    () => group ? activityApi.getGroupActivity(group.id).then(r => r.data.activity ?? []) : Promise.resolve([]),
+    [group?.id]
   );
 
   const isAdmin = group?.members?.some(
@@ -122,6 +159,31 @@ export default function GroupDetailPage() {
     }
   };
 
+  const handleLeaveGroup = async () => {
+    setLeaving(true);
+    try {
+      await groupsApi.leave(groupId);
+      router.push('/groups');
+    } catch {
+      // error handled by interceptor
+    } finally {
+      setLeaving(false);
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    setDeleting(true);
+    try {
+      await groupsApi.delete(groupId);
+      router.push('/groups');
+    } catch {
+      // error handled by interceptor
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   // Sheets not yet assigned to this group
   const availableSheets = (allSheets || []).filter(
     (s) => !(groupSheets || []).some((gs) => gs.sheet_id === s.id)
@@ -157,17 +219,56 @@ export default function GroupDetailPage() {
               <p className="mt-1 text-sm text-zinc-500">{group.description}</p>
             )}
           </div>
-          <button
-            onClick={copyCode}
-            className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
-          >
-            {copied ? (
-              <Check className="h-4 w-4 text-emerald-400" />
-            ) : (
-              <Copy className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={copyCode}
+              className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-emerald-400" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+              Invite: {group.invite_code}
+            </button>
+            {!isAdmin && (
+              <button
+                onClick={handleLeaveGroup}
+                disabled={leaving}
+                className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:border-red-800 transition-colors disabled:opacity-50"
+              >
+                <LogOut className="h-4 w-4" />
+                {leaving ? 'Leaving...' : 'Leave'}
+              </button>
             )}
-            Invite: {group.invite_code}
-          </button>
+            {isAdmin && (
+              confirmDelete ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleDeleteGroup}
+                    disabled={deleting}
+                    className="flex items-center gap-2 rounded-lg border border-red-700 bg-red-900/30 px-3 py-2 text-sm text-red-400 hover:bg-red-900/50 transition-colors disabled:opacity-50"
+                  >
+                    {deleting ? 'Deleting...' : 'Confirm Delete'}
+                  </button>
+                  <button
+                    onClick={() => setConfirmDelete(false)}
+                    className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:border-red-800 transition-colors"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </button>
+              )
+            )}
+          </div>
         </div>
 
         {/* Plan & Objective */}
@@ -319,36 +420,99 @@ export default function GroupDetailPage() {
           ) : (
             <div className="space-y-2">
               {groupSheets.map((sheet) => (
-                <div
-                  key={sheet.sheet_id}
-                  className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-800/30 px-4 py-3"
-                >
-                  <div>
-                    <a
-                      href={`/problems?sheet=${sheet.slug}`}
-                      className="text-sm font-medium text-zinc-200 hover:text-emerald-400 transition-colors"
-                    >
-                      {sheet.name}
-                    </a>
-                    {sheet.description && (
-                      <p className="text-xs text-zinc-500 mt-0.5">{sheet.description}</p>
-                    )}
-                    <p className="text-xs text-zinc-600 mt-0.5">
-                      Assigned {new Date(sheet.assigned_at).toLocaleDateString()}
-                    </p>
+                <div key={sheet.sheet_id} className="rounded-lg border border-zinc-800 bg-zinc-800/30">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div>
+                      <a
+                        href={`/problems?sheet=${sheet.slug}`}
+                        className="text-sm font-medium text-zinc-200 hover:text-emerald-400 transition-colors"
+                      >
+                        {sheet.name}
+                      </a>
+                      {sheet.description && (
+                        <p className="text-xs text-zinc-500 mt-0.5">{sheet.description}</p>
+                      )}
+                      <p className="text-xs text-zinc-600 mt-0.5">
+                        Assigned {new Date(sheet.assigned_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleSheetProgress(sheet.sheet_id)}
+                        disabled={loadingProgress[sheet.sheet_id]}
+                        className="flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800/50 px-2.5 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-50"
+                      >
+                        <BarChart3 className="h-3.5 w-3.5" />
+                        {loadingProgress[sheet.sheet_id] ? 'Loading...' : sheetProgressMap[sheet.sheet_id] ? 'Hide Progress' : 'View Progress'}
+                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleRemoveSheet(sheet.sheet_id)}
+                          className="text-zinc-600 hover:text-red-400 transition-colors p-1"
+                          title="Remove sheet"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  {isAdmin && (
-                    <button
-                      onClick={() => handleRemoveSheet(sheet.sheet_id)}
-                      className="text-zinc-600 hover:text-red-400 transition-colors p-1"
-                      title="Remove sheet"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                  {sheetProgressMap[sheet.sheet_id] && (
+                    <div className="border-t border-zinc-800/50 px-4 py-3 space-y-2.5">
+                      {sheetProgressMap[sheet.sheet_id].map((member) => {
+                        const pct = member.total > 0 ? Math.round((member.solved / member.total) * 100) : 0;
+                        return (
+                          <div key={member.user_id} className="space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-zinc-300 font-medium">{member.display_name}</span>
+                              <span className="text-zinc-500">{member.solved}/{member.total} ({pct}%)</span>
+                            </div>
+                            <div className="h-1.5 rounded-full bg-zinc-700 overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-emerald-500 transition-all"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {sheetProgressMap[sheet.sheet_id].length === 0 && (
+                        <p className="text-xs text-zinc-600">No progress data available.</p>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}
             </div>
+          )}
+        </Card>
+
+        {/* Activity Feed */}
+        <Card>
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="h-5 w-5 text-emerald-400" />
+            <h2 className="text-lg font-semibold text-zinc-100">Recent Activity</h2>
+          </div>
+          {activity && activity.length > 0 ? (
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {activity.map((item) => (
+                <div key={item.id} className="flex items-start gap-3 py-2 border-b border-zinc-800/30 last:border-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-zinc-300">
+                      <span className="font-medium text-zinc-200">{item.user_display_name}</span>{' '}
+                      {item.action}
+                    </p>
+                    {item.detail && (
+                      <p className="text-xs text-zinc-500 mt-0.5 truncate">{item.detail}</p>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-zinc-600 shrink-0">
+                    {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-zinc-600">No recent activity in this group.</p>
           )}
         </Card>
 

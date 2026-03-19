@@ -77,6 +77,13 @@ export const authController = {
   },
 
   // Profile
+  async changePassword(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const { currentPassword, newPassword } = req.body;
+    await authService.changePassword(user!.userId, currentPassword, newPassword);
+    res.json({ message: 'Password changed successfully' });
+  },
+
   async getProfile(req: Request, res: Response) {
     const { user } = req as AuthRequest;
     const profile = await authService.getProfile(user!.userId);
@@ -93,6 +100,32 @@ export const authController = {
     const userId = param(req, 'userId');
     const profile = await authService.getPublicProfile(userId);
     res.json({ profile });
+  },
+
+  async exportData(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const userId = user!.userId;
+
+    const [profile, progress, submissions, revisions, streakData] = await Promise.all([
+      authService.getProfile(userId),
+      import('../../progress/repository/progress.repository').then(m => m.progressRepository.getUserProgress(userId)),
+      import('../../sync/repository/submission.repository').then(m => m.submissionRepository.getForUser(userId, 1000)),
+      import('../../revision/repository/revision.repository').then(m => m.revisionRepository.getForUser(userId, { limit: 1000 })),
+      import('../../streak/service/streak.service').then(m => m.streakService.getStreak(userId)),
+    ]);
+
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      profile,
+      streak: streakData,
+      progress,
+      submissions,
+      revisions,
+    };
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', 'attachment; filename=streaksy-export.json');
+    res.json(exportData);
   },
 
   async uploadAvatar(req: Request, res: Response) {

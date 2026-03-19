@@ -47,6 +47,9 @@ export const authApi = {
   updateProfile: (data: { displayName?: string; bio?: string; location?: string; githubUrl?: string; linkedinUrl?: string }) =>
     api.put('/auth/profile', data),
   getPublicProfile: (userId: string) => api.get(`/auth/user/${userId}`),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.post('/auth/change-password', { currentPassword, newPassword }),
+  exportData: () => api.get('/auth/export', { responseType: 'blob' }),
   uploadAvatar: (file: File) => {
     const formData = new FormData();
     formData.append('avatar', file);
@@ -98,6 +101,10 @@ export const groupsApi = {
     api.delete(`/groups/${id}/sheets/${sheetId}`),
   getSheets: (id: string) =>
     api.get(`/groups/${id}/sheets`),
+  getSheetProgress: (groupId: string, sheetId: string) =>
+    api.get(`/groups/${groupId}/sheets/${sheetId}/progress`),
+  leave: (id: string) => api.post(`/groups/${id}/leave`),
+  delete: (id: string) => api.delete(`/groups/${id}`),
 };
 
 // ── Progress ──

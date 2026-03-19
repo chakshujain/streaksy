@@ -2,7 +2,10 @@ import { notificationRepository } from '../repository/notification.repository';
 
 export const notificationService = {
   async notify(userId: string, type: string, title: string, body?: string, data?: Record<string, unknown>) {
-    return notificationRepository.create(userId, type, title, body, data);
+    const notification = await notificationRepository.create(userId, type, title, body, data);
+    // Push via WebSocket (dynamic import to avoid circular dependency)
+    import('../../../config/socket').then(m => m.pushNotification(userId, { type, title, body })).catch(() => {});
+    return notification;
   },
 
   async getForUser(userId: string, limit?: number, offset?: number) {

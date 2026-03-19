@@ -5,10 +5,10 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
-import { preferencesApi } from '@/lib/api';
+import { preferencesApi, authApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { PageTransition } from '@/components/ui/PageTransition';
-import { Settings, Palette, LayoutGrid, Eye, Target, Check, Save } from 'lucide-react';
+import { Settings, Palette, LayoutGrid, Eye, Target, Check, Save, Lock, Download } from 'lucide-react';
 import type { UserPreferences } from '@/lib/types';
 
 const accentSwatches = [
@@ -88,6 +88,14 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // Change password state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState(false);
+
   useEffect(() => {
     if (prefs) {
       setAccentColor(prefs.accent_color || 'emerald');
@@ -97,6 +105,33 @@ export default function SettingsPage() {
       setWeeklyGoal(prefs.weekly_goal || 5);
     }
   }, [prefs]);
+
+  const handleChangePassword = async () => {
+    setPwError('');
+    setPwSuccess(false);
+    if (newPassword !== confirmPassword) {
+      setPwError('Passwords do not match');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setPwError('New password must be at least 8 characters');
+      return;
+    }
+    setPwSaving(true);
+    try {
+      await authApi.changePassword(currentPassword, newPassword);
+      setPwSuccess(true);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setPwSuccess(false), 3000);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setPwError(e.response?.data?.error || e.message || 'Failed to change password');
+    } finally {
+      setPwSaving(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -249,8 +284,93 @@ export default function SettingsPage() {
           </SectionCard>
         </div>
 
+        {/* Change Password */}
+        <div className="animate-slide-up" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+          <SectionCard icon={Lock} iconGradient="from-red-500/30 to-pink-500/30" title="Change Password">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Current Password</label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter new password"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              {pwError && (
+                <p className="text-sm text-red-400">{pwError}</p>
+              )}
+              {pwSuccess && (
+                <p className="text-sm text-emerald-400 flex items-center gap-1.5">
+                  <Check className="h-4 w-4" />
+                  Password changed successfully
+                </p>
+              )}
+              <div className="flex justify-end">
+                <Button
+                  variant="gradient"
+                  loading={pwSaving}
+                  onClick={handleChangePassword}
+                  disabled={!currentPassword || !newPassword || !confirmPassword}
+                  className="gap-2 rounded-xl"
+                >
+                  <Lock className="h-4 w-4" />
+                  Change Password
+                </Button>
+              </div>
+            </div>
+          </SectionCard>
+        </div>
+
+        {/* Export Data */}
+        <div className="animate-slide-up" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
+          <SectionCard icon={Download} iconGradient="from-cyan-500/30 to-blue-500/30" title="Data Export">
+            <p className="text-sm text-zinc-400 mb-4">
+              Download all your Streaksy data including profile, progress, submissions, revisions, and streak history.
+            </p>
+            <Button variant="secondary" onClick={async () => {
+              try {
+                const { data } = await authApi.exportData();
+                const blob = data instanceof Blob ? data : new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'streaksy-export.json';
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch {
+                // error handled by interceptor
+              }
+            }}>
+              <Download className="h-4 w-4 mr-2" />
+              Export My Data
+            </Button>
+          </SectionCard>
+        </div>
+
         {/* Save Button */}
-        <div className="animate-slide-up sticky bottom-6 pt-2" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+        <div className="animate-slide-up sticky bottom-6 pt-2" style={{ animationDelay: '350ms', animationFillMode: 'both' }}>
           <div className="glass-strong rounded-2xl border border-zinc-800/50 p-4 flex items-center justify-between">
             <p className="text-sm text-zinc-500">
               {saved ? 'Preferences saved successfully.' : 'Save your changes to apply them.'}
