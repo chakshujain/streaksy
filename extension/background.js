@@ -9,7 +9,7 @@
  *   - Store sync history for popup UI
  */
 
-const API_BASE = 'http://streaksy.in:3001/api';
+const API_BASE = 'https://streaksy.in/api';
 const MAX_RETRIES = 3;
 
 // ── Recently synced slugs (prevent duplicate API calls) ──
