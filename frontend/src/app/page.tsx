@@ -27,11 +27,22 @@ import {
 /* ------------------------------------------------------------------ */
 /*  Navbar                                                             */
 /* ------------------------------------------------------------------ */
-function Navbar() {
+function useIsLoggedIn() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem('streaksy_token'));
   }, []);
+  return isLoggedIn;
+}
+
+function SmartLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
+  const isLoggedIn = useIsLoggedIn();
+  const target = isLoggedIn && (href === '/auth/signup' || href === '/auth/login') ? '/dashboard' : href;
+  return <Link href={target} className={className}>{children}</Link>;
+}
+
+function Navbar() {
+  const isLoggedIn = useIsLoggedIn();
 
   return (
     <nav className="fixed top-0 inset-x-0 z-50 glass-strong">
@@ -146,13 +157,13 @@ function Hero() {
           className="animate-slide-up mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center md:mt-12"
           style={{ animationDelay: '0.3s', animationFillMode: 'both' }}
         >
-          <Link
+          <SmartLink
             href="/auth/signup"
             className="glow-md inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-[length:200%_100%] px-8 py-4 text-base font-semibold text-white transition-all duration-500 hover:bg-right hover:shadow-emerald-500/25"
           >
             Start for Free
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </SmartLink>
           <a
             href="#extension"
             className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/50 px-8 py-4 text-base font-semibold text-zinc-300 backdrop-blur-sm transition-all hover:border-zinc-600 hover:text-white"
@@ -685,12 +696,12 @@ function Footer() {
           <a href="/streaksy-extension.tar.gz" download className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
             Download Extension
           </a>
-          <Link href="/auth/login" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+          <SmartLink href="/auth/login" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
             Log in
-          </Link>
-          <Link href="/auth/signup" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+          </SmartLink>
+          <SmartLink href="/auth/signup" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
             Sign up
-          </Link>
+          </SmartLink>
         </div>
       </div>
     </footer>
