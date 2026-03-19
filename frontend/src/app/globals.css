@@ -215,3 +215,17 @@ body {
   inherits: false;
   initial-value: 0deg;
 }
+
+/* React Grid Layout */
+.react-grid-item {
+  transition: all 200ms ease;
+}
+.react-grid-item.react-grid-placeholder {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border: 2px dashed rgba(16, 185, 129, 0.3) !important;
+  border-radius: 16px;
+  opacity: 1 !important;
+}
+.react-grid-item > .react-resizable-handle::after {
+  border-color: #52525b !important;
+}
