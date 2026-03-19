@@ -283,6 +283,14 @@ export interface RoomLeaderboardEntry {
   total_solves: number;
 }
 
+export interface SuggestedProblem {
+  id: string;
+  title: string;
+  slug: string;
+  difficulty: string;
+  url: string;
+}
+
 export interface RoomProblem {
   problem_id: string;
   title: string;

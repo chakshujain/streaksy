@@ -295,6 +295,8 @@ export const roomsApi = {
     api.get('/rooms/leaderboard'),
   getProblems: (id: string) =>
     api.get(`/rooms/${id}/problems`),
+  suggestProblems: (mode: string, count?: number, sheetId?: string) =>
+    api.get('/rooms/suggest', { params: { mode, count, sheetId } }),
 };
 
 export default api;

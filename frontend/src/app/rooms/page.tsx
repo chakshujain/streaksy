@@ -13,9 +13,9 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import { ProblemPicker } from '@/components/search/ProblemPicker';
 import { useAsync } from '@/hooks/useAsync';
 import { roomsApi, problemsApi } from '@/lib/api';
-import { Swords, Plus, LogIn, Calendar, Trophy, Clock, Video, CalendarPlus } from 'lucide-react';
+import { Swords, Plus, LogIn, Calendar, Trophy, Clock, Video, CalendarPlus, Shuffle, ListOrdered, Sparkles, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import type { Room, Problem, Sheet, RoomLeaderboardEntry } from '@/lib/types';
+import type { Room, Problem, Sheet, RoomLeaderboardEntry, SuggestedProblem } from '@/lib/types';
 import { useAuthStore } from '@/lib/store';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -56,6 +56,12 @@ export default function RoomsPage() {
   const [roomMode, setRoomMode] = useState<'single' | 'multi'>('single');
   const [recurrence, setRecurrence] = useState('');
   const [meetLink, setMeetLink] = useState('');
+  const [meetLinkOverride, setMeetLinkOverride] = useState(false);
+  type ProblemSelectionMode = 'pick' | 'next_unsolved' | 'random_sheet' | 'random_all';
+  const [problemSelectionMode, setProblemSelectionMode] = useState<ProblemSelectionMode>('pick');
+  const [suggestCount, setSuggestCount] = useState(4);
+  const [suggestedProblems, setSuggestedProblems] = useState<SuggestedProblem[]>([]);
+  const [suggestLoading, setSuggestLoading] = useState(false);
 
   const { data: rooms, loading } = useAsync<Room[]>(
     () => roomsApi.mine().then(r => r.data.rooms),
@@ -78,17 +84,20 @@ export default function RoomsPage() {
   );
 
   const handleCreate = async () => {
-    if (!roomName.trim() || (!selectedProblem && !selectedSheet)) return;
+    const hasProblemSelection = selectedProblem || selectedSheet || suggestedProblems.length > 0;
+    if (!roomName.trim() || !hasProblemSelection) return;
     setCreateLoading(true);
     setCreateError('');
     try {
+      const problemIds = suggestedProblems.length > 0 ? suggestedProblems.map(p => p.id) : undefined;
       const { data } = await roomsApi.create({
         name: roomName,
         problemId: selectedProblem?.id || undefined,
+        problemIds,
         sheetId: selectedSheet || undefined,
         timeLimitMinutes: timeLimit,
         scheduledAt: scheduledAt || undefined,
-        mode: roomMode,
+        mode: suggestedProblems.length > 1 ? 'multi' : roomMode,
         recurrence: recurrence || undefined,
         meetLink: meetLink || undefined,
       });
@@ -209,34 +218,141 @@ export default function RoomsPage() {
                 </div>
               </div>
 
+              {/* Problem Selection Mode */}
               <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-zinc-300">Problem</label>
-                <ProblemPicker
-                  onSelect={(p) => setSelectedProblem(p)}
-                  placeholder="Search for a problem..."
-                />
-                {selectedProblem && (
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-sm text-zinc-300">{selectedProblem.title}</span>
-                    <Badge variant={selectedProblem.difficulty}>{selectedProblem.difficulty}</Badge>
-                  </div>
-                )}
+                <label className="block text-sm font-medium text-zinc-300">Problem Selection</label>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {([
+                    { key: 'pick' as ProblemSelectionMode, label: 'Search & Pick', icon: Sparkles },
+                    { key: 'next_unsolved' as ProblemSelectionMode, label: 'Next Unsolved', icon: ListOrdered },
+                    { key: 'random_sheet' as ProblemSelectionMode, label: 'Random from Sheet', icon: Shuffle },
+                    { key: 'random_all' as ProblemSelectionMode, label: 'Random from All', icon: RefreshCw },
+                  ]).map(opt => (
+                    <button
+                      key={opt.key}
+                      onClick={() => { setProblemSelectionMode(opt.key); setSuggestedProblems([]); }}
+                      className={cn(
+                        'flex flex-col items-center gap-1.5 rounded-lg border px-3 py-3 text-xs font-medium transition-all duration-200',
+                        problemSelectionMode === opt.key
+                          ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-400'
+                          : 'border-zinc-700 text-zinc-400 hover:text-zinc-200'
+                      )}
+                    >
+                      <opt.icon className="h-4 w-4" />
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Sheet selector */}
-              {sheets && sheets.length > 0 && (
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-zinc-300">Or select from a Sheet</label>
-                  <select
-                    value={selectedSheet}
-                    onChange={e => setSelectedSheet(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
+              {/* Search & Pick mode */}
+              {problemSelectionMode === 'pick' && (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-zinc-300">Problem</label>
+                    <ProblemPicker
+                      onSelect={(p) => setSelectedProblem(p)}
+                      placeholder="Search for a problem..."
+                    />
+                    {selectedProblem && (
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="text-sm text-zinc-300">{selectedProblem.title}</span>
+                        <Badge variant={selectedProblem.difficulty}>{selectedProblem.difficulty}</Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sheet selector for pick mode */}
+                  {sheets && sheets.length > 0 && (
+                    <div className="space-y-1.5">
+                      <label className="block text-sm font-medium text-zinc-300">Or select from a Sheet</label>
+                      <select
+                        value={selectedSheet}
+                        onChange={e => setSelectedSheet(e.target.value)}
+                        className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
+                      >
+                        <option value="">None</option>
+                        {sheets.map(s => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Smart selection modes: sheet selector + count + suggest button */}
+              {problemSelectionMode !== 'pick' && (
+                <div className="space-y-3">
+                  {problemSelectionMode !== 'random_all' && sheets && sheets.length > 0 && (
+                    <div className="space-y-1.5">
+                      <label className="block text-sm font-medium text-zinc-300">Sheet</label>
+                      <select
+                        value={selectedSheet}
+                        onChange={e => setSelectedSheet(e.target.value)}
+                        className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
+                      >
+                        <option value="">Select a sheet</option>
+                        {sheets.map(s => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-zinc-300">Number of problems</label>
+                    <div className="flex gap-2">
+                      {[2, 3, 4, 5, 6].map(n => (
+                        <button key={n} onClick={() => setSuggestCount(n)}
+                          className={cn('rounded-lg border px-4 py-2 text-sm font-medium transition-all duration-200',
+                            suggestCount === n ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-400' : 'border-zinc-700 text-zinc-400 hover:text-zinc-200'
+                          )}>
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="secondary"
+                    loading={suggestLoading}
+                    disabled={problemSelectionMode !== 'random_all' && !selectedSheet}
+                    onClick={async () => {
+                      setSuggestLoading(true);
+                      try {
+                        const { data } = await roomsApi.suggestProblems(
+                          problemSelectionMode,
+                          suggestCount,
+                          selectedSheet || undefined
+                        );
+                        setSuggestedProblems(data.problems);
+                      } catch {
+                        setSuggestedProblems([]);
+                      } finally {
+                        setSuggestLoading(false);
+                      }
+                    }}
+                    className="flex items-center gap-2"
                   >
-                    <option value="">None</option>
-                    {sheets.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
+                    <Shuffle className="h-4 w-4" />
+                    {suggestedProblems.length > 0 ? 'Re-roll' : 'Suggest Problems'}
+                  </Button>
+
+                  {suggestedProblems.length > 0 && (
+                    <div className="space-y-2 rounded-lg border border-zinc-700/50 bg-zinc-800/30 p-3">
+                      <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Suggested Problems</p>
+                      {suggestedProblems.map((p, i) => (
+                        <div key={p.id} className="flex items-center justify-between rounded-md bg-zinc-800/50 px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-zinc-500 font-mono w-5">{i + 1}.</span>
+                            <span className="text-sm text-zinc-200">{p.title}</span>
+                          </div>
+                          <Badge variant={p.difficulty as 'easy' | 'medium' | 'hard'}>{p.difficulty}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -268,18 +384,37 @@ export default function RoomsPage() {
                 </select>
               </div>
 
-              {/* Google Meet Link */}
+              {/* Meet Link */}
               <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-zinc-300">Google Meet Link (optional)</label>
+                <label className="block text-sm font-medium text-zinc-300">Meet Link</label>
+                <p className="text-xs text-zinc-500">A Jitsi Meet link will be auto-generated. Toggle to enter a custom link.</p>
                 <div className="flex items-center gap-2">
                   <Video className="h-4 w-4 text-zinc-400 flex-shrink-0" />
-                  <input
-                    type="url"
-                    value={meetLink}
-                    onChange={e => setMeetLink(e.target.value)}
-                    placeholder="https://meet.google.com/abc-defg-hij"
-                    className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
-                  />
+                  {meetLinkOverride ? (
+                    <input
+                      type="url"
+                      value={meetLink}
+                      onChange={e => setMeetLink(e.target.value)}
+                      placeholder="https://meet.google.com/abc-defg-hij"
+                      className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
+                    />
+                  ) : (
+                    <div className="flex-1 rounded-lg border border-zinc-700/50 bg-zinc-800/30 px-3 py-2 text-sm text-zinc-400 font-mono">
+                      {'https://meet.jit.si/streaksy-... (auto-generated)'}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setMeetLinkOverride(!meetLinkOverride); if (meetLinkOverride) setMeetLink(''); }}
+                    className={cn(
+                      'rounded-lg border px-3 py-2 text-xs font-medium transition-all duration-200',
+                      meetLinkOverride
+                        ? 'border-amber-500/30 bg-amber-500/15 text-amber-400'
+                        : 'border-zinc-700 text-zinc-400 hover:text-zinc-200'
+                    )}
+                  >
+                    {meetLinkOverride ? 'Auto' : 'Custom'}
+                  </button>
                 </div>
               </div>
 
@@ -309,7 +444,7 @@ export default function RoomsPage() {
                   ))}
                 </div>
               </div>
-              <Button onClick={handleCreate} loading={createLoading} disabled={!roomName.trim() || (!selectedProblem && !selectedSheet)}>Create Room</Button>
+              <Button onClick={handleCreate} loading={createLoading} disabled={!roomName.trim() || (!selectedProblem && !selectedSheet && suggestedProblems.length === 0)}>Create Room</Button>
             </Card>
           </div>
         )}

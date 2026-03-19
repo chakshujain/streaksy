@@ -242,4 +242,39 @@ export const roomRepository = {
       [limit]
     );
   },
+
+  async getNextUnsolved(userId: string, sheetId: string, count: number): Promise<{ id: string; title: string; slug: string; difficulty: string; url: string }[]> {
+    return query(
+      `SELECT p.id, p.title, p.slug, p.difficulty, p.url
+       FROM problems p
+       JOIN sheet_problems sp ON sp.problem_id = p.id
+       LEFT JOIN user_problem_status ups ON ups.problem_id = p.id AND ups.user_id = $1
+       WHERE sp.sheet_id = $2 AND (ups.status IS NULL OR ups.status != 'solved')
+       ORDER BY sp.position ASC LIMIT $3`,
+      [userId, sheetId, count]
+    );
+  },
+
+  async getRandomFromSheet(userId: string, sheetId: string, count: number): Promise<{ id: string; title: string; slug: string; difficulty: string; url: string }[]> {
+    return query(
+      `SELECT p.id, p.title, p.slug, p.difficulty, p.url
+       FROM problems p
+       JOIN sheet_problems sp ON sp.problem_id = p.id
+       LEFT JOIN user_problem_status ups ON ups.problem_id = p.id AND ups.user_id = $1
+       WHERE sp.sheet_id = $2 AND (ups.status IS NULL OR ups.status != 'solved')
+       ORDER BY RANDOM() LIMIT $3`,
+      [userId, sheetId, count]
+    );
+  },
+
+  async getRandomFromAll(userId: string, count: number): Promise<{ id: string; title: string; slug: string; difficulty: string; url: string }[]> {
+    return query(
+      `SELECT p.id, p.title, p.slug, p.difficulty, p.url
+       FROM problems p
+       LEFT JOIN user_problem_status ups ON ups.problem_id = p.id AND ups.user_id = $1
+       WHERE ups.status IS NULL OR ups.status != 'solved'
+       ORDER BY RANDOM() LIMIT $2`,
+      [userId, count]
+    );
+  },
 };

@@ -75,6 +75,15 @@ export const roomController = {
     res.json({ leaderboard });
   },
 
+  async suggestProblems(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const mode = req.query.mode as string;
+    const sheetId = req.query.sheetId as string;
+    const count = parseInt(req.query.count as string) || 4;
+    const problems = await roomService.suggestProblems(user!.userId, mode, count, sheetId);
+    res.json({ problems });
+  },
+
   async getProblems(req: Request, res: Response) {
     const roomId = param(req, 'id');
     const problems = await roomRepository.getRoomProblems(roomId);

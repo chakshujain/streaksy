@@ -16,7 +16,7 @@ export const roomService = {
     const sheetId = opts?.sheetId || null;
     const status = scheduledAt ? 'scheduled' : 'waiting';
     const recurrence = opts?.recurrence || null;
-    const meetLink = opts?.meetLink || null;
+    const meetLink = opts?.meetLink || `https://meet.jit.si/streaksy-${code.toLowerCase()}`;
 
     const room = await roomRepository.create(name, code, problemId, hostId, timeLimitMinutes, {
       mode,
@@ -231,6 +231,16 @@ export const roomService = {
 
   async getLeaderboard() {
     return roomRepository.getLeaderboard();
+  },
+
+  async suggestProblems(userId: string, mode: string, count: number, sheetId?: string) {
+    if (mode === 'next_unsolved' && sheetId) {
+      return roomRepository.getNextUnsolved(userId, sheetId, count);
+    } else if (mode === 'random_sheet' && sheetId) {
+      return roomRepository.getRandomFromSheet(userId, sheetId, count);
+    } else {
+      return roomRepository.getRandomFromAll(userId, count);
+    }
   },
 
   async getUserStats(userId: string) {

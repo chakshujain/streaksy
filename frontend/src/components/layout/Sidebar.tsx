@@ -19,6 +19,7 @@ import {
 import { useAuthStore, useDashboardStore } from '@/lib/store';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { SearchBar } from '@/components/search/SearchBar';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -45,7 +46,7 @@ export function Sidebar() {
     .slice(0, 2) ?? '?';
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-zinc-950/70 backdrop-blur-xl border-r border-zinc-800/40">
+    <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col overflow-hidden bg-zinc-950/70 backdrop-blur-xl border-r border-zinc-800/40">
       {/* Gradient border accent on the right edge */}
       <div className="absolute right-0 top-0 h-full w-px bg-gradient-to-b from-emerald-500/20 via-cyan-500/10 to-transparent" />
 
@@ -57,7 +58,10 @@ export function Sidebar() {
           </div>
           <span className="text-xl font-bold gradient-text tracking-tight">Streaksy</span>
         </div>
-        <NotificationBell />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <NotificationBell />
+        </div>
       </div>
 
       {/* Search */}
@@ -66,7 +70,7 @@ export function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 overflow-y-auto space-y-1 px-3 py-4">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href);
           return (
