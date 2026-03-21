@@ -310,6 +310,21 @@ export default function RoadmapStartPage() {
   /* ================================================================== */
   /*  RENDER                                                             */
   /* ================================================================== */
+  if (!template) {
+    return (
+      <AppShell>
+        <PageTransition>
+          <div className="max-w-2xl mx-auto text-center py-20 space-y-4">
+            <p className="text-zinc-400">Roadmap template not found.</p>
+            <Link href="/roadmaps" className="text-emerald-400 hover:text-emerald-300 text-sm">
+              Browse roadmaps
+            </Link>
+          </div>
+        </PageTransition>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell>
       <PageTransition>

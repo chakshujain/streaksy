@@ -726,7 +726,7 @@ export default function DashboardPage() {
       setActiveRoadmaps((prev) =>
         prev.map((rm) =>
           rm.id === roadmapId
-            ? { ...rm, completedDays: done ? Math.max(rm.completedDays, dayNumber) : dayNumber - 1 }
+            ? { ...rm, completedDays: done ? Math.max(rm.completedDays, dayNumber) : Math.min(rm.completedDays, dayNumber - 1) }
             : rm
         )
       );

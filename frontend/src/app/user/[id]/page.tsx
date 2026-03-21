@@ -79,7 +79,7 @@ export default function UserProfilePage() {
     );
   }
 
-  const initials = profile.displayName
+  const initials = (profile.displayName || '?')
     .split(' ')
     .map((n) => n[0])
     .join('')

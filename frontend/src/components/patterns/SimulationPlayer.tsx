@@ -46,7 +46,7 @@ export default function SimulationPlayer({ steps }: SimulationPlayerProps) {
   const isSpeakingRef = useRef(false);
   const speedMenuRef = useRef<HTMLDivElement>(null);
 
-  const step = steps[currentStep];
+  const step = steps[currentStep] || steps[0];
 
   const cancelSpeech = useCallback(() => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -109,7 +109,7 @@ export default function SimulationPlayer({ steps }: SimulationPlayerProps) {
       const advanceWithSpeech = () => {
         if (cancelled) return;
 
-        speak(step.description, () => {
+        speak(step?.description || '', () => {
           if (cancelled) return;
 
           // Small pause after speech before advancing
@@ -151,11 +151,11 @@ export default function SimulationPlayer({ steps }: SimulationPlayerProps) {
         }
       };
     }
-  }, [playing, speed, audioEnabled, currentStep, steps.length, step.description, speak, cancelSpeech]);
+  }, [playing, speed, audioEnabled, currentStep, steps.length, step?.description, speak, cancelSpeech]);
 
   // Speak on manual step change when audio is enabled and not playing
   useEffect(() => {
-    if (audioEnabled && !playing) {
+    if (audioEnabled && !playing && step) {
       speak(step.description);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -176,6 +176,8 @@ export default function SimulationPlayer({ steps }: SimulationPlayerProps) {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  if (!step) return null;
 
   const reset = () => {
     setPlaying(false);

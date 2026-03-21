@@ -38,7 +38,7 @@ export default function RevisionPage() {
 
   const filteredNotes = notes?.filter((n) =>
     !searchQuery || n.problem_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    n.key_takeaway.toLowerCase().includes(searchQuery.toLowerCase())
+    n.key_takeaway?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Collect unique tags

@@ -80,7 +80,8 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         streaksApi.get(),
         (await import('./api')).progressApi.get(),
       ]);
-      const solved = progressRes.data.progress.filter(
+      const progress = progressRes.data?.progress || [];
+      const solved = progress.filter(
         (p: { status: string }) => p.status === 'solved'
       ).length;
       set({

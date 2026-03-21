@@ -375,7 +375,7 @@ export default function LeaderboardPage() {
                     {/* User */}
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-xs font-semibold text-emerald-400">
-                        {u.displayName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                        {(u.displayName || '?').split(' ').map((n) => n[0]).join('').slice(0, 2)}
                       </div>
                       <span className={cn('text-sm font-medium', isMe ? 'text-emerald-400' : 'text-white')}>
                         {u.displayName} {isMe && <span className="text-xs text-zinc-500">(you)</span>}

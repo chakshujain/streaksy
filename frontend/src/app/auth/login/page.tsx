@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -10,12 +10,33 @@ import { cn } from '@/lib/cn';
 import { Flame, Mail, Lock, Zap, Shield, Code2 } from 'lucide-react';
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuthStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Show OAuth errors from callback redirect
+  useEffect(() => {
+    const oauthError = searchParams.get('error');
+    if (oauthError) {
+      const messages: Record<string, string> = {
+        invalid_callback: 'Authentication failed. Please try again.',
+        missing_params: 'Authentication failed. Missing parameters.',
+      };
+      setError(messages[oauthError] || 'Authentication failed. Please try again.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
