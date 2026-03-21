@@ -433,23 +433,33 @@ export default function PatternDetailPage() {
               </div>
 
               {/* Table rows */}
-              {pattern.practiceProblems.map((prob, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    'grid grid-cols-[1fr_auto_1fr] gap-4 px-4 py-3 items-center',
-                    i % 2 === 0 ? 'bg-zinc-900/30' : 'bg-zinc-900/10'
-                  )}
-                >
-                  <span className="text-sm font-medium text-zinc-300">{prob.name}</span>
-                  <Badge
-                    variant={prob.difficulty.toLowerCase() as 'easy' | 'medium' | 'hard'}
+              {pattern.practiceProblems.map((prob, i) => {
+                const problemSlug = prob.name
+                  .toLowerCase()
+                  .replace(/[^a-z0-9\s-]/g, '')
+                  .replace(/\s+/g, '-');
+                return (
+                  <Link
+                    key={i}
+                    href={`/problems/${problemSlug}`}
+                    className={cn(
+                      'grid grid-cols-[1fr_auto_1fr] gap-4 px-4 py-3 items-center hover:bg-zinc-800/50 transition-colors group',
+                      i % 2 === 0 ? 'bg-zinc-900/30' : 'bg-zinc-900/10'
+                    )}
                   >
-                    {prob.difficulty}
-                  </Badge>
-                  <span className="text-xs text-zinc-500">{prob.why}</span>
-                </div>
-              ))}
+                    <span className="text-sm font-medium text-zinc-300 group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+                      {prob.name}
+                      <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-emerald-400" />
+                    </span>
+                    <Badge
+                      variant={prob.difficulty.toLowerCase() as 'easy' | 'medium' | 'hard'}
+                    >
+                      {prob.difficulty}
+                    </Badge>
+                    <span className="text-xs text-zinc-500">{prob.why}</span>
+                  </Link>
+                );
+              })}
             </div>
           </section>
         )}
@@ -461,14 +471,21 @@ export default function PatternDetailPage() {
             <section>
               <SectionHeader number={10} emoji="📝" title="Practice Problems" icon={BookOpen} />
               <div className="flex flex-wrap gap-1.5">
-                {pattern.commonProblems.map((problem, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center rounded-full bg-zinc-800 border border-zinc-700/50 px-2.5 py-1 text-[11px] text-zinc-400"
-                  >
-                    {problem}
-                  </span>
-                ))}
+                {pattern.commonProblems.map((problem, i) => {
+                  const problemSlug = problem
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-');
+                  return (
+                    <Link
+                      key={i}
+                      href={`/problems/${problemSlug}`}
+                      className="inline-flex items-center rounded-full bg-zinc-800 border border-zinc-700/50 px-2.5 py-1 text-[11px] text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-colors"
+                    >
+                      {problem}
+                    </Link>
+                  );
+                })}
               </div>
             </section>
           )}

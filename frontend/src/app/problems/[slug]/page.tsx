@@ -19,10 +19,44 @@ import { RatingSection } from '@/components/problems/RatingSection';
 import { AIHintsPanel } from '@/components/ai/AIHintsPanel';
 import { AIExplanationPanel } from '@/components/ai/AIExplanationPanel';
 import { AICodeReviewPanel } from '@/components/ai/AICodeReviewPanel';
-import { ExternalLink, RotateCcw, X, Sparkles, Loader2, CheckCircle2, Circle, Clock } from 'lucide-react';
+import { ExternalLink, RotateCcw, X, Sparkles, Loader2, CheckCircle2, Circle, Clock, ArrowRight, Brain, BookOpen, Lightbulb } from 'lucide-react';
+import Link from 'next/link';
 import type { Problem, Note, RevisionNote, ProblemProgress } from '@/lib/types';
 import { cn } from '@/lib/cn';
 import { BookmarkButton } from '@/components/ui/BookmarkButton';
+
+/* ── Tag-to-content mapping for contextual suggestions ──────────────────── */
+
+const tagToPattern: Record<string, { name: string; slug: string }> = {
+  'Two Pointers': { name: 'Two Pointers', slug: 'two-pointers' },
+  'Sliding Window': { name: 'Sliding Window', slug: 'sliding-window' },
+  'Binary Search': { name: 'Binary Search', slug: 'binary-search' },
+  'Stack': { name: 'Stack', slug: 'stack' },
+  'Monotonic Stack': { name: 'Monotonic Stack', slug: 'monotonic-stack' },
+  'Linked List': { name: 'Linked List', slug: 'linked-list' },
+  'Fast & Slow Pointers': { name: 'Fast & Slow Pointers', slug: 'fast-slow-pointers' },
+  'Tree': { name: 'Tree BFS/DFS', slug: 'tree-bfs' },
+  'BFS': { name: 'BFS', slug: 'tree-bfs' },
+  'DFS': { name: 'DFS', slug: 'tree-dfs' },
+  'Graph': { name: 'Graph BFS/DFS', slug: 'graph-bfs' },
+  'Backtracking': { name: 'Backtracking', slug: 'backtracking' },
+  'Dynamic Programming': { name: 'Dynamic Programming', slug: 'dynamic-programming' },
+  'Greedy': { name: 'Greedy', slug: 'greedy' },
+  'Heap': { name: 'Top K / Heap', slug: 'top-k-heap' },
+  'Trie': { name: 'Trie', slug: 'trie' },
+  'Bit Manipulation': { name: 'Bit Manipulation', slug: 'bit-manipulation' },
+  'Union Find': { name: 'Union Find', slug: 'union-find' },
+  'Intervals': { name: 'Intervals', slug: 'intervals' },
+};
+
+const tagToLearnTopic: Record<string, { name: string; slug: string }> = {
+  'Database': { name: 'Databases', slug: 'databases' },
+  'SQL': { name: 'Databases', slug: 'databases' },
+  'System Design': { name: 'System Design', slug: 'system-design' },
+  'OOP': { name: 'Object-Oriented Programming', slug: 'oops' },
+  'Multithreading': { name: 'Multithreading', slug: 'multithreading' },
+  'Concurrency': { name: 'Multithreading', slug: 'multithreading' },
+};
 
 export default function ProblemDetailPage() {
   const params = useParams();
@@ -167,6 +201,78 @@ export default function ProblemDetailPage() {
             ))}
           </div>
         )}
+
+        {/* Solved — What's Next suggestions */}
+        {isSolved && (
+          <div className="animate-slide-up flex flex-wrap items-center gap-2 rounded-xl border border-zinc-800/50 bg-zinc-800/30 px-4 py-3">
+            <span className="text-xs font-medium text-zinc-400 flex items-center gap-1.5 mr-1">
+              <Lightbulb className="h-3.5 w-3.5 text-emerald-400" /> Nice solve!
+            </span>
+            <button
+              onClick={() => setShowRevisionForm(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700/50 bg-zinc-900/50 px-2.5 py-1.5 text-xs text-zinc-300 hover:border-amber-500/30 hover:text-amber-300 transition-all"
+            >
+              <RotateCcw className="h-3 w-3 text-amber-400" />
+              Save your approach
+            </button>
+            {problem.tags?.map((tag) => {
+              const matched = tagToPattern[tag.name];
+              if (!matched) return null;
+              return (
+                <Link
+                  key={tag.id}
+                  href={`/patterns/${matched.slug}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700/50 bg-zinc-900/50 px-2.5 py-1.5 text-xs text-zinc-300 hover:border-cyan-500/30 hover:text-cyan-300 transition-all"
+                >
+                  <Brain className="h-3 w-3 text-cyan-400" />
+                  Learn {matched.name} pattern
+                </Link>
+              );
+            }).filter(Boolean).slice(0, 2)}
+          </div>
+        )}
+
+        {/* Related Content */}
+        {problem.tags && problem.tags.length > 0 && (() => {
+          const relatedPatterns = problem.tags
+            .map((tag) => tagToPattern[tag.name])
+            .filter((v): v is { name: string; slug: string } => !!v);
+          const relatedTopics = problem.tags
+            .map((tag) => tagToLearnTopic[tag.name])
+            .filter((v): v is { name: string; slug: string } => !!v);
+          const uniquePatterns = relatedPatterns.filter((p, i, a) => a.findIndex(x => x.slug === p.slug) === i);
+          const uniqueTopics = relatedTopics.filter((t, i, a) => a.findIndex(x => x.slug === t.slug) === i);
+
+          if (uniquePatterns.length === 0 && uniqueTopics.length === 0) return null;
+
+          return (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-zinc-500">Related:</span>
+              {uniquePatterns.slice(0, 3).map((p) => (
+                <Link
+                  key={p.slug}
+                  href={`/patterns/${p.slug}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/40 px-2.5 py-1.5 text-xs text-zinc-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all"
+                >
+                  <Brain className="h-3 w-3" />
+                  {p.name}
+                  <ArrowRight className="h-3 w-3 opacity-50" />
+                </Link>
+              ))}
+              {uniqueTopics.slice(0, 2).map((t) => (
+                <Link
+                  key={t.slug}
+                  href={`/learn/${t.slug}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/40 px-2.5 py-1.5 text-xs text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all"
+                >
+                  <BookOpen className="h-3 w-3" />
+                  {t.name}
+                  <ArrowRight className="h-3 w-3 opacity-50" />
+                </Link>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Video Solution */}
         {problem.youtube_url && (

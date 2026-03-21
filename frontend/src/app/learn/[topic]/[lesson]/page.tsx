@@ -19,6 +19,9 @@ import {
   HelpCircle,
   Construction,
   ArrowRight,
+  BookOpen,
+  Brain,
+  RotateCcw,
 } from 'lucide-react';
 import { useLearnProgress } from '@/hooks/useLearnProgress';
 import { BookmarkButton } from '@/components/ui/BookmarkButton';
@@ -356,21 +359,71 @@ export default function LessonPage() {
             {/* Mark Complete */}
             <div className="pt-2">
               {completed ? (
-                <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4">
-                  <CheckCircle className="h-6 w-6 text-emerald-400 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-emerald-300">Completed</p>
-                    {completionDate && (
-                      <p className="text-xs text-emerald-400/70 mt-0.5">
-                        {new Date(completionDate).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </p>
-                    )}
+                <>
+                  <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4">
+                    <CheckCircle className="h-6 w-6 text-emerald-400 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-300">Completed</p>
+                      {completionDate && (
+                        <p className="text-xs text-emerald-400/70 mt-0.5">
+                          {new Date(completionDate).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
+
+                  {/* What's Next? suggestions */}
+                  <div className="mt-4 animate-slide-up rounded-xl border border-zinc-800/50 bg-zinc-800/30 p-4 space-y-3">
+                    <h3 className="text-sm font-semibold text-zinc-300 flex items-center gap-2">
+                      <Lightbulb className="h-4 w-4 text-cyan-400" />
+                      What&apos;s Next?
+                    </h3>
+
+                    <div className="space-y-2">
+                      {nextLesson && (
+                        <Link
+                          href={`/learn/${topicSlug}/${nextLesson.slug}`}
+                          className="flex items-center gap-3 rounded-lg border border-zinc-700/40 bg-zinc-900/40 px-3 py-2.5 hover:border-emerald-500/30 hover:bg-zinc-800/50 transition-all group"
+                        >
+                          <BookOpen className="h-4 w-4 text-emerald-400 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-zinc-500">Next lesson</p>
+                            <p className="text-sm text-zinc-300 truncate group-hover:text-emerald-300 transition-colors">{nextLesson.title}</p>
+                          </div>
+                          <ArrowRight className="h-3.5 w-3.5 text-zinc-600 group-hover:text-emerald-400 transition-colors" />
+                        </Link>
+                      )}
+
+                      <Link
+                        href="/problems"
+                        className="flex items-center gap-3 rounded-lg border border-zinc-700/40 bg-zinc-900/40 px-3 py-2.5 hover:border-cyan-500/30 hover:bg-zinc-800/50 transition-all group"
+                      >
+                        <Brain className="h-4 w-4 text-cyan-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-zinc-500">Practice problems</p>
+                          <p className="text-sm text-zinc-300 group-hover:text-cyan-300 transition-colors">Solve related problems</p>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-zinc-600 group-hover:text-cyan-400 transition-colors" />
+                      </Link>
+
+                      <Link
+                        href="/revision"
+                        className="flex items-center gap-3 rounded-lg border border-zinc-700/40 bg-zinc-900/40 px-3 py-2.5 hover:border-amber-500/30 hover:bg-zinc-800/50 transition-all group"
+                      >
+                        <RotateCcw className="h-4 w-4 text-amber-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-zinc-500">Create revision note</p>
+                          <p className="text-sm text-zinc-300 group-hover:text-amber-300 transition-colors">Save key takeaways for review</p>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-zinc-600 group-hover:text-amber-400 transition-colors" />
+                      </Link>
+                    </div>
+                  </div>
+                </>
               ) : (
                 <button
                   onClick={() => markComplete(topicSlug, lessonSlug)}
