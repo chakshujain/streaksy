@@ -97,9 +97,97 @@ function buildDsaPatterns30(): ContentItem[] {
   return items;
 }
 
+// ── Crack the Job Together (90 days) ─────────────────────────────────────────
+// Combines DSA Patterns + System Design + Databases + OOP + Multithreading + Design Patterns
+// Interleaves topics across 90 days for variety
+
+function buildCrackTheJob(): ContentItem[] {
+  const topicContent: { topic: string; items: ContentItem[] }[] = [
+    { topic: 'DSA Patterns', items: buildDsaPatterns30().filter(i => i.slug !== 'review') },
+    { topic: 'System Design', items: lessonsFromTopic('system-design') },
+    { topic: 'Databases', items: lessonsFromTopic('databases') },
+    { topic: 'OOP', items: lessonsFromTopic('oops') },
+    { topic: 'Multithreading', items: lessonsFromTopic('multithreading') },
+    { topic: 'Design Patterns', items: lessonsFromTopic('design-patterns') },
+  ];
+
+  // Round-robin interleave: cycle through topics, picking one item from each
+  const result: ContentItem[] = [];
+  const indices = topicContent.map(() => 0);
+  let round = 0;
+
+  while (result.length < 90) {
+    let added = false;
+    for (let t = 0; t < topicContent.length; t++) {
+      if (result.length >= 90) break;
+      if (indices[t] < topicContent[t].items.length) {
+        result.push(topicContent[t].items[indices[t]]);
+        indices[t]++;
+        added = true;
+      }
+    }
+    // Every 6 items (1 round), add a review day if we haven't filled 90 yet
+    round++;
+    if (round % 3 === 0 && result.length < 90 && added) {
+      result.push({
+        type: 'lesson',
+        slug: `review-${round}`,
+        title: `Review & Mock Interview (Week ${Math.ceil(result.length / 7)})`,
+        link: '/revision',
+      });
+    }
+    // Safety: if no items were added, fill remaining with review days
+    if (!added) {
+      while (result.length < 90) {
+        result.push({
+          type: 'lesson',
+          slug: `review-fill-${result.length}`,
+          title: `Day ${result.length + 1}: Review & Practice`,
+          link: '/revision',
+        });
+      }
+    }
+  }
+
+  return result.slice(0, 90);
+}
+
+// ── 100 Days of Code ─────────────────────────────────────────────────────────
+// Combines all available content across all topics
+
+function build100DaysOfCode(): ContentItem[] {
+  const allContent = [
+    ...buildDsaPatterns30().filter(i => i.slug !== 'review'),
+    ...lessonsFromTopic('system-design'),
+    ...lessonsFromTopic('databases'),
+    ...lessonsFromTopic('oops'),
+    ...lessonsFromTopic('multithreading'),
+    ...lessonsFromTopic('frontend-dev'),
+    ...lessonsFromTopic('backend-dev'),
+    ...lessonsFromTopic('git-github'),
+    ...lessonsFromTopic('design-patterns'),
+  ];
+
+  const result: ContentItem[] = [];
+  for (let i = 0; i < 100; i++) {
+    if (i < allContent.length) {
+      result.push(allContent[i]);
+    } else {
+      result.push({
+        type: 'lesson',
+        slug: `practice-${i + 1}`,
+        title: `Day ${i + 1}: Free Practice & Review`,
+        link: '/problems',
+      });
+    }
+  }
+  return result;
+}
+
 // ── Template Content Map ─────────────────────────────────────────────────────
 
 export const templateContentMap: Record<string, ContentItem[]> = {
+  'crack-the-job-together': buildCrackTheJob(),
   'learn-databases': lessonsFromTopic('databases'),
   'learn-system-design': lessonsFromTopic('system-design'),
   'learn-oops': lessonsFromTopic('oops'),
@@ -109,6 +197,7 @@ export const templateContentMap: Record<string, ContentItem[]> = {
   'master-git': lessonsFromTopic('git-github'),
   'learn-design-patterns': lessonsFromTopic('design-patterns'),
   'dsa-patterns-30': buildDsaPatterns30(),
+  '100-days-of-code': build100DaysOfCode(),
 };
 
 /** Look up the content item for a given template slug and day number (1-based). */
