@@ -13,7 +13,7 @@ import {
   BookOpen,
   GraduationCap,
   Puzzle,
-  Map,
+  Map as MapIcon,
   Search,
   Trash2,
   X,
@@ -23,7 +23,7 @@ const typeConfig: Record<Bookmark['type'], { label: string; icon: React.ElementT
   problem: { label: 'Problems', icon: BookOpen, color: 'text-blue-400', badgeBg: 'bg-blue-500/10 text-blue-400' },
   lesson: { label: 'Lessons', icon: GraduationCap, color: 'text-emerald-400', badgeBg: 'bg-emerald-500/10 text-emerald-400' },
   pattern: { label: 'Patterns', icon: Puzzle, color: 'text-purple-400', badgeBg: 'bg-purple-500/10 text-purple-400' },
-  roadmap: { label: 'Roadmaps', icon: Map, color: 'text-amber-400', badgeBg: 'bg-amber-500/10 text-amber-400' },
+  roadmap: { label: 'Roadmaps', icon: MapIcon, color: 'text-amber-400', badgeBg: 'bg-amber-500/10 text-amber-400' },
 };
 
 const typeOrder: Bookmark['type'][] = ['problem', 'lesson', 'pattern', 'roadmap'];
@@ -217,7 +217,7 @@ export default function BookmarksPage() {
                                   {cfg.label.slice(0, -1)}
                                 </span>
                                 {bookmark.difficulty && (
-                                  <Badge variant={bookmark.difficulty}>{bookmark.difficulty}</Badge>
+                                  <Badge variant={bookmark.difficulty as 'easy' | 'medium' | 'hard'}>{bookmark.difficulty}</Badge>
                                 )}
                               </div>
                               <p className="text-[11px] text-zinc-600 mt-1.5">
