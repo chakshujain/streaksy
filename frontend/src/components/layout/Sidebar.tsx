@@ -15,6 +15,8 @@ import {
   User,
   Swords,
   Rss,
+  GraduationCap,
+  Rocket,
 } from 'lucide-react';
 import { useAuthStore, useDashboardStore } from '@/lib/store';
 
@@ -23,6 +25,8 @@ const navItems = [
   { href: '/feed', label: 'Feed', icon: Rss },
   { href: '/problems', label: 'Problems', icon: BookOpen },
   { href: '/revision', label: 'Revision', icon: RotateCcw },
+  { href: '/learn', label: 'Learn', icon: GraduationCap },
+  { href: '/prepare', label: 'Prepare', icon: Rocket },
   { href: '/rooms', label: 'Solve Rooms', icon: Swords },
   { href: '/insights', label: 'Insights', icon: BarChart3 },
   { href: '/groups', label: 'Groups', icon: Users },
@@ -64,7 +68,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto space-y-1 px-3 py-4">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname.startsWith(href);
+          const active = pathname.startsWith(href) || (href === '/learn' && pathname.startsWith('/patterns'));
           return (
             <Link
               key={href}

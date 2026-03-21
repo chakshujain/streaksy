@@ -384,6 +384,41 @@ export interface FeedComment {
   display_name?: string;
 }
 
+// ── AI Features ──
+export interface AIHint {
+  level: number;
+  hint: string;
+}
+
+export interface AIExplanation {
+  overview: string;
+  approaches: {
+    name: string;
+    description: string;
+    timeComplexity: string;
+    spaceComplexity: string;
+    pros: string[];
+    cons: string[];
+  }[];
+  bestApproach: string;
+  commonMistakes: string[];
+  relatedPatterns: string[];
+}
+
+export interface AICodeReview {
+  rating: number;
+  summary: string;
+  strengths: string[];
+  issues: {
+    severity: 'critical' | 'warning' | 'suggestion';
+    description: string;
+    fix: string;
+  }[];
+  optimizedApproach?: string;
+  timeComplexity: string;
+  spaceComplexity: string;
+}
+
 // ── Ratings ──
 export interface ProblemRating {
   avg_rating: number;

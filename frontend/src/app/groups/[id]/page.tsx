@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
 import { groupsApi, leaderboardApi, problemsApi, activityApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
-import { Copy, Check, Target, FileText, Calendar, Plus, X, BookOpen, LogOut, Trash2, Activity, BarChart3 } from 'lucide-react';
+import { Copy, Check, Target, FileText, Calendar, Plus, X, BookOpen, LogOut, Trash2, Activity, BarChart3, UserPlus, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -280,6 +280,36 @@ export default function GroupDetailPage() {
                 </button>
               )
             )}
+          </div>
+        </div>
+
+        {/* Invite Members Banner */}
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <UserPlus className="h-5 w-5 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-emerald-300">Invite Members</h3>
+                <p className="text-xs text-zinc-500">Share the link below to invite people to this group</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-md">
+              <div className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-xs text-zinc-400 font-mono truncate">
+                {typeof window !== 'undefined' ? window.location.origin : ''}/invite/group/{group.invite_code}
+              </div>
+              <button
+                onClick={copyInviteLink}
+                className="shrink-0 flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition-colors"
+              >
+                {copied ? (
+                  <><Check className="h-4 w-4" /> Copied!</>
+                ) : (
+                  <><Share2 className="h-4 w-4" /> Copy Link</>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 

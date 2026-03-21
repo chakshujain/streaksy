@@ -114,6 +114,8 @@ export const progressApi = {
   get: () => api.get('/progress'),
   getForSheet: (sheetSlug: string) =>
     api.get(`/progress/sheet/${sheetSlug}`),
+  updateStatus: (problemId: string, status: 'not_started' | 'attempted' | 'solved') =>
+    api.put('/progress/status', { problemId, status }),
 };
 
 // ── Sync ──
@@ -231,6 +233,12 @@ export const revisionApi = {
     api.delete(`/revisions/${id}`),
   generateAI: (problemId: string) =>
     api.post('/revisions/generate', { problemId }),
+  getHints: (problemId: string) =>
+    api.post('/revisions/hints', { problemId }),
+  getExplanation: (problemId: string) =>
+    api.post('/revisions/explain', { problemId }),
+  getCodeReview: (problemId: string) =>
+    api.post('/revisions/review', { problemId }),
 };
 
 // ── Contests ──

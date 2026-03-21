@@ -16,4 +16,10 @@ export const progressController = {
     );
     res.json({ progress });
   },
+
+  async updateStatus(req: AuthRequest, res: Response) {
+    const { problemId, status } = req.body;
+    const result = await progressService.updateStatus(req.user!.userId, problemId, status);
+    res.json({ progress: result });
+  },
 };

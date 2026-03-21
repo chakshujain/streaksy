@@ -1,6 +1,6 @@
 # Streaksy - Claude Code Context
 
-Multiplayer DSA prep platform with LeetCode sync, groups, streaks, insights, and revision hub.
+Multiplayer DSA prep platform with LeetCode sync, groups, streaks, insights, revision hub, interactive learning content, and AI-powered tools.
 
 ## Project Structure
 
@@ -62,6 +62,7 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 - **Core**: auth, problem, group, progress, sync, streak, leaderboard, notes, insights, sheets, preferences
 - **Features**: notification, discussion, activity, revision, contest, badge, room, poke, feed, daily
 - **New**: rating (community difficulty ratings + company tags), powerup (streak freeze, double XP, shield, points), digest (morning/evening/weekly email digests)
+- **AI**: ai service (`ai/service/ai.service.ts`) — shared NVIDIA NIM API caller with revision notes, hints, explanations, code review generation
 
 ### Infrastructure
 - **Logging**: Pino structured logging (`backend/src/config/logger.ts`), JSON in prod, pretty in dev
@@ -123,8 +124,37 @@ PostgreSQL database name: `streaksy`. Extensions: uuid-ossp, pgcrypto. All PKs a
 - `/groups` — Group listing, creation, detail with activity feed
 - `/invite/group/[code]` — Shareable group invite (works for unauthenticated users)
 - `/invite/room/[code]` — Shareable room invite (works for unauthenticated users)
+- `/patterns` — DSA Patterns hub (19 patterns with interactive simulations)
+- `/patterns/[slug]` — Pattern detail (10-section learning: intuition, simulation, code, dry run, mistakes, tips)
+- `/learn` — Learning Hub (5 topics: DSA Patterns, Databases, System Design, OOPs, Multithreading)
+- `/learn/[topic]` — Topic page with lesson listing
+- `/learn/[topic]/[lesson]` — Lesson page with steps, visuals, code, analogies
+- `/prepare` — Interview prep wizard (role, days, hours, level, topics)
+- `/prepare/roadmap` — Personalized day-by-day study plan with progress tracking
 - `/profile` — Avatar upload, bio, social links, badges
 - `/settings` — User preferences
+
+## AI Features (NVIDIA NIM)
+
+- **Model**: `meta/llama-3.3-70b-instruct` via NVIDIA NIM API (`AI_BASE_URL`, `NVIDIA_API_KEY`, `AI_MODEL` env vars)
+- **AI Service**: `backend/src/modules/ai/service/ai.service.ts` — shared `callAI()` helper + JSON extraction
+- **Endpoints**: `POST /api/revisions/generate` (revision notes), `/hints` (progressive hints), `/explain` (problem explanation), `/review` (code review)
+- **Rate Limiting**: 20 AI generations per user per day (Redis counter)
+- **Frontend**: AI tools section on problem detail page with Hints, Explanation, Code Review panels
+
+## Learning Hub
+
+- **Patterns** (`frontend/src/lib/patterns-data.ts`): 19 DSA patterns with 10-section framework, SVG visualizers, multi-language code, audio narration
+- **Visualizers** (`frontend/src/components/patterns/visualizers/`): TreeVisualizer, LinkedListVisualizer, GraphVisualizer, StackVisualizer, QueueVisualizer, DPTableVisualizer, TrieVisualizer, ArrayVisualizer — all pure SVG
+- **Learn Data** (`frontend/src/lib/learn-data.ts`): Topic/Lesson/Step interfaces, populated from content files in `frontend/src/data/`
+- **Content Files**: `databases-content.ts` (13 lessons), `system-design-content.ts` (17 lessons), `oops-content.ts` (14 lessons), `multithreading-content.ts` (12 lessons)
+- **Interview Planner** (`frontend/src/lib/interview-planner.ts`): Role-based topic allocation, phase-based day generation, localStorage persistence
+- **Lesson Visuals**: Comparison tables, flow diagrams, info cards, ASCII diagrams, bullet lists, code tabs
+
+## Problem Status Toggle
+
+- `PUT /api/progress/status` — Toggle problem status (not_started/attempted/solved) without extension
+- Frontend: three-state toggle on problem detail page header
 
 ## Security
 

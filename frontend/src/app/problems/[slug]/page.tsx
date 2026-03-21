@@ -16,7 +16,10 @@ import { problemsApi, notesApi, revisionApi, progressApi } from '@/lib/api';
 import { YouTubePlayer } from '@/components/problems/YouTubePlayer';
 import { PeerSolutions } from '@/components/problems/PeerSolutions';
 import { RatingSection } from '@/components/problems/RatingSection';
-import { ExternalLink, RotateCcw, X, Sparkles, Loader2 } from 'lucide-react';
+import { AIHintsPanel } from '@/components/ai/AIHintsPanel';
+import { AIExplanationPanel } from '@/components/ai/AIExplanationPanel';
+import { AICodeReviewPanel } from '@/components/ai/AICodeReviewPanel';
+import { ExternalLink, RotateCcw, X, Sparkles, Loader2, CheckCircle2, Circle, Clock } from 'lucide-react';
 import type { Problem, Note, RevisionNote, ProblemProgress } from '@/lib/types';
 import { cn } from '@/lib/cn';
 
@@ -27,6 +30,7 @@ export default function ProblemDetailPage() {
   const [showRevisionForm, setShowRevisionForm] = useState(false);
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
   const { data: problem, loading } = useAsync<Problem>(
     () => problemsApi.getBySlug(slug).then((r) => r.data.problem),
@@ -53,14 +57,27 @@ export default function ProblemDetailPage() {
     [problem?.id]
   );
 
-  const { data: progress } = useAsync<ProblemProgress[]>(
+  const { data: progress, refetch: refetchProgress } = useAsync<ProblemProgress[]>(
     () => progressApi.get().then((r) => r.data.progress),
     []
   );
 
-  const isSolved = problem && progress?.some(
-    (p) => p.problem_id === problem.id && p.status === 'solved'
-  );
+  const currentStatus = problem ? (progress?.find(p => p.problem_id === problem.id)?.status || 'not_started') : 'not_started';
+  const isSolved = currentStatus === 'solved';
+
+  const handleStatusChange = async (newStatus: 'not_started' | 'attempted' | 'solved') => {
+    if (!problem || statusUpdating) return;
+    setStatusUpdating(true);
+    try {
+      await progressApi.updateStatus(problem.id, newStatus);
+      refetchProgress();
+    } catch {
+      // handled by interceptor
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -110,6 +127,35 @@ export default function ProblemDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Problem Status Toggle */}
+        {problem && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-zinc-500 mr-1">Status:</span>
+            {([
+              { value: 'not_started' as const, label: 'Not Started', icon: Circle, color: 'zinc' },
+              { value: 'attempted' as const, label: 'Attempted', icon: Clock, color: 'yellow' },
+              { value: 'solved' as const, label: 'Solved', icon: CheckCircle2, color: 'emerald' },
+            ]).map(({ value, label, icon: Icon, color }) => (
+              <button
+                key={value}
+                onClick={() => handleStatusChange(value)}
+                disabled={statusUpdating}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all duration-200 disabled:opacity-50',
+                  currentStatus === value
+                    ? color === 'emerald' ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' :
+                      color === 'yellow' ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' :
+                      'bg-zinc-700/50 border-zinc-600 text-zinc-300'
+                    : 'border-zinc-800 text-zinc-600 hover:text-zinc-400 hover:border-zinc-700'
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Video Solution */}
         {problem.youtube_url && (
@@ -185,6 +231,18 @@ export default function ProblemDetailPage() {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* AI Tools Section */}
+        {problem && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-zinc-200">AI Tools</h2>
+            <div className="flex flex-wrap gap-2">
+              <AIHintsPanel problemId={problem.id} />
+              <AIExplanationPanel problemId={problem.id} />
+              {isSolved && <AICodeReviewPanel problemId={problem.id} />}
+            </div>
           </div>
         )}
 

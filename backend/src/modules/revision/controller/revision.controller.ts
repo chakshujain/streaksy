@@ -59,4 +59,25 @@ export const revisionController = {
     const notes = await revisionService.generateAI(user!.userId, problemId);
     res.json({ notes });
   },
+
+  async getHints(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const { problemId } = req.body;
+    const hints = await revisionService.getHints(user!.userId, problemId);
+    res.json({ hints });
+  },
+
+  async getExplanation(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const { problemId } = req.body;
+    const explanation = await revisionService.getExplanation(user!.userId, problemId);
+    res.json({ explanation });
+  },
+
+  async getCodeReview(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const { problemId } = req.body;
+    const review = await revisionService.getCodeReview(user!.userId, problemId);
+    res.json({ review });
+  },
 };

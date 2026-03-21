@@ -37,7 +37,7 @@ export const env = {
   },
   ai: {
     apiKey: process.env.NVIDIA_API_KEY || '',
-    model: process.env.AI_MODEL || 'deepseek-ai/deepseek-r1',
+    model: process.env.AI_MODEL || 'meta/llama-3.3-70b-instruct',
     baseUrl: process.env.AI_BASE_URL || 'https://integrate.api.nvidia.com/v1',
   },
   logLevel: process.env.LOG_LEVEL || 'info',

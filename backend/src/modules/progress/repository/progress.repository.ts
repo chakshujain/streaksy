@@ -11,14 +11,18 @@ export interface ProgressRow {
 
 export const progressRepository = {
   async upsert(userId: string, problemId: string, status: ProblemStatus): Promise<ProgressRow> {
+    if (status === 'not_started') {
+      await query('DELETE FROM user_problem_status WHERE user_id = $1 AND problem_id = $2', [userId, problemId]);
+      return { user_id: userId, problem_id: problemId, status: 'not_started', solved_at: null, updated_at: new Date() };
+    }
     const solvedAt = status === 'solved' ? 'NOW()' : 'NULL';
     const rows = await query<ProgressRow>(
       `INSERT INTO user_problem_status (user_id, problem_id, status, solved_at)
        VALUES ($1, $2, $3, ${solvedAt})
        ON CONFLICT (user_id, problem_id) DO UPDATE SET
          status = EXCLUDED.status,
-         solved_at = CASE WHEN EXCLUDED.status = 'solved' AND user_problem_status.solved_at IS NULL
-                         THEN NOW() ELSE user_problem_status.solved_at END
+         solved_at = CASE WHEN EXCLUDED.status = 'solved' THEN NOW()
+                         ELSE NULL END
        RETURNING *`,
       [userId, problemId, status]
     );

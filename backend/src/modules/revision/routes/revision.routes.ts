@@ -14,6 +14,9 @@ router.get('/quiz', asyncHandler(revisionController.quiz));
 router.get('/:problemId', asyncHandler(revisionController.getByProblem));
 router.post('/', validate(createRevisionSchema), asyncHandler(revisionController.createOrUpdate));
 router.post('/generate', validate(generateAISchema), asyncHandler(revisionController.generateAI));
+router.post('/hints', validate(generateAISchema), asyncHandler(revisionController.getHints));
+router.post('/explain', validate(generateAISchema), asyncHandler(revisionController.getExplanation));
+router.post('/review', validate(generateAISchema), asyncHandler(revisionController.getCodeReview));
 router.patch('/:id/revised', asyncHandler(revisionController.markRevised));
 router.delete('/:id', asyncHandler(revisionController.delete));
 
