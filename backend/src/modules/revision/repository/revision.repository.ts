@@ -10,6 +10,9 @@ export interface RevisionRow {
   space_complexity: string | null;
   tags: string[];
   difficulty_rating: string | null;
+  intuition: string | null;
+  points_to_remember: string[] | null;
+  ai_generated: boolean;
   last_revised_at: Date | null;
   revision_count: number;
   created_at: Date;
@@ -30,17 +33,21 @@ export const revisionRepository = {
       spaceComplexity?: string;
       tags?: string[];
       difficultyRating?: string;
+      intuition?: string;
+      pointsToRemember?: string[];
+      aiGenerated?: boolean;
     }
   ): Promise<RevisionRow> {
     const rows = await query<RevisionRow>(
-      `INSERT INTO revision_notes (user_id, problem_id, key_takeaway, approach, time_complexity, space_complexity, tags, difficulty_rating)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO revision_notes (user_id, problem_id, key_takeaway, approach, time_complexity, space_complexity, tags, difficulty_rating, intuition, points_to_remember, ai_generated)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        ON CONFLICT (user_id, problem_id) DO UPDATE SET
          key_takeaway = $3, approach = $4, time_complexity = $5, space_complexity = $6,
-         tags = $7, difficulty_rating = $8
+         tags = $7, difficulty_rating = $8, intuition = $9, points_to_remember = $10, ai_generated = $11
        RETURNING *`,
       [userId, problemId, data.keyTakeaway, data.approach || null, data.timeComplexity || null,
-       data.spaceComplexity || null, data.tags || [], data.difficultyRating || null]
+       data.spaceComplexity || null, data.tags || [], data.difficultyRating || null,
+       data.intuition || null, data.pointsToRemember || null, data.aiGenerated || false]
     );
     return rows[0];
   },

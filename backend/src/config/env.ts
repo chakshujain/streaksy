@@ -35,6 +35,10 @@ export const env = {
     pass: process.env.SMTP_PASS || '',
     from: process.env.SMTP_FROM || 'Streaksy <noreply@streaksy.in>',
   },
+  nvidia: {
+    apiKey: process.env.NVIDIA_API_KEY || '',
+    model: process.env.NVIDIA_MODEL || 'meta/llama-3.1-8b-instruct',
+  },
   logLevel: process.env.LOG_LEVEL || 'info',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 } as const;

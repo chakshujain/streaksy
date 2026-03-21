@@ -114,12 +114,15 @@ PostgreSQL database name: `streaksy`. Extensions: uuid-ossp, pgcrypto. All PKs a
 - `/auth/login`, `/auth/signup` — Auth with OAuth (Google/GitHub)
 - `/auth/forgot-password`, `/auth/reset-password` — Password reset flow
 - `/auth/verify-email` — Email verification
+- `/auth/callback` — OAuth callback (handles pending invites)
 - `/dashboard` — Stats, streak, heatmap, recent activity
 - `/problems` — Problem listing with sheets, filters
 - `/problems/[slug]` — Problem detail with notes, discussions, revision notes
 - `/revision` — Revision Hub (browse + quiz mode)
 - `/insights` — Charts and analytics
 - `/groups` — Group listing, creation, detail with activity feed
+- `/invite/group/[code]` — Shareable group invite (works for unauthenticated users)
+- `/invite/room/[code]` — Shareable room invite (works for unauthenticated users)
 - `/profile` — Avatar upload, bio, social links, badges
 - `/settings` — User preferences
 

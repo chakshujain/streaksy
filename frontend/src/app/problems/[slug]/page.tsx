@@ -16,7 +16,7 @@ import { problemsApi, notesApi, revisionApi, progressApi } from '@/lib/api';
 import { YouTubePlayer } from '@/components/problems/YouTubePlayer';
 import { PeerSolutions } from '@/components/problems/PeerSolutions';
 import { RatingSection } from '@/components/problems/RatingSection';
-import { ExternalLink, RotateCcw, X } from 'lucide-react';
+import { ExternalLink, RotateCcw, X, Sparkles, Loader2 } from 'lucide-react';
 import type { Problem, Note, RevisionNote, ProblemProgress } from '@/lib/types';
 import { cn } from '@/lib/cn';
 
@@ -25,6 +25,8 @@ export default function ProblemDetailPage() {
   const slug = params.slug as string;
   const [notesTab, setNotesTab] = useState<'personal' | 'group'>('personal');
   const [showRevisionForm, setShowRevisionForm] = useState(false);
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   const { data: problem, loading } = useAsync<Problem>(
     () => problemsApi.getBySlug(slug).then((r) => r.data.problem),
@@ -135,20 +137,51 @@ export default function ProblemDetailPage() {
                 />
               </Card>
             ) : (
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowRevisionForm(true)}
-                  className="flex items-center gap-1.5"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  {revision ? 'Edit Revision Note' : 'Add Revision Note'}
-                </Button>
-                {revision && (
-                  <span className="text-xs text-zinc-500">
-                    Revised {revision.revision_count} times
-                  </span>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowRevisionForm(true)}
+                    className="flex items-center gap-1.5"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    {revision ? 'Edit Revision Note' : 'Add Revision Note'}
+                  </Button>
+                  {!revision && (
+                    <button
+                      onClick={async () => {
+                        setAiGenerating(true);
+                        setAiError('');
+                        try {
+                          await revisionApi.generateAI(problem.id);
+                          setShowRevisionForm(true);
+                        } catch (err: unknown) {
+                          const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to generate AI notes';
+                          setAiError(message);
+                        } finally {
+                          setAiGenerating(false);
+                        }
+                      }}
+                      disabled={aiGenerating}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-1.5 text-xs font-medium text-purple-400 hover:bg-purple-500/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {aiGenerating ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-3.5 w-3.5" />
+                      )}
+                      {aiGenerating ? 'Generating...' : 'Generate with AI'}
+                    </button>
+                  )}
+                  {revision && (
+                    <span className="text-xs text-zinc-500">
+                      Revised {revision.revision_count} times
+                    </span>
+                  )}
+                </div>
+                {aiError && (
+                  <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2 text-xs text-red-400">{aiError}</div>
                 )}
               </div>
             )}

@@ -52,4 +52,11 @@ export const revisionController = {
     await revisionService.delete(id, user!.userId);
     res.json({ message: 'Deleted' });
   },
+
+  async generateAI(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const { problemId } = req.body;
+    const notes = await revisionService.generateAI(user!.userId, problemId);
+    res.json({ notes });
+  },
 };

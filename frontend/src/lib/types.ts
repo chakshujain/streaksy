@@ -210,6 +210,9 @@ export interface RevisionNote {
   space_complexity: string | null;
   tags: string[];
   difficulty_rating: string | null;
+  intuition?: string | null;
+  points_to_remember?: string[] | null;
+  ai_generated?: boolean;
   last_revised_at: string | null;
   revision_count: number;
   created_at: string;

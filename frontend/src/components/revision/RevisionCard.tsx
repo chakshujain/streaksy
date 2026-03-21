@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useState } from 'react';
 import type { RevisionNote } from '@/lib/types';
 import { revisionApi } from '@/lib/api';
-import { Clock, RotateCcw, Trash2 } from 'lucide-react';
+import { Clock, RotateCcw, Trash2, Sparkles, Lightbulb, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface RevisionCardProps {
@@ -45,6 +45,12 @@ export function RevisionCard({ note, onClick, onDelete }: RevisionCardProps) {
                 {note.problem_difficulty}
               </Badge>
             )}
+            {note.ai_generated && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/15 border border-purple-500/20 px-2 py-0.5 text-[10px] font-medium text-purple-400">
+                <Sparkles className="h-2.5 w-2.5" />
+                AI
+              </span>
+            )}
           </div>
           <p className="text-sm text-zinc-400 line-clamp-2">{note.key_takeaway}</p>
         </div>
@@ -59,6 +65,30 @@ export function RevisionCard({ note, onClick, onDelete }: RevisionCardProps) {
           </button>
         )}
       </div>
+
+      {note.intuition && (
+        <div className="mt-3 rounded-lg bg-amber-500/5 border border-amber-500/10 px-3 py-2">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Lightbulb className="h-3 w-3 text-amber-400" />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400/80">Intuition</span>
+          </div>
+          <p className="text-xs text-zinc-400 leading-relaxed">{note.intuition}</p>
+        </div>
+      )}
+
+      {note.points_to_remember && note.points_to_remember.length > 0 && (
+        <div className="mt-2 space-y-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Points to Remember</span>
+          <ul className="space-y-0.5">
+            {note.points_to_remember.map((point, i) => (
+              <li key={i} className="flex items-start gap-1.5 text-xs text-zinc-400">
+                <CheckCircle className="h-3 w-3 text-emerald-500/60 mt-0.5 shrink-0" />
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mt-3 flex items-center gap-4 text-xs text-zinc-500">
         {note.time_complexity && (

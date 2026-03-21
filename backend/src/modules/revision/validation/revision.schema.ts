@@ -8,6 +8,13 @@ export const createRevisionSchema = z.object({
   spaceComplexity: z.string().max(50).optional(),
   tags: z.array(z.string().max(50)).max(10).optional(),
   difficultyRating: z.enum(['easy', 'medium', 'hard']).optional(),
+  intuition: z.string().max(5000).optional(),
+  pointsToRemember: z.array(z.string().max(500)).max(5).optional(),
+  aiGenerated: z.boolean().optional(),
+});
+
+export const generateAISchema = z.object({
+  problemId: z.string().uuid(),
 });
 
 export const listRevisionsSchema = z.object({
