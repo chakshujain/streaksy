@@ -53,6 +53,7 @@ export function useLearnProgress() {
     setProgress((prev) => {
       const next = { ...prev };
       if (next[topicSlug]) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [lessonSlug]: _removed, ...rest } = next[topicSlug];
         next[topicSlug] = rest;
         if (Object.keys(next[topicSlug]).length === 0) {

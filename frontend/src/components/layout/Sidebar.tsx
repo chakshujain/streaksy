@@ -23,7 +23,7 @@ import {
   Search,
   UserPlus,
   Award,
-  Bookmark,
+  Bookmark as BookmarkIcon,
 } from 'lucide-react';
 import { useAuthStore, useDashboardStore } from '@/lib/store';
 
@@ -40,7 +40,7 @@ const navItems = [
   { href: '/timer', label: 'Timer', icon: Timer },
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/achievements', label: 'Achievements', icon: Award },
-  { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
+  { href: '/bookmarks', label: 'Bookmarks', icon: BookmarkIcon },
   { href: '/insights', label: 'Insights', icon: BarChart3 },
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/settings', label: 'Settings', icon: Settings },
