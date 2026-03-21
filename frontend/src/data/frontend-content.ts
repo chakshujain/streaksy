@@ -19,6 +19,8 @@ export const frontendLessons: Record<
           'HTML (HyperText Markup Language) is the skeleton of every web page. Browsers read HTML to build a tree of elements called the DOM, then paint pixels on screen.',
         analogy:
           'Think of a web page as a human body. HTML is the skeleton that provides structure, CSS is the clothing and appearance, and JavaScript is the muscles that create movement.',
+        diagram:
+          '              document\n              │\n              html\n             ╱    ╲\n          head    body\n          │       ╱  ╲\n        title   header  main\n                │       ╱  ╲\n               nav  article  aside\n               │       │\n              a, a    h1, p',
         flow: [
           { label: 'Write HTML', description: 'Create .html file with tags', icon: '📝' },
           { label: 'Browser Parses', description: 'Reads HTML top to bottom', icon: '🔍' },
@@ -45,6 +47,14 @@ export const frontendLessons: Record<
             { left: '<div class="footer">', right: '<footer>' },
           ],
         },
+        cards: [
+          { title: '<header>', description: 'Introductory content or navigation links', icon: '🏠', color: 'blue' },
+          { title: '<nav>', description: 'Major navigation block', icon: '🧭', color: 'purple' },
+          { title: '<main>', description: 'Dominant content of the page', icon: '📄', color: 'emerald' },
+          { title: '<article>', description: 'Self-contained content', icon: '📰', color: 'amber' },
+          { title: '<section>', description: 'Thematic grouping of content', icon: '📦', color: 'cyan' },
+          { title: '<aside>', description: 'Tangentially related content', icon: '📌', color: 'red' },
+        ],
         code: [
           {
             language: 'html',
@@ -56,9 +66,31 @@ export const frontendLessons: Record<
           'Semantic tags like <header>, <nav>, <main>, and <article> replace meaningless <div> elements and improve accessibility and SEO.',
       },
       {
+        title: 'Inline vs Block Elements',
+        content:
+          'HTML elements are either block-level (take full width) or inline (only take the space they need). This distinction controls how elements flow on the page.',
+        comparison: {
+          leftTitle: 'Block Elements',
+          rightTitle: 'Inline Elements',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Takes full width of parent', right: 'Only takes needed width' },
+            { left: 'Starts on a new line', right: 'Sits next to other inline elements' },
+            { left: 'div, p, h1-h6, section, ul', right: 'span, a, strong, em, img, input' },
+            { left: 'Can contain block + inline', right: 'Can only contain inline + text' },
+            { left: 'Width/height can be set', right: 'Width/height ignored (except img)' },
+          ],
+        },
+        diagram:
+          'Block elements:\n┌──────────────────────────────────┐\n│ <div>  Takes full width          │\n└──────────────────────────────────┘\n┌──────────────────────────────────┐\n│ <p>    New line each time        │\n└──────────────────────────────────┘\n\nInline elements:\n┌──────┐┌────┐┌──────────┐\n│<span>││<a> ││<strong>  │  ← side by side\n└──────┘└────┘└──────────┘',
+        keyTakeaway:
+          'Block elements stack vertically and take full width. Inline elements flow horizontally and only take the space they need.',
+      },
+      {
         title: 'Forms and Inputs',
         content:
-          'Forms are how users send data back to a server. Every form needs an action (where to send) and a method (how to send). Inputs capture different types of data.',
+          'Forms are how users send data back to a server. Every form needs an action (where to send) and a method (how to send).',
         analogy:
           'A form is like a paper form at a doctor\'s office. Each input field is a blank to fill in, and hitting submit is handing the clipboard back to the receptionist.',
         code: [
@@ -85,12 +117,18 @@ export const frontendLessons: Record<
       {
         title: 'Accessibility Essentials',
         content:
-          'One in five people has a disability. Accessible HTML ensures everyone can use your site, including people using screen readers, keyboard-only navigation, or voice control.',
+          'One in five people has a disability. Accessible HTML ensures everyone can use your site, including people using screen readers or keyboard-only navigation.',
         bullets: [
           '**Alt text** on images describes what the image shows for screen readers.',
           '**Labels** on form inputs let assistive tech announce what each field is for.',
           '**Heading hierarchy** (h1 > h2 > h3) creates a navigable document outline.',
           '**ARIA roles** supplement native semantics when HTML alone isn\'t enough.',
+        ],
+        cards: [
+          { title: 'Visual', description: 'Alt text, color contrast, text sizing', icon: '👁️', color: 'blue' },
+          { title: 'Motor', description: 'Keyboard navigation, large click targets', icon: '🖐️', color: 'purple' },
+          { title: 'Auditory', description: 'Captions, transcripts for media', icon: '👂', color: 'emerald' },
+          { title: 'Cognitive', description: 'Clear language, consistent layout', icon: '🧠', color: 'amber' },
         ],
         code: [
           {
@@ -106,6 +144,8 @@ export const frontendLessons: Record<
         title: 'Building a Complete Page',
         content:
           'Every HTML document follows the same boilerplate structure. The DOCTYPE tells the browser to use modern standards, the head holds metadata, and the body holds visible content.',
+        diagram:
+          '<!DOCTYPE html>\n┌─ <html lang="en"> ────────────────┐\n│                                    │\n│  ┌─ <head> ────────────────────┐   │\n│  │  meta charset               │   │\n│  │  meta viewport              │   │\n│  │  <title>                    │   │\n│  │  <link> stylesheets         │   │\n│  └─────────────────────────────┘   │\n│                                    │\n│  ┌─ <body> ────────────────────┐   │\n│  │  <header> + <nav>           │   │\n│  │  <main>                     │   │\n│  │    <article> / <section>    │   │\n│  │  <footer>                   │   │\n│  │  <script> at bottom         │   │\n│  └─────────────────────────────┘   │\n│                                    │\n└────────────────────────────────────┘',
         code: [
           {
             language: 'html',
@@ -139,7 +179,7 @@ export const frontendLessons: Record<
       {
         title: 'How CSS Works',
         content:
-          'CSS (Cascading Style Sheets) controls the visual appearance of HTML. The browser combines the DOM tree with CSS rules to produce a render tree that determines what you see.',
+          'CSS (Cascading Style Sheets) controls the visual appearance of HTML. The browser combines the DOM tree with CSS rules to produce a render tree.',
         analogy:
           'If HTML is the skeleton of a house (walls, doors, windows), CSS is the interior design — paint colors, furniture placement, and decorations.',
         flow: [
@@ -149,6 +189,8 @@ export const frontendLessons: Record<
           { label: 'Layout', description: 'Calculate sizes and positions', icon: '📐' },
           { label: 'Paint', description: 'Draw pixels on screen', icon: '🖌️' },
         ],
+        diagram:
+          '  HTML File          CSS File\n     │                  │\n     ▼                  ▼\n  DOM Tree          CSSOM Tree\n     │                  │\n     └────── + ─────────┘\n             │\n             ▼\n        Render Tree\n             │\n             ▼\n      Layout (Reflow)\n             │\n             ▼\n       Paint (Pixels)',
         keyTakeaway:
           'CSS rules are matched to DOM nodes to build a render tree, which the browser uses to calculate layout and paint pixels.',
       },
@@ -168,6 +210,8 @@ export const frontendLessons: Record<
             ['!important', 'color: red !important', 'Overrides all'],
           ],
         },
+        diagram:
+          'Specificity Hierarchy (low → high):\n\n  *           Element      Class        ID          Inline\n  (0-0-0)    (0-0-1)     (0-1-0)     (1-0-0)     (1-0-0-0)\n  ─────────────────────────────────────────────────────────►\n   weakest                                         strongest',
         code: [
           {
             language: 'css',
@@ -184,6 +228,12 @@ export const frontendLessons: Record<
           'Every element is a rectangular box with four layers: content, padding, border, and margin. Understanding the box model is essential for controlling layout.',
         diagram:
           '┌───────────── Margin ──────────────┐\n│  ┌────────── Border ──────────┐   │\n│  │  ┌─────── Padding ──────┐  │   │\n│  │  │                      │  │   │\n│  │  │      Content         │  │   │\n│  │  │    (width x height)  │  │   │\n│  │  │                      │  │   │\n│  │  └──────────────────────┘  │   │\n│  └────────────────────────────┘   │\n└───────────────────────────────────┘',
+        cards: [
+          { title: 'Content', description: 'The actual text, image, or child elements', icon: '📝', color: 'emerald' },
+          { title: 'Padding', description: 'Space between content and border', icon: '⬜', color: 'blue' },
+          { title: 'Border', description: 'Visible edge around the element', icon: '🔲', color: 'purple' },
+          { title: 'Margin', description: 'Space between this element and others', icon: '↔️', color: 'amber' },
+        ],
         code: [
           {
             language: 'css',
@@ -212,6 +262,8 @@ export const frontendLessons: Record<
           { title: 'align-items', description: 'Aligns items on the cross axis', icon: '↕️', color: 'purple' },
           { title: 'flex-wrap', description: 'Allows items to wrap to new lines', icon: '↩️', color: 'emerald' },
           { title: 'gap', description: 'Adds space between flex items', icon: '⬜', color: 'amber' },
+          { title: 'flex-direction', description: 'Sets main axis: row or column', icon: '🔄', color: 'cyan' },
+          { title: 'flex-grow', description: 'How much an item expands to fill space', icon: '📏', color: 'red' },
         ],
         keyTakeaway:
           'Flexbox handles one-dimensional layouts. Use justify-content for main axis and align-items for cross axis alignment.',
@@ -232,6 +284,8 @@ export const frontendLessons: Record<
             { left: 'Items flow naturally', right: 'Items are placed in explicit cells' },
           ],
         },
+        diagram:
+          'CSS Grid Layout:\n┌─────────────────────────────────────┐\n│           header (grid-area)        │\n├──────────┬──────────────────────────┤\n│          │                          │\n│ sidebar  │        main              │\n│          │                          │\n│          │                          │\n├──────────┴──────────────────────────┤\n│           footer (grid-area)        │\n└─────────────────────────────────────┘',
         code: [
           {
             language: 'css',
@@ -265,9 +319,21 @@ export const frontendLessons: Record<
       {
         title: 'Variables and Types',
         content:
-          'JavaScript has three ways to declare variables: let for things that change, const for things that don\'t, and var (legacy — avoid it). Every value has a type.',
+          'JavaScript has three ways to declare variables: let for things that change, const for things that don\'t, and var (legacy — avoid it).',
         analogy:
           'Variables are labeled boxes. const is a sealed box — you can look inside but never swap the contents. let is a box with a lid you can open and replace things.',
+        comparison: {
+          leftTitle: 'const',
+          rightTitle: 'let',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Cannot be reassigned', right: 'Can be reassigned' },
+            { left: 'Block scoped', right: 'Block scoped' },
+            { left: 'Use by default', right: 'Use when value changes' },
+            { left: 'Object properties can still change', right: 'Entire value can change' },
+          ],
+        },
         code: [
           {
             language: 'javascript',
@@ -301,7 +367,19 @@ export const frontendLessons: Record<
           },
         ],
         diagram:
-          'Global Scope\n├── x = "global"\n├── greet()\n└── demo()\n    └── Local Scope\n        └── y = "local"',
+          'Global Scope\n├── x = "global"\n├── greet()\n└── demo()\n    └── Local Scope\n        └── y = "local"\n            └── Inner Function\n                └── z = "inner"\n\n  Inner can see: z, y, x  ✓\n  Local can see: y, x     ✓\n  Global can see: x only  ✓',
+        comparison: {
+          leftTitle: 'Function Declaration',
+          rightTitle: 'Arrow Function',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Hoisted — can call before definition', right: 'Not hoisted — must define first' },
+            { left: 'Has its own "this" binding', right: 'Inherits "this" from parent scope' },
+            { left: 'function name() { }', right: 'const name = () => { }' },
+            { left: 'Good for methods and constructors', right: 'Good for callbacks and short functions' },
+          ],
+        },
         keyTakeaway:
           'Functions create their own scope. Inner scopes can see outer variables, but outer scopes cannot see inner variables.',
       },
@@ -311,6 +389,8 @@ export const frontendLessons: Record<
           'The DOM (Document Object Model) is the browser\'s in-memory representation of your HTML. JavaScript can read and modify it to create dynamic pages.',
         analogy:
           'The DOM is like a puppet show. HTML builds the puppets, CSS dresses them, and JavaScript pulls the strings to make them move.',
+        diagram:
+          'DOM Tree for a simple page:\n\n     document\n        │\n       html\n      ╱    ╲\n   head     body\n    │      ╱  │  ╲\n  title  h1  div  p\n              │\n             ul\n           ╱  │  ╲\n         li  li   li\n\nJavaScript can:\n  • Read any node\n  • Modify text/attributes\n  • Add/remove nodes\n  • Listen for events',
         code: [
           {
             language: 'javascript',
@@ -325,6 +405,13 @@ export const frontendLessons: Record<
         title: 'Event Handling',
         content:
           'Events are things that happen in the browser — clicks, key presses, form submissions, scrolls. You attach listener functions that run when an event fires.',
+        flow: [
+          { label: 'User Action', description: 'Click, type, scroll', icon: '👆' },
+          { label: 'Event Created', description: 'Browser creates event object', icon: '📦' },
+          { label: 'Capture Phase', description: 'Event travels down DOM tree', icon: '⬇️' },
+          { label: 'Target Phase', description: 'Reaches the clicked element', icon: '🎯' },
+          { label: 'Bubble Phase', description: 'Event travels back up', icon: '⬆️' },
+        ],
         code: [
           {
             language: 'javascript',
@@ -344,11 +431,19 @@ export const frontendLessons: Record<
         title: 'ES6+ Modern Features',
         content:
           'Modern JavaScript added powerful syntax that makes code shorter and more readable. These features are used everywhere in React and modern frameworks.',
+        cards: [
+          { title: 'Destructuring', description: 'Unpack values from objects and arrays', icon: '📦', color: 'blue' },
+          { title: 'Template Literals', description: 'Embed expressions in strings with backticks', icon: '📝', color: 'purple' },
+          { title: 'Spread / Rest', description: 'Copy, merge, and collect values', icon: '🔄', color: 'emerald' },
+          { title: 'Optional Chaining', description: 'Safe property access with ?.', icon: '🔗', color: 'amber' },
+          { title: 'Array Methods', description: 'map, filter, reduce, find', icon: '📊', color: 'cyan' },
+          { title: 'Nullish Coalescing', description: 'Default values with ?? operator', icon: '❓', color: 'red' },
+        ],
         code: [
           {
             language: 'javascript',
             label: 'Essential ES6+ features',
-            code: `// Destructuring — unpack values\nconst { name, age } = user;\nconst [first, ...rest] = items;\n\n// Template literals — embed expressions\nconst msg = \`Hello, \${name}! You are \${age}.\`;\n\n// Spread operator — copy and merge\nconst updated = { ...user, age: 26 };\nconst all = [...items, 4, 5];\n\n// Optional chaining — safe property access\nconst city = user?.address?.city ?? "Unknown";\n\n// Array methods — functional style\nconst adults = users\n  .filter(u => u.age >= 18)\n  .map(u => u.name)\n  .sort();`,
+            code: `// Destructuring — unpack values\nconst { name, age } = user;\nconst [first, ...rest] = items;\n\n// Template literals — embed expressions\nconst msg = \`Hello, \\\${name}! You are \\\${age}.\`;\n\n// Spread operator — copy and merge\nconst updated = { ...user, age: 26 };\nconst all = [...items, 4, 5];\n\n// Optional chaining — safe property access\nconst city = user?.address?.city ?? "Unknown";\n\n// Array methods — functional style\nconst adults = users\n  .filter(u => u.age >= 18)\n  .map(u => u.name)\n  .sort();`,
           },
         ],
         keyTakeaway:
@@ -377,7 +472,7 @@ export const frontendLessons: Record<
       {
         title: 'Why Responsive Design Matters',
         content:
-          'Over 60% of web traffic comes from mobile devices. A site that only works on desktop loses most of its audience. Responsive design makes your layout adapt to any screen size.',
+          'Over 60% of web traffic comes from mobile devices. A site that only works on desktop loses most of its audience.',
         analogy:
           'Responsive design is like water. Pour it in a glass, it becomes the glass. Pour it in a bottle, it becomes the bottle. Your layout should flow to fit any container.',
         cards: [
@@ -385,6 +480,8 @@ export const frontendLessons: Record<
           { title: 'Tablet', description: '640px–1024px — tablets', icon: '📋', color: 'purple' },
           { title: 'Desktop', description: '> 1024px — laptops/monitors', icon: '🖥️', color: 'emerald' },
         ],
+        diagram:
+          'Same content, different layouts:\n\n  Mobile         Tablet           Desktop\n ┌──────┐    ┌───────────┐    ┌──────────────────┐\n │ Nav  │    │  Nav      │    │ Logo   Nav Links  │\n ├──────┤    ├─────┬─────┤    ├──────┬───────────┤\n │      │    │     │     │    │      │           │\n │ Card │    │Card │Card │    │ Side │  Content  │\n │      │    │     │     │    │ bar  │           │\n ├──────┤    ├─────┴─────┤    │      │           │\n │ Card │    │  Footer   │    ├──────┴───────────┤\n ├──────┤    └───────────┘    │     Footer       │\n │Footer│                     └──────────────────┘\n └──────┘',
         keyTakeaway:
           'Responsive design ensures your site looks good on every device — from phones to ultra-wide monitors.',
       },
@@ -404,6 +501,12 @@ export const frontendLessons: Record<
             { left: 'Loads desktop CSS on mobile', right: 'Loads only what mobile needs' },
           ],
         },
+        flow: [
+          { label: 'Base CSS', description: 'Mobile styles (no queries)', icon: '📱' },
+          { label: 'min-width: 640px', description: 'Tablet enhancements', icon: '📋' },
+          { label: 'min-width: 1024px', description: 'Desktop layout', icon: '💻' },
+          { label: 'min-width: 1280px', description: 'Wide screen tweaks', icon: '🖥️' },
+        ],
         code: [
           {
             language: 'css',
@@ -435,19 +538,33 @@ export const frontendLessons: Record<
             ['2xl', '1536px', 'Large monitors'],
           ],
         },
+        cards: [
+          { title: 'Width Queries', description: 'min-width / max-width for responsive layouts', icon: '↔️', color: 'blue' },
+          { title: 'Color Scheme', description: 'prefers-color-scheme for dark/light mode', icon: '🌙', color: 'purple' },
+          { title: 'Reduced Motion', description: 'prefers-reduced-motion for accessibility', icon: '♿', color: 'emerald' },
+          { title: 'Print', description: '@media print for printer-friendly pages', icon: '🖨️', color: 'amber' },
+        ],
         keyTakeaway:
           'Media queries adapt layout by screen size, user preference (dark mode, reduced motion), and medium (print). Use common breakpoints consistently.',
       },
       {
         title: 'Fluid Typography and Spacing',
         content:
-          'Instead of jumping between fixed sizes at breakpoints, fluid values scale smoothly. The clamp() function sets a minimum, preferred, and maximum value in one line.',
+          'Instead of jumping between fixed sizes at breakpoints, fluid values scale smoothly. The clamp() function sets a minimum, preferred, and maximum value.',
+        diagram:
+          'clamp(MIN, PREFERRED, MAX)\n\n  Font Size\n  ▲\n  │              ┌──────── MAX (2.5rem)\n  │             ╱\n  │           ╱   ← scales with viewport\n  │         ╱\n  │ ───────┘      MIN (1rem)\n  │\n  └──────────────────────────► Viewport Width\n  320px                         1440px',
         code: [
           {
             language: 'css',
             label: 'Fluid sizing with clamp()',
             code: `/* Font scales smoothly from 1rem to 2.5rem */\nh1 {\n  font-size: clamp(1rem, 4vw, 2.5rem);\n}\n\n/* Container has fluid padding */\n.container {\n  padding: clamp(1rem, 3vw, 3rem);\n  max-width: 1200px;\n  margin: 0 auto;\n}\n\n/* Responsive units overview */\n/* rem — relative to root font size (scalable) */\n/* vw — 1% of viewport width (fluid) */\n/* % — relative to parent element */`,
           },
+        ],
+        bullets: [
+          '**rem** — relative to root font size, scales with user preference.',
+          '**vw/vh** — percentage of viewport, great for fluid layouts.',
+          '**clamp()** — sets min, preferred, and max in one declaration.',
+          '**em** — relative to parent font size, good for component-level spacing.',
         ],
         keyTakeaway:
           'Use clamp() for fluid sizing that scales smoothly between a minimum and maximum. Prefer rem and vw over px for responsive values.',
@@ -456,6 +573,18 @@ export const frontendLessons: Record<
         title: 'Responsive Images and Media',
         content:
           'Images are often the largest files on a page. Serving the right size for each device saves bandwidth and speeds up loading.',
+        comparison: {
+          leftTitle: 'Fixed Images',
+          rightTitle: 'Responsive Images',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Same large file for all devices', right: 'Different sizes per screen' },
+            { left: 'Slow on mobile connections', right: 'Fast loading everywhere' },
+            { left: 'Wasted bandwidth', right: 'Optimal bandwidth usage' },
+            { left: 'May overflow container', right: 'Always fits container' },
+          ],
+        },
         code: [
           {
             language: 'html',
@@ -504,6 +633,12 @@ export const frontendLessons: Record<
             { left: 'Page reloads for navigation', right: 'Client-side routing, no reloads' },
           ],
         },
+        flow: [
+          { label: 'Define Component', description: 'Write a function returning JSX', icon: '📝' },
+          { label: 'Pass Props', description: 'Configure with data', icon: '📦' },
+          { label: 'Manage State', description: 'Track interactive data', icon: '🔄' },
+          { label: 'React Renders', description: 'Virtual DOM diffed & patched', icon: '⚡' },
+        ],
         keyTakeaway:
           'React\'s component model lets you build complex UIs from simple, reusable pieces with declarative state management.',
       },
@@ -511,6 +646,8 @@ export const frontendLessons: Record<
         title: 'JSX — HTML in JavaScript',
         content:
           'JSX is a syntax extension that lets you write HTML-like code inside JavaScript. The build tool converts it to function calls that create DOM elements.',
+        diagram:
+          'JSX Compilation:\n\n  <div className="card">      React.createElement(\n    <h1>Hello</h1>        →     "div",\n  </div>                        { className: "card" },\n                                React.createElement("h1", null, "Hello")\n                              )',
         code: [
           {
             language: 'tsx',
@@ -533,6 +670,8 @@ export const frontendLessons: Record<
           'Components are functions that return JSX. Props are the arguments you pass to customize them — like function parameters for your UI.',
         analogy:
           'A component is like a cookie cutter. It defines the shape. Props are the dough — they determine the flavor and color of each cookie you make with that cutter.',
+        diagram:
+          'Component Tree:\n\n         <App />\n        ╱      ╲\n   <Header />  <Main />\n      │        ╱    ╲\n   <Nav />  <Feed /> <Sidebar />\n             │\n        <PostCard />\n        <PostCard />\n        <PostCard />\n\n  Props flow DOWN (parent → child)\n  Events flow UP (child → parent)',
         code: [
           {
             language: 'tsx',
@@ -547,6 +686,12 @@ export const frontendLessons: Record<
         title: 'State — Making Things Interactive',
         content:
           'State is data that changes over time within a component. When state updates, React re-renders the component with the new values.',
+        flow: [
+          { label: 'User Clicks', description: 'Event triggers handler', icon: '👆' },
+          { label: 'setState Called', description: 'New state value queued', icon: '📝' },
+          { label: 'Re-render', description: 'Component function runs again', icon: '🔄' },
+          { label: 'DOM Updated', description: 'React patches only what changed', icon: '✅' },
+        ],
         code: [
           {
             language: 'tsx',
@@ -554,12 +699,18 @@ export const frontendLessons: Record<
             code: `import { useState } from "react";\n\nfunction Counter() {\n  // Declare state: [currentValue, updaterFunction]\n  const [count, setCount] = useState(0);\n\n  return (\n    <div>\n      <p>Count: {count}</p>\n      <button onClick={() => setCount(count + 1)}>\n        Increment\n      </button>\n      <button onClick={() => setCount(0)}>\n        Reset\n      </button>\n    </div>\n  );\n}`,
           },
         ],
-        flow: [
-          { label: 'User Clicks', description: 'Event triggers handler', icon: '👆' },
-          { label: 'setState Called', description: 'New state value queued', icon: '📝' },
-          { label: 'Re-render', description: 'Component function runs again', icon: '🔄' },
-          { label: 'DOM Updated', description: 'React patches only what changed', icon: '✅' },
-        ],
+        comparison: {
+          leftTitle: 'Props',
+          rightTitle: 'State',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Passed from parent', right: 'Owned by the component' },
+            { left: 'Read-only (immutable)', right: 'Can be updated with setter' },
+            { left: 'Like function arguments', right: 'Like local variables with memory' },
+            { left: 'Changes come from outside', right: 'Changes come from inside' },
+          ],
+        },
         keyTakeaway:
           'useState gives components memory. Calling the setter triggers a re-render with the new value — React handles the DOM updates.',
       },
@@ -567,6 +718,12 @@ export const frontendLessons: Record<
         title: 'Conditional Rendering and Lists',
         content:
           'React renders different UI based on state using standard JavaScript — ternaries, && operators, and map for lists.',
+        bullets: [
+          '**Ternary** (condition ? A : B) — show one of two elements.',
+          '**&& operator** (condition && element) — show or hide an element.',
+          '**.map()** — render a list of elements from an array.',
+          '**key prop** — unique identifier for each list item, required for efficient updates.',
+        ],
         code: [
           {
             language: 'tsx',
@@ -574,6 +731,15 @@ export const frontendLessons: Record<
             code: `function TodoApp() {\n  const [todos, setTodos] = useState([\n    { id: 1, text: "Learn React", done: true },\n    { id: 2, text: "Build a project", done: false },\n  ]);\n\n  return (\n    <div>\n      <h1>Todos ({todos.filter(t => !t.done).length} left)</h1>\n\n      {todos.length === 0\n        ? <p>No todos yet!</p>           /* ternary */\n        : (\n          <ul>\n            {todos.map(todo => (           /* list rendering */\n              <li key={todo.id}\n                  style={{\n                    textDecoration: todo.done\n                      ? "line-through" : "none"\n                  }}>\n                {todo.text}\n              </li>\n            ))}\n          </ul>\n        )}\n    </div>\n  );\n}`,
           },
         ],
+        table: {
+          headers: ['Pattern', 'Syntax', 'Use Case'],
+          rows: [
+            ['Ternary', 'cond ? <A /> : <B />', 'Show one of two options'],
+            ['Logical AND', 'cond && <A />', 'Show or hide a single element'],
+            ['Early return', 'if (loading) return <Spinner />', 'Guard clauses at top of component'],
+            ['Map', 'arr.map(item => <Li />)', 'Render dynamic lists'],
+          ],
+        },
         keyTakeaway:
           'Use ternary operators for if/else, && for conditional display, and .map() with key props for lists.',
       },
@@ -602,6 +768,18 @@ export const frontendLessons: Record<
         title: 'useState Deep Dive',
         content:
           'useState can hold any value — numbers, strings, booleans, arrays, and objects. When updating objects or arrays, always create a new reference.',
+        comparison: {
+          leftTitle: 'Wrong (Mutation)',
+          rightTitle: 'Right (New Reference)',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'user.age = 26', right: 'setUser({ ...user, age: 26 })' },
+            { left: 'items.push("banana")', right: 'setItems([...items, "banana"])' },
+            { left: 'items[0] = "new"', right: 'setItems(items.map(...)' },
+            { left: 'delete user.name', right: 'setUser(omit(user, "name"))' },
+          ],
+        },
         code: [
           {
             language: 'tsx',
@@ -618,18 +796,18 @@ export const frontendLessons: Record<
           'Side effects are operations that reach outside the component — fetching data, setting timers, or subscribing to events. useEffect runs after the component renders.',
         analogy:
           'useEffect is like a post-it note that says "after you finish painting the wall, go buy more supplies." The painting (render) happens first, then the side effect runs.',
+        flow: [
+          { label: 'Component Renders', description: 'JSX is computed', icon: '🎨' },
+          { label: 'DOM Updated', description: 'Browser paints', icon: '🖥️' },
+          { label: 'Effect Runs', description: 'Side effect executes', icon: '⚡' },
+          { label: 'Cleanup', description: 'Previous effect cleaned up', icon: '🧹' },
+        ],
         code: [
           {
             language: 'tsx',
             label: 'useEffect patterns',
             code: `import { useState, useEffect } from "react";\n\nfunction Timer() {\n  const [seconds, setSeconds] = useState(0);\n\n  // Runs ONCE on mount (empty dependency array)\n  useEffect(() => {\n    const id = setInterval(() => {\n      setSeconds(s => s + 1); // updater function\n    }, 1000);\n\n    // Cleanup — runs on unmount\n    return () => clearInterval(id);\n  }, []); // [] = run only once\n\n  return <p>Seconds: {seconds}</p>;\n}`,
           },
-        ],
-        flow: [
-          { label: 'Component Renders', description: 'JSX is computed', icon: '🎨' },
-          { label: 'DOM Updated', description: 'Browser paints', icon: '🖥️' },
-          { label: 'Effect Runs', description: 'Side effect executes', icon: '⚡' },
-          { label: 'Cleanup', description: 'Previous effect cleaned up', icon: '🧹' },
         ],
         keyTakeaway:
           'useEffect runs after render. The dependency array controls when it re-runs, and the cleanup function prevents memory leaks.',
@@ -646,11 +824,13 @@ export const frontendLessons: Record<
             ['[a, b]', 'When a or b changes', 'Fetch when ID changes, sync with state'],
           ],
         },
+        diagram:
+          'Effect Lifecycle:\n\n  Mount          State Change       Unmount\n    │                │                 │\n    ▼                ▼                 ▼\n  Render  ──►  Render (new)  ──►   Cleanup\n    │                │\n    ▼                ▼\n  Effect         Cleanup old\n  runs           Effect runs\n                     │\n                     ▼\n                 New effect\n                   runs',
         code: [
           {
             language: 'tsx',
             label: 'Fetching data when an ID changes',
-            code: `function UserProfile({ userId }: { userId: string }) {\n  const [user, setUser] = useState(null);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    setLoading(true);\n    fetch(\`/api/users/\${userId}\`)\n      .then(res => res.json())\n      .then(data => {\n        setUser(data);\n        setLoading(false);\n      });\n  }, [userId]); // re-fetch when userId changes\n\n  if (loading) return <p>Loading...</p>;\n  return <h1>{user?.name}</h1>;\n}`,
+            code: `function UserProfile({ userId }: { userId: string }) {\n  const [user, setUser] = useState(null);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    setLoading(true);\n    fetch(\`/api/users/\\\${userId}\`)\n      .then(res => res.json())\n      .then(data => {\n        setUser(data);\n        setLoading(false);\n      });\n  }, [userId]); // re-fetch when userId changes\n\n  if (loading) return <p>Loading...</p>;\n  return <h1>{user?.name}</h1>;\n}`,
           },
         ],
         keyTakeaway:
@@ -659,7 +839,7 @@ export const frontendLessons: Record<
       {
         title: 'Component Lifecycle with Hooks',
         content:
-          'Class components had lifecycle methods (componentDidMount, componentDidUpdate, componentWillUnmount). Hooks replace all of them with useEffect.',
+          'Class components had lifecycle methods. Hooks replace all of them with useEffect.',
         comparison: {
           leftTitle: 'Class Lifecycle',
           rightTitle: 'Hooks Equivalent',
@@ -672,6 +852,14 @@ export const frontendLessons: Record<
             { left: 'shouldComponentUpdate', right: 'React.memo()' },
           ],
         },
+        cards: [
+          { title: 'useState', description: 'Local component state', icon: '📦', color: 'blue' },
+          { title: 'useEffect', description: 'Side effects after render', icon: '⚡', color: 'purple' },
+          { title: 'useRef', description: 'Mutable value without re-render', icon: '📌', color: 'emerald' },
+          { title: 'useMemo', description: 'Cache expensive computations', icon: '🧮', color: 'amber' },
+          { title: 'useCallback', description: 'Cache function references', icon: '🔗', color: 'cyan' },
+          { title: 'useContext', description: 'Read context without prop drilling', icon: '🌐', color: 'red' },
+        ],
         keyTakeaway:
           'useEffect with different dependency arrays replaces all class lifecycle methods. The cleanup function handles unmount logic.',
       },
@@ -679,6 +867,12 @@ export const frontendLessons: Record<
         title: 'useRef and Custom Hooks',
         content:
           'useRef holds a mutable value that persists across renders without causing re-renders. Custom hooks let you extract and reuse stateful logic.',
+        bullets: [
+          '**useRef for DOM access** — get a reference to a real DOM element.',
+          '**useRef for values** — store a mutable value that survives re-renders.',
+          '**Custom hooks** — functions starting with "use" that compose built-in hooks.',
+          '**Naming convention** — always prefix with "use" so React enforces hook rules.',
+        ],
         code: [
           {
             language: 'tsx',
@@ -712,9 +906,9 @@ export const frontendLessons: Record<
       {
         title: 'What is an API?',
         content:
-          'An API (Application Programming Interface) is a contract between your frontend and a server. You send an HTTP request with a specific shape, and you get a structured response back.',
+          'An API (Application Programming Interface) is a contract between your frontend and a server. You send an HTTP request and get a structured response back.',
         analogy:
-          'An API is like a restaurant menu. The menu lists what you can order (endpoints), what information the kitchen needs (request body), and what you will get back (response). You do not walk into the kitchen — you use the waiter (HTTP).',
+          'An API is like a restaurant menu. The menu lists what you can order (endpoints), what information the kitchen needs (request body), and what you will get back (response).',
         flow: [
           { label: 'Frontend', description: 'Sends HTTP request', icon: '📤' },
           { label: 'Internet', description: 'Routes to server', icon: '🌐' },
@@ -722,6 +916,8 @@ export const frontendLessons: Record<
           { label: 'Database', description: 'Reads/writes data', icon: '🗄️' },
           { label: 'Response', description: 'JSON sent back', icon: '📥' },
         ],
+        diagram:
+          'HTTP Request/Response Cycle:\n\n  Browser (Client)              Server\n  ┌─────────────┐              ┌─────────────┐\n  │             │── Request ──►│             │\n  │  fetch()    │  GET /api/   │  Express    │\n  │  axios()    │  + Headers   │  Handler    │\n  │             │  + Body      │             │\n  │             │◄─ Response ──│             │\n  │  .then()    │  Status Code │  res.json() │\n  │  await      │  + JSON Body │             │\n  └─────────────┘              └─────────────┘',
         keyTakeaway:
           'APIs are the bridge between frontend and backend. You communicate through HTTP requests and receive structured JSON responses.',
       },
@@ -733,9 +929,21 @@ export const frontendLessons: Record<
           {
             language: 'typescript',
             label: 'Fetching data with async/await',
-            code: `// GET request — fetch data\nasync function getUsers(): Promise<User[]> {\n  const response = await fetch("/api/users");\n\n  if (!response.ok) {\n    throw new Error(\`HTTP \${response.status}\`);\n  }\n\n  return response.json(); // parse JSON body\n}\n\n// POST request — send data\nasync function createUser(data: { name: string; email: string }) {\n  const response = await fetch("/api/users", {\n    method: "POST",\n    headers: { "Content-Type": "application/json" },\n    body: JSON.stringify(data),\n  });\n\n  if (!response.ok) {\n    const error = await response.json();\n    throw new Error(error.message);\n  }\n\n  return response.json();\n}`,
+            code: `// GET request — fetch data\nasync function getUsers(): Promise<User[]> {\n  const response = await fetch("/api/users");\n\n  if (!response.ok) {\n    throw new Error(\`HTTP \\\${response.status}\`);\n  }\n\n  return response.json(); // parse JSON body\n}\n\n// POST request — send data\nasync function createUser(data: { name: string; email: string }) {\n  const response = await fetch("/api/users", {\n    method: "POST",\n    headers: { "Content-Type": "application/json" },\n    body: JSON.stringify(data),\n  });\n\n  if (!response.ok) {\n    const error = await response.json();\n    throw new Error(error.message);\n  }\n\n  return response.json();\n}`,
           },
         ],
+        comparison: {
+          leftTitle: 'Promises (.then)',
+          rightTitle: 'Async/Await',
+          leftColor: 'amber',
+          rightColor: 'emerald',
+          items: [
+            { left: 'fetch().then(r => r.json())', right: 'const r = await fetch(); await r.json()' },
+            { left: 'Chain .then() for sequence', right: 'Write line-by-line like sync code' },
+            { left: '.catch() for errors', right: 'try/catch for errors' },
+            { left: 'Can get messy with nesting', right: 'Flat, readable code' },
+          ],
+        },
         keyTakeaway:
           'Use fetch with async/await for clean HTTP calls. Always check response.ok and parse the JSON body.',
       },
@@ -743,6 +951,12 @@ export const frontendLessons: Record<
         title: 'Loading, Error, and Empty States',
         content:
           'Every API call has three phases: loading, success, and error. A good UI handles all three with clear visual feedback.',
+        cards: [
+          { title: 'Loading', description: 'Show spinner or skeleton while waiting', icon: '⏳', color: 'blue' },
+          { title: 'Error', description: 'Show message with retry button', icon: '❌', color: 'red' },
+          { title: 'Empty', description: 'Show helpful message when no data exists', icon: '📭', color: 'amber' },
+          { title: 'Success', description: 'Render the actual data', icon: '✅', color: 'emerald' },
+        ],
         code: [
           {
             language: 'tsx',
@@ -750,11 +964,11 @@ export const frontendLessons: Record<
             code: `function UserList() {\n  const [users, setUsers] = useState<User[]>([]);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState<string | null>(null);\n\n  useEffect(() => {\n    fetch("/api/users")\n      .then(res => {\n        if (!res.ok) throw new Error("Failed to fetch");\n        return res.json();\n      })\n      .then(data => setUsers(data))\n      .catch(err => setError(err.message))\n      .finally(() => setLoading(false));\n  }, []);\n\n  if (loading) return <Spinner />;\n  if (error) return <ErrorBanner message={error} />;\n  if (users.length === 0) return <EmptyState />;\n\n  return (\n    <ul>\n      {users.map(u => <li key={u.id}>{u.name}</li>)}\n    </ul>\n  );\n}`,
           },
         ],
-        cards: [
-          { title: 'Loading', description: 'Show spinner or skeleton while waiting', icon: '⏳', color: 'blue' },
-          { title: 'Error', description: 'Show message with retry button', icon: '❌', color: 'red' },
-          { title: 'Empty', description: 'Show helpful message when no data exists', icon: '📭', color: 'amber' },
-          { title: 'Success', description: 'Render the actual data', icon: '✅', color: 'emerald' },
+        flow: [
+          { label: 'Mount', description: 'Component renders', icon: '🎬' },
+          { label: 'Loading', description: 'Show spinner, fetch starts', icon: '⏳' },
+          { label: 'Response', description: 'Data or error arrives', icon: '📨' },
+          { label: 'Render', description: 'Show data, error, or empty', icon: '✅' },
         ],
         keyTakeaway:
           'Always handle loading, error, and empty states. Users should never see a blank screen or unhandled error.',
@@ -773,11 +987,17 @@ export const frontendLessons: Record<
             ['DELETE', 'Remove data', 'DELETE /api/users/123'],
           ],
         },
+        cards: [
+          { title: '2xx Success', description: '200 OK, 201 Created, 204 No Content', icon: '✅', color: 'emerald' },
+          { title: '3xx Redirect', description: '301 Moved, 304 Not Modified', icon: '↪️', color: 'blue' },
+          { title: '4xx Client Error', description: '400 Bad Request, 401 Unauthorized, 404 Not Found', icon: '⚠️', color: 'amber' },
+          { title: '5xx Server Error', description: '500 Internal Error, 503 Unavailable', icon: '❌', color: 'red' },
+        ],
         code: [
           {
             language: 'typescript',
             label: 'CRUD operations',
-            code: `// Full CRUD example\nconst API = "/api/todos";\n\n// Create\nawait fetch(API, {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({ text: "Buy milk" }),\n});\n\n// Read\nconst todos = await fetch(API).then(r => r.json());\n\n// Update\nawait fetch(\`\${API}/1\`, {\n  method: "PATCH",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({ done: true }),\n});\n\n// Delete\nawait fetch(\`\${API}/1\`, { method: "DELETE" });`,
+            code: `// Full CRUD example\nconst API = "/api/todos";\n\n// Create\nawait fetch(API, {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({ text: "Buy milk" }),\n});\n\n// Read\nconst todos = await fetch(API).then(r => r.json());\n\n// Update\nawait fetch(\`\\\${API}/1\`, {\n  method: "PATCH",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({ done: true }),\n});\n\n// Delete\nawait fetch(\`\\\${API}/1\`, { method: "DELETE" });`,
           },
         ],
         keyTakeaway:
@@ -787,11 +1007,13 @@ export const frontendLessons: Record<
         title: 'Authentication Headers',
         content:
           'Most APIs require authentication. The common pattern is sending a JWT token in the Authorization header with every request.',
+        diagram:
+          'Auth Flow:\n\n  1. Login\n  Client ──POST /login──► Server\n         { email, pass }    │\n                            ▼\n                        Verify password\n                            │\n  Client ◄── JWT Token ─────┘\n    │\n    ▼\n  Store in localStorage\n\n  2. Authenticated Request\n  Client ──GET /api/data──► Server\n         Authorization:       │\n         Bearer <token>       ▼\n                          Verify JWT\n                              │\n  Client ◄── JSON data ───────┘',
         code: [
           {
             language: 'typescript',
             label: 'Authenticated API calls',
-            code: `// Helper that adds auth header automatically\nasync function apiFetch(url: string, options: RequestInit = {}) {\n  const token = localStorage.getItem("token");\n\n  const response = await fetch(url, {\n    ...options,\n    headers: {\n      "Content-Type": "application/json",\n      ...(token && { Authorization: \`Bearer \${token}\` }),\n      ...options.headers,\n    },\n  });\n\n  // Handle expired token\n  if (response.status === 401) {\n    localStorage.removeItem("token");\n    window.location.href = "/login";\n    throw new Error("Session expired");\n  }\n\n  return response;\n}`,
+            code: `// Helper that adds auth header automatically\nasync function apiFetch(url: string, options: RequestInit = {}) {\n  const token = localStorage.getItem("token");\n\n  const response = await fetch(url, {\n    ...options,\n    headers: {\n      "Content-Type": "application/json",\n      ...(token && { Authorization: \`Bearer \\\${token}\` }),\n      ...options.headers,\n    },\n  });\n\n  // Handle expired token\n  if (response.status === 401) {\n    localStorage.removeItem("token");\n    window.location.href = "/login";\n    throw new Error("Session expired");\n  }\n\n  return response;\n}`,
           },
         ],
         keyTakeaway:
@@ -822,7 +1044,7 @@ export const frontendLessons: Record<
         content:
           'A build tool transforms your development code into optimized files browsers can understand. It bundles modules, compiles TypeScript/JSX, minifies code, and tree-shakes unused exports.',
         analogy:
-          'Building is like packaging a product for shipping. You take raw materials (source code), assemble them (bundle), shrink-wrap them (minify), and remove packing peanuts (tree-shake) so the box is as small and efficient as possible.',
+          'Building is like packaging a product for shipping. You take raw materials (source code), assemble them (bundle), shrink-wrap them (minify), and remove packing peanuts (tree-shake).',
         flow: [
           { label: 'Source Code', description: 'JSX, TS, CSS modules', icon: '📝' },
           { label: 'Compile', description: 'TypeScript → JavaScript, JSX → JS', icon: '⚙️' },
@@ -831,20 +1053,15 @@ export const frontendLessons: Record<
           { label: 'Tree-shake', description: 'Remove unused code', icon: '🌿' },
           { label: 'Output', description: 'Optimized static files', icon: '✅' },
         ],
+        diagram:
+          'Build Pipeline:\n\n  src/\n  ├── App.tsx        ──┐\n  ├── Header.tsx       │   Compile    Bundle     Minify\n  ├── utils.ts         ├──────►──────►──────►──── dist/\n  ├── styles.css       │                          ├── index.html\n  └── unused.ts  ✕     │   (tree-shaken out)      ├── app.a1b2.js (42KB)\n                       │                          └── app.c3d4.css (8KB)\n                       │\n  node_modules/  ──────┘\n  (only used parts included)',
         keyTakeaway:
           'The build process compiles, bundles, minifies, and tree-shakes your code into optimized files ready for production.',
       },
       {
         title: 'Vite — The Modern Build Tool',
         content:
-          'Vite is the fastest build tool for modern web apps. It uses native ES modules for development (instant start) and Rollup for production builds.',
-        code: [
-          {
-            language: 'bash',
-            label: 'Create a Vite project',
-            code: `# Create a new React + TypeScript project\nnpm create vite@latest my-app -- --template react-ts\ncd my-app\nnpm install\n\n# Development — instant hot module replacement\nnpm run dev\n\n# Production build — optimized output\nnpm run build\n\n# Preview the production build locally\nnpm run preview`,
-          },
-        ],
+          'Vite is the fastest build tool for modern web apps. It uses native ES modules for development and Rollup for production builds.',
         comparison: {
           leftTitle: 'Webpack',
           rightTitle: 'Vite',
@@ -857,6 +1074,19 @@ export const frontendLessons: Record<
             { left: 'Mature plugin ecosystem', right: 'Growing plugin ecosystem' },
           ],
         },
+        code: [
+          {
+            language: 'bash',
+            label: 'Create a Vite project',
+            code: `# Create a new React + TypeScript project\nnpm create vite@latest my-app -- --template react-ts\ncd my-app\nnpm install\n\n# Development — instant hot module replacement\nnpm run dev\n\n# Production build — optimized output\nnpm run build\n\n# Preview the production build locally\nnpm run preview`,
+          },
+        ],
+        cards: [
+          { title: 'HMR', description: 'Hot Module Replacement — instant updates in dev', icon: '⚡', color: 'emerald' },
+          { title: 'ESM', description: 'Native ES Modules for fast dev serving', icon: '📦', color: 'blue' },
+          { title: 'Rollup', description: 'Efficient production bundling', icon: '🏗️', color: 'purple' },
+          { title: 'TypeScript', description: 'Built-in TS support, zero config', icon: '🔷', color: 'cyan' },
+        ],
         keyTakeaway:
           'Vite provides instant dev server startup and fast builds. It is the recommended build tool for new React projects.',
       },
@@ -873,7 +1103,7 @@ export const frontendLessons: Record<
           {
             language: 'typescript',
             label: 'Using env vars in code',
-            code: `// Vite exposes env vars prefixed with VITE_\nconst apiUrl = import.meta.env.VITE_API_URL;\n\nfetch(\`\${apiUrl}/api/users\`);`,
+            code: `// Vite exposes env vars prefixed with VITE_\nconst apiUrl = import.meta.env.VITE_API_URL;\n\nfetch(\`\\\${apiUrl}/api/users\`);`,
           },
         ],
         bullets: [
@@ -881,6 +1111,14 @@ export const frontendLessons: Record<
           '**Prefix matters** — Vite only exposes variables starting with VITE_. Next.js uses NEXT_PUBLIC_.',
           '**Build-time replacement** — env vars are baked into the bundle at build time, not read at runtime.',
         ],
+        table: {
+          headers: ['Framework', 'Prefix', 'Access'],
+          rows: [
+            ['Vite', 'VITE_', 'import.meta.env.VITE_X'],
+            ['Next.js', 'NEXT_PUBLIC_', 'process.env.NEXT_PUBLIC_X'],
+            ['Create React App', 'REACT_APP_', 'process.env.REACT_APP_X'],
+          ],
+        },
         keyTakeaway:
           'Use .env files for configuration. Only prefix-exposed variables are included in the bundle — never put secrets in frontend env vars.',
       },
@@ -902,6 +1140,18 @@ export const frontendLessons: Record<
             code: `# Install Vercel CLI\nnpm i -g vercel\n\n# Deploy from project root\nvercel\n\n# Deploy to production\nvercel --prod\n\n# Set environment variables\nvercel env add VITE_API_URL`,
           },
         ],
+        comparison: {
+          leftTitle: 'Self-Hosted',
+          rightTitle: 'Vercel / Netlify',
+          leftColor: 'amber',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Manual server setup', right: 'Zero-config deployment' },
+            { left: 'You manage SSL, CDN, scaling', right: 'Built-in SSL, CDN, auto-scaling' },
+            { left: 'Full control', right: 'Less control, more convenience' },
+            { left: 'No vendor lock-in', right: 'Platform-specific features' },
+          ],
+        },
         keyTakeaway:
           'Vercel and Netlify offer zero-config deployment. Connect your repo and every push automatically builds and deploys.',
       },
@@ -917,11 +1167,11 @@ export const frontendLessons: Record<
             ['CLS', 'Cumulative Layout Shift — visual stability', '< 0.1'],
           ],
         },
-        bullets: [
-          '**Code splitting** — Use React.lazy() and dynamic imports to load pages on demand.',
-          '**Image optimization** — Use next/image or modern formats like WebP/AVIF.',
-          '**Caching** — Set proper Cache-Control headers for static assets.',
-          '**Bundle analysis** — Use vite-plugin-visualizer to find large dependencies.',
+        cards: [
+          { title: 'Code Splitting', description: 'React.lazy() loads pages on demand', icon: '✂️', color: 'blue' },
+          { title: 'Image Optimization', description: 'WebP/AVIF formats, lazy loading', icon: '🖼️', color: 'purple' },
+          { title: 'Caching', description: 'Cache-Control headers for static assets', icon: '💾', color: 'emerald' },
+          { title: 'Bundle Analysis', description: 'Find large deps with visualizer', icon: '📊', color: 'amber' },
         ],
         code: [
           {
