@@ -14,6 +14,7 @@ import {
   Star,
   Users,
   Zap,
+  History,
 } from 'lucide-react';
 import type { UserRoadmap } from '@/lib/types';
 import { roadmapTemplates } from '@/lib/roadmap-templates';
@@ -94,12 +95,20 @@ export default function RoadmapsPage() {
               </div>
               <p className="text-sm text-zinc-400">Pick one. Customize it. Start with friends.</p>
             </div>
-            <Link href="/roadmaps/create">
-              <Button variant="gradient" size="md">
-                <Plus className="h-4 w-4 mr-1.5" />
-                Create Custom
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/roadmaps/history">
+                <Button variant="ghost" size="md">
+                  <History className="h-4 w-4 mr-1.5" />
+                  History
+                </Button>
+              </Link>
+              <Link href="/roadmaps/create">
+                <Button variant="gradient" size="md">
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Create Custom
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Flagship Hero */}

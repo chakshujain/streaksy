@@ -127,6 +127,8 @@ export const syncApi = {
 // ── Streaks ──
 export const streaksApi = {
   get: () => api.get('/streaks'),
+  getMultipliers: (groupId?: string) =>
+    api.get('/streaks/multipliers', { params: groupId ? { groupId } : {} }),
 };
 
 // ── Leaderboard ──
@@ -294,6 +296,9 @@ export const feedApi = {
 // ── Daily ──
 export const dailyApi = {
   getProblems: (count?: number) => api.get('/daily', { params: { count } }),
+  getToday: () => api.get('/daily', { params: { count: 1 } }),
+  getHistory: (days = 7) => api.get('/daily', { params: { count: days } }),
+  getStreak: () => api.get('/streaks'),
 };
 
 // ── Rooms ──
@@ -385,14 +390,28 @@ export const roadmapsApi = {
   getTemplates: () => api.get('/roadmaps/templates'),
   getFeatured: () => api.get('/roadmaps/templates/featured'),
   getActive: () => api.get('/roadmaps/active'),
+  getAll: () => api.get('/roadmaps/all'),
   get: (id: string) => api.get(`/roadmaps/${id}`),
   create: (data: Record<string, unknown>) => api.post('/roadmaps', data),
+  update: (id: string, data: { status?: string; name?: string }) => api.patch(`/roadmaps/${id}`, data),
+  remove: (id: string) => api.delete(`/roadmaps/${id}`),
   updateProgress: (id: string, day: number, completed: boolean) =>
     api.put(`/roadmaps/${id}/progress`, { day, completed }),
   getToday: () => api.get('/roadmaps/today'),
   getParticipants: (slug: string) => api.get(`/roadmaps/templates/${slug}/participants`),
   getDiscussions: (slug: string) => api.get(`/roadmaps/templates/${slug}/discussions`),
   postDiscussion: (slug: string, content: string) => api.post(`/roadmaps/templates/${slug}/discussions`, { content }),
+};
+
+// ── Friends ──
+export const friendsApi = {
+  list: () => api.get('/friends'),
+  requests: () => api.get('/friends/requests'),
+  search: (q: string) => api.get('/friends/search', { params: { q } }),
+  sendRequest: (userId: string) => api.post('/friends/request', { userId }),
+  accept: (id: string) => api.patch(`/friends/${id}/accept`),
+  reject: (id: string) => api.delete(`/friends/${id}`),
+  remove: (id: string) => api.delete(`/friends/${id}`),
 };
 
 export default api;

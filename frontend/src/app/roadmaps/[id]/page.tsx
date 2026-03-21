@@ -26,8 +26,10 @@ import {
   Play,
   Bell,
   ChevronRight,
+  LogOut,
+  AlertTriangle,
 } from 'lucide-react';
-import { roadmapsApi, pokesApi, roomsApi } from '@/lib/api';
+import { roadmapsApi, pokesApi, roomsApi, streaksApi } from '@/lib/api';
 import { templatesBySlug } from '@/lib/roadmap-templates';
 import type { UserRoadmap } from '@/lib/types';
 
@@ -205,6 +207,13 @@ export default function RoadmapDetailPage() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [updatingDay, setUpdatingDay] = useState<number | null>(null);
   const [creatingRoom, setCreatingRoom] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [multiplierPreview, setMultiplierPreview] = useState<{
+    streakTier: string; streakMultiplier: number;
+    groupLabel: string; groupMultiplier: number;
+    potentialPoints: number;
+  } | null>(null);
 
   const [allActiveRoadmaps, setAllActiveRoadmaps] = useState<UserRoadmap[]>([]);
 
@@ -286,6 +295,14 @@ export default function RoadmapDetailPage() {
     }
   }, [roadmap?.templateSlug, fetchParticipants, fetchDiscussions]);
 
+  // Fetch multiplier preview
+  useEffect(() => {
+    if (!roadmap) return;
+    streaksApi.getMultipliers(roadmap.groupId || undefined)
+      .then(({ data }) => setMultiplierPreview(data.preview))
+      .catch(() => {});
+  }, [roadmap?.groupId, roadmap]);
+
   const toggleDay = async (day: number) => {
     const isCompleting = !completedDays.has(day);
     setUpdatingDay(day);
@@ -314,6 +331,34 @@ export default function RoadmapDetailPage() {
       } catch { /* Backend sync failed silently */ }
     }
     setUpdatingDay(null);
+  };
+
+  const handleLeaveRoadmap = async () => {
+    if (!roadmap) return;
+    setLeaving(true);
+
+    // Do localStorage cleanup FIRST (always works, no auth needed)
+    try {
+      const stored = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]') as UserRoadmap[];
+      const updated = stored.filter((r) => r.id !== roadmap.id);
+      localStorage.setItem('streaksy_active_roadmaps', JSON.stringify(updated));
+
+      // Save to history in localStorage
+      const history = JSON.parse(localStorage.getItem('streaksy_roadmap_history') || '[]');
+      history.unshift({
+        ...roadmap,
+        status: 'abandoned' as const,
+        completedDays: completedDays.size,
+        leftAt: new Date().toISOString(),
+      });
+      localStorage.setItem('streaksy_roadmap_history', JSON.stringify(history));
+    } catch { /* localStorage unavailable */ }
+
+    // Fire-and-forget backend sync (may fail if not logged in or roadmap not synced)
+    roadmapsApi.update(roadmap.id, { status: 'abandoned' }).catch(() => {});
+
+    setLeaving(false);
+    router.push('/roadmaps');
   };
 
   const handleSend = async () => {
@@ -526,18 +571,60 @@ export default function RoadmapDetailPage() {
               <ArrowLeft className="h-4 w-4" />
               Back to Roadmaps
             </Link>
-            <div className="relative">
-              <Button variant="ghost" size="sm" onClick={handleShare}>
-                <Share2 className="h-4 w-4 mr-1.5" />
-                Share
-              </Button>
-              {shareToast && (
-                <div className="absolute right-0 top-full mt-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 text-xs text-emerald-400 whitespace-nowrap z-10">
-                  Link copied!
-                </div>
-              )}
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Button variant="ghost" size="sm" onClick={handleShare}>
+                  <Share2 className="h-4 w-4 mr-1.5" />
+                  Share
+                </Button>
+                {shareToast && (
+                  <div className="absolute right-0 top-full mt-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 text-xs text-emerald-400 whitespace-nowrap z-10">
+                    Link copied!
+                  </div>
+                )}
+              </div>
+              <div className="relative">
+                <Button variant="ghost" size="sm" onClick={() => setShowLeaveConfirm(true)} className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                  <LogOut className="h-4 w-4 mr-1.5" />
+                  Leave
+                </Button>
+              </div>
             </div>
           </div>
+
+          {/* Leave confirmation modal */}
+          {showLeaveConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+              <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl mx-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 border border-red-500/20">
+                    <AlertTriangle className="h-5 w-5 text-red-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-white">Leave Roadmap?</h3>
+                </div>
+                <p className="text-sm text-zinc-400 mb-2">
+                  You&apos;ve completed <span className="text-white font-medium">{completedDays.size}/{totalDays}</span> days so far.
+                </p>
+                <p className="text-sm text-zinc-500 mb-6">
+                  This will mark the roadmap as abandoned. It will appear in your history so you can track your journey. You can always start a new one later.
+                </p>
+                <div className="flex gap-3">
+                  <Button variant="ghost" className="flex-1" onClick={() => setShowLeaveConfirm(false)}>
+                    Keep Going
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="flex-1 bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20"
+                    onClick={handleLeaveRoadmap}
+                    disabled={leaving}
+                  >
+                    {leaving ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <LogOut className="h-4 w-4 mr-1.5" />}
+                    Leave
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Toasts */}
           {pokeToast && (
@@ -594,6 +681,35 @@ export default function RoadmapDetailPage() {
               </div>
             </div>
           </Card>
+
+          {/* ============================================================ */}
+          {/*  Streak Multiplier Preview                                    */}
+          {/* ============================================================ */}
+          {multiplierPreview && (multiplierPreview.streakMultiplier > 1 || multiplierPreview.groupMultiplier > 1) && (
+            <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/5 via-zinc-900/50 to-orange-500/5 p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Flame className="h-5 w-5 text-amber-400" />
+                <span className="text-sm font-semibold text-white">Active Multipliers</span>
+                <span className="ml-auto text-lg font-bold text-amber-400">
+                  {multiplierPreview.potentialPoints} pts/task
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {multiplierPreview.streakMultiplier > 1 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 text-xs font-medium text-orange-400">
+                    <Flame className="h-3 w-3" />
+                    {multiplierPreview.streakTier} ({multiplierPreview.streakMultiplier}x)
+                  </span>
+                )}
+                {multiplierPreview.groupMultiplier > 1 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 text-xs font-medium text-cyan-400">
+                    <Users className="h-3 w-3" />
+                    {multiplierPreview.groupLabel} ({multiplierPreview.groupMultiplier}x)
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ============================================================ */}
           {/*  Today's Task — Prominent & Actionable                        */}
