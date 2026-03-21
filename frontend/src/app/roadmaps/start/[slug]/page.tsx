@@ -375,7 +375,9 @@ export default function RoadmapStartPage() {
         ...(isCodingRoadmap && {
           hoursPerDay,
           selectedTopics,
+          selectedLessons: Array.from(selectedLessons),
           topicAllocation,
+          customizeMode,
           weeklyRoomDay: scheduleWeeklyRoom ? weeklyRoomDay.toLowerCase() : undefined,
           weeklyRoomTime: scheduleWeeklyRoom ? weeklyRoomTime : undefined,
           dailyReminder,

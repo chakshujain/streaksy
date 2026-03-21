@@ -103,16 +103,58 @@ const FALLBACK_COLORS = [
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                             */
 /* ------------------------------------------------------------------ */
-function generateDayTasks(templateSlug?: string, totalDays?: number): DayTask[] {
-  const days = totalDays || 30;
+function generateDayTasks(roadmap?: UserRoadmap | null): DayTask[] {
+  const days = roadmap?.durationDays || 30;
+  const templateSlug = roadmap?.templateSlug;
   const template = templateSlug ? templatesBySlug[templateSlug] : null;
+  const userSelectedLessons = roadmap?.selectedLessons ? new Set(roadmap.selectedLessons) : null;
+  const userSelectedTopics = roadmap?.selectedTopics;
 
   // Use content map if available — provides real links to lessons/patterns
   if (templateSlug && templateContentMap[templateSlug]) {
-    const contentItems = templateContentMap[templateSlug];
+    let contentItems = templateContentMap[templateSlug];
+
+    // Filter content based on user's actual selections from the wizard
+    if (userSelectedLessons && userSelectedLessons.size > 0) {
+      // User manually selected specific lessons — only include those
+      contentItems = contentItems.filter((item) => {
+        const key = `${item.topicSlug || item.title}:${item.slug}`;
+        return userSelectedLessons.has(key);
+      });
+    } else if (userSelectedTopics && userSelectedTopics.length > 0) {
+      // User selected topics but not individual lessons — filter by topic
+      // Build a set of topic slugs that map to the selected topic names
+      const topicNameToSlug: Record<string, string> = {
+        'DSA Patterns': 'dsa-patterns',
+        'System Design': 'system-design',
+        'Databases': 'databases',
+        'OOP': 'oops',
+        'Multithreading': 'multithreading',
+        'Design Patterns': 'design-patterns',
+        'Frontend': 'frontend-dev',
+        'Backend': 'backend-dev',
+        'Git': 'git-github',
+      };
+      const allowedSlugs = new Set(
+        userSelectedTopics.map((name) => topicNameToSlug[name] || name.toLowerCase())
+      );
+      contentItems = contentItems.filter((item) => {
+        // For patterns, topicSlug is undefined — check if slug refers to a pattern
+        if (item.type === 'pattern') return allowedSlugs.has('dsa-patterns');
+        return item.topicSlug ? allowedSlugs.has(item.topicSlug) : true;
+      });
+    }
+
+    // If filtering removed everything, fall back to full content
+    if (contentItems.length === 0 && templateContentMap[templateSlug]) {
+      contentItems = templateContentMap[templateSlug];
+    }
+
+    // Distribute content across the roadmap duration
     return Array.from({ length: days }, (_, i) => {
-      const item = i < contentItems.length ? contentItems[i] : null;
-      if (item) {
+      // Cycle through content if roadmap is longer than content
+      const item = contentItems.length > 0 ? contentItems[i % contentItems.length] : null;
+      if (item && i < contentItems.length) {
         return {
           day: i + 1,
           title: item.title,
@@ -121,7 +163,15 @@ function generateDayTasks(templateSlug?: string, totalDays?: number): DayTask[] 
           type: item.type === 'pattern' ? ('problem' as const) : (item.type as 'lesson' | 'problem'),
         };
       }
-      // Days beyond the content map (e.g. template has more days than content)
+      if (item && i >= contentItems.length) {
+        // Extra days beyond content — review days
+        return {
+          day: i + 1,
+          title: `Day ${i + 1}: Review & Practice`,
+          link: '/revision',
+          type: 'generic' as const,
+        };
+      }
       return {
         day: i + 1,
         title: `Day ${i + 1}: Review & Practice`,
@@ -133,27 +183,21 @@ function generateDayTasks(templateSlug?: string, totalDays?: number): DayTask[] 
   if (template) {
     const category = template.category;
 
-    if (category === 'Coding & Tech') {
-      const topics = [
-        'Arrays & Hashing', 'Two Pointers', 'Sliding Window', 'Stack',
-        'Binary Search', 'Linked List', 'Trees', 'Tries',
-        'Heap / Priority Queue', 'Backtracking', 'Graphs', 'Dynamic Programming',
-        'Greedy', 'Intervals', 'Math & Geometry', 'Bit Manipulation',
-        'Advanced Graphs', 'Matrix Problems', 'String Manipulation', 'Recursion',
-      ];
-      return Array.from({ length: days }, (_, i) => ({
-        day: i + 1,
-        title: topics[i % topics.length],
-        topic: topics[i % topics.length],
-        type: 'problem' as const,
-      }));
-    }
-
     if (category === 'Fitness & Health') {
       return Array.from({ length: days }, (_, i) => ({
         day: i + 1,
         title: `Day ${i + 1}: ${template.name}`,
         type: 'generic' as const,
+      }));
+    }
+
+    // Generic coding template without content map — use selected topics if available
+    if (category === 'Coding & Tech' && userSelectedTopics && userSelectedTopics.length > 0) {
+      return Array.from({ length: days }, (_, i) => ({
+        day: i + 1,
+        title: userSelectedTopics[i % userSelectedTopics.length],
+        topic: userSelectedTopics[i % userSelectedTopics.length],
+        type: 'problem' as const,
       }));
     }
   }
@@ -488,7 +532,7 @@ export default function RoadmapDetailPage() {
   const completed = completedDays.size;
   const pct = totalDays > 0 ? Math.round((completed / totalDays) * 100) : 0;
   const currentDay = completed + 1;
-  const dayTasks = generateDayTasks(roadmap?.templateSlug, totalDays);
+  const dayTasks = generateDayTasks(roadmap);
   const todayTask = currentDay <= dayTasks.length ? dayTasks[currentDay - 1] : null;
   const isCoding = roadmap?.category === 'Coding & Tech';
   const template = roadmap?.templateSlug ? templatesBySlug[roadmap.templateSlug] : null;

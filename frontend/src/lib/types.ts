@@ -504,8 +504,10 @@ export interface UserRoadmap {
   // Customization fields (coding roadmaps)
   hoursPerDay?: number;
   selectedTopics?: string[];
+  selectedLessons?: string[]; // Array of "topicSlug:lessonSlug" keys
   topicAllocation?: Record<string, number>;
   weeklyRoomDay?: string;
   weeklyRoomTime?: string;
   dailyReminder?: boolean;
+  customizeMode?: 'ai' | 'manual';
 }
