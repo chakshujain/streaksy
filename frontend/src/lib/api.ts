@@ -221,11 +221,16 @@ export const revisionApi = {
     spaceComplexity?: string;
     tags?: string[];
     difficultyRating?: string;
+    intuition?: string;
+    pointsToRemember?: string[];
+    aiGenerated?: boolean;
   }) => api.post('/revisions', data),
   markRevised: (id: string) =>
     api.patch(`/revisions/${id}/revised`),
   delete: (id: string) =>
     api.delete(`/revisions/${id}`),
+  generateAI: (problemId: string) =>
+    api.post('/revisions/generate', { problemId }),
 };
 
 // ── Contests ──
@@ -343,6 +348,14 @@ export const digestApi = {
     api.put('/digest/preferences', prefs),
   preview: (type: string) =>
     api.post('/digest/preview', null, { params: { type } }),
+};
+
+// ── Invite Links ──
+export const inviteApi = {
+  resolveGroup: (code: string) => api.get(`/invite/group/${code}`),
+  resolveRoom: (code: string) => api.get(`/invite/room/${code}`),
+  joinGroup: (code: string) => api.post(`/invite/group/${code}/join`),
+  joinRoom: (code: string) => api.post(`/invite/room/${code}/join`),
 };
 
 export default api;

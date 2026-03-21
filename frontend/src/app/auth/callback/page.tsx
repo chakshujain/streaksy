@@ -20,7 +20,18 @@ function CallbackHandler() {
         localStorage.setItem('streaksy_token', token);
         localStorage.setItem('streaksy_user', JSON.stringify(user));
         hydrate();
-        router.replace('/dashboard');
+        const pending = localStorage.getItem('streaksy_pending_invite');
+        if (pending) {
+          try {
+            const invite = JSON.parse(pending);
+            localStorage.removeItem('streaksy_pending_invite');
+            router.replace(`/invite/${invite.type}/${invite.code}`);
+          } catch {
+            router.replace('/dashboard');
+          }
+        } else {
+          router.replace('/dashboard');
+        }
       } catch {
         router.replace('/auth/login?error=invalid_callback');
       }

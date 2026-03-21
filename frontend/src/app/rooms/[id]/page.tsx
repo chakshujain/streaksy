@@ -183,7 +183,8 @@ export default function RoomDetailPage() {
 
   const copyCode = () => {
     if (!room?.code) return;
-    const text = room.code;
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const text = `${baseUrl}/invite/room/${room.code}`;
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(() => {
         setCopied(true);
@@ -303,8 +304,8 @@ export default function RoomDetailPage() {
 
           <div className="flex items-center gap-3">
             {/* Room code */}
-            <button onClick={copyCode} className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2 text-sm font-mono tracking-widest text-zinc-300 hover:border-zinc-600 transition-all duration-200 hover:scale-[1.02]">
-              {room.code}
+            <button onClick={copyCode} className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2 text-sm text-zinc-300 hover:border-zinc-600 transition-all duration-200 hover:scale-[1.02]">
+              {copied ? 'Link Copied!' : <><span className="font-mono tracking-widest">{room.code}</span><span className="text-zinc-500 text-xs ml-1">Share</span></>}
               {copied ? <CheckCircle className="h-3.5 w-3.5 text-emerald-400 animate-bounce-in" /> : <Copy className="h-3.5 w-3.5 text-zinc-500" />}
             </button>
 

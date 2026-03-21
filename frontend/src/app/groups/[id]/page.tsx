@@ -90,9 +90,10 @@ export default function GroupDetailPage() {
     (m) => m.user_id === user?.id && m.role === 'admin'
   );
 
-  const copyCode = () => {
+  const copyInviteLink = () => {
     if (!group) return;
-    const text = group.invite_code;
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const text = `${baseUrl}/invite/group/${group.invite_code}`;
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(() => {
         setCopied(true);
@@ -232,7 +233,7 @@ export default function GroupDetailPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={copyCode}
+              onClick={copyInviteLink}
               className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
             >
               {copied ? (
@@ -240,7 +241,7 @@ export default function GroupDetailPage() {
               ) : (
                 <Copy className="h-4 w-4" />
               )}
-              Invite: {group.invite_code}
+              {copied ? 'Link Copied!' : 'Copy Invite Link'}
             </button>
             {!isAdmin && (
               <button

@@ -39,7 +39,18 @@ export default function SignupPage() {
     setLoading(true);
     try {
       await signup(email, password, displayName);
-      router.push('/dashboard');
+      const pending = localStorage.getItem('streaksy_pending_invite');
+      if (pending) {
+        try {
+          const invite = JSON.parse(pending);
+          localStorage.removeItem('streaksy_pending_invite');
+          router.push(`/invite/${invite.type}/${invite.code}`);
+        } catch {
+          router.push('/dashboard');
+        }
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
       setError(e.response?.data?.error || 'Signup failed');
