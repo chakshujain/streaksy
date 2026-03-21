@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { notificationsApi } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
-import { Bell, Check } from 'lucide-react';
+import { Bell, Check, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/cn';
 import type { Notification } from '@/lib/types';
@@ -140,6 +141,15 @@ export function NotificationBell() {
               ))
             )}
           </div>
+
+          <Link
+            href="/notifications"
+            onClick={() => setOpen(false)}
+            className="flex items-center justify-center gap-1.5 border-t border-zinc-800 px-4 py-2.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800/50 hover:text-zinc-200"
+          >
+            View all notifications
+            <ArrowRight className="h-3 w-3" />
+          </Link>
         </div>
       )}
     </div>
