@@ -25,6 +25,18 @@ export const gitLessons: Record<
           { title: 'Collaborate', description: 'Multiple people work on the same codebase', icon: '👥', color: 'emerald' },
           { title: 'Branch', description: 'Work on features without affecting others', icon: '🌿', color: 'purple' },
         ],
+        comparison: {
+          leftTitle: 'Without Git',
+          rightTitle: 'With Git',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'project-v1.zip, project-v2-final.zip', right: 'Single folder, full history inside' },
+            { left: 'Cannot undo specific changes', right: 'Revert any commit at any time' },
+            { left: 'Emailing files back and forth', right: 'Push/pull with remote repository' },
+            { left: 'Overwrite each other\'s work', right: 'Merge changes intelligently' },
+          ],
+        },
         keyTakeaway:
           'Git is a distributed version control system that tracks every change as a snapshot, enabling collaboration and safe experimentation.',
       },
@@ -33,11 +45,17 @@ export const gitLessons: Record<
         content:
           'Git has three areas where your files live. Understanding these is the key to understanding every Git command.',
         diagram:
-          'Working Directory     Staging Area        Repository\n  (your files)       (next commit)      (commit history)\n       │                   │                   │\n       │── git add ──────► │                   │\n       │                   │── git commit ───► │\n       │                   │                   │\n       │◄── git checkout ──────────────────────│\n       │                   │                   │',
+          '┌────────────────┐     ┌────────────────┐     ┌────────────────┐\n│   Working      │     │   Staging      │     │   Repository   │\n│   Directory    │     │   Area         │     │   (.git)       │\n│                │     │   (Index)      │     │                │\n│  Your files    │     │  Next commit   │     │  All commits   │\n│  you edit      │     │  preview       │     │  (permanent)   │\n│                │     │                │     │                │\n│         ──git add──► │        ──git commit──►│               │\n│                │     │                │     │                │\n│  ◄──git restore────  │                │     │                │\n│                │     │                │     │                │\n│  ◄──────────── git checkout ─────────────── │               │\n└────────────────┘     └────────────────┘     └────────────────┘',
         bullets: [
           '**Working Directory** — the files you see and edit in your editor.',
           '**Staging Area (Index)** — a holding area for changes you want in the next commit.',
           '**Repository (.git)** — the permanent history of all committed snapshots.',
+        ],
+        flow: [
+          { label: 'Edit Files', description: 'Change code in editor', icon: '✏️' },
+          { label: 'git add', description: 'Stage specific changes', icon: '📋' },
+          { label: 'git commit', description: 'Save snapshot to repo', icon: '💾' },
+          { label: 'git push', description: 'Share with remote', icon: '📤' },
         ],
         keyTakeaway:
           'git add moves changes from working directory to staging. git commit saves staged changes to the repository. This two-step process gives you fine control.',
@@ -46,6 +64,8 @@ export const gitLessons: Record<
         title: 'Your First Commits',
         content:
           'A commit is a snapshot of your staged changes with a message explaining what you did. Each commit has a unique hash (like a fingerprint).',
+        diagram:
+          'Commit History (git log --oneline):\n\n  a1b2c3d  Add index.html with greeting\n     │\n  f4e5d6c  Initial commit: add README\n     │\n    (root)\n\n  Each commit stores:\n  ┌────────────────────────┐\n  │ Hash:    a1b2c3d       │\n  │ Author:  Alice <a@b.c> │\n  │ Date:    2026-03-21    │\n  │ Message: Add index...  │\n  │ Parent:  f4e5d6c       │\n  │ Tree:    (file snapshot)│\n  └────────────────────────┘',
         code: [
           {
             language: 'bash',
@@ -60,13 +80,6 @@ export const gitLessons: Record<
         title: 'Inspecting Changes',
         content:
           'Before committing, always review what you have changed. Git provides tools to see differences at every level.',
-        code: [
-          {
-            language: 'bash',
-            label: 'Inspecting changes',
-            code: `# See which files have changed\ngit status\n\n# See unstaged changes (working dir vs staging)\ngit diff\n\n# See staged changes (staging vs last commit)\ngit diff --staged\n\n# See the full history\ngit log --oneline --graph --all\n\n# See what changed in a specific commit\ngit show a1b2c3d\n\n# See who changed each line of a file\ngit blame index.html`,
-          },
-        ],
         table: {
           headers: ['Command', 'Shows', 'Use When'],
           rows: [
@@ -77,6 +90,20 @@ export const gitLessons: Record<
             ['git blame', 'Who wrote each line', 'Tracking down when a line changed'],
           ],
         },
+        code: [
+          {
+            language: 'bash',
+            label: 'Inspecting changes',
+            code: `# See which files have changed\ngit status\n\n# See unstaged changes (working dir vs staging)\ngit diff\n\n# See staged changes (staging vs last commit)\ngit diff --staged\n\n# See the full history\ngit log --oneline --graph --all\n\n# See what changed in a specific commit\ngit show a1b2c3d\n\n# See who changed each line of a file\ngit blame index.html`,
+          },
+        ],
+        flow: [
+          { label: 'git status', description: 'What files changed?', icon: '📋' },
+          { label: 'git diff', description: 'What lines changed?', icon: '🔍' },
+          { label: 'git add', description: 'Stage the good changes', icon: '✅' },
+          { label: 'git diff --staged', description: 'Review staged changes', icon: '👀' },
+          { label: 'git commit', description: 'Save the snapshot', icon: '💾' },
+        ],
         keyTakeaway:
           'Use git status and git diff before every commit. git log shows history, and git blame traces individual lines.',
       },
@@ -84,13 +111,6 @@ export const gitLessons: Record<
         title: 'Undoing Things',
         content:
           'Everyone makes mistakes. Git provides several ways to undo changes depending on where the change lives.',
-        code: [
-          {
-            language: 'bash',
-            label: 'Undo operations',
-            code: `# Unstage a file (keep changes in working directory)\ngit restore --staged file.txt\n\n# Discard changes in working directory\ngit restore file.txt\n\n# Undo the last commit but keep changes staged\ngit reset --soft HEAD~1\n\n# Undo the last commit and unstage changes\ngit reset HEAD~1\n\n# Create a NEW commit that undoes a specific commit\n# (safe for shared branches)\ngit revert a1b2c3d`,
-          },
-        ],
         comparison: {
           leftTitle: 'git reset',
           rightTitle: 'git revert',
@@ -103,6 +123,19 @@ export const gitLessons: Record<
             { left: 'Can lose work if careless', right: 'Never loses history' },
           ],
         },
+        cards: [
+          { title: 'git restore', description: 'Discard changes in working directory', icon: '↩️', color: 'blue' },
+          { title: 'git restore --staged', description: 'Unstage a file (keep changes)', icon: '📤', color: 'purple' },
+          { title: 'git reset --soft', description: 'Undo commit, keep changes staged', icon: '🔙', color: 'emerald' },
+          { title: 'git revert', description: 'Create undo commit (safe for shared)', icon: '🔄', color: 'amber' },
+        ],
+        code: [
+          {
+            language: 'bash',
+            label: 'Undo operations',
+            code: `# Unstage a file (keep changes in working directory)\ngit restore --staged file.txt\n\n# Discard changes in working directory\ngit restore file.txt\n\n# Undo the last commit but keep changes staged\ngit reset --soft HEAD~1\n\n# Undo the last commit and unstage changes\ngit reset HEAD~1\n\n# Create a NEW commit that undoes a specific commit\n# (safe for shared branches)\ngit revert a1b2c3d`,
+          },
+        ],
         keyTakeaway:
           'Use git restore to discard local changes, git reset on private branches, and git revert on shared branches to safely undo commits.',
       },
@@ -131,9 +164,15 @@ export const gitLessons: Record<
         content:
           'A branch is just a pointer to a commit. Creating a branch is instant because Git only creates a tiny file with the commit hash — it does not copy any files.',
         analogy:
-          'Branches are like bookmarks in a book. The book (repository) stays the same, but you can have multiple bookmarks (branches) pointing to different pages (commits). Moving a bookmark is instant and free.',
+          'Branches are like bookmarks in a book. The book (repository) stays the same, but you can have multiple bookmarks (branches) pointing to different pages (commits).',
         diagram:
-          '         main\n          │\n  A ── B ── C\n          \\\n           D ── E\n               │\n            feature',
+          '         main\n          │\n  A ── B ── C\n          \\\n           D ── E\n               │\n            feature\n\n  • main points to commit C\n  • feature points to commit E\n  • HEAD points to whichever branch you\'re on\n  • Creating a branch = creating a new pointer',
+        cards: [
+          { title: 'Lightweight', description: 'A branch is just a 41-byte file (commit hash)', icon: '🪶', color: 'blue' },
+          { title: 'Instant', description: 'Creating/switching branches takes milliseconds', icon: '⚡', color: 'emerald' },
+          { title: 'Isolated', description: 'Changes on one branch do not affect others', icon: '🔒', color: 'purple' },
+          { title: 'HEAD', description: 'Special pointer showing your current branch', icon: '👆', color: 'amber' },
+        ],
         keyTakeaway:
           'Branches are lightweight pointers to commits. Creating and switching branches is nearly instant because no files are copied.',
       },
@@ -153,15 +192,25 @@ export const gitLessons: Record<
           '**Keep branches short-lived** — merge within a few days to avoid large conflicts.',
           '**main should always work** — never commit broken code directly to main.',
         ],
+        table: {
+          headers: ['Prefix', 'Purpose', 'Example'],
+          rows: [
+            ['feature/', 'New functionality', 'feature/dark-mode'],
+            ['bugfix/', 'Fix a bug', 'bugfix/login-redirect'],
+            ['hotfix/', 'Urgent production fix', 'hotfix/security-patch'],
+            ['chore/', 'Maintenance, deps', 'chore/update-deps'],
+            ['docs/', 'Documentation changes', 'docs/api-guide'],
+          ],
+        },
         keyTakeaway:
           'Use git switch -c to create and switch branches in one command. Name branches descriptively with prefixes like feature/ or bugfix/.',
       },
       {
         title: 'Fast-Forward Merge',
         content:
-          'When the target branch has not diverged (no new commits since you branched off), Git simply moves the pointer forward. This is called a fast-forward merge.',
+          'When the target branch has not diverged (no new commits since you branched off), Git simply moves the pointer forward.',
         diagram:
-          'Before merge:\n  main\n   │\n   A ── B\n         \\\n          C ── D\n              │\n           feature\n\nAfter fast-forward merge:\n   A ── B ── C ── D\n                  │\n            main, feature',
+          'Before merge:\n  main\n   │\n   A ── B\n         \\\n          C ── D\n              │\n           feature\n\nAfter fast-forward merge:\n   A ── B ── C ── D\n                  │\n            main, feature\n\n  No merge commit needed!\n  History stays linear.',
         code: [
           {
             language: 'bash',
@@ -169,6 +218,18 @@ export const gitLessons: Record<
             code: `# Switch to main\ngit switch main\n\n# Merge feature branch\ngit merge feature/login\n# Fast-forward — no merge commit created\n\n# Delete the merged branch\ngit branch -d feature/login`,
           },
         ],
+        comparison: {
+          leftTitle: 'Fast-Forward',
+          rightTitle: 'Three-Way Merge',
+          leftColor: 'emerald',
+          rightColor: 'blue',
+          items: [
+            { left: 'No divergence — just move pointer', right: 'Both branches have new commits' },
+            { left: 'No merge commit', right: 'Creates a merge commit' },
+            { left: 'Linear history', right: 'Shows branch history' },
+            { left: 'Simple and clean', right: 'Can have conflicts' },
+          ],
+        },
         keyTakeaway:
           'Fast-forward merges happen when there is no divergence. The branch pointer simply moves forward — clean and linear history.',
       },
@@ -177,13 +238,19 @@ export const gitLessons: Record<
         content:
           'When both branches have new commits, Git performs a three-way merge. It compares the common ancestor, both branch tips, and creates a merge commit.',
         diagram:
-          'Before merge:\n    main\n     │\n A ── B ── E\n      \\\n       C ── D\n            │\n         feature\n\nAfter three-way merge:\n A ── B ── E ── M  (merge commit)\n      \\       /\n       C ── D\n            │\n         feature',
+          'Before merge:\n    main\n     │\n A ── B ── E\n      \\\n       C ── D\n            │\n         feature\n\nAfter three-way merge:\n A ── B ── E ── M  (merge commit)\n      \\       /\n       C ── D\n            │\n         feature\n\n  M has TWO parents: E and D\n  Git uses the common ancestor (B)\n  to determine what changed.',
         code: [
           {
             language: 'bash',
             label: 'Three-way merge',
             code: `# Switch to main\ngit switch main\n\n# Merge creates a merge commit\ngit merge feature/signup\n# Merge made by the 'ort' strategy.`,
           },
+        ],
+        bullets: [
+          '**Common ancestor** — Git finds where branches diverged.',
+          '**Three-way comparison** — ancestor vs main vs feature.',
+          '**Merge commit** — has two parent commits.',
+          '**Conflicts** — occur when both branches changed the same line.',
         ],
         keyTakeaway:
           'Three-way merges create a merge commit that ties both branches together. The history shows exactly when and where branches diverged and joined.',
@@ -192,6 +259,15 @@ export const gitLessons: Record<
         title: 'Resolving Merge Conflicts',
         content:
           'Conflicts happen when both branches changed the same line in the same file. Git cannot decide which change to keep, so it asks you.',
+        diagram:
+          'Conflict Markers in File:\n\n  ┌──────────────────────────────────┐\n  │  <<<<<<< HEAD                   │\n  │  <h1>Welcome Home</h1>         │  ← your branch\n  │  =======                        │  ← separator\n  │  <h1>Welcome to My Site</h1>   │  ← incoming branch\n  │  >>>>>>> feature/header         │\n  └──────────────────────────────────┘\n\n  Resolution:\n  ┌──────────────────────────────────┐\n  │  <h1>Welcome to My Site</h1>   │  ← keep what you want\n  └──────────────────────────────────┘',
+        flow: [
+          { label: 'git merge', description: 'Conflict detected', icon: '⚠️' },
+          { label: 'Open File', description: 'Find conflict markers', icon: '📝' },
+          { label: 'Edit', description: 'Choose correct code', icon: '✏️' },
+          { label: 'git add', description: 'Mark as resolved', icon: '✅' },
+          { label: 'git commit', description: 'Complete the merge', icon: '💾' },
+        ],
         code: [
           {
             language: 'bash',
@@ -231,9 +307,21 @@ export const gitLessons: Record<
       {
         title: 'Local vs Remote',
         content:
-          'Git is distributed — every developer has a full copy of the repository. GitHub (or GitLab/Bitbucket) hosts a shared remote copy that everyone syncs with.',
+          'Git is distributed — every developer has a full copy of the repository. GitHub hosts a shared remote copy that everyone syncs with.',
         diagram:
           '┌──────────────┐     push      ┌──────────────┐     pull\n│  Your Laptop │ ───────────►  │    GitHub    │ ◄───────────\n│  (full repo) │ ◄─────────── │  (full repo) │ ────────────\n└──────────────┘     pull      └──────────────┘     push\n                                     ▲\n                                     │ pull/push\n                               ┌──────────────┐\n                               │  Teammate\'s  │\n                               │   Laptop     │\n                               └──────────────┘',
+        comparison: {
+          leftTitle: 'git fetch',
+          rightTitle: 'git pull',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Downloads remote changes', right: 'Downloads AND merges' },
+            { left: 'Does NOT modify your files', right: 'Updates your current branch' },
+            { left: 'Safe — preview first', right: 'Convenient — one step' },
+            { left: 'git fetch + git merge = git pull', right: 'Shortcut for fetch + merge' },
+          ],
+        },
         code: [
           {
             language: 'bash',
@@ -256,6 +344,8 @@ export const gitLessons: Record<
           { label: 'CI Checks', description: 'Automated tests run', icon: '🧪' },
           { label: 'Merge', description: 'Approved PR is merged', icon: '✅' },
         ],
+        diagram:
+          'PR Workflow:\n\n  feature/dark-mode\n  ┌─────────────────────────────┐\n  │  commit 1: Add toggle UI   │\n  │  commit 2: Add CSS vars    │\n  │  commit 3: Persist choice  │\n  └──────────────┬──────────────┘\n                 │\n                 ▼\n  ┌──────────────────────────────┐\n  │  Pull Request #42            │\n  │  Title: Add dark mode toggle │\n  │                              │\n  │  ✓ 2 approvals               │\n  │  ✓ CI tests passed           │\n  │  ✓ No conflicts              │\n  │                              │\n  │  [Merge Pull Request]        │\n  └──────────────────────────────┘\n                 │\n                 ▼\n            main branch',
         code: [
           {
             language: 'bash',
@@ -269,7 +359,7 @@ export const gitLessons: Record<
       {
         title: 'Code Review Best Practices',
         content:
-          'Code review catches bugs, improves code quality, and spreads knowledge across the team. Good reviews are respectful, specific, and constructive.',
+          'Code review catches bugs, improves code quality, and spreads knowledge across the team.',
         comparison: {
           leftTitle: 'Bad Review Comments',
           rightTitle: 'Good Review Comments',
@@ -287,6 +377,12 @@ export const gitLessons: Record<
           '**Focus on logic, not style** — use linters for formatting.',
           '**Explain the why** — "This could leak memory because..." not just "change this."',
           '**Approve with suggestions** — minor issues don\'t need to block merging.',
+        ],
+        cards: [
+          { title: 'Correctness', description: 'Does the code do what it should?', icon: '✅', color: 'emerald' },
+          { title: 'Security', description: 'SQL injection, XSS, auth bypasses?', icon: '🔒', color: 'red' },
+          { title: 'Performance', description: 'N+1 queries, unnecessary re-renders?', icon: '⚡', color: 'amber' },
+          { title: 'Readability', description: 'Clear names, small functions, comments?', icon: '📖', color: 'blue' },
         ],
         keyTakeaway:
           'Good code reviews are timely, specific, and kind. Focus on correctness and logic, not style preferences.',
@@ -308,6 +404,15 @@ export const gitLessons: Record<
           '**Milestones** group issues by release or sprint.',
           '**Assignees** show who is responsible for each issue.',
         ],
+        table: {
+          headers: ['Keyword', 'Effect', 'Example'],
+          rows: [
+            ['Closes #N', 'Auto-closes issue on merge', 'Closes #42'],
+            ['Fixes #N', 'Same as Closes', 'Fixes #15'],
+            ['Resolves #N', 'Same as Closes', 'Resolves #7'],
+            ['Refs #N', 'Links without closing', 'Refs #42'],
+          ],
+        },
         keyTakeaway:
           'Use issues to track work and link them to PRs with "Closes #N". This creates a clear audit trail from problem to solution.',
       },
@@ -320,6 +425,13 @@ export const gitLessons: Record<
           { title: 'Require CI Checks', description: 'Tests must pass before merge', icon: '🧪', color: 'emerald' },
           { title: 'No Force Push', description: 'Prevent history rewriting on main', icon: '🛡️', color: 'red' },
           { title: 'No Direct Push', description: 'All changes must go through PRs', icon: '🚫', color: 'amber' },
+        ],
+        flow: [
+          { label: 'Push to Branch', description: 'Developer pushes feature', icon: '📤' },
+          { label: 'Open PR', description: 'Propose merge to main', icon: '📋' },
+          { label: 'CI Passes', description: 'Required checks green', icon: '✅' },
+          { label: 'Review Approved', description: 'Teammate approves', icon: '👍' },
+          { label: 'Merge', description: 'Now allowed to merge', icon: '🎉' },
         ],
         keyTakeaway:
           'Protect main with required reviews and CI checks. This ensures every change is reviewed and tested before reaching production.',
@@ -352,14 +464,7 @@ export const gitLessons: Record<
         analogy:
           'Rebase is like cutting chapters from a book and pasting them at the end of a new edition. The content is the same, but the order is updated to fit the latest context.',
         diagram:
-          'Before rebase:\n    main\n     │\n A ── B ── E\n      \\\n       C ── D\n            │\n         feature\n\nAfter rebase:\n A ── B ── E ── C\' ── D\'\n              │          │\n            main      feature',
-        code: [
-          {
-            language: 'bash',
-            label: 'Rebasing a feature branch',
-            code: `# On feature branch — replay commits on top of main\ngit switch feature/login\ngit rebase main\n\n# If conflicts occur, resolve them then:\ngit add .\ngit rebase --continue\n\n# To abort a rebase:\ngit rebase --abort`,
-          },
-        ],
+          'Before rebase:\n    main\n     │\n A ── B ── E\n      \\\n       C ── D\n            │\n         feature\n\nAfter rebase:\n A ── B ── E ── C\' ── D\'\n              │          │\n            main      feature\n\n  C\' and D\' are NEW commits\n  (same changes, new hashes)\n  History is now linear!',
         comparison: {
           leftTitle: 'Merge',
           rightTitle: 'Rebase',
@@ -372,6 +477,13 @@ export const gitLessons: Record<
             { left: 'Easy to understand', right: 'Cleaner git log' },
           ],
         },
+        code: [
+          {
+            language: 'bash',
+            label: 'Rebasing a feature branch',
+            code: `# On feature branch — replay commits on top of main\ngit switch feature/login\ngit rebase main\n\n# If conflicts occur, resolve them then:\ngit add .\ngit rebase --continue\n\n# To abort a rebase:\ngit rebase --abort`,
+          },
+        ],
         keyTakeaway:
           'Rebase creates clean, linear history by replaying commits. Never rebase commits that have been pushed to a shared branch.',
       },
@@ -379,13 +491,6 @@ export const gitLessons: Record<
         title: 'Interactive Rebase — Edit History',
         content:
           'Interactive rebase lets you squash, reorder, edit, or drop commits before sharing them. It is the most powerful history-editing tool in Git.',
-        code: [
-          {
-            language: 'bash',
-            label: 'Interactive rebase',
-            code: `# Edit the last 3 commits\ngit rebase -i HEAD~3\n\n# The editor opens with:\n# pick a1b2c3d Add login form\n# pick e4f5g6h Fix typo in login\n# pick i7j8k9l Add validation\n\n# Change to:\n# pick a1b2c3d Add login form\n# squash e4f5g6h Fix typo in login    <- combine with previous\n# pick i7j8k9l Add validation\n\n# Save and close — Git combines the two commits`,
-          },
-        ],
         table: {
           headers: ['Command', 'Action', 'Use Case'],
           rows: [
@@ -396,6 +501,15 @@ export const gitLessons: Record<
             ['drop', 'Remove the commit', 'Delete an accidental commit'],
           ],
         },
+        diagram:
+          'Interactive Rebase (squash):\n\n  Before:\n  pick   a1b2c3d  Add login form\n  pick   e4f5g6h  Fix typo in login\n  pick   i7j8k9l  Add validation\n\n  After (squash middle commit):\n  pick   a1b2c3d  Add login form\n  squash e4f5g6h  Fix typo in login  ← combined\n  pick   i7j8k9l  Add validation\n\n  Result:\n  x1y2z3a  Add login form (includes typo fix)\n  i7j8k9l  Add validation',
+        code: [
+          {
+            language: 'bash',
+            label: 'Interactive rebase',
+            code: `# Edit the last 3 commits\ngit rebase -i HEAD~3\n\n# The editor opens with:\n# pick a1b2c3d Add login form\n# pick e4f5g6h Fix typo in login\n# pick i7j8k9l Add validation\n\n# Change to:\n# pick a1b2c3d Add login form\n# squash e4f5g6h Fix typo in login    <- combine with previous\n# pick i7j8k9l Add validation\n\n# Save and close — Git combines the two commits`,
+          },
+        ],
         keyTakeaway:
           'Interactive rebase cleans up messy commit history before pushing. Squash small fixes into their parent commits.',
       },
@@ -403,12 +517,20 @@ export const gitLessons: Record<
         title: 'Cherry-Pick — Grab Specific Commits',
         content:
           'Cherry-pick copies a single commit from one branch to another. It is useful when you need one specific change without merging the entire branch.',
+        diagram:
+          'Cherry-pick commit D from feature to main:\n\n  Before:\n    main\n     │\n  A ── B ── C\n       \\\n        D ── E ── F\n                  │\n               feature\n\n  After git cherry-pick D:\n    main\n     │\n  A ── B ── C ── D\'\n       \\\n        D ── E ── F\n                  │\n               feature\n\n  D\' is a copy of D (new hash, same changes)',
         code: [
           {
             language: 'bash',
             label: 'Cherry-pick a commit',
             code: `# Find the commit hash\ngit log --oneline feature/payments\n# a1b2c3d Fix currency rounding bug\n# e4f5g6h Add Stripe integration\n\n# Copy just the bug fix to main\ngit switch main\ngit cherry-pick a1b2c3d\n\n# Cherry-pick multiple commits\ngit cherry-pick a1b2c3d e4f5g6h\n\n# Cherry-pick without committing (stage only)\ngit cherry-pick --no-commit a1b2c3d`,
           },
+        ],
+        bullets: [
+          '**Hotfix use case** — apply a critical fix to main without merging the whole feature.',
+          '**New hash** — the cherry-picked commit gets a new hash (it is a copy).',
+          '**Conflicts possible** — resolve them just like merge conflicts.',
+          '**Use sparingly** — frequent cherry-picking creates duplicate commits.',
         ],
         keyTakeaway:
           'Cherry-pick copies individual commits across branches. Use it for hotfixes that need to land on main before the full feature is ready.',
@@ -417,6 +539,14 @@ export const gitLessons: Record<
         title: 'Stash — Shelve Work in Progress',
         content:
           'Stash temporarily saves uncommitted changes so you can switch branches with a clean working directory. Pop them back when you return.',
+        analogy:
+          'Stash is like putting your half-finished puzzle in a box so you can use the table for something else. When you are ready, you take the box out and continue where you left off.',
+        flow: [
+          { label: 'Working on Feature', description: 'Uncommitted changes', icon: '✏️' },
+          { label: 'git stash', description: 'Save changes aside', icon: '📦' },
+          { label: 'Switch Branch', description: 'Handle urgent task', icon: '🔀' },
+          { label: 'git stash pop', description: 'Restore changes', icon: '📤' },
+        ],
         code: [
           {
             language: 'bash',
@@ -424,15 +554,15 @@ export const gitLessons: Record<
             code: `# Save current changes\ngit stash\n\n# Save with a description\ngit stash push -m "WIP: login form styling"\n\n# List all stashes\ngit stash list\n# stash@{0}: WIP: login form styling\n# stash@{1}: On main: debug experiment\n\n# Restore the latest stash\ngit stash pop\n\n# Restore a specific stash\ngit stash apply stash@{1}\n\n# Delete a stash\ngit stash drop stash@{1}`,
           },
         ],
-        analogy:
-          'Stash is like putting your half-finished puzzle in a box so you can use the table for something else. When you are ready, you take the box out and continue where you left off.',
         keyTakeaway:
           'git stash saves uncommitted work temporarily. Use it when you need to switch branches quickly without committing half-done work.',
       },
       {
         title: 'Reflog — Your Safety Net',
         content:
-          'The reflog records every time HEAD moves — every commit, checkout, rebase, and reset. Even "lost" commits can be recovered from the reflog.',
+          'The reflog records every time HEAD moves — every commit, checkout, rebase, and reset. Even "lost" commits can be recovered.',
+        diagram:
+          'Reflog — Git\'s flight recorder:\n\n  Action                    HEAD points to\n  ─────────────────────────────────────────\n  git commit "Add auth"     a1b2c3d  HEAD@{0}\n  git commit "Add login"    e4f5g6h  HEAD@{1}\n  git reset --hard HEAD~2   i7j8k9l  HEAD@{2}\n\n  "Lost" commits a1b2c3d and e4f5g6h\n  are still in the reflog!\n\n  Recovery:\n  git reset --hard a1b2c3d  ← back to normal\n  git branch recovered a1b2c3d  ← or save to branch',
         code: [
           {
             language: 'bash',
@@ -487,10 +617,12 @@ export const gitLessons: Record<
           ],
         },
         cards: [
-          { title: 'Git Flow', description: 'Feature → develop → release → main. Best for versioned releases', icon: '🔀', color: 'purple' },
-          { title: 'GitHub Flow', description: 'Feature → main via PR. Best for continuous deployment', icon: '🚀', color: 'blue' },
+          { title: 'Git Flow', description: 'Feature > develop > release > main. Best for versioned releases', icon: '🔀', color: 'purple' },
+          { title: 'GitHub Flow', description: 'Feature > main via PR. Best for continuous deployment', icon: '🚀', color: 'blue' },
           { title: 'Trunk-Based', description: 'Everyone commits to main with feature flags. Fastest iteration', icon: '🌳', color: 'emerald' },
         ],
+        diagram:
+          'GitHub Flow (recommended for most teams):\n\n  main ──●────●────●────●────●────●──── (always deployable)\n          \\       /  \\       /\n           ●──●──    ●──●──\n          feature/A  feature/B\n\n  Git Flow (complex releases):\n  main ────────●─────────────●────── (releases only)\n               ▲             ▲\n  release ─────●             │\n               ▲             │\n  develop ──●──●──●──●──●──●─●──── (integration)\n             \\  / \\  /\n              ●●   ●●\n            feat  feat',
         keyTakeaway:
           'GitHub Flow (feature branches + PRs to main) is the simplest and best choice for most web teams. Use Git Flow only for complex release schedules.',
       },
@@ -498,13 +630,6 @@ export const gitLessons: Record<
         title: 'Conventional Commits',
         content:
           'A commit message convention makes history readable and enables automatic changelog generation. The format is: type(scope): description.',
-        code: [
-          {
-            language: 'bash',
-            label: 'Conventional commit examples',
-            code: `# Types: feat, fix, docs, style, refactor, test, chore\n\ngit commit -m "feat(auth): add Google OAuth login"\ngit commit -m "fix(api): handle null response from payment gateway"\ngit commit -m "docs(readme): add setup instructions for Docker"\ngit commit -m "refactor(db): extract query builder to shared utility"\ngit commit -m "test(auth): add tests for token refresh flow"\ngit commit -m "chore(deps): update React to v19"`,
-          },
-        ],
         table: {
           headers: ['Type', 'When to Use', 'Bumps Version'],
           rows: [
@@ -516,6 +641,15 @@ export const gitLessons: Record<
             ['chore', 'Build, deps, CI changes', 'None'],
           ],
         },
+        code: [
+          {
+            language: 'bash',
+            label: 'Conventional commit examples',
+            code: `# Types: feat, fix, docs, style, refactor, test, chore\n\ngit commit -m "feat(auth): add Google OAuth login"\ngit commit -m "fix(api): handle null response from payment gateway"\ngit commit -m "docs(readme): add setup instructions for Docker"\ngit commit -m "refactor(db): extract query builder to shared utility"\ngit commit -m "test(auth): add tests for token refresh flow"\ngit commit -m "chore(deps): update React to v19"`,
+          },
+        ],
+        diagram:
+          'Conventional Commit Format:\n\n  type(scope): description\n  │    │       │\n  │    │       └── What you did (imperative mood)\n  │    └────────── What part of the app (optional)\n  └─────────────── What kind of change\n\n  Examples:\n  feat(auth): add Google OAuth login\n  fix(api): handle null response from payment gateway\n  docs(readme): add Docker setup instructions\n\n  Breaking change:\n  feat(api)!: change user response shape\n  BREAKING CHANGE: user.name is now user.fullName',
         keyTakeaway:
           'Conventional commits (feat, fix, docs, refactor) create a readable history and enable automated versioning and changelogs.',
       },
@@ -523,6 +657,12 @@ export const gitLessons: Record<
         title: 'Git Hooks — Automate Checks',
         content:
           'Git hooks are scripts that run automatically at certain points in the Git workflow. They enforce quality gates before code reaches the remote.',
+        flow: [
+          { label: 'git commit', description: 'Developer runs commit', icon: '📝' },
+          { label: 'pre-commit', description: 'Lint & format staged files', icon: '🔍' },
+          { label: 'commit-msg', description: 'Validate message format', icon: '✅' },
+          { label: 'Commit Created', description: 'Only if hooks pass', icon: '💾' },
+        ],
         code: [
           {
             language: 'bash',
@@ -530,12 +670,15 @@ export const gitLessons: Record<
             code: `# Install Husky\nnpm install -D husky\nnpx husky init\n\n# Pre-commit: lint staged files\necho "npx lint-staged" > .husky/pre-commit\n\n# Commit-msg: enforce conventional commits\nnpm install -D @commitlint/cli @commitlint/config-conventional\necho "npx commitlint --edit \\$1" > .husky/commit-msg\n\n# lint-staged config in package.json:\n# "lint-staged": {\n#   "*.{ts,tsx}": ["eslint --fix", "prettier --write"]\n# }`,
           },
         ],
-        flow: [
-          { label: 'git commit', description: 'Developer runs commit', icon: '📝' },
-          { label: 'pre-commit', description: 'Lint & format staged files', icon: '🔍' },
-          { label: 'commit-msg', description: 'Validate message format', icon: '✅' },
-          { label: 'Commit Created', description: 'Only if hooks pass', icon: '💾' },
-        ],
+        table: {
+          headers: ['Hook', 'When It Runs', 'Common Use'],
+          rows: [
+            ['pre-commit', 'Before commit is created', 'Lint, format, run tests'],
+            ['commit-msg', 'After message is written', 'Validate conventional format'],
+            ['pre-push', 'Before push to remote', 'Run full test suite'],
+            ['post-merge', 'After a merge completes', 'npm install if lockfile changed'],
+          ],
+        },
         keyTakeaway:
           'Git hooks with Husky and lint-staged automatically lint, format, and validate commits before they are created.',
       },
@@ -543,6 +686,8 @@ export const gitLessons: Record<
         title: 'CI/CD Integration',
         content:
           'Continuous Integration (CI) runs automated tests on every push. Continuous Deployment (CD) deploys automatically when tests pass on main.',
+        diagram:
+          'CI/CD Pipeline:\n\n  Developer          GitHub            CI Server        Production\n     │                 │                  │                 │\n     ├──push──────────►│                  │                 │\n     │                 ├──webhook────────►│                 │\n     │                 │                  ├──npm install    │\n     │                 │                  ├──npm run lint   │\n     │                 │                  ├──npm test       │\n     │                 │                  ├──npm run build  │\n     │                 │                  │                 │\n     │                 │◄──status: pass──┤                 │\n     │                 │                  │                 │\n     │              [merge PR]            │                 │\n     │                 │                  │                 │\n     │                 ├──webhook────────►│                 │\n     │                 │                  ├──build docker──►│\n     │                 │                  │   deploy        │\n     │                 │                  │                 │',
         code: [
           {
             language: 'yaml',
@@ -563,6 +708,18 @@ export const gitLessons: Record<
         title: 'The Fork-and-PR Model',
         content:
           'Open source projects use forks so external contributors can propose changes without having write access to the original repository.',
+        comparison: {
+          leftTitle: 'Fork',
+          rightTitle: 'Clone',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Creates a copy on YOUR GitHub', right: 'Downloads to your local machine' },
+            { left: 'You own the fork (can push)', right: 'Need write access to push' },
+            { left: 'For contributing to others\' repos', right: 'For working on your own repos' },
+            { left: 'Stays linked to original (upstream)', right: 'Independent local copy' },
+          ],
+        },
         flow: [
           { label: 'Fork', description: 'Copy repo to your account', icon: '🍴' },
           { label: 'Clone', description: 'Clone your fork locally', icon: '📥' },
