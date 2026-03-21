@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import SimulationPlayer from '@/components/patterns/SimulationPlayer';
 import CodeTabs from '@/components/patterns/CodeTabs';
+import { BookmarkButton } from '@/components/ui/BookmarkButton';
 
 /* ------------------------------------------------------------------ */
 /*  Color utilities                                                    */
@@ -135,6 +136,16 @@ export default function PatternDetailPage() {
               >
                 {pattern.category}
               </span>
+            </div>
+            <div className="ml-auto">
+              <BookmarkButton
+                item={{
+                  id: `pattern-${slug}`,
+                  type: 'pattern',
+                  title: pattern.name,
+                  slug,
+                }}
+              />
             </div>
           </div>
 

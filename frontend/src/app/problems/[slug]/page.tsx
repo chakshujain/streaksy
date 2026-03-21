@@ -22,6 +22,7 @@ import { AICodeReviewPanel } from '@/components/ai/AICodeReviewPanel';
 import { ExternalLink, RotateCcw, X, Sparkles, Loader2, CheckCircle2, Circle, Clock } from 'lucide-react';
 import type { Problem, Note, RevisionNote, ProblemProgress } from '@/lib/types';
 import { cn } from '@/lib/cn';
+import { BookmarkButton } from '@/components/ui/BookmarkButton';
 
 export default function ProblemDetailPage() {
   const params = useParams();
@@ -107,6 +108,16 @@ export default function ProblemDetailPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-zinc-100">{problem.title}</h1>
             <Badge variant={problem.difficulty}>{problem.difficulty}</Badge>
+            <BookmarkButton
+              item={{
+                id: `problem-${slug}`,
+                type: 'problem',
+                title: problem.title,
+                slug,
+                difficulty: problem.difficulty,
+              }}
+              size="sm"
+            />
           </div>
           {problem.url && (
             <a
