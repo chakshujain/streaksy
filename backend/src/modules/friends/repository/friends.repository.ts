@@ -1,0 +1,182 @@
+import { query, queryOne } from '../../../config/database';
+
+export interface FriendshipRow {
+  id: string;
+  requester_id: string;
+  addressee_id: string;
+  status: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface FriendRow {
+  id: string;
+  friendship_id: string;
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  bio: string | null;
+  current_streak: number;
+  total_points: number;
+  last_active: Date | null;
+}
+
+export interface UserSearchRow {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+  bio: string | null;
+  friendship_status: string | null;
+  friendship_id: string | null;
+}
+
+export const friendsRepository = {
+  async sendRequest(requesterId: string, addresseeId: string): Promise<FriendshipRow> {
+    const rows = await query<FriendshipRow>(
+      `INSERT INTO friendships (requester_id, addressee_id, status)
+       VALUES ($1, $2, 'pending')
+       RETURNING *`,
+      [requesterId, addresseeId]
+    );
+    return rows[0];
+  },
+
+  async acceptRequest(friendshipId: string, userId: string): Promise<FriendshipRow | null> {
+    const rows = await query<FriendshipRow>(
+      `UPDATE friendships
+       SET status = 'accepted', updated_at = NOW()
+       WHERE id = $1 AND addressee_id = $2 AND status = 'pending'
+       RETURNING *`,
+      [friendshipId, userId]
+    );
+    return rows[0] ?? null;
+  },
+
+  async rejectRequest(friendshipId: string, userId: string): Promise<boolean> {
+    const rows = await query<FriendshipRow>(
+      `DELETE FROM friendships
+       WHERE id = $1 AND (addressee_id = $2 OR requester_id = $2) AND status = 'pending'
+       RETURNING id`,
+      [friendshipId, userId]
+    );
+    return rows.length > 0;
+  },
+
+  async removeFriend(userId: string, friendId: string): Promise<boolean> {
+    const rows = await query<FriendshipRow>(
+      `DELETE FROM friendships
+       WHERE status = 'accepted'
+         AND ((requester_id = $1 AND addressee_id = $2)
+           OR (requester_id = $2 AND addressee_id = $1))
+       RETURNING id`,
+      [userId, friendId]
+    );
+    return rows.length > 0;
+  },
+
+  async removeByFriendshipId(friendshipId: string, userId: string): Promise<boolean> {
+    const rows = await query<FriendshipRow>(
+      `DELETE FROM friendships
+       WHERE id = $1
+         AND (requester_id = $2 OR addressee_id = $2)
+       RETURNING id`,
+      [friendshipId, userId]
+    );
+    return rows.length > 0;
+  },
+
+  async getFriends(userId: string): Promise<FriendRow[]> {
+    return query<FriendRow>(
+      `SELECT
+         f.id AS friendship_id,
+         u.id AS user_id,
+         u.display_name,
+         u.avatar_url,
+         u.bio,
+         COALESCE(s.current_streak, 0) AS current_streak,
+         COALESCE(s.total_points, 0) AS total_points,
+         u.updated_at AS last_active
+       FROM friendships f
+       JOIN users u ON u.id = CASE
+         WHEN f.requester_id = $1 THEN f.addressee_id
+         ELSE f.requester_id
+       END
+       LEFT JOIN user_streaks s ON s.user_id = u.id
+       WHERE f.status = 'accepted'
+         AND (f.requester_id = $1 OR f.addressee_id = $1)
+       ORDER BY u.display_name`,
+      [userId]
+    );
+  },
+
+  async getPendingRequests(userId: string): Promise<FriendRow[]> {
+    return query<FriendRow>(
+      `SELECT
+         f.id AS friendship_id,
+         u.id AS user_id,
+         u.display_name,
+         u.avatar_url,
+         u.bio,
+         COALESCE(s.current_streak, 0) AS current_streak,
+         COALESCE(s.total_points, 0) AS total_points,
+         f.created_at AS last_active
+       FROM friendships f
+       JOIN users u ON u.id = f.requester_id
+       LEFT JOIN user_streaks s ON s.user_id = u.id
+       WHERE f.addressee_id = $1 AND f.status = 'pending'
+       ORDER BY f.created_at DESC`,
+      [userId]
+    );
+  },
+
+  async getSentRequests(userId: string): Promise<FriendRow[]> {
+    return query<FriendRow>(
+      `SELECT
+         f.id AS friendship_id,
+         u.id AS user_id,
+         u.display_name,
+         u.avatar_url,
+         u.bio,
+         COALESCE(s.current_streak, 0) AS current_streak,
+         COALESCE(s.total_points, 0) AS total_points,
+         f.created_at AS last_active
+       FROM friendships f
+       JOIN users u ON u.id = f.addressee_id
+       LEFT JOIN user_streaks s ON s.user_id = u.id
+       WHERE f.requester_id = $1 AND f.status = 'pending'
+       ORDER BY f.created_at DESC`,
+      [userId]
+    );
+  },
+
+  async getFriendshipStatus(userId1: string, userId2: string): Promise<FriendshipRow | null> {
+    return queryOne<FriendshipRow>(
+      `SELECT * FROM friendships
+       WHERE (requester_id = $1 AND addressee_id = $2)
+          OR (requester_id = $2 AND addressee_id = $1)`,
+      [userId1, userId2]
+    );
+  },
+
+  async searchUsers(searchQuery: string, userId: string): Promise<UserSearchRow[]> {
+    return query<UserSearchRow>(
+      `SELECT
+         u.id,
+         u.display_name,
+         u.avatar_url,
+         u.bio,
+         f.status AS friendship_status,
+         f.id AS friendship_id
+       FROM users u
+       LEFT JOIN friendships f ON (
+         (f.requester_id = $2 AND f.addressee_id = u.id)
+         OR (f.requester_id = u.id AND f.addressee_id = $2)
+       )
+       WHERE u.id != $2
+         AND u.display_name ILIKE $1
+       ORDER BY u.display_name
+       LIMIT 20`,
+      [`%${searchQuery}%`, userId]
+    );
+  },
+};
