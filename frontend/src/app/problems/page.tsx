@@ -13,7 +13,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { problemsApi, progressApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import type { Problem, ProblemProgress, Sheet } from '@/lib/types';
-import { Upload, ChevronDown, ChevronUp, BookOpen, CheckCircle2, Target, Search } from 'lucide-react';
+import { Upload, ChevronDown, ChevronUp, BookOpen, CheckCircle2, Target } from 'lucide-react';
 import { HelpTooltip } from '@/components/onboarding/HelpTooltip';
 
 export default function ProblemsPage() {
@@ -21,7 +21,6 @@ export default function ProblemsPage() {
   const [difficulty, setDifficulty] = useState('all');
   const [tag, setTag] = useState('all');
   const [showUpload, setShowUpload] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
   const LIMIT = 50;
 
@@ -71,13 +70,7 @@ export default function ProblemsPage() {
     return list;
   }, [problems, difficulty, tag]);
 
-  const filteredProblems = useMemo(() => {
-    if (!searchQuery) return filtered;
-    const q = searchQuery.toLowerCase();
-    return filtered.filter(
-      (p) => p.title.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q)
-    );
-  }, [filtered, searchQuery]);
+  const filteredProblems = filtered;
 
   const loading = sheetsLoading || problemsLoading;
   const solvedCount = filteredProblems.filter((p) => progressMap.get(p.id)?.status === 'solved').length;
@@ -133,19 +126,6 @@ export default function ProblemsPage() {
               <HelpTooltip id="sheets" text="Switch between curated problem sheets. Each sheet is a focused set of problems for interview prep." />
             </div>
           )}
-
-          {/* Search */}
-          <div className="animate-slide-up" style={{ animationDelay: '75ms', animationFillMode: 'both' }}>
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search problems by name..."
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 pl-10 pr-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-          </div>
 
           {/* Filters */}
           <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>

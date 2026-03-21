@@ -14,9 +14,7 @@ import {
   GraduationCap,
   Puzzle,
   Map as MapIcon,
-  Search,
   Trash2,
-  X,
 } from 'lucide-react';
 
 const typeConfig: Record<Bookmark['type'], { label: string; icon: React.ElementType; color: string; badgeBg: string }> = {
@@ -47,22 +45,12 @@ function getBookmarkHref(bookmark: Bookmark): string {
 
 export default function BookmarksPage() {
   const { bookmarks, removeBookmark } = useBookmarks();
-  const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<Bookmark['type'] | 'all'>('all');
 
   const filtered = useMemo(() => {
-    let items = bookmarks;
-    if (activeFilter !== 'all') {
-      items = items.filter((b) => b.type === activeFilter);
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      items = items.filter(
-        (b) => b.title.toLowerCase().includes(q) || b.type.includes(q)
-      );
-    }
-    return items;
-  }, [bookmarks, search, activeFilter]);
+    if (activeFilter === 'all') return bookmarks;
+    return bookmarks.filter((b) => b.type === activeFilter);
+  }, [bookmarks, activeFilter]);
 
   const grouped = useMemo(() => {
     const map = new Map<Bookmark['type'], Bookmark[]>();
@@ -100,28 +88,9 @@ export default function BookmarksPage() {
           </div>
         </div>
 
-        {/* Search + Filters */}
+        {/* Filters */}
         {bookmarks.length > 0 && (
           <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-              <input
-                type="text"
-                placeholder="Search bookmarks..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-zinc-800 bg-zinc-900/50 pl-10 pr-4 py-2.5 text-sm text-zinc-200 placeholder-zinc-600 outline-none focus:border-emerald-500/40 focus:ring-1 focus:ring-emerald-500/20 transition-all"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setActiveFilter('all')}
@@ -177,9 +146,9 @@ export default function BookmarksPage() {
         ) : filtered.length === 0 ? (
           <Card>
             <EmptyState
-              icon={<Search className="h-10 w-10" />}
+              icon={<BookmarkIcon className="h-10 w-10" />}
               title="No results"
-              description="Try a different search or filter."
+              description="Try a different filter."
             />
           </Card>
         ) : (

@@ -12,7 +12,7 @@ import { RevisionQuiz } from '@/components/revision/RevisionQuiz';
 import { RevisionForm } from '@/components/revision/RevisionForm';
 import { useAsync } from '@/hooks/useAsync';
 import { revisionApi } from '@/lib/api';
-import { BookOpen, Brain, Search, Filter, X } from 'lucide-react';
+import { BookOpen, Brain, Filter, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import type { RevisionNote } from '@/lib/types';
 
@@ -20,7 +20,6 @@ export default function RevisionPage() {
   const [mode, setMode] = useState<'browse' | 'quiz'>('browse');
   const [tagFilter, setTagFilter] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
   const [editingNote, setEditingNote] = useState<RevisionNote | null>(null);
 
   const { data: notes, loading, refetch } = useAsync<RevisionNote[]>(
@@ -36,10 +35,7 @@ export default function RevisionPage() {
     [mode]
   );
 
-  const filteredNotes = notes?.filter((n) =>
-    !searchQuery || n.problem_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    n.key_takeaway?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredNotes = notes;
 
   // Collect unique tags
   const allTags = Array.from(new Set(notes?.flatMap((n) => n.tags || []) || []));
@@ -128,16 +124,6 @@ export default function RevisionPage() {
           <>
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-3 animate-slide-up" style={{ animationDelay: '75ms', animationFillMode: 'both' }}>
-              <div className="relative flex-1 min-w-[200px] max-w-md">
-                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search notes..."
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 pl-10 pr-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
-                />
-              </div>
-
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-zinc-500" />
                 {(['easy', 'medium', 'hard'] as const).map((d) => (

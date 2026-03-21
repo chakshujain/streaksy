@@ -311,25 +311,46 @@ export default function RoadmapDetailPage() {
 
   // Fetch sheet problems for sheet-based roadmaps
   useEffect(() => {
-    if (!roadmap?.templateSlug) return;
-    const sheetSlug = SHEET_MAP[roadmap.templateSlug];
-    if (!sheetSlug) return;
+    if (!roadmap) return;
 
-    problemsApi.getSheetProblems(sheetSlug)
-      .then(({ data }) => {
-        const problems = data.problems || data || [];
-        const tasks: DayTask[] = problems.map((p: { title: string; slug: string; difficulty?: string }, i: number) => ({
-          day: i + 1,
-          title: p.title,
-          link: `/problems/${p.slug}`,
-          topic: p.difficulty || 'medium',
-          type: 'problem' as const,
-        }));
-        setSheetProblems(tasks);
-      })
-      .catch(() => {});
+    // Dedicated sheet templates (solve-striver-sheet, etc.)
+    const dedicatedSheetSlug = SHEET_MAP[roadmap.templateSlug || ''];
+
+    // Also detect sheets selected within multi-topic roadmaps (e.g., Crack the Job Together)
+    const selectedSheetSlugs: string[] = [];
+    if (roadmap.selectedLessons) {
+      for (const key of roadmap.selectedLessons) {
+        if (key.startsWith('sheets:')) {
+          selectedSheetSlugs.push(key.replace('sheets:', ''));
+        }
+      }
+    }
+
+    const slugsToFetch = dedicatedSheetSlug
+      ? [dedicatedSheetSlug]
+      : selectedSheetSlugs;
+
+    if (slugsToFetch.length === 0) return;
+
+    Promise.all(
+      slugsToFetch.map(slug =>
+        problemsApi.getSheetProblems(slug)
+          .then(({ data }) => data.problems || data || [])
+          .catch(() => [])
+      )
+    ).then(results => {
+      const allProblems = results.flat();
+      const tasks: DayTask[] = allProblems.map((p: { title: string; slug: string; difficulty?: string }, i: number) => ({
+        day: i + 1,
+        title: p.title,
+        link: `/problems/${p.slug}`,
+        topic: p.difficulty || 'medium',
+        type: 'problem' as const,
+      }));
+      if (tasks.length > 0) setSheetProblems(tasks);
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roadmap?.templateSlug]);
+  }, [roadmap?.templateSlug, roadmap?.selectedLessons]);
 
   const groupsUsingTemplate = useMemo(() => {
     if (!roadmap?.templateSlug) return [];
@@ -562,8 +583,21 @@ export default function RoadmapDetailPage() {
   const completed = completedDays.size;
   const pct = totalDays > 0 ? Math.round((completed / totalDays) * 100) : 0;
   const currentDay = completed + 1;
-  // Use fetched sheet problems if available, otherwise generate from content map
-  const dayTasks = sheetProblems.length > 0 ? sheetProblems : generateDayTasks(roadmap);
+  // Build day tasks: merge content-map lessons + fetched sheet problems
+  const dayTasks = useMemo(() => {
+    const contentTasks = generateDayTasks(roadmap);
+    if (sheetProblems.length === 0) return contentTasks;
+
+    // For dedicated sheet templates, use only sheet problems
+    const dedicatedSheet = SHEET_MAP[roadmap?.templateSlug || ''];
+    if (dedicatedSheet) return sheetProblems;
+
+    // For multi-topic roadmaps (Crack the Job Together), merge lessons + sheet problems
+    // Replace generic/practice days with actual sheet problems, then append the rest
+    const nonGenericTasks = contentTasks.filter(t => t.type !== 'generic');
+    const merged = [...nonGenericTasks, ...sheetProblems];
+    return merged.map((t, i) => ({ ...t, day: i + 1 }));
+  }, [sheetProblems, roadmap]);
   const todayTask = currentDay <= dayTasks.length ? dayTasks[currentDay - 1] : null;
   const isCoding = roadmap?.category === 'Coding & Tech';
   const template = roadmap?.templateSlug ? templatesBySlug[roadmap.templateSlug] : null;
