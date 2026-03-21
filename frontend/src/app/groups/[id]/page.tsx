@@ -7,17 +7,16 @@ import { MemberList } from '@/components/groups/MemberList';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
-import { groupsApi, leaderboardApi, problemsApi, activityApi } from '@/lib/api';
+import { groupsApi, leaderboardApi, activityApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
-import { Copy, Check, Target, FileText, Calendar, Plus, X, BookOpen, LogOut, Trash2, Activity, BarChart3, UserPlus, Share2, GraduationCap, ArrowRight } from 'lucide-react';
+import { Copy, Check, Target, FileText, Calendar, LogOut, Trash2, Activity, UserPlus, Share2, GraduationCap, ArrowRight, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
-import type { Group, LeaderboardEntry, GroupSheet, Sheet } from '@/lib/types';
+import type { Group, LeaderboardEntry } from '@/lib/types';
 import type { UserRoadmap } from '@/lib/types';
 import Link from 'next/link';
-
-type SheetMemberProgress = { user_id: string; display_name: string; solved: number; total: number };
+import { templatesBySlug } from '@/lib/roadmap-templates';
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -35,10 +34,6 @@ export default function GroupDetailPage() {
   const [planSaving, setPlanSaving] = useState(false);
   const [actionError, setActionError] = useState('');
 
-  // Sheet assignment state
-  const [showSheetSelector, setShowSheetSelector] = useState(false);
-  const [assigningSheet, setAssigningSheet] = useState(false);
-
   // Study plan state (from localStorage - active roadmaps for this group)
   const [groupRoadmaps, setGroupRoadmaps] = useState<UserRoadmap[]>([]);
 
@@ -50,30 +45,6 @@ export default function GroupDetailPage() {
     } catch { /* empty */ }
   }, [groupId]);
 
-  // Sheet progress state
-  const [sheetProgressMap, setSheetProgressMap] = useState<Record<string, SheetMemberProgress[]>>({});
-  const [loadingProgress, setLoadingProgress] = useState<Record<string, boolean>>({});
-
-  const toggleSheetProgress = async (sheetId: string) => {
-    if (sheetProgressMap[sheetId]) {
-      setSheetProgressMap((prev) => {
-        const next = { ...prev };
-        delete next[sheetId];
-        return next;
-      });
-      return;
-    }
-    setLoadingProgress((prev) => ({ ...prev, [sheetId]: true }));
-    try {
-      const { data } = await groupsApi.getSheetProgress(groupId, sheetId);
-      setSheetProgressMap((prev) => ({ ...prev, [sheetId]: data.progress }));
-    } catch {
-      // error handled by interceptor
-    } finally {
-      setLoadingProgress((prev) => ({ ...prev, [sheetId]: false }));
-    }
-  };
-
   const { data: group, loading: groupLoading, refetch: refetchGroup } = useAsync<Group>(
     () => groupsApi.get(groupId).then((r) => r.data.group),
     [groupId]
@@ -82,16 +53,6 @@ export default function GroupDetailPage() {
   const { data: leaderboard, loading: lbLoading } = useAsync<LeaderboardEntry[]>(
     () => leaderboardApi.getGroup(groupId).then((r) => r.data.leaderboard),
     [groupId]
-  );
-
-  const { data: groupSheets, loading: sheetsLoading, refetch: refetchSheets } = useAsync<GroupSheet[]>(
-    () => groupsApi.getSheets(groupId).then((r) => r.data.sheets),
-    [groupId]
-  );
-
-  const { data: allSheets } = useAsync<Sheet[]>(
-    () => problemsApi.getSheets().then((r) => r.data.sheets || r.data),
-    []
   );
 
   const { data: activity } = useAsync<{ id: string; user_display_name: string; action: string; detail: string; created_at: string }[]>(
@@ -154,33 +115,6 @@ export default function GroupDetailPage() {
     }
   };
 
-  const handleAssignSheet = async (sheetId: string) => {
-    setAssigningSheet(true);
-    setActionError('');
-    try {
-      await groupsApi.assignSheet(groupId, sheetId);
-      setShowSheetSelector(false);
-      refetchSheets();
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { error?: string } } };
-      setActionError(e.response?.data?.error || 'Failed to assign sheet');
-    } finally {
-      setAssigningSheet(false);
-    }
-  };
-
-  const handleRemoveSheet = async (sheetId: string) => {
-    if (!confirm('Remove this sheet from the group?')) return;
-    setActionError('');
-    try {
-      await groupsApi.removeSheet(groupId, sheetId);
-      refetchSheets();
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { error?: string } } };
-      setActionError(e.response?.data?.error || 'Failed to remove sheet');
-    }
-  };
-
   const handleLeaveGroup = async () => {
     if (!confirm('Are you sure you want to leave this group?')) return;
     setLeaving(true);
@@ -208,11 +142,6 @@ export default function GroupDetailPage() {
       setConfirmDelete(false);
     }
   };
-
-  // Sheets not yet assigned to this group
-  const availableSheets = (allSheets || []).filter(
-    (s) => !(groupSheets || []).some((gs) => gs.sheet_id === s.id)
-  );
 
   if (groupLoading) {
     return (
@@ -429,29 +358,40 @@ export default function GroupDetailPage() {
           )}
         </Card>
 
-        {/* Study Plan */}
+        {/* Group Roadmaps */}
         <Card>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
               <GraduationCap className="h-5 w-5 text-emerald-400" />
-              Study Plan
+              Group Roadmaps
             </h2>
           </div>
           {groupRoadmaps.length > 0 ? (
             <div className="space-y-4">
               {groupRoadmaps.map((rm) => {
                 const pct = rm.durationDays > 0 ? Math.round((rm.completedDays / rm.durationDays) * 100) : 0;
+                const template = rm.templateSlug ? templatesBySlug[rm.templateSlug] : null;
+                const memberCount = group.members?.length || 0;
                 return (
                   <div key={rm.id} className="space-y-3 rounded-lg border border-zinc-800/50 p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{rm.icon}</span>
+                        <span className="text-3xl">{rm.icon}</span>
                         <div>
-                          <p className="text-sm font-medium text-zinc-200">{rm.name}</p>
-                          <p className="text-xs text-zinc-500">Day {rm.completedDays}/{rm.durationDays}</p>
+                          <p className="text-sm font-semibold text-zinc-100">{rm.name}</p>
+                          {template && (
+                            <p className="text-xs text-zinc-500">{template.description}</p>
+                          )}
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="text-xs text-zinc-500">Day {rm.completedDays}/{rm.durationDays}</span>
+                            <span className="text-xs text-zinc-500">{rm.durationDays} days total</span>
+                            <span className="inline-flex items-center gap-1 text-xs text-zinc-500">
+                              <Users className="h-3 w-3" /> {memberCount} members
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <span className="text-xs font-semibold text-emerald-400">{pct}%</span>
+                      <span className="text-sm font-semibold text-emerald-400">{pct}%</span>
                     </div>
                     <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
                       <div
@@ -468,137 +408,27 @@ export default function GroupDetailPage() {
                   </div>
                 );
               })}
+              <div className="pt-2 border-t border-zinc-800/30">
+                <Link
+                  href="/roadmaps"
+                  className="inline-flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+                >
+                  Start a New Roadmap <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+                <p className="text-xs text-zinc-600 mt-1">Any member can start a roadmap for this group</p>
+              </div>
             </div>
           ) : (
             <div className="text-center py-6">
               <GraduationCap className="h-8 w-8 text-zinc-700 mx-auto mb-2" />
-              <p className="text-sm text-zinc-500 mb-3">No study plan for this group yet</p>
+              <p className="text-sm text-zinc-500 mb-3">No roadmaps for this group yet</p>
               <Link
                 href="/roadmaps"
                 className="inline-flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
               >
-                Start a Study Plan <ArrowRight className="h-3.5 w-3.5" />
+                Start a New Roadmap <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-            </div>
-          )}
-        </Card>
-
-        {/* Assigned Sheets */}
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-emerald-400" />
-              Assigned Sheets
-            </h2>
-            {isAdmin && (
-              <button
-                onClick={() => setShowSheetSelector(!showSheetSelector)}
-                className="flex items-center gap-1 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                Assign Sheet
-              </button>
-            )}
-          </div>
-
-          {/* Sheet Selector Dropdown */}
-          {showSheetSelector && (
-            <div className="mb-4 rounded-lg border border-zinc-700 bg-zinc-800/80 p-3">
-              <p className="text-xs font-medium text-zinc-400 mb-2">Select a sheet to assign:</p>
-              {availableSheets.length === 0 ? (
-                <p className="text-xs text-zinc-600">No more sheets available to assign.</p>
-              ) : (
-                <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {availableSheets.map((sheet) => (
-                    <button
-                      key={sheet.id}
-                      onClick={() => handleAssignSheet(sheet.id)}
-                      disabled={assigningSheet}
-                      className="w-full text-left rounded-md px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 transition-colors disabled:opacity-50"
-                    >
-                      {sheet.name}
-                      {sheet.description && (
-                        <span className="ml-2 text-xs text-zinc-500">{sheet.description}</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Sheet List */}
-          {sheetsLoading ? (
-            <Skeleton className="h-20" />
-          ) : !groupSheets || groupSheets.length === 0 ? (
-            <p className="text-sm text-zinc-600">
-              {isAdmin ? 'No sheets assigned yet. Click "Assign Sheet" to add one.' : 'No sheets assigned to this group yet.'}
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {groupSheets.map((sheet) => (
-                <div key={sheet.sheet_id} className="rounded-lg border border-zinc-800 bg-zinc-800/30">
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <a
-                        href={`/problems?sheet=${sheet.slug}`}
-                        className="text-sm font-medium text-zinc-200 hover:text-emerald-400 transition-colors"
-                      >
-                        {sheet.name}
-                      </a>
-                      {sheet.description && (
-                        <p className="text-xs text-zinc-500 mt-0.5">{sheet.description}</p>
-                      )}
-                      <p className="text-xs text-zinc-600 mt-0.5">
-                        Assigned {new Date(sheet.assigned_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => toggleSheetProgress(sheet.sheet_id)}
-                        disabled={loadingProgress[sheet.sheet_id]}
-                        className="flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800/50 px-2.5 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-50"
-                      >
-                        <BarChart3 className="h-3.5 w-3.5" />
-                        {loadingProgress[sheet.sheet_id] ? 'Loading...' : sheetProgressMap[sheet.sheet_id] ? 'Hide Progress' : 'View Progress'}
-                      </button>
-                      {isAdmin && (
-                        <button
-                          onClick={() => handleRemoveSheet(sheet.sheet_id)}
-                          className="text-zinc-600 hover:text-red-400 transition-colors p-1"
-                          title="Remove sheet"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {sheetProgressMap[sheet.sheet_id] && (
-                    <div className="border-t border-zinc-800/50 px-4 py-3 space-y-2.5">
-                      {sheetProgressMap[sheet.sheet_id].map((member) => {
-                        const pct = member.total > 0 ? Math.round((member.solved / member.total) * 100) : 0;
-                        return (
-                          <div key={member.user_id} className="space-y-1">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-zinc-300 font-medium">{member.display_name}</span>
-                              <span className="text-zinc-500">{member.solved}/{member.total} ({pct}%)</span>
-                            </div>
-                            <div className="h-1.5 rounded-full bg-zinc-700 overflow-hidden">
-                              <div
-                                className="h-full rounded-full bg-emerald-500 transition-all"
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {sheetProgressMap[sheet.sheet_id].length === 0 && (
-                        <p className="text-xs text-zinc-600">No progress data available.</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+              <p className="text-xs text-zinc-600 mt-2">Any member can start a roadmap for this group</p>
             </div>
           )}
         </Card>

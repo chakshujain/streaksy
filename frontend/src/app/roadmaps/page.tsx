@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/Card';
@@ -59,6 +59,22 @@ export default function RoadmapsPage() {
     } catch { /* empty */ }
   }, []);
 
+  // Compute how many groups are using each template slug
+  const groupCountBySlug = useMemo(() => {
+    const counts: Record<string, Set<string>> = {};
+    for (const rm of activeRoadmaps) {
+      if (rm.templateSlug && rm.groupId) {
+        if (!counts[rm.templateSlug]) counts[rm.templateSlug] = new Set();
+        counts[rm.templateSlug].add(rm.groupId);
+      }
+    }
+    const result: Record<string, number> = {};
+    for (const [slug, groupIds] of Object.entries(counts)) {
+      result[slug] = groupIds.size;
+    }
+    return result;
+  }, [activeRoadmaps]);
+
   const sheetTemplates = templates.filter((t) => t.tracked === 'auto');
   const flagship = templates.find((t) => t.flagship);
   const filtered = activeCategory === 'All'
@@ -99,6 +115,11 @@ export default function RoadmapsPage() {
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-2xl font-bold text-white group-hover:text-emerald-400 transition-colors">{flagship.name}</h2>
                     <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-0.5 text-xs font-semibold text-emerald-400">THE flagship</span>
+                    {groupCountBySlug[flagship.slug] > 0 && (
+                      <span className="rounded-full bg-cyan-500/10 border border-cyan-500/20 px-3 py-0.5 text-xs font-semibold text-cyan-400 inline-flex items-center gap-1">
+                        <Users className="h-3 w-3" /> Used by {groupCountBySlug[flagship.slug]} group{groupCountBySlug[flagship.slug] !== 1 ? 's' : ''}
+                      </span>
+                    )}
                   </div>
                   <p className="text-zinc-400 mb-3">{flagship.description}</p>
                   <div className="flex items-center gap-4">
@@ -128,6 +149,7 @@ export default function RoadmapsPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               {sheetTemplates.map((t) => {
                 const c = colorClasses[t.color] || colorClasses.emerald;
+                const groupCount = groupCountBySlug[t.slug] || 0;
                 return (
                   <div
                     key={t.slug}
@@ -140,7 +162,7 @@ export default function RoadmapsPage() {
                         <p className="text-xs text-zinc-500 mt-0.5">{t.description}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-3 flex-wrap">
                       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${c.badge}`}>
                         <Clock className="h-2.5 w-2.5" />
                         {t.duration} days
@@ -148,6 +170,11 @@ export default function RoadmapsPage() {
                       <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
                         Auto-tracked via extension
                       </span>
+                      {groupCount > 0 && (
+                        <span className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-[10px] font-medium text-cyan-400 inline-flex items-center gap-1">
+                          <Users className="h-2.5 w-2.5" /> {groupCount} group{groupCount !== 1 ? 's' : ''}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center justify-between mb-3">
                       <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500">
@@ -183,11 +210,11 @@ export default function RoadmapsPage() {
                             <p className="text-xs text-zinc-500">Day {rm.completedDays}/{rm.durationDays}</p>
                           </div>
                           {rm.currentStreak > 0 && (
-                            <span className="text-xs font-medium text-orange-400">🔥 {rm.currentStreak}d</span>
+                            <span className="text-xs font-medium text-orange-400">&#x1F525; {rm.currentStreak}d</span>
                           )}
                         </div>
                         <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
-                          <div className={`h-full rounded-full bg-emerald-500/60 transition-all`} style={{ width: `${pct}%` }} />
+                          <div className="h-full rounded-full bg-emerald-500/60 transition-all" style={{ width: `${pct}%` }} />
                         </div>
                       </Card>
                     </Link>
@@ -225,6 +252,7 @@ export default function RoadmapsPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((t) => {
                 const c = colorClasses[t.color] || colorClasses.emerald;
+                const groupCount = groupCountBySlug[t.slug] || 0;
                 return (
                   <div
                     key={t.slug}
@@ -237,7 +265,7 @@ export default function RoadmapsPage() {
                         <p className="text-xs text-zinc-500 mt-0.5">{t.description}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-3 flex-wrap">
                       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${c.badge}`}>
                         <Clock className="h-2.5 w-2.5" />
                         {t.duration} days
@@ -245,6 +273,11 @@ export default function RoadmapsPage() {
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${difficultyColors[t.difficulty]}`}>
                         {t.difficulty}
                       </span>
+                      {groupCount > 0 && (
+                        <span className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-[10px] font-medium text-cyan-400 inline-flex items-center gap-1">
+                          <Users className="h-2.5 w-2.5" /> {groupCount} group{groupCount !== 1 ? 's' : ''}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center justify-between mb-3">
                       <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500">

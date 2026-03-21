@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
@@ -33,6 +33,8 @@ interface Participant {
   displayName?: string;
   streak: number;
   progress: number;
+  groupId?: string;
+  groupName?: string;
 }
 
 interface Discussion {
@@ -129,10 +131,14 @@ export default function RoadmapDetailPage() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [updatingDay, setUpdatingDay] = useState<number | null>(null);
 
+  // All active roadmaps (to find groups using the same template)
+  const [allActiveRoadmaps, setAllActiveRoadmaps] = useState<UserRoadmap[]>([]);
+
   // Load roadmap from localStorage
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]') as UserRoadmap[];
+      setAllActiveRoadmaps(stored);
       const found = stored.find((r) => r.id === id);
       if (found) {
         setRoadmap(found);
@@ -142,6 +148,21 @@ export default function RoadmapDetailPage() {
       }
     } catch { /* empty */ }
   }, [id]);
+
+  // Compute groups using this same template
+  const groupsUsingTemplate = useMemo(() => {
+    if (!roadmap?.templateSlug) return [];
+    const groupMap = new Map<string, string>();
+    for (const rm of allActiveRoadmaps) {
+      if (rm.templateSlug === roadmap.templateSlug && rm.groupId) {
+        // Use group name from the roadmap name or groupId as fallback
+        if (!groupMap.has(rm.groupId)) {
+          groupMap.set(rm.groupId, rm.groupId);
+        }
+      }
+    }
+    return Array.from(groupMap.entries()).map(([gId, gName]) => ({ id: gId, name: gName }));
+  }, [roadmap?.templateSlug, allActiveRoadmaps]);
 
   // Fetch participants from API
   const fetchParticipants = useCallback(async (templateSlug: string) => {
@@ -153,6 +174,8 @@ export default function RoadmapDetailPage() {
         name: (p.displayName || p.display_name || p.name || 'Anonymous') as string,
         streak: (p.streak || p.currentStreak || p.current_streak || 0) as number,
         progress: (p.progress || 0) as number,
+        groupId: (p.groupId || p.group_id || '') as string,
+        groupName: (p.groupName || p.group_name || '') as string,
       }));
       setParticipants(apiParticipants);
     } catch {
@@ -268,6 +291,35 @@ export default function RoadmapDetailPage() {
     }
   };
 
+  // Group participants by their group
+  const participantsByGroup = useMemo(() => {
+    const grouped: { groupId: string; groupName: string; participants: Participant[] }[] = [];
+    const noGroup: Participant[] = [];
+
+    const groupMap = new Map<string, { groupName: string; participants: Participant[] }>();
+
+    for (const p of participants) {
+      if (p.groupId) {
+        const existing = groupMap.get(p.groupId);
+        if (existing) {
+          existing.participants.push(p);
+        } else {
+          groupMap.set(p.groupId, { groupName: p.groupName || p.groupId, participants: [p] });
+        }
+      } else {
+        noGroup.push(p);
+      }
+    }
+
+    Array.from(groupMap.entries()).forEach(([groupId, val]) => {
+      grouped.push({ groupId, groupName: val.groupName, participants: val.participants });
+    });
+
+    return { grouped, noGroup };
+  }, [participants]);
+
+  const hasMultipleGroups = participantsByGroup.grouped.length > 1 || (participantsByGroup.grouped.length >= 1 && participantsByGroup.noGroup.length > 0);
+
   if (!roadmap) {
     return (
       <AppShell>
@@ -290,6 +342,27 @@ export default function RoadmapDetailPage() {
 
   // Leaderboard: sort participants by progress desc
   const leaderboard = [...participants].sort((a, b) => b.progress - a.progress).slice(0, 5);
+
+  const renderParticipant = (p: Participant, i: number) => (
+    <div key={p.userId || i} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-zinc-800/30 transition-colors">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-xs font-bold text-emerald-400">
+        {p.name.charAt(0)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-zinc-200 truncate">{p.name}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-[10px] text-orange-400">&#x1F525; {p.streak}d</span>
+          <span className="text-[10px] text-zinc-500">{p.progress}%</span>
+        </div>
+      </div>
+      <button
+        onClick={() => handlePoke(p)}
+        className="rounded-lg bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 text-[10px] font-medium text-orange-400 hover:bg-orange-500/20 transition-colors"
+      >
+        Poke
+      </button>
+    </div>
+  );
 
   return (
     <AppShell>
@@ -327,11 +400,16 @@ export default function RoadmapDetailPage() {
               <span className="text-5xl">{roadmap.icon}</span>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-white">{roadmap.name}</h1>
-                <div className="flex items-center gap-4 mt-2">
+                <div className="flex items-center gap-4 mt-2 flex-wrap">
                   <span className="text-sm text-zinc-400">Day {completed}/{totalDays}</span>
                   {roadmap.currentStreak > 0 && (
                     <span className="inline-flex items-center gap-1 text-sm font-medium text-orange-400">
                       <Flame className="h-4 w-4" /> {roadmap.currentStreak} day streak
+                    </span>
+                  )}
+                  {groupsUsingTemplate.length > 0 && (
+                    <span className="inline-flex items-center gap-1 text-xs text-cyan-400 bg-cyan-500/10 rounded-full px-2.5 py-0.5">
+                      <Users className="h-3 w-3" /> Used by {groupsUsingTemplate.length} group{groupsUsingTemplate.length !== 1 ? 's' : ''}
                     </span>
                   )}
                 </div>
@@ -394,28 +472,36 @@ export default function RoadmapDetailPage() {
                   <Users className="h-8 w-8 text-zinc-700 mx-auto mb-2" />
                   <p className="text-sm text-zinc-500">No participants yet. Invite friends to join!</p>
                 </div>
-              ) : (
-                <div className="space-y-2 mb-4">
-                  {participants.map((p, i) => (
-                    <div key={p.userId || i} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-zinc-800/30 transition-colors">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-xs font-bold text-emerald-400">
-                        {p.name.charAt(0)}
+              ) : hasMultipleGroups ? (
+                <div className="space-y-4 mb-4">
+                  {participantsByGroup.grouped.map((group) => (
+                    <div key={group.groupId}>
+                      <div className="flex items-center gap-2 mb-2 px-3">
+                        <Users className="h-3.5 w-3.5 text-cyan-400" />
+                        <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">Group: {group.groupName}</span>
+                        <span className="text-[10px] text-zinc-600">({group.participants.length})</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-zinc-200 truncate">{p.name}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-orange-400">&#x1F525; {p.streak}d</span>
-                          <span className="text-[10px] text-zinc-500">{p.progress}%</span>
-                        </div>
+                      <div className="space-y-1">
+                        {group.participants.map((p, i) => renderParticipant(p, i))}
                       </div>
-                      <button
-                        onClick={() => handlePoke(p)}
-                        className="rounded-lg bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 text-[10px] font-medium text-orange-400 hover:bg-orange-500/20 transition-colors"
-                      >
-                        Poke
-                      </button>
                     </div>
                   ))}
+                  {participantsByGroup.noGroup.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2 px-3">
+                        <Users className="h-3.5 w-3.5 text-zinc-500" />
+                        <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Solo</span>
+                        <span className="text-[10px] text-zinc-600">({participantsByGroup.noGroup.length})</span>
+                      </div>
+                      <div className="space-y-1">
+                        {participantsByGroup.noGroup.map((p, i) => renderParticipant(p, i))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2 mb-4">
+                  {participants.map((p, i) => renderParticipant(p, i))}
                 </div>
               )}
               <Button variant="primary" size="sm" className="w-full" onClick={handleShare}>
@@ -457,6 +543,9 @@ export default function RoadmapDetailPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-zinc-200 truncate">{p.name}</p>
+                        {p.groupName && (
+                          <p className="text-[10px] text-cyan-400/70 truncate">{p.groupName}</p>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-zinc-500">
                         <span className="flex items-center gap-1">
