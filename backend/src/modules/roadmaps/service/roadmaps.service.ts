@@ -1,9 +1,7 @@
 import { roadmapsRepository } from '../repository/roadmaps.repository';
 import { AppError } from '../../../common/errors/AppError';
 import { queryOne } from '../../../config/database';
-
-const BASE_POINTS = 10;
-const STREAK_BONUS_MULTIPLIER = 2;
+import { streaksEngine, PointBreakdown } from '../../streak/service/streaks-engine';
 
 export const roadmapsService = {
   async getCategories() {
@@ -102,13 +100,20 @@ export const roadmapsService = {
 
     let streak = null;
     let pointsEarned = 0;
+    let pointBreakdown: PointBreakdown | null = null;
 
     if (completed) {
       // Update streak
       streak = await roadmapsRepository.updateStreak(roadmapId, userId);
 
-      // Calculate points: base + streak bonus
-      pointsEarned = BASE_POINTS + (streak.current_streak > 1 ? streak.current_streak * STREAK_BONUS_MULTIPLIER : 0);
+      // Use streaks engine for rich multiplier-based points
+      pointBreakdown = await streaksEngine.calculatePoints(
+        userId,
+        streak.current_streak,
+        roadmap.group_id,
+        new Date()
+      );
+      pointsEarned = pointBreakdown.totalPoints;
 
       // Add to global total_points
       await roadmapsRepository.addPoints(userId, pointsEarned);
@@ -118,10 +123,22 @@ export const roadmapsService = {
       const completedCount = allProgress.filter(p => p.completed).length;
       if (completedCount >= roadmap.duration_days) {
         await roadmapsRepository.updateRoadmap(roadmapId, { status: 'completed' });
+
+        // Award completion bonus
+        const { bonus } = streaksEngine.calculateCompletionBonus(
+          completedCount,
+          roadmap.duration_days,
+          roadmap.start_date
+        );
+        await roadmapsRepository.addPoints(userId, bonus);
+        pointsEarned += bonus;
       }
+
+      // Cache multiplier preview for dashboard
+      streaksEngine.cacheMultiplierPreview(userId, roadmap.group_id).catch(() => {});
     }
 
-    return { progress, streak, pointsEarned };
+    return { progress, streak, pointsEarned, pointBreakdown };
   },
 
   async getDayProgress(roadmapId: string, userId?: string) {

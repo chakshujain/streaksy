@@ -7,5 +7,6 @@ const router = Router();
 
 router.use(authenticate);
 router.get('/', asyncHandler(streakController.getStreak as any));
+router.get('/multipliers', asyncHandler(streakController.getMultiplierPreview as any));
 
 export default router;
