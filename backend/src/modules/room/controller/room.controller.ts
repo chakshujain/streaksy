@@ -27,8 +27,9 @@ export const roomController = {
   },
 
   async get(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
     const roomId = param(req, 'id');
-    const room = await roomService.getRoom(roomId);
+    const room = await roomService.getRoom(roomId, user!.userId);
     res.json({ room });
   },
 
@@ -85,7 +86,14 @@ export const roomController = {
   },
 
   async getProblems(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
     const roomId = param(req, 'id');
+    const participants = await roomRepository.getParticipants(roomId);
+    const isParticipant = participants.some(p => p.user_id === user!.userId);
+    if (!isParticipant) {
+      res.status(403).json({ error: 'You are not a participant of this room' });
+      return;
+    }
     const problems = await roomRepository.getRoomProblems(roomId);
     res.json({ problems });
   },

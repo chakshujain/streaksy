@@ -31,13 +31,18 @@ export const contestService = {
     return contest;
   },
 
-  async getForGroup(groupId: string) {
+  async getForGroup(groupId: string, userId: string) {
+    const isMember = await groupRepository.isMember(groupId, userId);
+    if (!isMember) throw AppError.forbidden('Not a member of this group');
     return contestRepository.getForGroup(groupId);
   },
 
-  async getDetails(contestId: string) {
+  async getDetails(contestId: string, userId: string) {
     const contest = await contestRepository.findById(contestId);
     if (!contest) throw AppError.notFound('Contest not found');
+
+    const isMember = await groupRepository.isMember(contest.group_id, userId);
+    if (!isMember) throw AppError.forbidden('Not a member of this group');
 
     const problems = await contestRepository.getProblems(contestId);
     const standings = await contestRepository.getStandings(contestId);
@@ -48,6 +53,9 @@ export const contestService = {
   async submit(contestId: string, userId: string, problemId: string) {
     const contest = await contestRepository.findById(contestId);
     if (!contest) throw AppError.notFound('Contest not found');
+
+    const isMember = await groupRepository.isMember(contest.group_id, userId);
+    if (!isMember) throw AppError.forbidden('Not a member of this group');
 
     const now = new Date();
     if (now < new Date(contest.starts_at)) throw AppError.badRequest('Contest has not started yet');

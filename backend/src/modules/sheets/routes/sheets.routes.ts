@@ -28,6 +28,13 @@ const router = Router();
 
 router.use(authenticate);
 
-router.post('/upload', upload.single('file'), asyncHandler(sheetsController.upload as any));
+router.post('/upload', (req, res, next) => {
+  const adminSecret = req.headers['x-admin-secret'];
+  if (!process.env.ADMIN_SECRET || adminSecret !== process.env.ADMIN_SECRET) {
+    res.status(403).json({ error: 'Admin access required' });
+    return;
+  }
+  next();
+}, upload.single('file'), asyncHandler(sheetsController.upload as any));
 
 export default router;

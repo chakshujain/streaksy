@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CheckCircle, AlertTriangle, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -12,14 +12,16 @@ interface ToastProps {
 
 export function Toast({ message, type = 'success', duration = 3000, onClose }: ToastProps) {
   const [visible, setVisible] = useState(true);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
-      setTimeout(() => onClose?.(), 300);
+      setTimeout(() => onCloseRef.current?.(), 300);
     }, duration);
     return () => clearTimeout(timer);
-  }, [duration, onClose]);
+  }, [duration]);
 
   const styles = {
     success: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400',

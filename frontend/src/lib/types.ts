@@ -70,6 +70,9 @@ export interface ProblemProgress {
 export interface Streak {
   currentStreak: number;
   longestStreak: number;
+  points?: number;
+  freezeCount?: number;
+  lastFreezeUsed?: string | null;
 }
 
 export interface LeaderboardEntry {
@@ -130,6 +133,11 @@ export interface UserPreferences {
   show_streak_animation: boolean;
   show_heatmap: boolean;
   weekly_goal: number;
+  digest_enabled?: boolean;
+  digest_time?: string;
+  digest_frequency?: string;
+  evening_reminder?: boolean;
+  weekly_report?: boolean;
 }
 
 export interface Notification {
@@ -371,4 +379,60 @@ export interface FeedComment {
   content: string;
   created_at: string;
   display_name?: string;
+}
+
+// ── Ratings ──
+export interface ProblemRating {
+  avg_rating: number;
+  rating_count: number;
+}
+
+export interface RatingDistribution {
+  rating: number;
+  count: number;
+}
+
+export interface CompanyTag {
+  id: string;
+  name: string;
+}
+
+export interface ProblemCompanyTag {
+  problem_id: string;
+  company_tag_id: string;
+  company_name: string;
+  report_count: number;
+}
+
+// ── Powerups ──
+export interface Powerup {
+  id: string;
+  user_id: string;
+  powerup_type: 'streak_freeze' | 'double_xp' | 'streak_shield';
+  quantity: number;
+}
+
+export interface PowerupInventory {
+  powerups: Powerup[];
+  points: number;
+  freezeCount: number;
+  lastFreezeUsed: string | null;
+}
+
+export interface PowerupLogEntry {
+  id: string;
+  user_id: string;
+  powerup_type: string;
+  action: string;
+  reason: string | null;
+  created_at: string;
+}
+
+// ── Digest ──
+export interface DigestPreferences {
+  digest_enabled: boolean;
+  digest_time: string;
+  digest_frequency: string;
+  evening_reminder: boolean;
+  weekly_report: boolean;
 }

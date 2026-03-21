@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { pokeService } from '../service/poke.service';
 import { AuthRequest } from '../../../common/types';
 import { param } from '../../../common/utils/params';
+import { groupRepository } from '../../group/repository/group.repository';
 
 export const pokeController = {
   async pokeFriend(req: Request, res: Response) {
@@ -20,7 +21,13 @@ export const pokeController = {
   },
 
   async getInactiveMembers(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
     const groupId = param(req, 'groupId');
+    const isMember = await groupRepository.isMember(groupId, user!.userId);
+    if (!isMember) {
+      res.status(403).json({ error: 'Not a member of this group' });
+      return;
+    }
     const days = parseInt(req.query.days as string) || 2;
     const members = await pokeService.getInactiveMembers(groupId, days);
     res.json({ members });

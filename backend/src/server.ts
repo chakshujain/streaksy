@@ -35,6 +35,32 @@ async function start() {
     }
   }, 30_000);
 
+  // Digest scheduler — morning at 8am, evening at 9pm, weekly on Monday 9am
+  const { digestService } = await import('./modules/digest/service/digest.service');
+  setInterval(async () => {
+    const now = new Date();
+    const hour = now.getUTCHours();
+    const minute = now.getUTCMinutes();
+    const day = now.getUTCDay();
+
+    try {
+      // Morning digest at 8:00 UTC
+      if (hour === 8 && minute < 5) {
+        await digestService.runMorningDigests();
+      }
+      // Evening reminder at 21:00 UTC
+      if (hour === 21 && minute < 5) {
+        await digestService.runEveningReminders();
+      }
+      // Weekly report on Monday at 9:00 UTC
+      if (day === 1 && hour === 9 && minute < 5) {
+        await digestService.runWeeklyReports();
+      }
+    } catch (err) {
+      logger.error({ err }, 'Failed to run digest scheduler');
+    }
+  }, 5 * 60_000); // Check every 5 minutes
+
   server.listen(env.port, '0.0.0.0', () => {
     logger.info(`Streaksy API + WebSocket running on 0.0.0.0:${env.port} [${env.nodeEnv}]`);
   });

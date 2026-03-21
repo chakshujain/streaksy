@@ -9,6 +9,7 @@ import { preferencesApi, authApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { Settings, Palette, LayoutGrid, Eye, Target, Check, Save, Lock, Download } from 'lucide-react';
+import { DigestSection } from '@/components/settings/DigestSection';
 import type { UserPreferences } from '@/lib/types';
 
 const accentSwatches = [
@@ -87,6 +88,7 @@ export default function SettingsPage() {
   const [weeklyGoal, setWeeklyGoal] = useState(5);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Change password state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -136,6 +138,7 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
+    setSaveError(null);
     try {
       await preferencesApi.update({
         accent_color: accentColor,
@@ -146,8 +149,9 @@ export default function SettingsPage() {
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch {
-      // error handling
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setSaveError(e.response?.data?.error || e.message || 'Failed to save preferences');
     } finally {
       setSaving(false);
     }
@@ -343,8 +347,13 @@ export default function SettingsPage() {
           </SectionCard>
         </div>
 
-        {/* Export Data */}
+        {/* Email Digest */}
         <div className="animate-slide-up" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
+          <DigestSection />
+        </div>
+
+        {/* Export Data */}
+        <div className="animate-slide-up" style={{ animationDelay: '350ms', animationFillMode: 'both' }}>
           <SectionCard icon={Download} iconGradient="from-cyan-500/30 to-blue-500/30" title="Data Export">
             <p className="text-sm text-zinc-400 mb-4">
               Download all your Streaksy data including profile, progress, submissions, revisions, and streak history.
@@ -370,11 +379,16 @@ export default function SettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="animate-slide-up sticky bottom-6 pt-2" style={{ animationDelay: '350ms', animationFillMode: 'both' }}>
+        <div className="animate-slide-up sticky bottom-6 pt-2" style={{ animationDelay: '400ms', animationFillMode: 'both' }}>
           <div className="glass-strong rounded-2xl border border-zinc-800/50 p-4 flex items-center justify-between">
-            <p className="text-sm text-zinc-500">
-              {saved ? 'Preferences saved successfully.' : 'Save your changes to apply them.'}
-            </p>
+            <div>
+              <p className="text-sm text-zinc-500">
+                {saved ? 'Preferences saved successfully.' : 'Save your changes to apply them.'}
+              </p>
+              {saveError && (
+                <p className="text-sm text-red-400 mt-1">{saveError}</p>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               {saved && (
                 <span className="flex items-center gap-1.5 text-sm text-emerald-400 animate-slide-up">

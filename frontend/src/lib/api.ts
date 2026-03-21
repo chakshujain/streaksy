@@ -20,7 +20,9 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       localStorage.removeItem('streaksy_token');
-      window.location.href = '/auth/login';
+      if (!window.location.pathname.startsWith('/auth/')) {
+        window.location.href = '/auth/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -35,9 +35,9 @@ export const submissionRepository = {
       `INSERT INTO submissions (user_id, problem_id, status, language, code, runtime_ms, runtime_percentile, memory_kb, memory_percentile, time_spent_seconds, leetcode_submission_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *`,
-      [data.userId, data.problemId, data.status, data.language, data.code || null,
-       data.runtimeMs || null, data.runtimePercentile || null, data.memoryKb || null,
-       data.memoryPercentile || null, data.timeSpentSeconds || null, data.leetcodeSubmissionId || null]
+      [data.userId, data.problemId, data.status, data.language, data.code ?? null,
+       data.runtimeMs ?? null, data.runtimePercentile ?? null, data.memoryKb ?? null,
+       data.memoryPercentile ?? null, data.timeSpentSeconds ?? null, data.leetcodeSubmissionId ?? null]
     );
     return rows[0];
   },
@@ -67,16 +67,18 @@ export const submissionRepository = {
     );
   },
 
-  async getPeerSolutions(problemId: string, excludeUserId: string, limit = 10): Promise<any[]> {
+  async getPeerSolutions(problemId: string, excludeUserId: string, limit = 10, groupIds: string[] = []): Promise<any[]> {
+    if (groupIds.length === 0) return [];
     return query(
       `SELECT s.id, s.language, s.code, s.runtime_ms, s.runtime_percentile, s.memory_kb, s.memory_percentile,
               s.submitted_at, u.display_name, u.id as user_id
        FROM submissions s
        JOIN users u ON u.id = s.user_id
+       JOIN group_members gm ON gm.user_id = s.user_id AND gm.group_id = ANY($4)
        WHERE s.problem_id = $1 AND s.user_id != $2 AND s.status = 'Accepted' AND s.code IS NOT NULL
        ORDER BY s.runtime_ms ASC NULLS LAST
        LIMIT $3`,
-      [problemId, excludeUserId, limit]
+      [problemId, excludeUserId, limit, groupIds]
     );
   },
 

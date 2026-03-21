@@ -72,7 +72,7 @@ export function FeedCard({ event }: FeedCardProps) {
     setPosting(true);
     try {
       const { data } = await feedApi.addComment(event.id, commentInput.trim());
-      setComments([...comments, { ...data.comment, display_name: user?.displayName }]);
+      setComments([...comments, { ...data.comment, display_name: user?.displayName || 'You' }]);
       setCommentInput('');
       setCommentCount(commentCount + 1);
       if (!showComments) setShowComments(true);
@@ -81,6 +81,7 @@ export function FeedCard({ event }: FeedCardProps) {
   };
 
   const handleDeleteComment = async (commentId: string) => {
+    if (!confirm('Delete this comment?')) return;
     try {
       await feedApi.deleteComment(commentId);
       setComments(comments.filter(c => c.id !== commentId));

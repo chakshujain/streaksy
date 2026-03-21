@@ -20,6 +20,7 @@ export function RevisionCard({ note, onClick, onDelete }: RevisionCardProps) {
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (deleting) return;
+    if (!confirm('Delete this revision note?')) return;
     setDeleting(true);
     try {
       await revisionApi.delete(note.id);

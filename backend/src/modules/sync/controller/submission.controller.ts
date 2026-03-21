@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { submissionRepository } from '../repository/submission.repository';
 import { AuthRequest } from '../../../common/types';
 import { param } from '../../../common/utils/params';
+import { groupRepository } from '../../group/repository/group.repository';
 
 export const submissionController = {
   async getMySubmissions(req: Request, res: Response) {
@@ -28,7 +29,10 @@ export const submissionController = {
   async getPeerSolutions(req: Request, res: Response) {
     const { user } = req as AuthRequest;
     const problemId = param(req, 'problemId');
-    const solutions = await submissionRepository.getPeerSolutions(problemId, user!.userId);
+    // Only return solutions from users who share at least one group with the requester
+    const userGroups = await groupRepository.getUserGroups(user!.userId);
+    const groupIds = userGroups.map(g => g.id);
+    const solutions = await submissionRepository.getPeerSolutions(problemId, user!.userId, 10, groupIds);
     res.json({ solutions });
   },
 };

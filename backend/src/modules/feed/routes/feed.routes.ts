@@ -2,13 +2,14 @@ import { Router } from 'express';
 import { feedController } from '../controller/feed.controller';
 import { authenticate } from '../../../middleware/auth';
 import { validate } from '../../../middleware/validate';
-import { feedCommentSchema } from '../validation/feed.schema';
+import { feedCommentSchema, feedPostSchema } from '../validation/feed.schema';
 import { asyncHandler } from '../../../common/utils/asyncHandler';
 
 const router = Router();
 
 router.use(authenticate);
 
+router.post('/post', validate(feedPostSchema), asyncHandler(feedController.createPost));
 router.get('/', asyncHandler(feedController.getFeed));
 router.get('/user/:userId', asyncHandler(feedController.getUserFeed));
 router.post('/:id/like', asyncHandler(feedController.toggleLike));

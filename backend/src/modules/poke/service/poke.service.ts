@@ -3,6 +3,7 @@ import { humorEngine } from './humor';
 import { notificationService } from '../../notification/service/notification.service';
 import { sendEmail } from '../../../config/email';
 import { authRepository } from '../../auth/repository/auth.repository';
+import { groupRepository } from '../../group/repository/group.repository';
 import { AppError } from '../../../common/errors/AppError';
 import { logger } from '../../../config/logger';
 import { env } from '../../../config/env';
@@ -13,6 +14,16 @@ export const pokeService = {
   /** Manual poke: friend pokes another user */
   async pokeFriend(fromUserId: string, toUserId: string, groupId?: string, customMessage?: string) {
     if (fromUserId === toUserId) throw AppError.badRequest("You can't poke yourself!");
+
+    // Verify both users are members of the group if groupId is provided
+    if (groupId) {
+      const [fromIsMember, toIsMember] = await Promise.all([
+        groupRepository.isMember(groupId, fromUserId),
+        groupRepository.isMember(groupId, toUserId),
+      ]);
+      if (!fromIsMember) throw AppError.forbidden('You are not a member of this group');
+      if (!toIsMember) throw AppError.forbidden('Target user is not a member of this group');
+    }
 
     // Rate limit: 1 poke per pair per 4 hours
     const recent = await pokeRepository.recentPokeBetween(fromUserId, toUserId);

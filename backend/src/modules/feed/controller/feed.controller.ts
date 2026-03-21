@@ -48,4 +48,11 @@ export const feedController = {
     await feedService.deleteComment(commentId, user!.userId);
     res.json({ message: 'Deleted' });
   },
+
+  async createPost(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const { content } = req.body;
+    const event = await feedService.postEvent(user!.userId, 'post', content, undefined, { type: 'user_post' });
+    res.status(201).json({ event });
+  },
 };

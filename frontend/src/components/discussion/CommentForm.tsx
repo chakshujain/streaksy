@@ -15,24 +15,31 @@ interface CommentFormProps {
 export function CommentForm({ problemSlug, parentId, onPosted, placeholder }: CommentFormProps) {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       await discussionsApi.createComment(problemSlug, { content, parentId });
       setContent('');
       onPosted?.();
-    } catch {
-      // silently fail
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setError(e.response?.data?.error || e.message || 'Failed to post comment');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
+    <form onSubmit={handleSubmit} className="space-y-2">
+      {error && (
+        <p className="text-sm text-red-400">{error}</p>
+      )}
+      <div className="flex gap-2">
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
@@ -43,6 +50,7 @@ export function CommentForm({ problemSlug, parentId, onPosted, placeholder }: Co
       <Button type="submit" loading={loading} size="sm" className="self-end">
         <Send className="h-4 w-4" />
       </Button>
+      </div>
     </form>
   );
 }

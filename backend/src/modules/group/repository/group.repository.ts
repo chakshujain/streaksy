@@ -16,7 +16,6 @@ export interface GroupRow {
 export interface MemberRow {
   user_id: string;
   display_name: string;
-  email: string;
   role: string;
   joined_at: Date;
 }
@@ -68,7 +67,7 @@ export const groupRepository = {
 
   async getMembers(groupId: string): Promise<MemberRow[]> {
     return query<MemberRow>(
-      `SELECT u.id as user_id, u.display_name, u.email, gm.role, gm.joined_at
+      `SELECT u.id as user_id, u.display_name, gm.role, gm.joined_at
        FROM group_members gm
        JOIN users u ON u.id = gm.user_id
        WHERE gm.group_id = $1

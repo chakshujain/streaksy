@@ -52,6 +52,9 @@ export function SearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
+  // Clear debounce timer on unmount
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+
   // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {

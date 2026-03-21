@@ -128,6 +128,13 @@ export function initSocketServer(httpServer: HttpServer): Server {
           socket.emit('room:error', { message: 'Slow down! Too many messages.' });
           return;
         }
+        // Verify user is a participant before allowing message
+        const participantList = await roomRepository.getParticipants(data.roomId);
+        const isParticipant = participantList.some(p => p.user_id === userId);
+        if (!isParticipant) {
+          socket.emit('room:error', { message: 'You are not a participant of this room' });
+          return;
+        }
         const message = await roomService.sendMessage(data.roomId, userId, data.content);
         // Get display name
         const enriched = { ...message, display_name: '' };

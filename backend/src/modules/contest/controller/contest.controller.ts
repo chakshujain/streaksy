@@ -12,14 +12,16 @@ export const contestController = {
   },
 
   async getForGroup(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
     const groupId = param(req, 'id');
-    const contests = await contestService.getForGroup(groupId);
+    const contests = await contestService.getForGroup(groupId, user!.userId);
     res.json({ contests });
   },
 
   async getDetails(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
     const contestId = param(req, 'id');
-    const contest = await contestService.getDetails(contestId);
+    const contest = await contestService.getDetails(contestId, user!.userId);
     res.json({ contest });
   },
 

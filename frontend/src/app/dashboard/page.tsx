@@ -42,6 +42,7 @@ import {
   Radio,
 } from 'lucide-react';
 import { RecoveryChallenge } from '@/components/poke/RecoveryChallenge';
+import { PowerupsWidget } from '@/components/dashboard/PowerupsWidget';
 import { HelpTooltip } from '@/components/onboarding/HelpTooltip';
 import { formatDistanceToNow } from 'date-fns';
 import type { ProblemProgress, Group, FeedEvent, LeaderboardEntry } from '@/lib/types';
@@ -834,6 +835,9 @@ export default function DashboardPage() {
               />
             </div>
           </div>
+
+          {/* ─── Power-ups ─────────────────────────────── */}
+          <PowerupsWidget />
 
           {/* ─── Active Rooms (conditional) ─────────────── */}
           {showRooms && (

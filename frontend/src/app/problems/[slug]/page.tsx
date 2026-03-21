@@ -15,6 +15,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { problemsApi, notesApi, revisionApi, progressApi } from '@/lib/api';
 import { YouTubePlayer } from '@/components/problems/YouTubePlayer';
 import { PeerSolutions } from '@/components/problems/PeerSolutions';
+import { RatingSection } from '@/components/problems/RatingSection';
 import { ExternalLink, RotateCcw, X } from 'lucide-react';
 import type { Problem, Note, RevisionNote, ProblemProgress } from '@/lib/types';
 import { cn } from '@/lib/cn';
@@ -203,6 +204,9 @@ export default function ProblemDetailPage() {
             </Card>
           )}
         </div>
+
+        {/* Community Rating & Company Tags */}
+        {problem && <RatingSection problemId={problem.id} />}
 
         {/* Discussion Section */}
         <CommentThread problemSlug={slug} />

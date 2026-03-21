@@ -156,6 +156,7 @@ export default function GroupDetailPage() {
   };
 
   const handleRemoveSheet = async (sheetId: string) => {
+    if (!confirm('Remove this sheet from the group?')) return;
     setActionError('');
     try {
       await groupsApi.removeSheet(groupId, sheetId);
@@ -167,6 +168,7 @@ export default function GroupDetailPage() {
   };
 
   const handleLeaveGroup = async () => {
+    if (!confirm('Are you sure you want to leave this group?')) return;
     setLeaving(true);
     setActionError('');
     try {

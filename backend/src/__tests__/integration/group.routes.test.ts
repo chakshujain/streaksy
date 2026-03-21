@@ -117,7 +117,6 @@ describe('Group Routes', () => {
         {
           user_id: 'user-1',
           display_name: 'User One',
-          email: 'u1@test.com',
           role: 'admin',
           joined_at: new Date(),
         },

@@ -26,7 +26,6 @@ export interface RecoveryChallengeRow {
 export interface InactiveUserRow {
   user_id: string;
   display_name: string;
-  email: string;
   days_inactive: number;
   last_solve_date: string | null;
   current_streak: number;
@@ -74,7 +73,7 @@ export const pokeRepository = {
   /** Find inactive group members (no solve in N days) */
   async getInactiveGroupMembers(groupId: string, inactiveDays: number): Promise<InactiveUserRow[]> {
     return query<InactiveUserRow>(
-      `SELECT u.id as user_id, u.display_name, u.email,
+      `SELECT u.id as user_id, u.display_name,
               COALESCE(CURRENT_DATE - us.last_solve_date::date, 999) as days_inactive,
               us.last_solve_date::text,
               COALESCE(us.current_streak, 0) as current_streak

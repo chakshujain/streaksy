@@ -52,10 +52,12 @@ export const roomService = {
     return room;
   },
 
-  async getRoom(roomId: string) {
+  async getRoom(roomId: string, userId: string) {
     const room = await roomRepository.findById(roomId);
     if (!room) throw AppError.notFound('Room not found');
     const participants = await roomRepository.getParticipants(roomId);
+    const isParticipant = participants.some(p => p.user_id === userId);
+    if (!isParticipant) throw AppError.forbidden('You are not a participant of this room');
     const messages = await roomRepository.getMessages(roomId);
     return { ...room, participants, messages };
   },
@@ -176,7 +178,7 @@ export const roomService = {
     const room = await roomRepository.findById(roomId);
     if (!room) throw AppError.notFound('Room not found');
     if (room.status !== 'active') throw AppError.badRequest('Room is not active');
-    await roomRepository.markSolved(roomId, userId, data?.code || null, data?.language || null, data?.runtimeMs || null, data?.memoryKb || null);
+    await roomRepository.markSolved(roomId, userId, data?.code ?? null, data?.language ?? null, data?.runtimeMs ?? null, data?.memoryKb ?? null);
 
     // Trigger full sync pipeline (progress, streak, badges, feed, leaderboard)
     const roomData = await roomRepository.findById(roomId);
@@ -193,7 +195,7 @@ export const roomService = {
 
     // Also track per-problem solve if room has problem_id
     if (roomData?.problem_id) {
-      await roomRepository.markProblemSolved(roomId, userId, roomData.problem_id, data?.code || null, data?.language || null, data?.runtimeMs || null, data?.memoryKb || null);
+      await roomRepository.markProblemSolved(roomId, userId, roomData.problem_id, data?.code ?? null, data?.language ?? null, data?.runtimeMs ?? null, data?.memoryKb ?? null);
     }
 
     // Notify all participants
