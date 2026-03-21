@@ -13,6 +13,7 @@ import {
   feedApi,
   insightsApi,
   roadmapsApi,
+  dailyApi,
 } from '@/lib/api';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Card } from '@/components/ui/Card';
@@ -21,6 +22,9 @@ import { Button } from '@/components/ui/Button';
 // import { Badge } from '@/components/ui/Badge';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { cn } from '@/lib/cn';
+import { useLearnProgress } from '@/hooks/useLearnProgress';
+import { useBookmarks, type Bookmark } from '@/hooks/useBookmarks';
+import { topics } from '@/lib/learn-data';
 import {
   Flame,
   CheckCircle,
@@ -39,6 +43,9 @@ import {
   ChevronRight,
   BookOpen,
   CircleDot,
+  GraduationCap,
+  Bookmark as BookmarkIcon,
+  Star,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import type { ProblemProgress, Group, FeedEvent, LeaderboardEntry, UserRoadmap } from '@/lib/types';
@@ -664,6 +671,202 @@ function DifficultyMini({ breakdown, total }: {
   );
 }
 
+/* ── learn progress section ──────────────────────────── */
+
+function LearnProgressSection({
+  totalCompleted,
+  totalLessons,
+  topicsInProgress,
+  getTopicProgress,
+}: {
+  totalCompleted: number;
+  totalLessons: number;
+  topicsInProgress: { topicSlug: string; topicName: string; nextLesson: { slug: string; title: string } | null }[];
+  getTopicProgress: (slug: string) => { completed: number; total: number };
+}) {
+  if (topicsInProgress.length === 0) return null;
+
+  const overallPct = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <GraduationCap className="h-4 w-4 text-cyan-400" />
+          <h3 className="text-sm font-semibold text-zinc-300">Learning Progress</h3>
+          <span className="text-xs text-zinc-600">{totalCompleted}/{totalLessons} lessons</span>
+        </div>
+        <Link href="/learn" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1">
+          Learn Hub <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+      <div className="mb-3">
+        <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-cyan-500/60 transition-all duration-500"
+            style={{ width: `${overallPct}%` }}
+          />
+        </div>
+        <p className="text-[10px] text-zinc-600 mt-1">{overallPct}% overall</p>
+      </div>
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+        {topicsInProgress.map((tp) => {
+          const topic = topics.find((t) => t.slug === tp.topicSlug);
+          const prog = getTopicProgress(tp.topicSlug);
+          const pct = prog.total > 0 ? Math.round((prog.completed / prog.total) * 100) : 0;
+          return (
+            <Link
+              key={tp.topicSlug}
+              href={tp.nextLesson ? `/learn/${tp.topicSlug}/${tp.nextLesson.slug}` : `/learn/${tp.topicSlug}`}
+              className="group flex-shrink-0 w-56 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 hover:border-cyan-500/30 hover:bg-zinc-900/80 transition-all duration-200"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{topic?.icon || '📚'}</span>
+                <h4 className="text-sm font-semibold text-zinc-200 group-hover:text-white transition-colors truncate">
+                  {tp.topicName}
+                </h4>
+              </div>
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="text-zinc-400">{prog.completed}/{prog.total} lessons</span>
+                <span className="text-cyan-400 font-medium">{pct}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden mb-2">
+                <div
+                  className="h-full rounded-full bg-cyan-500/60 transition-all"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              {tp.nextLesson && (
+                <p className="text-[10px] text-zinc-500 truncate">
+                  Next: {tp.nextLesson.title}
+                </p>
+              )}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── daily challenge card ───────────────────────────── */
+
+function DailyChallengeCard({
+  dailyProblem,
+  dailyLoading,
+}: {
+  dailyProblem: { title: string; slug: string; difficulty: string } | null;
+  dailyLoading: boolean;
+}) {
+  if (dailyLoading) {
+    return (
+      <Card variant="glass" className="border-yellow-500/10 bg-gradient-to-br from-yellow-500/5 via-transparent to-transparent">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-500/15">
+            <Star className="h-5 w-5 text-yellow-400" />
+          </div>
+          <div className="flex-1">
+            <Skeleton className="h-4 w-32 mb-1" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!dailyProblem) return null;
+
+  const diffColor =
+    dailyProblem.difficulty === 'easy'
+      ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
+      : dailyProblem.difficulty === 'medium'
+        ? 'bg-amber-500/15 text-amber-400 border-amber-500/20'
+        : 'bg-red-500/15 text-red-400 border-red-500/20';
+
+  return (
+    <Card className="border-yellow-500/10 bg-gradient-to-br from-yellow-500/5 via-transparent to-transparent">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-500/15">
+          <Star className="h-5 w-5 text-yellow-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <h2 className="text-base font-semibold text-zinc-100">Daily Challenge</h2>
+            <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded-full border', diffColor)}>
+              {dailyProblem.difficulty}
+            </span>
+          </div>
+          <p className="text-xs text-zinc-400 truncate">{dailyProblem.title}</p>
+        </div>
+        <Link href={`/problems/${dailyProblem.slug}`}>
+          <Button variant="primary" size="sm">
+            Solve <ArrowRight className="h-3.5 w-3.5 ml-1" />
+          </Button>
+        </Link>
+      </div>
+    </Card>
+  );
+}
+
+/* ── bookmarks quick access ─────────────────────────── */
+
+function BookmarksSection({ bookmarks }: { bookmarks: Bookmark[] }) {
+  const recent = bookmarks
+    .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())
+    .slice(0, 3);
+
+  if (recent.length === 0) return null;
+
+  const typeIcon: Record<Bookmark['type'], string> = {
+    problem: '💻',
+    lesson: '📖',
+    pattern: '🧩',
+    roadmap: '🗺️',
+  };
+
+  const getHref = (b: Bookmark): string => {
+    switch (b.type) {
+      case 'problem': return `/problems/${b.slug}`;
+      case 'lesson': return b.topicSlug ? `/learn/${b.topicSlug}/${b.slug}` : `/learn`;
+      case 'pattern': return `/patterns/${b.slug}`;
+      case 'roadmap': return `/roadmaps/${b.slug}`;
+      default: return '#';
+    }
+  };
+
+  return (
+    <Card variant="glass">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-rose-500/10">
+            <BookmarkIcon className="h-3.5 w-3.5 text-rose-400" />
+          </div>
+          <h3 className="text-sm font-semibold text-zinc-300">Bookmarks</h3>
+        </div>
+        <Link href="/bookmarks" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1">
+          View all <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+      <div className="space-y-1.5">
+        {recent.map((b) => (
+          <Link
+            key={b.id}
+            href={getHref(b)}
+            className="flex items-center gap-2.5 rounded-lg border border-zinc-800/50 px-3 py-2 hover:border-zinc-700 hover:bg-zinc-800/30 transition-all duration-200"
+          >
+            <span className="text-sm">{typeIcon[b.type]}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-zinc-200 truncate">{b.title}</p>
+              <p className="text-[10px] text-zinc-500 capitalize">{b.type}</p>
+            </div>
+            <ChevronRight className="h-3 w-3 text-zinc-600" />
+          </Link>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 /* ══════════════════════════════════════════════════════ */
 /* ── MAIN PAGE ─────────────────────────────────────── */
 /* ══════════════════════════════════════════════════════ */
@@ -761,6 +964,26 @@ export default function DashboardPage() {
 
   const diffTotal = difficultyBreakdown.easy + difficultyBreakdown.medium + difficultyBreakdown.hard;
 
+  /* ── Learn progress ─── */
+  const { getAllProgress, getTopicProgress } = useLearnProgress();
+  const learnData = useMemo(() => getAllProgress(), [getAllProgress]);
+
+  /* ── Daily challenge ─── */
+  const { data: dailyData, loading: dailyLoading } = useAsync(
+    () => dailyApi.getToday().then((r) => {
+      const problems = r.data.problems ?? r.data.daily ?? [];
+      if (Array.isArray(problems) && problems.length > 0) {
+        const p = problems[0];
+        return { title: p.title, slug: p.slug, difficulty: p.difficulty } as { title: string; slug: string; difficulty: string };
+      }
+      return null;
+    }).catch(() => null),
+    []
+  );
+
+  /* ── Bookmarks ─── */
+  const { bookmarks } = useBookmarks();
+
   const allLoading = statsLoading && progressLoading;
 
   if (allLoading) {
@@ -829,18 +1052,36 @@ export default function DashboardPage() {
             />
           </div>
 
+          {/* ═══ Section 1c: Daily Challenge ═══ */}
+          <div className="animate-slide-up" style={{ animationDelay: '80ms', animationFillMode: 'both' }}>
+            <DailyChallengeCard dailyProblem={dailyData ?? null} dailyLoading={dailyLoading} />
+          </div>
+
           {/* ═══ Section 2: Today's Tasks ═══ */}
           <TodayTasksSection tasks={todayTasks} onToggle={handleToggleTask} />
 
           {/* ═══ Section 3: Active Roadmaps (horizontal scroll) ═══ */}
           <ActiveRoadmapsSection roadmaps={activeRoadmaps} />
 
+          {/* ═══ Section 3b: Learning Progress ═══ */}
+          <div className="animate-slide-up" style={{ animationDelay: '160ms', animationFillMode: 'both' }}>
+            <LearnProgressSection
+              totalCompleted={learnData.totalCompleted}
+              totalLessons={learnData.totalLessons}
+              topicsInProgress={learnData.topicsInProgress}
+              getTopicProgress={getTopicProgress}
+            />
+          </div>
+
           {/* ═══ Section 4 + 5: Feed + Quick Actions | Groups + Leaderboard ═══ */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-            {/* Left: Feed + Quick Actions */}
+            {/* Left: Feed + Quick Actions + Bookmarks */}
             <div className="lg:col-span-4 flex flex-col gap-4">
               <FeedSection feedLoading={feedLoading} feedEvents={feedEvents} />
               <QuickActionsSection />
+              <div className="animate-slide-up" style={{ animationDelay: '240ms', animationFillMode: 'both' }}>
+                <BookmarksSection bookmarks={bookmarks} />
+              </div>
             </div>
 
             {/* Middle: Groups */}
