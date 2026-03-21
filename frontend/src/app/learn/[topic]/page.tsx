@@ -6,7 +6,8 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/Card';
 import { topics } from '@/lib/learn-data';
 import { cn } from '@/lib/cn';
-import { ArrowLeft, ArrowRight, Clock, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Clock, Lock, CheckCircle } from 'lucide-react';
+import { useLearnProgress } from '@/hooks/useLearnProgress';
 
 const colorMap: Record<string, { bg: string; text: string; border: string; accent: string }> = {
   emerald: {
@@ -63,6 +64,7 @@ export default function TopicPage() {
   const params = useParams();
   const topicSlug = params.topic as string;
   const topic = topics.find((t) => t.slug === topicSlug);
+  const { isComplete, getTopicProgress } = useLearnProgress();
 
   if (!topic) {
     return (
@@ -78,6 +80,8 @@ export default function TopicPage() {
   }
 
   const colors = colorMap[topic.color] || colorMap.blue;
+  const { completed: completedCount, total: totalCount } = getTopicProgress(topicSlug);
+  const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
     <AppShell>
@@ -127,6 +131,23 @@ export default function TopicPage() {
                 );
               })}
             </div>
+            {/* Progress bar */}
+            {totalCount > 0 && (
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-zinc-400">
+                    {completedCount}/{totalCount} lessons completed
+                  </span>
+                  <span className="text-xs font-medium text-emerald-400">{progressPct}%</span>
+                </div>
+                <div className="h-1.5 w-full rounded-full bg-zinc-800">
+                  <div
+                    className="h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -135,29 +156,36 @@ export default function TopicPage() {
           {topic.lessons.map((lesson, index) => {
             const hasContent = lesson.steps.length > 0;
             const dc = difficultyColors[lesson.difficulty];
+            const lessonCompleted = isComplete(topicSlug, lesson.slug);
 
             return hasContent ? (
               <Link
                 key={lesson.slug}
                 href={`/learn/${topic.slug}/${lesson.slug}`}
               >
-                <Card className="group cursor-pointer hover:border-zinc-700 transition-all duration-200 mb-3">
+                <Card className={cn('group cursor-pointer hover:border-zinc-700 transition-all duration-200 mb-3', lessonCompleted && 'border-emerald-500/15')}>
                   <div className="flex items-center gap-4">
-                    {/* Number badge */}
-                    <div
-                      className={cn(
-                        'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold',
-                        colors.bg,
-                        colors.text
-                      )}
-                    >
-                      {index + 1}
-                    </div>
+                    {/* Number badge / checkmark */}
+                    {lessonCompleted ? (
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/15">
+                        <CheckCircle className="h-5 w-5 text-emerald-400" />
+                      </div>
+                    ) : (
+                      <div
+                        className={cn(
+                          'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold',
+                          colors.bg,
+                          colors.text
+                        )}
+                      >
+                        {index + 1}
+                      </div>
+                    )}
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-zinc-200 group-hover:text-emerald-400 transition-colors truncate">
+                        <h3 className={cn('text-sm font-semibold group-hover:text-emerald-400 transition-colors truncate', lessonCompleted ? 'text-emerald-300' : 'text-zinc-200')}>
                           {lesson.title}
                         </h3>
                       </div>

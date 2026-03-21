@@ -14,11 +14,14 @@ import {
   Clock,
   Lightbulb,
   CheckCircle2,
+  CheckCircle,
   AlertTriangle,
   HelpCircle,
   Construction,
   ArrowRight,
 } from 'lucide-react';
+import { useLearnProgress } from '@/hooks/useLearnProgress';
+import { BookmarkButton } from '@/components/ui/BookmarkButton';
 
 const difficultyColors: Record<string, { bg: string; text: string }> = {
   beginner: { bg: 'bg-green-500/15', text: 'text-green-400' },
@@ -206,6 +209,7 @@ export default function LessonPage() {
   const params = useParams();
   const topicSlug = params.topic as string;
   const lessonSlug = params.lesson as string;
+  const { isComplete, markComplete, getCompletionDate } = useLearnProgress();
 
   const topic = topics.find((t) => t.slug === topicSlug);
   if (!topic) {
@@ -242,6 +246,9 @@ export default function LessonPage() {
   const dc = difficultyColors[lesson.difficulty];
   const hasContent = lesson.steps.length > 0;
 
+  const completed = isComplete(topicSlug, lessonSlug);
+  const completionDate = getCompletionDate(topicSlug, lessonSlug);
+
   return (
     <AppShell>
       <div className="space-y-8 max-w-3xl mx-auto">
@@ -267,7 +274,20 @@ export default function LessonPage() {
               </span>
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-zinc-100">{lesson.title}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-zinc-100">{lesson.title}</h1>
+            <BookmarkButton
+              item={{
+                id: `lesson-${topicSlug}-${lessonSlug}`,
+                type: 'lesson',
+                title: lesson.title,
+                slug: lessonSlug,
+                topicSlug,
+                difficulty: lesson.difficulty,
+              }}
+              size="sm"
+            />
+          </div>
           <p className="mt-2 text-sm text-zinc-400">{lesson.description}</p>
         </div>
 
@@ -332,6 +352,35 @@ export default function LessonPage() {
                 </Card>
               </div>
             )}
+
+            {/* Mark Complete */}
+            <div className="pt-2">
+              {completed ? (
+                <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4">
+                  <CheckCircle className="h-6 w-6 text-emerald-400 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-300">Completed</p>
+                    {completionDate && (
+                      <p className="text-xs text-emerald-400/70 mt-0.5">
+                        {new Date(completionDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => markComplete(topicSlug, lessonSlug)}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-5 py-3.5 text-sm font-semibold text-white hover:from-emerald-500 hover:to-emerald-400 transition-all duration-200 shadow-lg shadow-emerald-500/20"
+                >
+                  <CheckCircle className="h-5 w-5" />
+                  Mark as Complete
+                </button>
+              )}
+            </div>
           </>
         )}
 
