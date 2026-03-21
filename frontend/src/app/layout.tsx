@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     url: 'https://streaksy.in',
     siteName: 'Streaksy',
     title: 'Streaksy — DSA Prep Platform | LeetCode Tracker & Study Groups',
-    description: 'Master DSA with auto LeetCode sync, study groups, streaks, revision flashcards, and live solve rooms. Join 10,000+ developers crushing their interview prep.',
+    description: 'Master DSA with auto LeetCode sync, study groups, streaks, revision flashcards, and live war rooms. Join 10,000+ developers crushing their interview prep.',
     images: [
       {
         url: '/og-image.png',

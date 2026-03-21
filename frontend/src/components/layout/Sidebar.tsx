@@ -27,7 +27,7 @@ const navItems = [
   { href: '/learn', label: 'Learn', icon: GraduationCap },
   { href: '/problems', label: 'Problems', icon: BookOpen },
   { href: '/groups', label: 'Groups', icon: Users },
-  { href: '/rooms', label: 'Solve Rooms', icon: Swords },
+  { href: '/rooms', label: 'War Rooms', icon: Swords },
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/insights', label: 'Insights', icon: BarChart3 },
   { href: '/profile', label: 'Profile', icon: User },

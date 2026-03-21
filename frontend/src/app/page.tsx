@@ -473,7 +473,7 @@ export default function Home() {
               'Social Streak Tracking',
               'Study Groups & Leaderboards',
               'Chrome Extension',
-              'Live Solve Rooms',
+              'Live War Rooms',
             ],
           }),
         }}

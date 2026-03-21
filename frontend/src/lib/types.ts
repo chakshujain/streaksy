@@ -501,4 +501,11 @@ export interface UserRoadmap {
   currentStreak: number;
   shareCode: string;
   groupId?: string;
+  // Customization fields (coding roadmaps)
+  hoursPerDay?: number;
+  selectedTopics?: string[];
+  topicAllocation?: Record<string, number>;
+  weeklyRoomDay?: string;
+  weeklyRoomTime?: string;
+  dailyReminder?: boolean;
 }

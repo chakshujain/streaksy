@@ -29,7 +29,7 @@ function generateGoogleCalendarUrl(title: string, scheduledAt: string, timeLimit
     action: 'TEMPLATE',
     text: title,
     dates: `${fmt(start)}/${fmt(end)}`,
-    details: `Streaksy Solve Room${meetLink ? `\nJoin: ${meetLink}` : ''}`,
+    details: `Streaksy War Room${meetLink ? `\nJoin: ${meetLink}` : ''}`,
   });
   if (meetLink) params.set('location', meetLink);
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -138,7 +138,7 @@ export default function RoomsPage() {
               <Swords className="h-6 w-6 text-red-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold gradient-text">Live Solve Rooms</h1>
+              <h1 className="text-2xl font-bold gradient-text">Live War Rooms</h1>
               <p className="text-sm text-zinc-500 mt-0.5">Solve problems together in real-time</p>
             </div>
           </div>
@@ -421,7 +421,7 @@ export default function RoomsPage() {
               {/* Add to Google Calendar */}
               {scheduledAt && (
                 <a
-                  href={generateGoogleCalendarUrl(roomName || 'Solve Room', scheduledAt, timeLimit, meetLink || undefined)}
+                  href={generateGoogleCalendarUrl(roomName || 'War Room', scheduledAt, timeLimit, meetLink || undefined)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400 hover:bg-blue-500/20 transition-all duration-200"

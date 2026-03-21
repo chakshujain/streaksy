@@ -29,7 +29,7 @@ function generateGoogleCalendarUrl(title: string, scheduledAt: string, timeLimit
     action: 'TEMPLATE',
     text: title,
     dates: `${fmt(start)}/${fmt(end)}`,
-    details: `Streaksy Solve Room${meetLink ? `\nJoin: ${meetLink}` : ''}`,
+    details: `Streaksy War Room${meetLink ? `\nJoin: ${meetLink}` : ''}`,
   });
   if (meetLink) params.set('location', meetLink);
   return `https://calendar.google.com/calendar/render?${params.toString()}`;

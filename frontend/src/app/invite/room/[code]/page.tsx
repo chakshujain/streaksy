@@ -114,7 +114,7 @@ export default function RoomInvitePage() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/10">
               <Swords className="h-8 w-8 text-emerald-400" />
             </div>
-            <p className="text-sm text-zinc-500 mb-1">You&apos;ve been invited to a solve room</p>
+            <p className="text-sm text-zinc-500 mb-1">You&apos;ve been invited to a war room</p>
             <h1 className="text-2xl font-bold text-zinc-100">{preview?.name}</h1>
             {preview?.problemTitle && (
               <p className="text-sm text-emerald-400 mt-2">{preview.problemTitle}</p>

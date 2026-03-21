@@ -889,14 +889,14 @@ export default function RoadmapPage() {
                               </div>
                             </div>
 
-                            {/* Solve Together button for DSA days */}
+                            {/* War Room button for DSA days */}
                             {isDsa && !isDone && (
                               <button
                                 onClick={() => handleSolveTogether(day)}
                                 className="hidden sm:flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-2 py-1 transition-colors flex-shrink-0"
                               >
                                 <Swords className="h-3 w-3" />
-                                Solve Together
+                                War Room
                               </button>
                             )}
 
