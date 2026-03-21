@@ -1,7 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import {
   LayoutDashboard,
@@ -17,18 +18,29 @@ import {
   Trophy,
   Rss,
   BarChart3,
+  Zap,
+  Timer,
+  Search,
+  UserPlus,
+  Award,
+  Bookmark,
 } from 'lucide-react';
 import { useAuthStore, useDashboardStore } from '@/lib/store';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/daily', label: 'Daily', icon: Zap },
   { href: '/feed', label: 'Feed', icon: Rss },
   { href: '/roadmaps', label: 'Roadmaps', icon: Map },
   { href: '/learn', label: 'Learn', icon: GraduationCap },
   { href: '/problems', label: 'Problems', icon: BookOpen },
   { href: '/groups', label: 'Groups', icon: Users },
+  { href: '/friends', label: 'Friends', icon: UserPlus },
   { href: '/rooms', label: 'War Rooms', icon: Swords },
+  { href: '/timer', label: 'Timer', icon: Timer },
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { href: '/achievements', label: 'Achievements', icon: Award },
+  { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
   { href: '/insights', label: 'Insights', icon: BarChart3 },
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/settings', label: 'Settings', icon: Settings },
@@ -40,8 +52,21 @@ interface SidebarProps {
 
 export function Sidebar({ onNavClick }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuthStore();
   const { streak } = useDashboardStore();
+
+  // Ctrl+K / Cmd+K keyboard shortcut for search
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        router.push('/search');
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [router]);
 
   const initials = user?.displayName
     ?.split(' ')
@@ -62,6 +87,39 @@ export function Sidebar({ onNavClick }: SidebarProps) {
             <Flame className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-bold gradient-text tracking-tight">Streaksy</span>
+        </Link>
+      </div>
+
+      {/* Search */}
+      <div className="px-3 pt-4 pb-1">
+        <Link
+          href="/search"
+          onClick={onNavClick}
+          className={cn(
+            'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 ease-out',
+            pathname.startsWith('/search')
+              ? 'bg-emerald-500/10 text-emerald-400 shadow-[0_0_20px_-6px_rgba(16,185,129,0.25)]'
+              : 'text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200'
+          )}
+        >
+          {pathname.startsWith('/search') && (
+            <div className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-emerald-400 to-cyan-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+          )}
+          <div
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300',
+              pathname.startsWith('/search')
+                ? 'bg-emerald-500/15'
+                : 'bg-transparent group-hover:bg-zinc-700/50'
+            )}
+          >
+            <Search className="h-[18px] w-[18px] transition-transform duration-300 group-hover:scale-110" />
+          </div>
+          Search
+          <div className="ml-auto flex items-center gap-1">
+            <kbd className="bg-zinc-800 rounded px-1.5 py-0.5 text-[10px] text-zinc-500 font-mono">Ctrl</kbd>
+            <kbd className="bg-zinc-800 rounded px-1.5 py-0.5 text-[10px] text-zinc-500 font-mono">K</kbd>
+          </div>
         </Link>
       </div>
 
