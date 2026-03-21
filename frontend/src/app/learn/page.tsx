@@ -39,6 +39,18 @@ const colorMap: Record<string, { bg: string; text: string; border: string; badge
     border: 'border-red-500/20',
     badge: 'bg-red-500/15 text-red-400',
   },
+  cyan: {
+    bg: 'bg-cyan-500/10',
+    text: 'text-cyan-400',
+    border: 'border-cyan-500/20',
+    badge: 'bg-cyan-500/15 text-cyan-400',
+  },
+  zinc: {
+    bg: 'bg-zinc-500/10',
+    text: 'text-zinc-400',
+    border: 'border-zinc-500/20',
+    badge: 'bg-zinc-500/15 text-zinc-400',
+  },
 };
 
 export default function LearnPage() {

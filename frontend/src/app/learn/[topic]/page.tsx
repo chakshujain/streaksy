@@ -9,6 +9,12 @@ import { cn } from '@/lib/cn';
 import { ArrowLeft, ArrowRight, Clock, Lock } from 'lucide-react';
 
 const colorMap: Record<string, { bg: string; text: string; border: string; accent: string }> = {
+  emerald: {
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-400',
+    border: 'border-emerald-500/20',
+    accent: 'bg-emerald-500',
+  },
   blue: {
     bg: 'bg-blue-500/10',
     text: 'text-blue-400',
@@ -32,6 +38,18 @@ const colorMap: Record<string, { bg: string; text: string; border: string; accen
     text: 'text-red-400',
     border: 'border-red-500/20',
     accent: 'bg-red-500',
+  },
+  cyan: {
+    bg: 'bg-cyan-500/10',
+    text: 'text-cyan-400',
+    border: 'border-cyan-500/20',
+    accent: 'bg-cyan-500',
+  },
+  zinc: {
+    bg: 'bg-zinc-500/10',
+    text: 'text-zinc-400',
+    border: 'border-zinc-500/20',
+    accent: 'bg-zinc-500',
   },
 };
 

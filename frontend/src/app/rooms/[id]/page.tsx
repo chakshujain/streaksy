@@ -65,13 +65,15 @@ export default function RoomDetailPage() {
   );
 
   // Fetch problems for multi-problem rooms
+  const roomMode = room?.mode;
+  const roomLoaded = !!room;
   useEffect(() => {
-    if (room?.mode === 'multi' || room) {
+    if (roomLoaded) {
       roomsApi.getProblems(roomId).then(r => {
         setProblems(r.data.problems || []);
       }).catch(() => {});
     }
-  }, [room?.id, room?.mode, roomId]);
+  }, [roomLoaded, roomMode, roomId]);
 
   // Socket connection
   useEffect(() => {
