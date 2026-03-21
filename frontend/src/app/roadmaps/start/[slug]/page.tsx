@@ -16,28 +16,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-/* ------------------------------------------------------------------ */
-/*  Template data (duplicated for now — will come from API)            */
-/* ------------------------------------------------------------------ */
-const templates: Record<string, { slug: string; name: string; icon: string; category: string; color: string; duration: number; difficulty: string; description: string }> = {
-  'dsa-patterns-30': { slug: 'dsa-patterns-30', name: 'DSA Patterns', icon: '\u{1F9E9}', category: 'Coding & Tech', color: 'emerald', duration: 30, difficulty: 'intermediate', description: 'Master 19 essential problem-solving patterns' },
-  'interview-prep-30': { slug: 'interview-prep-30', name: 'Interview Prep 30-Day', icon: '\u{1F3AF}', category: 'Coding & Tech', color: 'emerald', duration: 30, difficulty: 'intermediate', description: 'Structured plan for coding interviews' },
-  'interview-prep-60': { slug: 'interview-prep-60', name: 'Interview Prep 60-Day', icon: '\u{1F3AF}', category: 'Coding & Tech', color: 'emerald', duration: 60, difficulty: 'intermediate', description: 'Comprehensive 60-day interview preparation' },
-  'interview-prep-90': { slug: 'interview-prep-90', name: 'Interview Prep 90-Day', icon: '\u{1F3AF}', category: 'Coding & Tech', color: 'emerald', duration: 90, difficulty: 'advanced', description: 'Full coverage for senior-level interviews' },
-  'learn-databases': { slug: 'learn-databases', name: 'Learn Databases', icon: '\u{1F5C4}\uFE0F', category: 'Coding & Tech', color: 'blue', duration: 14, difficulty: 'beginner', description: 'From SQL basics to sharding and replication' },
-  'learn-system-design': { slug: 'learn-system-design', name: 'Learn System Design', icon: '\u{1F3D7}\uFE0F', category: 'Coding & Tech', color: 'purple', duration: 17, difficulty: 'intermediate', description: 'Load balancers to designing Netflix' },
-  'learn-oops': { slug: 'learn-oops', name: 'Learn OOP', icon: '\u{1F9F1}', category: 'Coding & Tech', color: 'amber', duration: 14, difficulty: 'beginner', description: 'SOLID principles to design patterns' },
-  'learn-multithreading': { slug: 'learn-multithreading', name: 'Learn Multithreading', icon: '\u26A1', category: 'Coding & Tech', color: 'red', duration: 12, difficulty: 'intermediate', description: 'Threads, locks, deadlocks, async' },
-  '100-days-of-code': { slug: '100-days-of-code', name: '100 Days of Code', icon: '\u{1F4BB}', category: 'Coding & Tech', color: 'emerald', duration: 100, difficulty: 'beginner', description: 'Code every day for 100 days' },
-  'gym-daily-30': { slug: 'gym-daily-30', name: 'Go to Gym Daily', icon: '\u{1F4AA}', category: 'Fitness & Health', color: 'blue', duration: 30, difficulty: 'beginner', description: 'Build a daily gym habit' },
-  '10k-steps-30': { slug: '10k-steps-30', name: '10,000 Steps Challenge', icon: '\u{1F3C3}', category: 'Fitness & Health', color: 'blue', duration: 30, difficulty: 'beginner', description: 'Walk 10K steps every day for 30 days' },
-  'couch-to-5k': { slug: 'couch-to-5k', name: 'Couch to 5K', icon: '\u{1F3C3}\u200D\u2642\uFE0F', category: 'Fitness & Health', color: 'blue', duration: 60, difficulty: 'beginner', description: 'From zero to running 5 kilometers' },
-  'quit-smoking': { slug: 'quit-smoking', name: 'Quit Smoking', icon: '\u{1F6AD}', category: 'Fitness & Health', color: 'red', duration: 90, difficulty: 'advanced', description: '90-day journey to freedom' },
-  'meditation-30': { slug: 'meditation-30', name: '30-Day Meditation', icon: '\u{1F9D8}', category: 'Fitness & Health', color: 'purple', duration: 30, difficulty: 'beginner', description: 'Build a mindfulness habit' },
-  'read-book-month': { slug: 'read-book-month', name: 'Read 1 Book/Month', icon: '\u{1F4D6}', category: 'Learning & Reading', color: 'amber', duration: 30, difficulty: 'beginner', description: 'Daily reading goals with milestones' },
-  'learn-language-90': { slug: 'learn-language-90', name: 'Learn a New Language', icon: '\u{1F30D}', category: 'Learning & Reading', color: 'amber', duration: 90, difficulty: 'intermediate', description: 'Daily practice for 90 days' },
-  'daily-journal-30': { slug: 'daily-journal-30', name: 'Write Daily Journal', icon: '\u270D\uFE0F', category: 'Learning & Reading', color: 'amber', duration: 30, difficulty: 'beginner', description: 'Daily journaling for self-reflection' },
-};
+import { templatesBySlug } from '@/lib/roadmap-templates';
 
 const difficultyColors: Record<string, string> = {
   beginner: 'bg-emerald-500/10 text-emerald-400',
@@ -49,7 +28,7 @@ export default function RoadmapStartPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
-  const template = templates[slug];
+  const template = templatesBySlug[slug];
 
   const [startDate, setStartDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [mode, setMode] = useState<'solo' | 'friends'>('solo');
