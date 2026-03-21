@@ -551,6 +551,246 @@ export const topics: Topic[] = [
     ],
   },
   {
+    slug: 'frontend-dev',
+    name: 'Frontend Development',
+    description:
+      'From HTML basics to deploying a React app — build real UIs with modern tools and best practices.',
+    icon: '🎨',
+    color: 'cyan',
+    lessons: [
+      {
+        slug: 'html-fundamentals',
+        title: 'HTML Fundamentals',
+        description:
+          'Elements, semantic HTML, forms, and accessibility — the skeleton of every web page.',
+        difficulty: 'beginner',
+        duration: '15 min',
+        icon: '🦴',
+        steps: [],
+      },
+      {
+        slug: 'css-basics',
+        title: 'CSS Basics',
+        description:
+          'Selectors, the box model, Flexbox, and Grid — make things look beautiful and responsive.',
+        difficulty: 'beginner',
+        duration: '20 min',
+        icon: '🎨',
+        steps: [],
+      },
+      {
+        slug: 'javascript-essentials',
+        title: 'JavaScript Essentials',
+        description:
+          'Variables, functions, DOM manipulation, and events — bring your pages to life.',
+        difficulty: 'beginner',
+        duration: '20 min',
+        icon: '⚡',
+        steps: [],
+      },
+      {
+        slug: 'responsive-design',
+        title: 'Responsive Design',
+        description:
+          'Media queries, mobile-first approach, breakpoints, and fluid typography.',
+        difficulty: 'intermediate',
+        duration: '15 min',
+        icon: '📱',
+        steps: [],
+      },
+      {
+        slug: 'react-basics',
+        title: 'React Basics',
+        description:
+          'Components, JSX, props, state, and the render cycle — thinking in React.',
+        difficulty: 'intermediate',
+        duration: '20 min',
+        icon: '⚛️',
+        steps: [],
+      },
+      {
+        slug: 'react-state-and-effects',
+        title: 'React State & Effects',
+        description:
+          'useState, useEffect, the dependency array, lifecycle, and custom hooks.',
+        difficulty: 'intermediate',
+        duration: '20 min',
+        icon: '🔄',
+        steps: [],
+      },
+      {
+        slug: 'api-integration',
+        title: 'API Integration',
+        description:
+          'Fetch, async/await, loading states, error handling, and authentication headers.',
+        difficulty: 'intermediate',
+        duration: '15 min',
+        icon: '🔌',
+        steps: [],
+      },
+      {
+        slug: 'build-and-deploy',
+        title: 'Build & Deploy',
+        description:
+          'Vite, bundling, environment variables, and deploying to Vercel or Netlify.',
+        difficulty: 'advanced',
+        duration: '15 min',
+        icon: '🚀',
+        steps: [],
+      },
+    ],
+  },
+  {
+    slug: 'backend-dev',
+    name: 'Backend Development',
+    description:
+      'Build APIs, connect databases, handle auth, and deploy — the full backend journey with Node.js and Express.',
+    icon: '⚙️',
+    color: 'emerald',
+    lessons: [
+      {
+        slug: 'what-is-a-server',
+        title: 'What is a Server?',
+        description:
+          'The client-server model, HTTP methods, status codes, and the request lifecycle.',
+        difficulty: 'beginner',
+        duration: '15 min',
+        icon: '🖥️',
+        steps: [],
+      },
+      {
+        slug: 'nodejs-and-express',
+        title: 'Node.js & Express',
+        description:
+          'Setup, routing, middleware pipeline, and error handling with Express.js.',
+        difficulty: 'beginner',
+        duration: '20 min',
+        icon: '🟢',
+        steps: [],
+      },
+      {
+        slug: 'rest-api-design',
+        title: 'REST API Design',
+        description:
+          'CRUD operations, status codes, pagination, versioning, and best practices.',
+        difficulty: 'intermediate',
+        duration: '15 min',
+        icon: '📐',
+        steps: [],
+      },
+      {
+        slug: 'database-integration',
+        title: 'Database Integration',
+        description:
+          'SQL with PostgreSQL, connection pools, JOINs, and ORM vs raw SQL trade-offs.',
+        difficulty: 'intermediate',
+        duration: '20 min',
+        icon: '🗄️',
+        steps: [],
+      },
+      {
+        slug: 'authentication',
+        title: 'Authentication',
+        description:
+          'Password hashing, JWT tokens, sessions, OAuth 2.0, and role-based access control.',
+        difficulty: 'intermediate',
+        duration: '20 min',
+        icon: '🔐',
+        steps: [],
+      },
+      {
+        slug: 'error-handling-and-validation',
+        title: 'Error Handling & Validation',
+        description:
+          'Zod schemas, validation middleware, structured errors, and logging with Pino.',
+        difficulty: 'intermediate',
+        duration: '15 min',
+        icon: '🛡️',
+        steps: [],
+      },
+      {
+        slug: 'file-uploads-and-storage',
+        title: 'File Uploads & Storage',
+        description:
+          'Multer for uploads, S3 cloud storage, presigned URLs, and security best practices.',
+        difficulty: 'advanced',
+        duration: '15 min',
+        icon: '📁',
+        steps: [],
+      },
+      {
+        slug: 'deployment',
+        title: 'Deployment',
+        description:
+          'Docker, docker-compose, PM2, environment variables, and deployment platforms.',
+        difficulty: 'advanced',
+        duration: '20 min',
+        icon: '🚀',
+        steps: [],
+      },
+    ],
+  },
+  {
+    slug: 'git-github',
+    name: 'Git & GitHub Mastery',
+    description:
+      'From git init to advanced workflows — branching, PRs, rebasing, and team collaboration secrets.',
+    icon: '🌿',
+    color: 'zinc',
+    lessons: [
+      {
+        slug: 'git-basics',
+        title: 'Git Basics',
+        description:
+          'Init, add, commit, log, diff — the core Git workflow and the three areas.',
+        difficulty: 'beginner',
+        duration: '15 min',
+        icon: '📝',
+        steps: [],
+      },
+      {
+        slug: 'branching-and-merging',
+        title: 'Branching & Merging',
+        description:
+          'Create branches, fast-forward and three-way merges, and resolve conflicts.',
+        difficulty: 'beginner',
+        duration: '15 min',
+        icon: '🌿',
+        steps: [],
+      },
+      {
+        slug: 'github-workflows',
+        title: 'GitHub Workflows',
+        description:
+          'Pull requests, code review, issues, and branch protection rules.',
+        difficulty: 'intermediate',
+        duration: '15 min',
+        icon: '🐙',
+        steps: [],
+      },
+      {
+        slug: 'advanced-git',
+        title: 'Advanced Git',
+        description:
+          'Rebase, interactive rebase, cherry-pick, stash, and reflog recovery.',
+        difficulty: 'advanced',
+        duration: '20 min',
+        icon: '🧙',
+        steps: [],
+      },
+      {
+        slug: 'team-collaboration',
+        title: 'Team Collaboration',
+        description:
+          'Branching strategies, conventional commits, Git hooks, CI/CD, and the fork model.',
+        difficulty: 'advanced',
+        duration: '20 min',
+        icon: '👥',
+        steps: [],
+      },
+    ],
+  },
+  {
     slug: 'multithreading',
     name: 'Multithreading',
     description:
@@ -712,3 +952,11 @@ populateLessons('system-design', systemDesignLessons);
 import { multithreadingLessons } from '@/data/multithreading-content';
 
 populateLessons('multithreading', multithreadingLessons);
+
+import { frontendLessons } from '@/data/frontend-content';
+import { backendLessons } from '@/data/backend-content';
+import { gitLessons } from '@/data/git-content';
+
+populateLessons('frontend-dev', frontendLessons);
+populateLessons('backend-dev', backendLessons);
+populateLessons('git-github', gitLessons);
