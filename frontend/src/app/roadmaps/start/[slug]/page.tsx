@@ -78,13 +78,14 @@ const DSA_PATTERNS_CONTENT: TopicContent = {
 /* Rich content map — each template maps to content library items */
 const CONTENT_TOPIC_MAP: Record<string, TopicContent[]> = {
   'crack-the-job-together': [
-    DSA_PATTERNS_CONTENT,
-    buildTopicContent('system-design'),
     buildTopicContent('databases'),
     buildTopicContent('oops'),
     buildTopicContent('multithreading'),
+    buildTopicContent('system-design'),
+    DSA_PATTERNS_CONTENT,
     buildTopicContent('design-patterns'),
-    { name: 'Behavioral', icon: '🎯', lessonCount: 0, lessons: [], topicSlug: undefined },
+    { name: 'Problem Sheets', icon: '📋', lessonCount: 0, lessons: [], topicSlug: undefined },
+    { name: 'Mock Interviews', icon: '🎯', lessonCount: 0, lessons: [], topicSlug: undefined },
   ].filter(Boolean) as TopicContent[],
   'dsa-patterns-30': [DSA_PATTERNS_CONTENT],
   'learn-system-design': [buildTopicContent('system-design')].filter(Boolean) as TopicContent[],
@@ -101,7 +102,7 @@ const SHEET_TEMPLATES = new Set(['solve-striver-sheet', 'solve-love-babbar-sheet
 
 /* Fallback simple topic list for templates without content mapping */
 const TOPIC_MAP: Record<string, string[]> = {
-  'crack-the-job-together': ['DSA Patterns', 'System Design', 'Databases', 'OOP', 'Multithreading', 'Design Patterns', 'Behavioral'],
+  'crack-the-job-together': ['Databases', 'OOP', 'Multithreading', 'System Design', 'DSA Patterns', 'Design Patterns', 'Problem Sheets', 'Mock Interviews'],
   'solve-striver-sheet': ['Easy', 'Medium', 'Hard'],
   'solve-love-babbar-sheet': ['Easy', 'Medium', 'Hard'],
   'leetcode-top-150': ['Easy', 'Medium', 'Hard'],

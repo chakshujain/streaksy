@@ -98,55 +98,68 @@ function buildDsaPatterns30(): ContentItem[] {
 }
 
 // ── Crack the Job Together (90 days) ─────────────────────────────────────────
-// Combines DSA Patterns + System Design + Databases + OOP + Multithreading + Design Patterns
-// Interleaves topics across 90 days for variety
+// Sequential: complete one topic fully, then move to next.
+// Includes problem-solving days from sheets (Blind 75 problems).
+//
+// Schedule:
+//   Phase 1 (Days 1-13):  Databases (13 lessons)
+//   Phase 2 (Days 14-27): OOP (14 lessons)
+//   Phase 3 (Days 28-39): Multithreading (12 lessons)
+//   Phase 4 (Days 40-56): System Design (17 lessons)
+//   Phase 5 (Days 57-75): DSA Patterns (19 patterns)
+//   Phase 6 (Days 76-85): Design Patterns (10 key patterns)
+//   Phase 7 (Days 86-90): Mock interviews + final review
+//
+// After each topic phase, a "Solve Problems" day is inserted using
+// Blind 75 / NeetCode problems related to that topic.
 
 function buildCrackTheJob(): ContentItem[] {
-  const topicContent: { topic: string; items: ContentItem[] }[] = [
-    { topic: 'DSA Patterns', items: buildDsaPatterns30().filter(i => i.slug !== 'review') },
-    { topic: 'System Design', items: lessonsFromTopic('system-design') },
-    { topic: 'Databases', items: lessonsFromTopic('databases') },
-    { topic: 'OOP', items: lessonsFromTopic('oops') },
-    { topic: 'Multithreading', items: lessonsFromTopic('multithreading') },
-    { topic: 'Design Patterns', items: lessonsFromTopic('design-patterns') },
+  const result: ContentItem[] = [];
+
+  // Define phases — each is a complete topic block
+  const phases: { topic: string; items: ContentItem[]; problemDays: number }[] = [
+    { topic: 'Databases', items: lessonsFromTopic('databases'), problemDays: 0 },
+    { topic: 'OOP', items: lessonsFromTopic('oops'), problemDays: 0 },
+    { topic: 'Multithreading', items: lessonsFromTopic('multithreading'), problemDays: 0 },
+    { topic: 'System Design', items: lessonsFromTopic('system-design'), problemDays: 0 },
+    { topic: 'DSA Patterns', items: buildDsaPatterns30().filter(i => i.slug !== 'review'), problemDays: 0 },
+    { topic: 'Design Patterns', items: lessonsFromTopic('design-patterns').slice(0, 10), problemDays: 0 },
   ];
 
-  // Round-robin interleave: cycle through topics, picking one item from each
-  const result: ContentItem[] = [];
-  const indices = topicContent.map(() => 0);
-  let round = 0;
-
-  while (result.length < 90) {
-    let added = false;
-    for (let t = 0; t < topicContent.length; t++) {
-      if (result.length >= 90) break;
-      if (indices[t] < topicContent[t].items.length) {
-        result.push(topicContent[t].items[indices[t]]);
-        indices[t]++;
-        added = true;
-      }
+  for (const phase of phases) {
+    // Add all lessons for this topic sequentially
+    for (const item of phase.items) {
+      result.push(item);
     }
-    // Every 6 items (1 round), add a review day if we haven't filled 90 yet
-    round++;
-    if (round % 3 === 0 && result.length < 90 && added) {
+    // After completing a topic, add a problem-solving day
+    if (result.length < 88) {
       result.push({
-        type: 'lesson',
-        slug: `review-${round}`,
-        title: `Review & Mock Interview (Week ${Math.ceil(result.length / 7)})`,
-        link: '/revision',
+        type: 'problem',
+        slug: `practice-${phase.topic.toLowerCase().replace(/\s+/g, '-')}`,
+        title: `Solve Problems: ${phase.topic}`,
+        link: '/problems',
+        topicSlug: phase.topic.toLowerCase(),
       });
     }
-    // Safety: if no items were added, fill remaining with review days
-    if (!added) {
-      while (result.length < 90) {
-        result.push({
-          type: 'lesson',
-          slug: `review-fill-${result.length}`,
-          title: `Day ${result.length + 1}: Review & Practice`,
-          link: '/revision',
-        });
-      }
-    }
+  }
+
+  // Fill remaining days with mock interview & review
+  const mockTitles = [
+    'Mock Interview: DSA Round',
+    'Mock Interview: System Design Round',
+    'Mock Interview: Behavioral Round',
+    'Final Review: Weak Topics',
+    'Final Review: Full Mock',
+  ];
+  let mockIdx = 0;
+  while (result.length < 90) {
+    result.push({
+      type: 'problem',
+      slug: `mock-${result.length}`,
+      title: mockTitles[mockIdx % mockTitles.length],
+      link: '/revision',
+    });
+    mockIdx++;
   }
 
   return result.slice(0, 90);
