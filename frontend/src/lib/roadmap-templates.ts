@@ -26,6 +26,7 @@ export const roadmapTemplates: RoadmapTemplateData[] = [
   { slug: 'learn-databases', name: 'Learn Databases', icon: '🗄️', category: 'Coding & Tech', color: 'blue', duration: 14, difficulty: 'beginner', description: 'SQL basics to sharding and replication', participants: 98 },
   { slug: 'learn-oops', name: 'Learn OOP', icon: '🧱', category: 'Coding & Tech', color: 'amber', duration: 14, difficulty: 'beginner', description: 'SOLID principles to design patterns', participants: 67 },
   { slug: 'learn-multithreading', name: 'Learn Multithreading', icon: '⚡', category: 'Coding & Tech', color: 'red', duration: 12, difficulty: 'intermediate', description: 'Threads, locks, deadlocks, async', participants: 45 },
+  { slug: 'learn-design-patterns', name: 'Learn Design Patterns', icon: '🧬', category: 'Coding & Tech', color: 'teal', duration: 30, difficulty: 'intermediate', description: 'Gang of Four patterns — Singleton, Factory, Observer, Strategy, and more', participants: 0 },
   { slug: '100-days-of-code', name: '100 Days of Code', icon: '💻', category: 'Coding & Tech', color: 'emerald', duration: 100, difficulty: 'beginner', description: 'Code every day for 100 days', participants: 423, featured: true },
   // Fitness & Health
   { slug: 'gym-daily-30', name: 'Go to Gym Daily', icon: '💪', category: 'Fitness & Health', color: 'blue', duration: 30, difficulty: 'beginner', description: 'Build a daily gym habit', participants: 567 },

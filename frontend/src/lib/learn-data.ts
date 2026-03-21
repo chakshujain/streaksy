@@ -791,6 +791,146 @@ export const topics: Topic[] = [
     ],
   },
   {
+    slug: 'design-patterns',
+    name: 'Design Patterns',
+    description:
+      'Master the essential Gang of Four patterns — creational, structural, and behavioral — with real-world examples and code.',
+    icon: '🧬',
+    color: 'teal',
+    lessons: [
+      {
+        slug: 'what-are-design-patterns',
+        title: 'What are Design Patterns?',
+        description:
+          'History, the Gang of Four, pattern categories, and why patterns matter for every developer.',
+        difficulty: 'beginner',
+        duration: '15 min',
+        icon: '📖',
+        steps: [],
+      },
+      {
+        slug: 'singleton-pattern',
+        title: 'Singleton Pattern',
+        description:
+          'Ensure a class has exactly one instance with global access — lazy init, thread safety, and trade-offs.',
+        difficulty: 'beginner',
+        duration: '15 min',
+        icon: '1️⃣',
+        steps: [],
+      },
+      {
+        slug: 'factory-method-pattern',
+        title: 'Factory Method Pattern',
+        description:
+          'Delegate object creation to subclasses without specifying the exact class to instantiate.',
+        difficulty: 'intermediate',
+        duration: '15 min',
+        icon: '🏭',
+        steps: [],
+      },
+      {
+        slug: 'abstract-factory-pattern',
+        title: 'Abstract Factory Pattern',
+        description:
+          'Create families of related objects that are guaranteed to be compatible with each other.',
+        difficulty: 'intermediate',
+        duration: '20 min',
+        icon: '🏗️',
+        steps: [],
+      },
+      {
+        slug: 'builder-pattern',
+        title: 'Builder Pattern',
+        description:
+          'Construct complex objects step by step with a fluent, readable API.',
+        difficulty: 'intermediate',
+        duration: '15 min',
+        icon: '🔧',
+        steps: [],
+      },
+      {
+        slug: 'observer-pattern',
+        title: 'Observer Pattern',
+        description:
+          'Define one-to-many dependencies so that when one object changes, all dependents are notified.',
+        difficulty: 'intermediate',
+        duration: '20 min',
+        icon: '👀',
+        steps: [],
+      },
+      {
+        slug: 'strategy-pattern',
+        title: 'Strategy Pattern',
+        description:
+          'Define a family of algorithms, encapsulate each one, and make them interchangeable at runtime.',
+        difficulty: 'intermediate',
+        duration: '15 min',
+        icon: '♟️',
+        steps: [],
+      },
+      {
+        slug: 'decorator-pattern',
+        title: 'Decorator Pattern',
+        description:
+          'Attach additional responsibilities to objects dynamically by wrapping them.',
+        difficulty: 'intermediate',
+        duration: '20 min',
+        icon: '🎀',
+        steps: [],
+      },
+      {
+        slug: 'adapter-pattern',
+        title: 'Adapter Pattern',
+        description:
+          'Convert the interface of a class into another interface that clients expect.',
+        difficulty: 'intermediate',
+        duration: '15 min',
+        icon: '🔌',
+        steps: [],
+      },
+      {
+        slug: 'command-pattern',
+        title: 'Command Pattern',
+        description:
+          'Encapsulate actions as objects to enable undo/redo, queuing, and logging of operations.',
+        difficulty: 'advanced',
+        duration: '20 min',
+        icon: '📜',
+        steps: [],
+      },
+      {
+        slug: 'template-method-pattern',
+        title: 'Template Method Pattern',
+        description:
+          'Define the skeleton of an algorithm in a base class, letting subclasses fill in specific steps.',
+        difficulty: 'advanced',
+        duration: '15 min',
+        icon: '📋',
+        steps: [],
+      },
+      {
+        slug: 'state-pattern',
+        title: 'State Pattern',
+        description:
+          'Allow an object to change its behavior when its internal state changes.',
+        difficulty: 'advanced',
+        duration: '20 min',
+        icon: '🔀',
+        steps: [],
+      },
+      {
+        slug: 'facade-pattern',
+        title: 'Facade Pattern',
+        description:
+          'Provide a simplified interface to a complex subsystem, hiding internal complexity.',
+        difficulty: 'intermediate',
+        duration: '15 min',
+        icon: '🏛️',
+        steps: [],
+      },
+    ],
+  },
+  {
     slug: 'multithreading',
     name: 'Multithreading',
     description:
@@ -950,8 +1090,10 @@ import { systemDesignLessons } from '@/data/system-design-content';
 populateLessons('system-design', systemDesignLessons);
 
 import { multithreadingLessons } from '@/data/multithreading-content';
+import { designPatternsLessons } from '@/data/design-patterns-content';
 
 populateLessons('multithreading', multithreadingLessons);
+populateLessons('design-patterns', designPatternsLessons);
 
 import { frontendLessons } from '@/data/frontend-content';
 import { backendLessons } from '@/data/backend-content';
