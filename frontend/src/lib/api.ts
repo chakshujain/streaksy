@@ -380,4 +380,16 @@ export const prepApi = {
   getLeaderboard: (id: string) => api.get(`/prep/${id}/leaderboard`),
 };
 
+// ── Roadmaps ──
+export const roadmapsApi = {
+  getTemplates: () => api.get('/roadmaps/templates'),
+  getFeatured: () => api.get('/roadmaps/templates/featured'),
+  getActive: () => api.get('/roadmaps/active'),
+  get: (id: string) => api.get(`/roadmaps/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/roadmaps', data),
+  updateProgress: (id: string, day: number, completed: boolean) =>
+    api.put(`/roadmaps/${id}/progress`, { day, completed }),
+  getToday: () => api.get('/roadmaps/today'),
+};
+
 export default api;

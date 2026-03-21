@@ -1,0 +1,35 @@
+import { Router } from 'express';
+import { roadmapsController } from '../controller/roadmaps.controller';
+import { authenticate } from '../../../middleware/auth';
+import { asyncHandler } from '../../../common/utils/asyncHandler';
+
+const router = Router();
+
+router.use(authenticate);
+
+// Categories & templates (browsing)
+router.get('/categories', asyncHandler(roadmapsController.getCategories));
+router.get('/templates', asyncHandler(roadmapsController.getTemplates));
+router.get('/templates/featured', asyncHandler(roadmapsController.getFeaturedTemplates));
+router.get('/templates/:slug', asyncHandler(roadmapsController.getTemplateBySlug));
+
+// Today's tasks across all active roadmaps
+router.get('/today', asyncHandler(roadmapsController.getTodayTasks));
+
+// User roadmaps
+router.post('/', asyncHandler(roadmapsController.createUserRoadmap));
+router.get('/active', asyncHandler(roadmapsController.getActiveRoadmaps));
+router.get('/all', asyncHandler(roadmapsController.getAllRoadmaps));
+router.get('/share/:code', asyncHandler(roadmapsController.getByShareCode));
+
+// Single roadmap operations
+router.get('/:id', asyncHandler(roadmapsController.getRoadmapById));
+router.patch('/:id', asyncHandler(roadmapsController.updateRoadmap));
+router.delete('/:id', asyncHandler(roadmapsController.deleteRoadmap));
+router.put('/:id/progress', asyncHandler(roadmapsController.updateDayProgress));
+router.get('/:id/progress', asyncHandler(roadmapsController.getDayProgress));
+router.get('/:id/streak', asyncHandler(roadmapsController.getStreak));
+router.get('/:id/leaderboard', asyncHandler(roadmapsController.getLeaderboard));
+router.post('/:id/link-group', asyncHandler(roadmapsController.linkGroup));
+
+export default router;

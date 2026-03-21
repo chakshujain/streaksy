@@ -23,15 +23,7 @@ export const multithreadingLessons: Record<string, {
         title: 'What Exactly IS a Thread?',
         content:
           'Technically, a thread is a **lightweight unit of execution** within a process. Here is what a thread has:\n\n- Its own **program counter** (where in the code it is executing)\n- Its own **stack** (local variables, function call chain)\n- Its own **register state** (CPU register values)\n\nBut threads within the same process **share**:\n- **Heap memory** (objects, data structures)\n- **File handles** (open files, sockets)\n- **Code segment** (the program itself)\n\nThis sharing is both the superpower and the danger of threads.',
-        visual: 'diagram',
-        visualData: {
-          title: 'Thread Anatomy',
-          nodes: [
-            'Process: [Heap Memory] [Code] [File Handles] — SHARED',
-            'Thread 1: [Stack] [Registers] [Program Counter] — PRIVATE',
-            'Thread 2: [Stack] [Registers] [Program Counter] — PRIVATE',
-          ],
-        },
+        diagram: `┌─────────────────────────────────────┐\n│            PROCESS                  │\n│  ┌─────────────────────────────┐   │\n│  │  SHARED: Heap, Code, Files  │   │\n│  └─────────────────────────────┘   │\n│                                     │\n│  ┌──────────┐    ┌──────────┐      │\n│  │ Thread 1 │    │ Thread 2 │      │\n│  │ ┌──────┐ │    │ ┌──────┐ │      │\n│  │ │Stack │ │    │ │Stack │ │      │\n│  │ │Regs  │ │    │ │Regs  │ │      │\n│  │ │PC    │ │    │ │PC    │ │      │\n│  │ └──────┘ │    │ └──────┘ │      │\n│  │ PRIVATE  │    │ PRIVATE  │      │\n│  └──────────┘    └──────────┘      │\n└─────────────────────────────────────┘`,
         keyTakeaway:
           'Each thread has its own stack and program counter, but shares heap memory and resources with other threads in the same process.',
       },
@@ -81,16 +73,13 @@ print(f"Threaded time: {time.time() - start:.1f}s")  # ~4.0s (max of 3,2,4)`,
         title: 'Thread Lifecycle',
         content:
           'A thread goes through several states during its life:\n\n1. **New** — Thread object created but not started.\n2. **Runnable** — Thread is ready to run, waiting for CPU time.\n3. **Running** — Thread is actively executing on a CPU core.\n4. **Blocked/Waiting** — Thread is paused (waiting for a lock, sleeping, or waiting for I/O).\n5. **Terminated** — Thread has finished execution.\n\nThe operating system\'s **scheduler** decides which runnable threads get CPU time.',
-        visual: 'flowchart',
-        visualData: {
-          steps: [
-            'New (created)',
-            'Runnable (start() called)',
-            'Running (scheduler picks it)',
-            'Blocked/Waiting (sleep, lock, I/O)',
-            'Terminated (run() completes)',
-          ],
-        },
+        flow: [
+          { label: 'New', description: 'Thread created', icon: '🆕' },
+          { label: 'Runnable', description: 'start() called', icon: '🏃' },
+          { label: 'Running', description: 'Scheduler picks it', icon: '⚡' },
+          { label: 'Blocked', description: 'sleep, lock, I/O', icon: '⏸️' },
+          { label: 'Terminated', description: 'run() completes', icon: '🏁' },
+        ],
         keyTakeaway:
           'Thread lifecycle: New -> Runnable -> Running -> Blocked/Waiting -> Terminated.',
       },
@@ -167,30 +156,17 @@ print(f"Threaded time: {time.time() - start:.1f}s")  # ~4.0s (max of 3,2,4)`,
         title: 'Memory Model Comparison',
         content:
           'The fundamental difference is how memory is organized:',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'Process',
-            items: [
-              'Own virtual memory space',
-              'Own heap, stack, code segment',
-              'Isolated from other processes',
-              'Communication via IPC (pipes, sockets)',
-              'Heavy to create (~10ms)',
-              'Crash does NOT affect other processes',
-            ],
-          },
-          right: {
-            title: 'Thread',
-            items: [
-              'Shares process memory',
-              'Own stack; shared heap and code',
-              'Can see other threads\' data',
-              'Communication via shared variables',
-              'Light to create (~1ms)',
-              'Crash CAN take down the whole process',
-            ],
-          },
+        comparison: {
+          leftTitle: 'Process',
+          rightTitle: 'Thread',
+          items: [
+            { left: 'Own virtual memory space', right: 'Shares process memory' },
+            { left: 'Own heap, stack, code segment', right: 'Own stack; shared heap and code' },
+            { left: 'Isolated from other processes', right: 'Can see other threads\' data' },
+            { left: 'Communication via IPC (pipes, sockets)', right: 'Communication via shared variables' },
+            { left: 'Heavy to create (~10ms)', right: 'Light to create (~1ms)' },
+            { left: 'Crash does NOT affect other processes', right: 'Crash CAN take down whole process' },
+          ],
         },
         keyTakeaway:
           'Processes: isolated, safe, expensive. Threads: shared memory, fast, risky.',
@@ -199,8 +175,7 @@ print(f"Threaded time: {time.time() - start:.1f}s")  # ~4.0s (max of 3,2,4)`,
         title: 'Context Switching Cost',
         content:
           'When the CPU switches from one task to another, it must save the current state and load the new state. This is called a **context switch**.\n\n**Thread context switch** is cheap:\n- Save/restore registers, program counter, and stack pointer\n- Memory mapping stays the same (same process)\n\n**Process context switch** is expensive:\n- Everything above PLUS:\n- Flush CPU caches (different memory space)\n- Update memory mapping (page tables)\n- Flush TLB (Translation Lookaside Buffer)\n\nThread switching is typically 5-10x faster than process switching.',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Aspect', 'Thread Switch', 'Process Switch'],
           rows: [
             ['Registers', 'Save/restore', 'Save/restore'],
@@ -305,8 +280,7 @@ public class SharedMemoryExample {
         title: 'Summary Decision Matrix',
         content:
           'Here is your cheat sheet for choosing between processes and threads:',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Need', 'Use Processes', 'Use Threads'],
           rows: [
             ['Isolation / Fault tolerance', 'Yes', 'No'],
@@ -765,8 +739,7 @@ print(f"Balance: {account.balance}")  # NOT -199000 or 0!`,
         title: 'Why Does This Happen?',
         content:
           'The problem is that `balance = balance - amount` is not one operation — it is three:\n\n1. **READ**: Load `balance` from memory into a CPU register.\n2. **COMPUTE**: Subtract `amount` in the register.\n3. **WRITE**: Store the result back to memory.\n\nIf Thread A reads balance (1000), then Thread B reads balance (still 1000, because A has not written yet), both compute independently, and both write — one write overwrites the other.\n\nThis is called a **TOCTOU** (Time Of Check to Time Of Use) race condition.',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Step', 'Thread A', 'Thread B', 'Balance in Memory'],
           rows: [
             ['1', 'READ balance → 1000', '-', '1000'],
@@ -840,12 +813,11 @@ print(f"Counter: {counter}")`,
         title: 'Identifying Race Conditions',
         content:
           'A race condition exists when ALL three conditions are true:\n\n1. **Shared data** — Multiple threads access the same variable/resource.\n2. **Mutable data** — At least one thread modifies the data.\n3. **No synchronization** — There is no mechanism to ensure orderly access.\n\nRemove any ONE of these and the race condition disappears:\n- Make data thread-local (not shared)\n- Make data immutable (read-only)\n- Add locks/synchronization\n\nThe section of code where shared data is accessed is called a **critical section**.',
-        visual: 'diagram',
-        visualData: {
-          title: 'Race Condition Triangle',
-          nodes: ['Shared Data', 'Mutable Data', 'No Synchronization'],
-          center: 'Race Condition',
-        },
+        cards: [
+          { title: 'Shared Data', description: 'Multiple threads access the same variable. Fix: make data thread-local.', icon: '🔗', color: 'red' },
+          { title: 'Mutable Data', description: 'At least one thread modifies it. Fix: make data immutable.', icon: '✏️', color: 'red' },
+          { title: 'No Synchronization', description: 'No locks or ordering. Fix: add mutex/lock.', icon: '🔓', color: 'red' },
+        ],
         keyTakeaway:
           'Race conditions require three things: shared + mutable + unsynchronized. Remove any one to fix.',
       },
@@ -989,8 +961,7 @@ print(f"Final balance: {account.balance}")  # Correct!`,
         title: 'Types of Locks',
         content:
           'There are several types of locks for different situations:',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Lock Type', 'Description', 'Use Case'],
           rows: [
             ['Mutex / Lock', 'One thread at a time', 'Default choice for critical sections'],
@@ -1319,12 +1290,12 @@ t2.start()
         title: 'Four Conditions for Deadlock',
         content:
           'A deadlock can only occur when ALL four of these conditions are true simultaneously (Coffman Conditions):\n\n1. **Mutual Exclusion** — At least one resource is held in non-shareable mode (only one thread can use it).\n2. **Hold and Wait** — A thread holding one resource is waiting to acquire another.\n3. **No Preemption** — Resources cannot be forcibly taken from a thread; it must release voluntarily.\n4. **Circular Wait** — Thread A waits for B, B waits for C, C waits for A (a cycle).\n\nBreak ANY ONE of these four conditions and deadlock becomes impossible.',
-        visual: 'diagram',
-        visualData: {
-          title: 'Coffman Conditions (ALL required)',
-          nodes: ['Mutual Exclusion', 'Hold and Wait', 'No Preemption', 'Circular Wait'],
-          center: 'DEADLOCK',
-        },
+        cards: [
+          { title: 'Mutual Exclusion', description: 'Resource held in non-shareable mode. Break: use shareable resources.', icon: '🔒', color: 'red' },
+          { title: 'Hold and Wait', description: 'Thread holds one lock, waits for another. Break: acquire all locks at once.', icon: '✋', color: 'red' },
+          { title: 'No Preemption', description: 'Cannot forcibly take resources. Break: allow timeout/preemption.', icon: '🚫', color: 'red' },
+          { title: 'Circular Wait', description: 'A waits for B, B waits for A. Break: enforce lock ordering.', icon: '🔄', color: 'red' },
+        ],
         keyTakeaway:
           'Deadlock requires four conditions. Break any one to prevent deadlock.',
       },
@@ -1529,26 +1500,15 @@ public class DeadlockDetector {
         title: 'Binary vs Counting Semaphore',
         content:
           'There are two types:\n\n1. **Binary Semaphore** (permits = 1) — Behaves like a mutex. Only ONE thread at a time.\n2. **Counting Semaphore** (permits = N) — Up to N threads simultaneously.\n\nThe key difference from a mutex: a semaphore does NOT have ownership. Any thread can release it, not just the one that acquired it. This makes semaphores useful for signaling between threads.',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'Binary Semaphore (1 permit)',
-            items: [
-              'Only 1 thread at a time',
-              'Similar to mutex',
-              'No ownership — any thread can release',
-              'Used for signaling between threads',
-            ],
-          },
-          right: {
-            title: 'Counting Semaphore (N permits)',
-            items: [
-              'Up to N threads simultaneously',
-              'Controls access to a pool of resources',
-              'Tracks available count',
-              'Used for connection pools, rate limiting',
-            ],
-          },
+        comparison: {
+          leftTitle: 'Binary Semaphore (1 permit)',
+          rightTitle: 'Counting Semaphore (N permits)',
+          items: [
+            { left: 'Only 1 thread at a time', right: 'Up to N threads simultaneously' },
+            { left: 'Similar to mutex', right: 'Controls access to a pool of resources' },
+            { left: 'No ownership — any thread can release', right: 'Tracks available count' },
+            { left: 'Used for signaling between threads', right: 'Used for connection pools, rate limiting' },
+          ],
         },
         keyTakeaway:
           'Binary semaphore = 1 permit (like mutex). Counting semaphore = N permits (limited pool).',
@@ -1734,8 +1694,7 @@ t1.join(); t2.join()`,
         title: 'Semaphore vs Mutex — Key Differences',
         content:
           'People often confuse semaphores and mutexes. Here are the key differences:',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Feature', 'Mutex', 'Semaphore'],
           rows: [
             ['Purpose', 'Mutual exclusion', 'Resource counting / signaling'],
@@ -2100,28 +2059,16 @@ for i in range(NUM_CONSUMERS):
         title: 'Why Not Create Unlimited Threads?',
         content:
           'Creating a thread for every task seems simple, but it has severe problems:\n\n1. **Memory cost** — Each thread uses ~512KB-1MB of stack space. 10,000 threads = 10GB of memory just for stacks.\n2. **CPU overhead** — The OS scheduler must manage all threads. More threads = more context switching.\n3. **Thread creation cost** — Creating/destroying threads takes time (~0.1-1ms each).\n4. **Resource exhaustion** — The OS has a limit on threads per process (typically a few thousand).\n\nThread pools solve all of these: create N threads once, reuse them for thousands of tasks.',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'Thread-per-Task (Bad)',
-            items: [
-              'New thread for every task',
-              'Thousands of threads alive',
-              'Massive memory usage',
-              'CPU thrashes on context switching',
-              'OutOfMemoryError under load',
-            ],
-          },
-          right: {
-            title: 'Thread Pool (Good)',
-            items: [
-              'Fixed number of reusable threads',
-              '4-16 threads for most servers',
-              'Bounded memory usage',
-              'Efficient CPU utilization',
-              'Tasks queued when all threads busy',
-            ],
-          },
+        comparison: {
+          leftTitle: 'Thread-per-Task (Bad)',
+          rightTitle: 'Thread Pool (Good)',
+          items: [
+            { left: 'New thread for every task', right: 'Fixed number of reusable threads' },
+            { left: 'Thousands of threads alive', right: '4-16 threads for most servers' },
+            { left: 'Massive memory usage', right: 'Bounded memory usage' },
+            { left: 'CPU thrashes on context switching', right: 'Efficient CPU utilization' },
+            { left: 'OutOfMemoryError under load', right: 'Tasks queued when all threads busy' },
+          ],
         },
         keyTakeaway:
           'Thread pools prevent resource exhaustion by reusing a fixed number of threads for many tasks.',
@@ -2374,26 +2321,15 @@ try {
         title: 'Why Not Just Wrap Everything with synchronized?',
         content:
           'You could wrap a regular HashMap with synchronized:\n\n```java\nMap<K,V> syncMap = Collections.synchronizedMap(new HashMap<>());\n```\n\nBut this locks the **entire map** for every operation — even reads block other reads. `ConcurrentHashMap` is smarter: it uses **fine-grained locking** (lock segments, not the whole map), so multiple threads can read and write different keys simultaneously.',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'synchronizedMap',
-            items: [
-              'One giant lock for the whole map',
-              'Reads block other reads',
-              'Very poor concurrency',
-              'Simple but slow',
-            ],
-          },
-          right: {
-            title: 'ConcurrentHashMap',
-            items: [
-              'Fine-grained locks (per segment/bucket)',
-              'Reads never block',
-              'Multiple writers on different keys',
-              'Highly concurrent and fast',
-            ],
-          },
+        comparison: {
+          leftTitle: 'synchronizedMap',
+          rightTitle: 'ConcurrentHashMap',
+          items: [
+            { left: 'One giant lock for the whole map', right: 'Fine-grained locks (per segment/bucket)' },
+            { left: 'Reads block other reads', right: 'Reads never block' },
+            { left: 'Very poor concurrency', right: 'Multiple writers on different keys' },
+            { left: 'Simple but slow', right: 'Highly concurrent and fast' },
+          ],
         },
         keyTakeaway:
           'ConcurrentHashMap uses fine-grained locking for much better performance than synchronizedMap.',
@@ -2566,8 +2502,7 @@ adder.sum();        // aggregate all cells — eventually consistent`,
         title: 'Choosing the Right Data Structure',
         content:
           'Here is your decision guide for concurrent data structures:',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Need', 'Use', 'Key Feature'],
           rows: [
             ['Thread-safe map', 'ConcurrentHashMap', 'Fine-grained locking, atomic ops'],
@@ -2839,28 +2774,16 @@ async function safe() {
         title: 'Threads vs async/await — When to Use Each',
         content:
           'Both handle concurrent I/O, but they work differently:',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'Threads',
-            items: [
-              'Multiple OS threads',
-              'Preemptive scheduling (OS decides)',
-              'Higher memory per thread (~1MB stack)',
-              'Race conditions possible',
-              'Good for blocking I/O and CPU work',
-            ],
-          },
-          right: {
-            title: 'async/await',
-            items: [
-              'Single thread with event loop',
-              'Cooperative scheduling (you choose when to yield)',
-              'Minimal overhead per coroutine',
-              'No race conditions (single thread)',
-              'Good for many concurrent I/O tasks',
-            ],
-          },
+        comparison: {
+          leftTitle: 'Threads',
+          rightTitle: 'async/await',
+          items: [
+            { left: 'Multiple OS threads', right: 'Single thread with event loop' },
+            { left: 'Preemptive scheduling (OS decides)', right: 'Cooperative scheduling (you choose when to yield)' },
+            { left: 'Higher memory per thread (~1MB stack)', right: 'Minimal overhead per coroutine' },
+            { left: 'Race conditions possible', right: 'No race conditions (single thread)' },
+            { left: 'Good for blocking I/O and CPU work', right: 'Good for many concurrent I/O tasks' },
+          ],
         },
         keyTakeaway:
           'Use threads for blocking I/O and CPU work. Use async/await for many concurrent non-blocking I/O tasks.',
@@ -3185,8 +3108,7 @@ class DiningPhilosophersTimeout:
         title: 'Comparison of Solutions',
         content:
           'Each solution has trade-offs:',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Solution', 'Pros', 'Cons'],
           rows: [
             ['Resource Ordering', 'Simple, no extra overhead', 'Requires global lock ordering'],

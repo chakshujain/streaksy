@@ -474,3 +474,31 @@ export interface DigestPreferences {
   evening_reminder: boolean;
   weekly_report: boolean;
 }
+
+// ── Roadmaps ──
+export interface RoadmapTemplate {
+  slug: string;
+  name: string;
+  icon: string;
+  category: string;
+  color: string;
+  duration: number;
+  difficulty: string;
+  description: string;
+  featured?: boolean;
+}
+
+export interface UserRoadmap {
+  id: string;
+  name: string;
+  templateSlug?: string;
+  category: string;
+  icon: string;
+  durationDays: number;
+  startDate: string;
+  status: 'active' | 'paused' | 'completed' | 'abandoned';
+  completedDays: number;
+  currentStreak: number;
+  shareCode: string;
+  groupId?: string;
+}

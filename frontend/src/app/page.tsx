@@ -1,31 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { cn } from '@/lib/cn';
 import Link from 'next/link';
 import {
   Flame,
-  Users,
   Zap,
   BarChart3,
-  Trophy,
-  CheckCircle,
   ArrowRight,
   Code2,
   Target,
-  TrendingUp,
   Sparkles,
-  GitBranch,
   Chrome,
   Download,
   Clock,
-  Brain,
   Shield,
   ChevronRight,
+  CheckCircle,
+  Map,
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
-/*  Navbar                                                             */
+/*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 function useIsLoggedIn() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -42,39 +37,29 @@ function SmartLink({ href, children, loggedInText, className }: { href: string; 
   return <Link href={target} className={className}>{isLoggedIn && isAuthLink && loggedInText ? loggedInText : children}</Link>;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Navbar                                                             */
+/* ------------------------------------------------------------------ */
 function Navbar() {
   const isLoggedIn = useIsLoggedIn();
 
   return (
     <nav className="fixed top-0 inset-x-0 z-50 glass-strong">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 transition-transform group-hover:scale-105">
-            <Code2 className="h-5 w-5 text-white" />
+            <Flame className="h-5 w-5 text-white" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-white">
-            Streaksy
-          </span>
+          <span className="text-xl font-bold tracking-tight text-white">Streaksy</span>
         </Link>
 
-        {/* Nav links */}
         <div className="hidden items-center gap-8 md:flex">
-          <a href="#features" className="text-sm text-zinc-400 transition-colors hover:text-white">
-            Features
-          </a>
-          <a href="#extension" className="text-sm text-zinc-400 transition-colors hover:text-white">
-            Extension
-          </a>
-          <a href="#stats" className="text-sm text-zinc-400 transition-colors hover:text-white">
-            Community
-          </a>
-          <a href="#cta" className="text-sm text-zinc-400 transition-colors hover:text-white">
-            Get Started
-          </a>
+          <a href="#features" className="text-sm text-zinc-400 transition-colors hover:text-white">Features</a>
+          <a href="#roadmaps" className="text-sm text-zinc-400 transition-colors hover:text-white">Roadmaps</a>
+          <a href="#extension" className="text-sm text-zinc-400 transition-colors hover:text-white">Extension</a>
+          <a href="#cta" className="text-sm text-zinc-400 transition-colors hover:text-white">Get Started</a>
         </div>
 
-        {/* Auth buttons */}
         <div className="flex items-center gap-3">
           {isLoggedIn ? (
             <Link
@@ -132,7 +117,7 @@ function Hero() {
         {/* Badge */}
         <div className="animate-slide-up mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4 py-1.5 text-sm text-emerald-400">
           <Sparkles className="h-3.5 w-3.5" />
-          DSA Prep, Reimagined
+          Your goals, your streak, your crew
         </div>
 
         {/* Headline */}
@@ -140,7 +125,7 @@ function Hero() {
           className="animate-slide-up text-5xl font-extrabold leading-[1.1] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
           style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
         >
-          Crack the code.{' '}
+          Learn Anything.{' '}
           <span className="gradient-text">Together.</span>
         </h1>
 
@@ -149,8 +134,7 @@ function Hero() {
           className="animate-slide-up mx-auto mt-6 max-w-2xl text-lg text-zinc-400 sm:text-xl md:mt-8 md:text-2xl"
           style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
         >
-          Track your LeetCode progress, capture every submission, compete in study groups, maintain
-          streaks, and level up your interview prep — all in one place.
+          Pick a goal. Follow a roadmap. Track your streak. Do it solo or with friends. Coding, fitness, reading, habits — all in one place.
         </p>
 
         {/* CTA buttons */}
@@ -158,32 +142,32 @@ function Hero() {
           className="animate-slide-up mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center md:mt-12"
           style={{ animationDelay: '0.3s', animationFillMode: 'both' }}
         >
+          <Link
+            href="/roadmaps"
+            className="glow-md inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-[length:200%_100%] px-8 py-4 text-base font-semibold text-white transition-all duration-500 hover:bg-right hover:shadow-emerald-500/25"
+          >
+            <Map className="h-4 w-4" />
+            Explore Roadmaps
+          </Link>
           <SmartLink
             href="/auth/signup"
-            className="glow-md inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-[length:200%_100%] px-8 py-4 text-base font-semibold text-white transition-all duration-500 hover:bg-right hover:shadow-emerald-500/25"
+            className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/50 px-8 py-4 text-base font-semibold text-zinc-300 backdrop-blur-sm transition-all hover:border-zinc-600 hover:text-white"
             loggedInText={<>Go to Dashboard <ArrowRight className="h-4 w-4" /></>}
           >
-            Start for Free
+            Sign Up Free
             <ArrowRight className="h-4 w-4" />
           </SmartLink>
-          <a
-            href="#extension"
-            className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/50 px-8 py-4 text-base font-semibold text-zinc-300 backdrop-blur-sm transition-all hover:border-zinc-600 hover:text-white"
-          >
-            <Chrome className="h-4 w-4" />
-            Get the Extension
-          </a>
         </div>
 
-        {/* Floating code snippets */}
+        {/* Floating cards */}
         <div className="pointer-events-none mt-16 hidden md:block">
           <div className="relative mx-auto h-64 max-w-3xl">
             <div className="animate-float glass absolute left-0 top-4 rounded-xl p-4 text-left" style={{ animationDelay: '0s' }}>
               <div className="flex items-center gap-2 text-sm text-emerald-400">
                 <CheckCircle className="h-4 w-4" />
-                <span className="font-mono">Two Sum</span>
+                <span className="font-mono">DSA Patterns — Day 12</span>
               </div>
-              <p className="mt-1 text-xs text-zinc-500">Python3 · 4ms · 16.2 MB</p>
+              <p className="mt-1 text-xs text-zinc-500">Sliding Window completed</p>
             </div>
             <div className="animate-float glass absolute left-1/2 top-0 -translate-x-1/2 rounded-xl p-4 text-left" style={{ animationDelay: '0.5s' }}>
               <div className="flex items-center gap-3">
@@ -193,8 +177,8 @@ function Hero() {
                   <div className="h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">Neetcode Gang</p>
-                  <p className="text-xs text-zinc-500">3 members online</p>
+                  <p className="text-sm font-medium text-white">Study Crew</p>
+                  <p className="text-xs text-zinc-500">3 members on track</p>
                 </div>
               </div>
             </div>
@@ -203,7 +187,7 @@ function Hero() {
                 <Flame className="h-4 w-4" />
                 <span className="font-semibold">42-day streak!</span>
               </div>
-              <p className="mt-1 text-xs text-zinc-500">Keep it going</p>
+              <p className="mt-1 text-xs text-zinc-500">1,260 pts earned</p>
             </div>
           </div>
         </div>
@@ -217,52 +201,32 @@ function Hero() {
 /* ------------------------------------------------------------------ */
 const features = [
   {
-    icon: Zap,
-    title: 'Smart LeetCode Sync',
-    description:
-      'Auto-capture every submission — code, language, runtime, memory usage, and time spent. No manual logging needed.',
-    color: 'text-yellow-400',
-    glow: 'group-hover:shadow-yellow-500/10',
-  },
-  {
-    icon: Users,
-    title: 'Study Groups',
-    description:
-      'Create or join study groups. Assign problem sheets, track member progress, and compete on leaderboards.',
-    color: 'text-cyan-400',
-    glow: 'group-hover:shadow-cyan-500/10',
-  },
-  {
-    icon: Flame,
-    title: 'Streaks & Habits',
-    description:
-      'Build consistency with daily streak tracking and a beautiful contribution heatmap that shows your grind.',
-    color: 'text-orange-400',
-    glow: 'group-hover:shadow-orange-500/10',
-  },
-  {
-    icon: BarChart3,
-    title: 'Deep Insights',
-    description:
-      'Visualize strengths across topics, languages, and difficulty. See avg solve time, runtime percentiles, and trends.',
+    emoji: '\u{1F5FA}\uFE0F',
+    title: 'Curated Roadmaps',
+    description: 'Pre-built plans for coding interviews, fitness, reading, and more. Follow step-by-step or customize your own.',
     color: 'text-emerald-400',
     glow: 'group-hover:shadow-emerald-500/10',
   },
   {
-    icon: Brain,
-    title: 'Revision Hub',
-    description:
-      'Save key takeaways for every problem you solve. Quiz yourself with spaced-repetition flashcards before interviews.',
-    color: 'text-purple-400',
-    glow: 'group-hover:shadow-purple-500/10',
+    emoji: '\u{1F525}',
+    title: 'Streak Tracking',
+    description: 'Stay consistent with daily streaks and earn points. Freeze streaks, unlock powerups, and celebrate milestones.',
+    color: 'text-orange-400',
+    glow: 'group-hover:shadow-orange-500/10',
   },
   {
-    icon: Trophy,
-    title: 'Badges & Contests',
-    description:
-      'Earn badges for milestones, compete in timed group contests, and climb the leaderboard.',
-    color: 'text-amber-400',
-    glow: 'group-hover:shadow-amber-500/10',
+    emoji: '\u{1F465}',
+    title: 'Learn Together',
+    description: 'Join groups, compete on leaderboards, hold each other accountable. Solo is fine — but together is better.',
+    color: 'text-cyan-400',
+    glow: 'group-hover:shadow-cyan-500/10',
+  },
+  {
+    emoji: '\u{1F4CA}',
+    title: 'Track Progress',
+    description: 'Visual dashboards, insights, and milestone celebrations. See exactly how far you have come.',
+    color: 'text-purple-400',
+    glow: 'group-hover:shadow-purple-500/10',
   },
 ];
 
@@ -276,32 +240,108 @@ function Features() {
           </p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
             Your complete{' '}
-            <span className="gradient-text">DSA toolkit</span>
+            <span className="gradient-text">goal-crushing toolkit</span>
           </h2>
           <p className="mt-4 text-lg text-zinc-400">
-            Everything a serious DSA grinder needs, beautifully designed and
-            thoughtfully integrated.
+            Whether it is coding, fitness, reading, or any habit — Streaksy keeps you on track.
           </p>
         </div>
 
-        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature) => (
             <div
               key={feature.title}
-              className={cn(
-                'group relative rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm transition-all duration-300',
-                'hover:border-zinc-700 hover:bg-zinc-900/80',
-                feature.glow,
-                'hover:shadow-lg'
-              )}
+              className={`group relative rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/80 ${feature.glow} hover:shadow-lg`}
             >
-              <div className={cn('mb-4 inline-flex rounded-xl border border-zinc-800 bg-zinc-900 p-3 transition-colors group-hover:border-zinc-700')}>
-                <feature.icon className={cn('h-6 w-6', feature.color)} />
-              </div>
+              <div className="mb-4 text-3xl">{feature.emoji}</div>
               <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">{feature.description}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Popular Roadmaps Section                                           */
+/* ------------------------------------------------------------------ */
+const popularRoadmaps = [
+  { name: 'DSA Patterns', duration: '30 days', icon: '\u{1F9E9}', color: 'emerald', slug: 'dsa-patterns-30' },
+  { name: 'Interview Prep 60-Day', duration: '60 days', icon: '\u{1F3AF}', color: 'emerald', slug: 'interview-prep-60' },
+  { name: 'Learn System Design', duration: '17 days', icon: '\u{1F3D7}\uFE0F', color: 'purple', slug: 'learn-system-design' },
+  { name: 'Go to Gym Daily', duration: '30 days', icon: '\u{1F4AA}', color: 'blue', slug: 'gym-daily-30' },
+  { name: '100 Days of Code', duration: '100 days', icon: '\u{1F4BB}', color: 'emerald', slug: '100-days-of-code' },
+  { name: 'Read 1 Book/Month', duration: '30 days', icon: '\u{1F4D6}', color: 'amber', slug: 'read-book-month' },
+];
+
+const colorMap: Record<string, string> = {
+  emerald: 'border-emerald-500/20 hover:border-emerald-500/40',
+  blue: 'border-blue-500/20 hover:border-blue-500/40',
+  purple: 'border-purple-500/20 hover:border-purple-500/40',
+  amber: 'border-amber-500/20 hover:border-amber-500/40',
+};
+
+const badgeColorMap: Record<string, string> = {
+  emerald: 'bg-emerald-500/10 text-emerald-400',
+  blue: 'bg-blue-500/10 text-blue-400',
+  purple: 'bg-purple-500/10 text-purple-400',
+  amber: 'bg-amber-500/10 text-amber-400',
+};
+
+function PopularRoadmaps() {
+  return (
+    <section id="roadmaps" aria-label="Popular Roadmaps" className="relative px-6 py-32">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/5 blur-[120px]" />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-wider text-emerald-400">
+            Get started
+          </p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
+            Popular{' '}
+            <span className="gradient-text">Roadmaps</span>
+          </h2>
+          <p className="mt-4 text-lg text-zinc-400">
+            Pick a roadmap and start today. Solo or with friends.
+          </p>
+        </div>
+
+        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {popularRoadmaps.map((rm) => (
+            <Link
+              key={rm.slug}
+              href={`/roadmaps/start/${rm.slug}`}
+              className={`group rounded-2xl border bg-zinc-900/50 p-6 backdrop-blur-sm transition-all duration-300 hover:bg-zinc-900/80 hover:shadow-lg ${colorMap[rm.color] || colorMap.emerald}`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">{rm.icon}</span>
+                <div>
+                  <h3 className="text-base font-semibold text-white group-hover:text-emerald-400 transition-colors">{rm.name}</h3>
+                  <span className={`inline-block mt-1 rounded-full px-2 py-0.5 text-xs font-medium ${badgeColorMap[rm.color] || badgeColorMap.emerald}`}>
+                    {rm.duration}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors">
+                Start now <ArrowRight className="h-3 w-3" />
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link
+            href="/roadmaps"
+            className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/50 px-6 py-3 text-sm font-medium text-zinc-300 transition-all hover:border-zinc-600 hover:text-white"
+          >
+            Browse All Roadmaps
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>
@@ -379,7 +419,6 @@ function ExtensionSection() {
           {/* Right: Visual mockup */}
           <div className="relative">
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-6 backdrop-blur-sm">
-              {/* Fake browser bar */}
               <div className="flex items-center gap-2 mb-4 pb-4 border-b border-zinc-800">
                 <div className="flex gap-1.5">
                   <div className="h-3 w-3 rounded-full bg-zinc-700" />
@@ -390,7 +429,6 @@ function ExtensionSection() {
                   <span className="text-[10px] text-zinc-500">leetcode.com/problems/two-sum</span>
                 </div>
               </div>
-              {/* Fake submission result */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-emerald-400" />
@@ -435,31 +473,11 @@ function ExtensionSection() {
 
             <div className="space-y-6">
               {[
-                {
-                  step: 1,
-                  title: 'Download the extension',
-                  desc: 'Click the "Download Extension" button above to get the extension archive.',
-                },
-                {
-                  step: 2,
-                  title: 'Extract the archive',
-                  desc: 'Extract the downloaded file to a folder on your computer. Remember where you saved it.',
-                },
-                {
-                  step: 3,
-                  title: 'Open Chrome Extensions',
-                  desc: 'Go to chrome://extensions in your browser. Enable "Developer mode" using the toggle in the top-right corner.',
-                },
-                {
-                  step: 4,
-                  title: 'Load the extension',
-                  desc: 'Click "Load unpacked" and select the folder where you extracted the archive. The Streaksy icon will appear in your toolbar.',
-                },
-                {
-                  step: 5,
-                  title: 'Sign in & start solving',
-                  desc: 'Click the Streaksy icon, sign in with your account, then head to LeetCode. Every accepted submission will be auto-synced with full details!',
-                },
+                { step: 1, title: 'Download the extension', desc: 'Click the "Download Extension" button above to get the extension archive.' },
+                { step: 2, title: 'Extract the archive', desc: 'Extract the downloaded file to a folder on your computer. Remember where you saved it.' },
+                { step: 3, title: 'Open Chrome Extensions', desc: 'Go to chrome://extensions in your browser. Enable "Developer mode" using the toggle in the top-right corner.' },
+                { step: 4, title: 'Load the extension', desc: 'Click "Load unpacked" and select the folder where you extracted the archive. The Streaksy icon will appear in your toolbar.' },
+                { step: 5, title: 'Sign in & start solving', desc: 'Click the Streaksy icon, sign in with your account, then head to LeetCode. Every accepted submission will be auto-synced with full details!' },
               ].map((s) => (
                 <div key={s.step} className="flex gap-4">
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 text-sm font-bold text-white">
@@ -473,156 +491,6 @@ function ExtensionSection() {
               ))}
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Stats / Social Proof Section                                       */
-/* ------------------------------------------------------------------ */
-const stats = [
-  { value: '350+', label: 'Problems Available', icon: Target },
-  { value: '60+', label: 'Active Users', icon: Users },
-  { value: '5', label: 'Curated Sheets', icon: GitBranch },
-  { value: 'Free', label: 'Forever', icon: TrendingUp },
-];
-
-function Stats() {
-  return (
-    <section id="stats" aria-label="Community" className="relative px-6 py-32">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/5 blur-[120px]" />
-      </div>
-
-      <div className="relative mx-auto max-w-7xl">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wider text-emerald-400">
-            By the numbers
-          </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
-            Join a growing{' '}
-            <span className="gradient-text">community</span>
-          </h2>
-          <p className="mt-4 text-lg text-zinc-400">
-            A focused community of developers leveling up their DSA game with
-            Streaksy.
-          </p>
-        </div>
-
-        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="glass group rounded-2xl p-8 text-center transition-all duration-300 hover:glow-sm"
-            >
-              <stat.icon className="mx-auto mb-4 h-8 w-8 text-emerald-400 transition-transform group-hover:scale-110" />
-              <p className="gradient-text text-4xl font-extrabold tracking-tight">
-                {stat.value}
-              </p>
-              <p className="mt-2 text-sm text-zinc-400">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-16 grid gap-6 md:grid-cols-3">
-          {[
-            {
-              title: 'Track Every Submission',
-              description: 'Auto-capture code, runtime, memory, and time spent from LeetCode with our Chrome extension.',
-              icon: Zap,
-            },
-            {
-              title: 'Compete with Friends',
-              description: 'Create study groups, assign problem sheets, and climb the leaderboard together.',
-              icon: Users,
-            },
-            {
-              title: 'Master with Revision',
-              description: 'Save key takeaways and quiz yourself with spaced-repetition flashcards before interviews.',
-              icon: Brain,
-            },
-          ].map((item) => (
-            <div
-              key={item.title}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 backdrop-blur-sm"
-            >
-              <div className="mb-3 inline-flex rounded-xl border border-zinc-800 bg-zinc-900 p-3">
-                <item.icon className="h-6 w-6 text-emerald-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                {item.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  How It Works                                                       */
-/* ------------------------------------------------------------------ */
-function HowItWorks() {
-  const steps = [
-    {
-      step: '01',
-      title: 'Create your account',
-      description: 'Sign up in seconds. No credit card required.',
-      icon: Sparkles,
-    },
-    {
-      step: '02',
-      title: 'Install the extension',
-      description: 'Add our Chrome extension to auto-capture your LeetCode submissions.',
-      icon: Chrome,
-    },
-    {
-      step: '03',
-      title: 'Solve problems',
-      description: 'Just solve on LeetCode as usual. We capture code, time, runtime, memory — everything.',
-      icon: Zap,
-    },
-    {
-      step: '04',
-      title: 'Level up',
-      description: 'Track streaks, review with flashcards, compete in groups, and ace your interviews.',
-      icon: TrendingUp,
-    },
-  ];
-
-  return (
-    <section className="relative px-6 py-32">
-      <div className="mx-auto max-w-5xl">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wider text-emerald-400">
-            Simple setup
-          </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
-            Up and running in{' '}
-            <span className="gradient-text">minutes</span>
-          </h2>
-        </div>
-
-        <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((s, i) => (
-            <div key={s.step} className="relative text-center">
-              {i < steps.length - 1 && (
-                <div className="absolute right-0 top-8 hidden h-px w-full translate-x-1/2 bg-gradient-to-r from-zinc-700 to-transparent lg:block" />
-              )}
-              <div className="relative mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900">
-                <s.icon className="h-7 w-7 text-emerald-400" />
-                <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">
-                  {s.step.replace('0', '')}
-                </span>
-              </div>
-              <h3 className="text-base font-semibold text-white">{s.title}</h3>
-              <p className="mt-2 text-sm text-zinc-400">{s.description}</p>
-            </div>
-          ))}
         </div>
       </div>
     </section>
@@ -644,16 +512,15 @@ function CTA() {
 
             <div className="relative z-10">
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500">
-                <Code2 className="h-8 w-8 text-white" />
+                <Flame className="h-8 w-8 text-white" />
               </div>
 
               <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
                 Ready to{' '}
-                <span className="gradient-text">level up?</span>
+                <span className="gradient-text">start your streak?</span>
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-lg text-zinc-400">
-                Join thousands of developers who are crushing their DSA prep with
-                Streaksy. Free to start, no credit card required.
+                Join people who are crushing their goals with Streaksy. Coding, fitness, reading — whatever your thing is. Free to start.
               </p>
 
               <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
@@ -687,17 +554,19 @@ function Footer() {
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 sm:flex-row">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500">
-            <Code2 className="h-4 w-4 text-white" />
+            <Flame className="h-4 w-4 text-white" />
           </div>
           <span className="text-sm font-semibold text-zinc-400">Streaksy</span>
         </div>
         <p className="text-xs text-zinc-600">
-          &copy; {new Date().getFullYear()} Streaksy. Built for grinders, by
-          grinders.
+          &copy; {new Date().getFullYear()} Streaksy. Built for grinders, by grinders.
         </p>
         <div className="flex gap-6">
+          <Link href="/roadmaps" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+            Roadmaps
+          </Link>
           <a href="/streaksy-extension.tar.gz" download className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
-            Download Extension
+            Extension
           </a>
           <SmartLink href="/auth/login" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors" loggedInText="Dashboard">
             Log in
@@ -725,7 +594,7 @@ export default function Home() {
             '@type': 'WebApplication',
             name: 'Streaksy',
             url: 'https://streaksy.in',
-            description: 'Master Data Structures & Algorithms with auto LeetCode sync, study groups, streaks, revision flashcards, and live solve rooms.',
+            description: 'Learn anything together. Track streaks. Crush goals. Coding, fitness, reading, habits — all in one place.',
             applicationCategory: 'EducationalApplication',
             operatingSystem: 'Web',
             offers: {
@@ -733,20 +602,13 @@ export default function Home() {
               price: '0',
               priceCurrency: 'USD',
             },
-            aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: '4.8',
-              ratingCount: '2500',
-            },
             featureList: [
-              'LeetCode Auto-Sync',
+              'Curated Roadmaps',
+              'Streak Tracking',
               'Study Groups & Leaderboards',
-              'Daily Streak Tracking',
-              'Revision Flashcards',
-              'Live Solve Rooms',
-              'Problem Sheets (Blind 75, NeetCode 150, Striver SDE)',
+              'Progress Dashboards',
               'Chrome Extension',
-              'Badges & Achievements',
+              'Live Solve Rooms',
             ],
           }),
         }}
@@ -755,9 +617,8 @@ export default function Home() {
       <main>
         <Hero />
         <Features />
+        <PopularRoadmaps />
         <ExtensionSection />
-        <Stats />
-        <HowItWorks />
         <CTA />
       </main>
       <Footer />

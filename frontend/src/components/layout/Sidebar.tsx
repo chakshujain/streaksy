@@ -9,27 +9,23 @@ import {
   Users,
   Flame,
   LogOut,
-  BarChart3,
   Settings,
-  RotateCcw,
   User,
   Swords,
-  Rss,
   GraduationCap,
-  Rocket,
+  Map,
+  Trophy,
 } from 'lucide-react';
 import { useAuthStore, useDashboardStore } from '@/lib/store';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/feed', label: 'Feed', icon: Rss },
-  { href: '/problems', label: 'Problems', icon: BookOpen },
-  { href: '/revision', label: 'Revision', icon: RotateCcw },
+  { href: '/roadmaps', label: 'Roadmaps', icon: Map },
   { href: '/learn', label: 'Learn', icon: GraduationCap },
-  { href: '/prepare', label: 'Prepare', icon: Rocket },
-  { href: '/rooms', label: 'Solve Rooms', icon: Swords },
-  { href: '/insights', label: 'Insights', icon: BarChart3 },
+  { href: '/problems', label: 'Problems', icon: BookOpen },
   { href: '/groups', label: 'Groups', icon: Users },
+  { href: '/rooms', label: 'Solve Rooms', icon: Swords },
+  { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
@@ -108,12 +104,18 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         <div className="mx-3 my-3 overflow-hidden rounded-xl bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-transparent border border-orange-500/10 px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/15">
-              <span className="text-lg">🔥</span>
+              <span className="text-lg">{'\u{1F525}'}</span>
             </div>
             <div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-xl font-bold text-orange-400">{streak.currentStreak}</span>
                 <span className="text-xs text-zinc-500">day streak</span>
+                {streak.points != null && streak.points > 0 && (
+                  <>
+                    <span className="text-xs text-zinc-600 mx-0.5">&bull;</span>
+                    <span className="text-xs font-medium text-amber-400">{streak.points} pts</span>
+                  </>
+                )}
               </div>
               {streak.longestStreak > streak.currentStreak && (
                 <p className="text-[11px] text-zinc-600">

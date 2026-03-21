@@ -17,6 +17,12 @@ export const systemDesignLessons: Record<string, {
           'Imagine you are the mayor of a brand-new city. You need roads, hospitals, power plants, water supply, schools, and fire stations. You can\'t just build them randomly — you need a *plan*. System design is that plan, but for software.\n\nWhen companies like Google or Netflix build products used by millions, they can\'t just write a single script. They need to decide: Where does the data live? How do users connect? What happens when a server crashes? How do we handle Black Friday traffic?\n\nSystem design is the art of answering these questions *before* writing a single line of code.',
         analogy:
           'A city planner doesn\'t start building houses before deciding where the roads go. Similarly, a system designer doesn\'t start coding before deciding how data flows, where it\'s stored, and how the pieces communicate.',
+        cards: [
+          { title: 'Data Storage', description: 'Where does data live? SQL, NoSQL, files, caches?', icon: '💾', color: 'blue' },
+          { title: 'Communication', description: 'How do services talk? REST, gRPC, message queues?', icon: '📡', color: 'emerald' },
+          { title: 'Reliability', description: 'What if a server crashes? Replication, failover?', icon: '🛡️', color: 'purple' },
+          { title: 'Scale', description: 'Can it handle 10x traffic? Load balancing, sharding?', icon: '📈', color: 'amber' },
+        ],
         keyTakeaway:
           'System design is about making big-picture architectural decisions that determine whether your software survives real-world scale and failures.',
       },
@@ -35,16 +41,12 @@ export const systemDesignLessons: Record<string, {
           'Every system design interview follows a predictable structure. Master this framework and you\'ll never freeze up:\n\n**Step 1: Requirements Gathering (5 min)**\nAsk clarifying questions. "Should the URL shortener support custom aliases?" "How many daily active users?" Don\'t assume — ask.\n\n**Step 2: Back-of-the-Envelope Estimation (5 min)**\nEstimate scale: QPS (queries per second), storage needs, bandwidth. This shows you can think quantitatively.\n\n**Step 3: High-Level Design (15 min)**\nDraw the big boxes: clients, load balancers, servers, databases, caches. Show how data flows from user action to response.\n\n**Step 4: Deep Dive (15 min)**\nThe interviewer picks 1-2 components to zoom into. Be ready to discuss database schema, caching strategy, or failure handling in detail.',
         analogy:
           'Think of it like building a house. Step 1: What does the client want? (3 bedrooms, big kitchen.) Step 2: Budget and timeline. Step 3: Floor plan. Step 4: Electrical wiring and plumbing details.',
-        visual: 'flowchart',
-        visualData: {
-          nodes: [
-            'Requirements',
-            'Estimation',
-            'High-Level Design',
-            'Deep Dive',
-          ],
-          flow: 'linear',
-        },
+        flow: [
+          { label: 'Requirements', description: '5 min — Ask clarifying questions', icon: '❓' },
+          { label: 'Estimation', description: '5 min — QPS, storage, bandwidth', icon: '🔢' },
+          { label: 'High-Level Design', description: '15 min — Draw the big boxes', icon: '🏗️' },
+          { label: 'Deep Dive', description: '15 min — Zoom into 1-2 components', icon: '🔬' },
+        ],
         keyTakeaway:
           'Follow the framework: Requirements -> Estimation -> High-Level Design -> Deep Dive. This structure keeps you organized and impresses interviewers.',
       },
@@ -54,15 +56,15 @@ export const systemDesignLessons: Record<string, {
           'Before we dive into individual topics, let\'s build your vocabulary:\n\n- **Scalability** — Can the system handle growth? (More users, more data, more traffic)\n- **Availability** — Is the system up when users need it? Measured in "nines": 99.9% = 8.7 hours downtime/year.\n- **Latency** — How fast does the user get a response? Measured in milliseconds.\n- **Throughput** — How many requests can the system handle per second?\n- **Consistency** — Does every user see the same data at the same time?\n- **Partition Tolerance** — Can the system survive network failures between servers?\n- **Redundancy** — Having backup copies so one failure doesn\'t kill everything.\n- **Fault Tolerance** — The system keeps working even when parts fail.\n\nThese terms will come up in every single lesson ahead.',
         analogy:
           'Scalability is like a restaurant that can add tables during rush hour. Availability is keeping the doors open 24/7. Latency is how fast your food arrives. Throughput is how many customers you can serve per hour.',
-        visual: 'table',
-        visualData: {
-          headers: ['Term', 'Question It Answers'],
+        table: {
+          headers: ['Term', 'Question It Answers', 'Measured In'],
           rows: [
-            ['Scalability', 'Can we handle 10x more users?'],
-            ['Availability', 'Is the system always reachable?'],
-            ['Latency', 'How fast is each request?'],
-            ['Throughput', 'How many requests per second?'],
-            ['Consistency', 'Does everyone see the same data?'],
+            ['Scalability', 'Can we handle 10x more users?', 'Users, QPS, data volume'],
+            ['Availability', 'Is the system always reachable?', 'Nines: 99.9% = 8.7h downtime/yr'],
+            ['Latency', 'How fast is each request?', 'Milliseconds (p50, p99)'],
+            ['Throughput', 'How many requests per second?', 'QPS, RPS'],
+            ['Consistency', 'Does everyone see the same data?', 'Strong vs eventual'],
+            ['Partition Tolerance', 'Does it survive network failures?', 'Yes/No (always yes in distributed)'],
           ],
         },
         keyTakeaway:
@@ -158,13 +160,13 @@ Write QPS:                    ~32`,
           'Clients and servers need a common language. That language is **HTTP** (HyperText Transfer Protocol).\n\nAn HTTP request has:\n- **Method** — What action? GET (read), POST (create), PUT (update), DELETE (remove)\n- **URL** — Where? `https://api.example.com/users/123`\n- **Headers** — Metadata like authentication tokens, content type\n- **Body** — Data you\'re sending (for POST/PUT)\n\nAn HTTP response has:\n- **Status Code** — How\'d it go? 200 (OK), 404 (not found), 500 (server error)\n- **Headers** — Metadata about the response\n- **Body** — The actual data (HTML, JSON, image, etc.)\n\nHTTPS is the same thing but encrypted — the waiter speaks in a secret code so eavesdroppers can\'t understand.',
         analogy:
           'HTTP is like a standardized order form. The method is "I want to order / cancel / modify." The URL is the table number. The body is what dish you want. The status code is the waiter coming back saying "Here you go!" (200) or "Sorry, we\'re out of that" (404).',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['HTTP Method', 'Action', 'Example'],
           rows: [
             ['GET', 'Read data', 'GET /api/users/123'],
             ['POST', 'Create new', 'POST /api/users'],
-            ['PUT', 'Update existing', 'PUT /api/users/123'],
+            ['PUT', 'Replace entire resource', 'PUT /api/users/123'],
+            ['PATCH', 'Update part of resource', 'PATCH /api/users/123'],
             ['DELETE', 'Remove', 'DELETE /api/users/123'],
           ],
         },
@@ -177,17 +179,13 @@ Write QPS:                    ~32`,
           'When you type "google.com", your computer doesn\'t know where Google\'s server is. It needs an IP address (like 142.250.80.46). **DNS** (Domain Name System) translates human-friendly names into IP addresses.\n\nThe flow:\n1. You type "google.com" in your browser.\n2. Your computer asks a DNS resolver: "What\'s the IP for google.com?"\n3. The resolver checks its cache. If not found, it asks root servers -> TLD servers (.com) -> authoritative servers (Google\'s).\n4. It gets back "142.250.80.46" and your browser connects to that IP.\n\nThis happens in milliseconds, and results are cached so you don\'t look it up every time.',
         analogy:
           'DNS is the phone book of the internet. You know your friend\'s name (google.com) but need their phone number (142.250.80.46) to call them. The DNS resolver looks it up for you.',
-        visual: 'flowchart',
-        visualData: {
-          nodes: [
-            'Browser types google.com',
-            'DNS Resolver checks cache',
-            'Root Server → .com TLD Server',
-            'Authoritative Server returns IP',
-            'Browser connects to 142.250.80.46',
-          ],
-          flow: 'linear',
-        },
+        flow: [
+          { label: 'Browser', description: 'Types google.com', icon: '🌐' },
+          { label: 'DNS Resolver', description: 'Checks cache', icon: '📞' },
+          { label: 'Root/TLD Server', description: '.com nameserver', icon: '🏛️' },
+          { label: 'Auth Server', description: 'Returns 142.250.80.46', icon: '📍' },
+          { label: 'Browser Connects', description: 'TCP to that IP', icon: '🔗' },
+        ],
         keyTakeaway:
           'DNS translates domain names to IP addresses. It\'s the first step in every web request and results are cached for speed.',
       },
@@ -255,13 +253,14 @@ app.get('/tasks', authenticate, async (req, res) => {
           'The basic request-response model works for most things, but some use cases need different patterns:\n\n**Polling** — Client asks "Any updates?" every few seconds. Simple but wasteful.\n\n**Long Polling** — Client asks, server holds the connection open until there IS an update, then responds. Better than polling.\n\n**WebSockets** — A persistent two-way connection. Either side can send messages anytime. Perfect for chat apps, live games, stock tickers.\n\n**Server-Sent Events (SSE)** — Server pushes updates to the client over a one-way connection. Great for live feeds and notifications.\n\nWe\'ll use WebSockets when we design a chat app later and SSE for real-time feeds.',
         analogy:
           'Polling is texting someone "Are we there yet?" every 5 minutes. Long polling is asking and they reply only when you arrive. WebSockets is an open phone call where either person can speak anytime. SSE is a radio broadcast — the station talks, you listen.',
-        visual: 'comparison',
-        visualData: {
+        comparison: {
+          leftTitle: 'Pattern',
+          rightTitle: 'Use Case',
           items: [
-            { label: 'Polling', pros: 'Simple', cons: 'Wasteful, delayed' },
-            { label: 'Long Polling', pros: 'Less wasteful', cons: 'Still one-way' },
-            { label: 'WebSocket', pros: 'Real-time, bidirectional', cons: 'More complex' },
-            { label: 'SSE', pros: 'Simple push', cons: 'One-way only' },
+            { left: 'Polling — ask every few seconds', right: 'Simple dashboards, non-critical updates' },
+            { left: 'Long Polling — hold connection until update', right: 'Notifications, moderate real-time needs' },
+            { left: 'WebSocket — persistent two-way connection', right: 'Chat, live games, stock tickers' },
+            { left: 'SSE — server pushes one-way', right: 'Live feeds, log streaming' },
           ],
         },
         keyTakeaway:
@@ -310,6 +309,7 @@ app.get('/tasks', authenticate, async (req, res) => {
           'Imagine a popular restaurant that gets 1,000 customers per hour but only has one kitchen. Chaos, right? The solution: open multiple kitchens and hire a host at the front door who directs each customer to the kitchen with the shortest line.\n\nThat host is a **load balancer**. In system design, when your single server can\'t handle all the traffic, you add more servers. The load balancer sits in front of them and distributes incoming requests so no single server gets overwhelmed.\n\n**Why load balancing matters:**\n- **Performance** — Distribute work evenly so every request gets a fast response.\n- **Availability** — If one server dies, the load balancer stops sending traffic to it.\n- **Scalability** — Need more capacity? Just add more servers behind the load balancer.',
         analogy:
           'A traffic cop at a busy intersection. Without them, all cars try to go through one road and cause a traffic jam. The cop directs cars down different routes to keep everything flowing smoothly.',
+        diagram: `┌──────────┐\n│  Client  │\n└────┬─────┘\n     │  Request\n     ▼\n┌────────────────┐\n│ Load Balancer  │\n└──┬─────┬─────┬─┘\n   │     │     │\n   ▼     ▼     ▼\n┌────┐ ┌────┐ ┌────┐\n│ S1 │ │ S2 │ │ S3 │\n└────┘ └────┘ └────┘\n(Application Servers)`,
         keyTakeaway:
           'A load balancer distributes incoming traffic across multiple servers to improve performance, availability, and scalability.',
       },
@@ -319,14 +319,13 @@ app.get('/tasks', authenticate, async (req, res) => {
           'The load balancer needs a strategy to decide which server gets each request. Here are the main algorithms:\n\n**Round Robin**\nThe simplest: send requests to servers in order. Server 1, Server 2, Server 3, Server 1, Server 2... Like dealing cards.\n\n**Weighted Round Robin**\nSame as round robin, but beefy servers get more requests. If Server 1 is twice as powerful, it gets twice as many requests.\n\n**Least Connections**\nSend each request to the server with the fewest active connections. Great when requests take varying amounts of time.\n\n**IP Hash**\nHash the client\'s IP address to determine which server handles the request. The same user always goes to the same server (useful for session stickiness).\n\n**Random**\nPick a server randomly. Surprisingly effective at scale due to the law of large numbers.',
         analogy:
           'Round Robin: a teacher calling on students in order around the room. Least Connections: a teacher calling on whoever has answered the fewest questions today. IP Hash: each student always goes to the same tutor.',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Algorithm', 'How It Works', 'Best For'],
           rows: [
             ['Round Robin', 'Rotate through servers', 'Equal-capacity servers'],
             ['Weighted RR', 'More traffic to stronger servers', 'Mixed server sizes'],
             ['Least Connections', 'Choose least-busy server', 'Varying request durations'],
-            ['IP Hash', 'Same client → same server', 'Session stickiness'],
+            ['IP Hash', 'Same client -> same server', 'Session stickiness'],
             ['Random', 'Pick randomly', 'Simple, stateless setups'],
           ],
         },
@@ -457,18 +456,13 @@ server {
           'Three concepts you must know:\n\n**Cache Hit** — The data is in the cache. Return it immediately. Fast!\n\n**Cache Miss** — The data is NOT in the cache. Go to the source (database), get it, store it in the cache for next time, then return it.\n\n**TTL (Time To Live)** — How long a cached item stays valid. After the TTL expires, the next request is a cache miss and the data is refreshed.\n\n**Cache Hit Ratio** — The percentage of requests served from cache. A 95% hit ratio means 95% of requests are blazing fast.\n\nThe goal is to maximize your cache hit ratio while keeping data fresh enough for your use case:\n- Stock prices: TTL = 1 second (must be fresh)\n- User profile: TTL = 5 minutes (changes rarely)\n- Blog post: TTL = 1 hour (almost never changes)\n- Static assets: TTL = 1 year (versioned by filename)',
         analogy:
           'Imagine you keep a sticky note on your desk with your Wi-Fi password (cache). When someone asks, you read the note (cache hit). If the password changed and the note is outdated (cache miss), you walk to the router to check (database lookup), then update your sticky note.',
-        visual: 'flowchart',
-        visualData: {
-          nodes: [
-            'Request arrives',
-            'Check cache',
-            'Cache hit → Return data',
-            'Cache miss → Query DB',
-            'Store in cache with TTL',
-            'Return data',
-          ],
-          flow: 'branching',
-        },
+        flow: [
+          { label: 'Request Arrives', description: 'Client asks for data', icon: '📨' },
+          { label: 'Check Cache', description: 'Is it in Redis?', icon: '🔍' },
+          { label: 'HIT: Return', description: 'Instant response (~1ms)', icon: '⚡' },
+          { label: 'MISS: Query DB', description: 'Fetch from source (~50ms)', icon: '🗄️' },
+          { label: 'Store + Return', description: 'Cache it with TTL', icon: '💾' },
+        ],
         keyTakeaway:
           'Cache hit = fast, cache miss = slow + populate cache. TTL controls freshness. Aim for a high hit ratio (90%+) while keeping data acceptably fresh.',
       },
@@ -478,15 +472,12 @@ server {
           'Phil Karlton famously said: "There are only two hard things in Computer Science: cache invalidation and naming things." When the source data changes, how do you update the cache?\n\n**Write-Through Cache**\nEvery write goes to *both* the cache and the database simultaneously. Data is always consistent, but writes are slower (two operations).\n\n**Write-Back (Write-Behind) Cache**\nWrites go to the cache first, and the cache asynchronously writes to the database later. Super fast writes, but risk of data loss if the cache crashes before flushing.\n\n**Write-Around Cache**\nWrites go directly to the database, bypassing the cache. The cache is only populated on reads (cache miss fills cache). Good when writes are rarely re-read immediately.\n\n**Cache-Aside (Lazy Loading)**\nThe most common pattern. The application checks the cache first. On a miss, it queries the database, stores the result in the cache, and returns it. On a write, it updates the database and invalidates (deletes) the cache entry.',
         analogy:
           'Write-Through: You update your sticky note AND the official record at the same time. Write-Back: You update the sticky note now and update the official record later tonight. Write-Around: You update the official record but don\'t bother with the sticky note until someone asks. Cache-Aside: You check the note first, and if it\'s outdated, you go look up the official record and rewrite the note.',
-        visual: 'comparison',
-        visualData: {
-          items: [
-            { label: 'Write-Through', pros: 'Always consistent', cons: 'Slower writes' },
-            { label: 'Write-Back', pros: 'Fast writes', cons: 'Risk data loss' },
-            { label: 'Write-Around', pros: 'No stale cache on write', cons: 'Higher read latency initially' },
-            { label: 'Cache-Aside', pros: 'Flexible, popular', cons: 'Possible stale reads' },
-          ],
-        },
+        cards: [
+          { title: 'Write-Through', description: 'Write to cache AND DB simultaneously. Always consistent but slower writes.', icon: '🔄', color: 'blue' },
+          { title: 'Write-Back', description: 'Write to cache first, DB later async. Fast writes but risk data loss on crash.', icon: '⚡', color: 'amber' },
+          { title: 'Write-Around', description: 'Write to DB only, cache fills on read. No stale cache on write.', icon: '↪️', color: 'purple' },
+          { title: 'Cache-Aside', description: 'App checks cache, fills on miss, invalidates on write. Most popular pattern.', icon: '✅', color: 'emerald' },
+        ],
         keyTakeaway:
           'Cache-Aside is the most common pattern: read from cache first, fill on miss, invalidate on write. Know all four strategies and their trade-offs.',
       },
@@ -549,8 +540,7 @@ async function updateUserProfile(userId: string, data: any) {
           'RAM is finite. When the cache is full and you need to add a new entry, which old entry do you remove? That\'s the **eviction policy**.\n\n**LRU (Least Recently Used)** — Evict the entry that hasn\'t been accessed in the longest time. The most common and generally best choice.\n\n**LFU (Least Frequently Used)** — Evict the entry accessed the fewest times. Good when some data is accessed in bursts.\n\n**FIFO (First In, First Out)** — Evict the oldest entry. Simple but often suboptimal.\n\n**Random** — Evict a random entry. Surprisingly decent and very simple.\n\n**Redis default:** `noeviction` (returns error when full). In production, you typically set it to `allkeys-lru`.\n\nTo configure Redis eviction:\n```\nmaxmemory 2gb\nmaxmemory-policy allkeys-lru\n```',
         analogy:
           'Your desk can only hold 10 sticky notes. When you need to add an 11th: LRU = throw away the one you haven\'t looked at in the longest time. LFU = throw away the one you\'ve looked at the fewest times ever. FIFO = throw away the oldest one.',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Policy', 'Evicts', 'Best For'],
           rows: [
             ['LRU', 'Least recently accessed', 'General purpose (most common)'],
@@ -623,17 +613,14 @@ async function updateUserProfile(userId: string, data: any) {
           'Here is the flow when a user requests an image from your CDN:\n\n**First Request (Cache Miss):**\n1. User in Tokyo requests `https://cdn.myapp.com/logo.png`\n2. The request goes to the nearest CDN edge server (Tokyo edge).\n3. The edge server doesn\'t have it yet. It fetches from your **origin server** (Virginia).\n4. The origin sends the image. The edge server caches it and serves it to the user.\n\n**Subsequent Requests (Cache Hit):**\n1. Another user in Tokyo requests `https://cdn.myapp.com/logo.png`\n2. The Tokyo edge server already has it cached.\n3. Served instantly. Origin server is never contacted.\n\nThe CDN handles cache expiration with TTL headers. When the TTL expires, the next request triggers a fresh fetch from the origin.',
         analogy:
           'The first time someone in your neighborhood orders a rare book, the bookstore imports it from abroad (slow). But the bookstore keeps a copy on the shelf. The next person who wants it gets it immediately.',
-        visual: 'flowchart',
-        visualData: {
-          nodes: [
-            'User Request',
-            'Nearest Edge Server',
-            'Cache Hit? → Serve immediately',
-            'Cache Miss → Fetch from Origin',
-            'Cache at Edge + Serve',
-          ],
-          flow: 'branching',
-        },
+        flow: [
+          { label: 'User Request', description: 'cdn.myapp.com/logo.png', icon: '🌐' },
+          { label: 'Nearest Edge', description: 'Tokyo edge server', icon: '📍' },
+          { label: 'Cache Hit?', description: 'Check local cache', icon: '🔍' },
+          { label: 'HIT: Serve', description: 'Instant response', icon: '⚡' },
+          { label: 'MISS: Origin', description: 'Fetch, cache, serve', icon: '🗄️' },
+        ],
+        diagram: `┌──────┐                    ┌─────────────┐\n│ User │──── Request ─────►│  Edge (CDN) │\n│Tokyo │◄── Response ──────│  Tokyo      │\n└──────┘      ~20ms        └──────┬──────┘\n                                  │ Cache Miss?\n                                  ▼\n                           ┌──────────────┐\n                           │ Origin Server│\n                           │  Virginia    │\n                           └──────────────┘\n                              ~200ms`,
         keyTakeaway:
           'CDN flow: request goes to nearest edge server. On a cache hit, content is served instantly. On a miss, edge fetches from origin, caches it, then serves.',
       },
@@ -756,17 +743,13 @@ Result:
           'The core pattern behind message queues is **Producer-Consumer**:\n\n- **Producer** — Creates messages and puts them in the queue.\n- **Queue** — Stores messages in order (usually FIFO — first in, first out).\n- **Consumer** — Reads messages from the queue and processes them.\n\n**Real-world examples:**\n- **E-commerce order processing**: User places order (producer) → message enters queue → order service processes payment and fulfillment (consumer).\n- **Email notifications**: User signs up (producer) → "send welcome email" message → email service sends it (consumer).\n- **Image processing**: User uploads photo (producer) → "resize and create thumbnails" message → image worker processes it (consumer).\n- **Log aggregation**: App servers produce log messages → logging service consumes and indexes them.\n\nThe key insight: the producer doesn\'t care HOW or WHEN the message is processed. It just drops the message and moves on.',
         analogy:
           'A restaurant kitchen uses a ticket system. Waiters (producers) clip order tickets on a rail. Cooks (consumers) grab tickets and prepare dishes. If there\'s a rush, you add more cooks — the rail (queue) holds all the pending orders.',
-        visual: 'flowchart',
-        visualData: {
-          nodes: [
-            'Producer (sends message)',
-            'Message Queue (stores)',
-            'Consumer 1 (processes)',
-            'Consumer 2 (processes)',
-            'Consumer 3 (processes)',
-          ],
-          flow: 'fan-out',
-        },
+        diagram: `┌──────────┐    ┌─────────────────────┐    ┌────────────┐\n│Producer 1│───►│                     │───►│ Consumer 1 │\n└──────────┘    │   Message Queue     │    └────────────┘\n┌──────────┐    │                     │    ┌────────────┐\n│Producer 2│───►│  [msg1][msg2][msg3] │───►│ Consumer 2 │\n└──────────┘    │                     │    └────────────┘\n                └─────────────────────┘    ┌────────────┐\n                  FIFO: First In,    ────►│ Consumer 3 │\n                        First Out         └────────────┘`,
+        flow: [
+          { label: 'Producer', description: 'Creates message', icon: '📤' },
+          { label: 'Queue', description: 'Stores in FIFO order', icon: '📬' },
+          { label: 'Consumer', description: 'Processes when ready', icon: '⚙️' },
+          { label: 'Acknowledge', description: 'Message removed', icon: '✅' },
+        ],
         keyTakeaway:
           'Producers create messages, the queue stores them, consumers process them. This decouples the two sides and enables independent scaling.',
       },
@@ -776,11 +759,14 @@ Result:
           'There are two main messaging patterns:\n\n**Point-to-Point (Queue)**\nEach message is consumed by exactly ONE consumer. When Consumer A picks up a message, Consumer B won\'t see it. Think of it like a work queue — each task is done once.\n\nUse case: Order processing. You want each order processed exactly once.\n\n**Publish/Subscribe (Pub/Sub)**\nEach message is broadcast to ALL subscribers. If three services subscribe, all three receive every message. Think of it like a newspaper — every subscriber gets a copy.\n\nUse case: When a user places an order, you want to notify the inventory service AND the email service AND the analytics service.\n\nMany systems use BOTH patterns. Kafka, for example, uses "consumer groups" — within a group, messages are point-to-point. Across groups, they\'re pub/sub.',
         analogy:
           'Point-to-Point: A single to-do list shared by a team. Whoever grabs a task does it — nobody else does the same task. Pub/Sub: A company-wide email announcement — everyone receives it.',
-        visual: 'comparison',
-        visualData: {
+        comparison: {
+          leftTitle: 'Point-to-Point (Queue)',
+          rightTitle: 'Pub/Sub (Broadcast)',
           items: [
-            { label: 'Point-to-Point', pros: 'Each message processed once', cons: 'Only one consumer per message' },
-            { label: 'Pub/Sub', pros: 'All subscribers get every message', cons: 'Messages duplicated per subscriber' },
+            { left: 'Each message consumed by ONE consumer', right: 'Each message sent to ALL subscribers' },
+            { left: 'Work queue: each task done once', right: 'Broadcast: everyone gets a copy' },
+            { left: 'Order processing, task distribution', right: 'Notifications, event fanout, analytics' },
+            { left: 'Competing consumers pattern', right: 'Topic-based subscription' },
           ],
         },
         keyTakeaway:
@@ -792,8 +778,7 @@ Result:
           'The two most popular message queue systems:\n\n**RabbitMQ**\n- Traditional message broker\n- Messages are deleted after being consumed\n- Great for task queues (send email, process payment)\n- Supports complex routing (topic exchanges, headers)\n- Lower throughput (~50K msgs/sec)\n- Push-based: broker pushes messages to consumers\n\n**Apache Kafka**\n- Distributed log / event streaming platform\n- Messages are RETAINED even after consumption (configurable retention)\n- Great for event streaming, log aggregation, real-time analytics\n- Simple topic-based routing\n- Extremely high throughput (~1M msgs/sec)\n- Pull-based: consumers pull messages at their own pace\n\n**When to use which:**\n- RabbitMQ: task queues, complex routing, traditional messaging\n- Kafka: event streaming, high-throughput logging, when you need to replay messages',
         analogy:
           'RabbitMQ is like a post office — letters are delivered and the post office doesn\'t keep copies. Kafka is like a newspaper archive — issues are delivered but also kept on file, so you can go back and re-read old ones.',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Feature', 'RabbitMQ', 'Kafka'],
           rows: [
             ['Model', 'Message broker', 'Distributed log'],
@@ -1020,8 +1005,7 @@ async function getUser(id) {
           'Read replicas help with read-heavy workloads. But what about writes? If your primary database can\'t handle the write volume, or your dataset is too large for one machine, you need **sharding**.\n\nSharding splits your data across multiple independent databases (shards). Each shard holds a subset of the data.\n\n**Sharding Strategies:**\n\n**Range-Based Sharding**\nSplit by a range of values. Users A-M on Shard 1, N-Z on Shard 2.\n- Pro: Simple, range queries are easy\n- Con: Uneven distribution (more users named "S" than "X")\n\n**Hash-Based Sharding**\nHash the shard key (e.g., user_id) and mod by the number of shards: `shard = hash(user_id) % num_shards`\n- Pro: Even distribution\n- Con: Range queries are hard, adding shards is painful (re-hashing)\n\n**Directory-Based Sharding**\nA lookup table maps each entity to a shard. Flexible but the lookup table is a single point of failure.\n\n**Choosing a Shard Key:**\nThe shard key determines which shard holds each record. A good shard key:\n- Distributes data evenly\n- Avoids "hot spots" (one shard getting all the traffic)\n- Is used in most queries (so you know which shard to query)',
         analogy:
           'Instead of one giant library, the city builds libraries by neighborhood: North Library, South Library, East Library, West Library. Each holds books relevant to its area. When you need a book, you go to the right branch.',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Strategy', 'How It Works', 'Pro', 'Con'],
           rows: [
             ['Range', 'Split by value range', 'Range queries easy', 'Uneven distribution'],
@@ -1085,18 +1069,14 @@ async function getUserSimple(id) {
           'Here\'s the typical progression for scaling a database:\n\n**Stage 1: Single Server (0-10K users)**\nOne PostgreSQL instance. Simple. Just add proper indexes.\n\n**Stage 2: Vertical Scaling (10K-100K users)**\nUpgrade to a bigger server. More RAM, faster SSD, better CPU.\n\n**Stage 3: Read Replicas (100K-1M users)**\nAdd read replicas. Route reads to replicas, writes to primary. Add connection pooling (PgBouncer).\n\n**Stage 4: Caching Layer (1M-10M users)**\nAdd Redis as a cache layer. Cache hot queries, session data, computed results.\n\n**Stage 5: Sharding (10M+ users)**\nShard the database by user_id or tenant_id. Each shard handles a subset of users.\n\n**Stage 6: Specialized Databases (100M+ users)**\nUse the right tool for the job: PostgreSQL for relational data, Redis for caching, Elasticsearch for search, Cassandra for time-series.\n\nDon\'t over-engineer early. Most startups never get past Stage 3. Scale when you *need* to, not because it sounds cool.',
         analogy:
           'It\'s like growing a restaurant. Start with one location. If it\'s packed, get a bigger space (vertical). Still packed? Open a take-out window for quick orders (read replicas). Still growing? Open multiple locations (sharding).',
-        visual: 'flowchart',
-        visualData: {
-          nodes: [
-            'Single Server',
-            'Vertical Scaling',
-            'Read Replicas + Connection Pooling',
-            'Caching (Redis)',
-            'Sharding',
-            'Polyglot Persistence',
-          ],
-          flow: 'linear',
-        },
+        flow: [
+          { label: 'Single Server', description: '0-10K users', icon: '🖥️' },
+          { label: 'Vertical Scale', description: '10K-100K: bigger machine', icon: '⬆️' },
+          { label: 'Read Replicas', description: '100K-1M: spread reads', icon: '📋' },
+          { label: 'Cache (Redis)', description: '1M-10M: cache hot data', icon: '⚡' },
+          { label: 'Sharding', description: '10M+: split data', icon: '🔀' },
+          { label: 'Polyglot', description: '100M+: right tool per job', icon: '🧩' },
+        ],
         keyTakeaway:
           'Scale progressively: single server → bigger server → read replicas → caching → sharding → specialized databases. Don\'t jump to sharding before you need it.',
       },
@@ -1160,8 +1140,7 @@ async function getUserSimple(id) {
           'Status codes tell the client what happened. Don\'t just return 200 for everything.\n\n**2xx — Success:**\n- `200 OK` — Request succeeded (general purpose)\n- `201 Created` — New resource created (after POST)\n- `204 No Content` — Success but nothing to return (after DELETE)\n\n**4xx — Client Error:**\n- `400 Bad Request` — Invalid input (missing field, wrong format)\n- `401 Unauthorized` — Not authenticated (no/invalid token)\n- `403 Forbidden` — Authenticated but lacks permission\n- `404 Not Found` — Resource doesn\'t exist\n- `409 Conflict` — Conflicts with current state (duplicate username)\n- `422 Unprocessable Entity` — Valid format but invalid data (email already taken)\n- `429 Too Many Requests` — Rate limited\n\n**5xx — Server Error:**\n- `500 Internal Server Error` — Bug in the server\n- `502 Bad Gateway` — Upstream service failed\n- `503 Service Unavailable` — Server is down or overloaded',
         analogy:
           'Status codes are like the waiter\'s responses: "Here\'s your food" (200), "We don\'t have that" (404), "You\'re not allowed in the VIP section" (403), "The kitchen is on fire" (500).',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Code', 'Meaning', 'When to Use'],
           rows: [
             ['200', 'OK', 'Successful GET, PUT, PATCH'],
@@ -1373,15 +1352,12 @@ router.get('/posts', async (req, res) => {
           'There are several algorithms for implementing rate limits:\n\n**Token Bucket**\nImagine a bucket that holds 10 tokens. Each request costs 1 token. Tokens are added at a fixed rate (e.g., 1 per second). If the bucket is empty, the request is rejected. The bucket can fill up to a max (burst capacity).\n- Allows bursts up to bucket size\n- Simple and widely used (AWS, Stripe)\n\n**Fixed Window**\nCount requests in fixed time windows (e.g., per minute: 0:00-1:00, 1:00-2:00). If you hit 100 in the current window, reject until the next window.\n- Simple to implement\n- Problem: bursts at window boundaries (99 at 0:59, 99 at 1:00 = 198 in 2 seconds)\n\n**Sliding Window Log**\nTrack the timestamp of each request. Count requests in the last N seconds. Precise but memory-intensive.\n\n**Sliding Window Counter**\nCombines fixed window with a weighted overlap. Takes the count from the previous window and the current window, weighted by how far into the current window we are.\n- Good balance of accuracy and efficiency\n- Used by most production systems',
         analogy:
           'Token Bucket: A parking meter that refills with coins over time. When it\'s empty, you can\'t park. Fixed Window: A buffet that resets every hour — eat all you want, but once the hour\'s food is gone, wait for the next batch.',
-        visual: 'comparison',
-        visualData: {
-          items: [
-            { label: 'Token Bucket', pros: 'Allows bursts, smooth', cons: 'Slightly complex' },
-            { label: 'Fixed Window', pros: 'Simple', cons: 'Burst at boundary' },
-            { label: 'Sliding Window Log', pros: 'Most accurate', cons: 'Memory intensive' },
-            { label: 'Sliding Window Counter', pros: 'Good balance', cons: 'Approximate' },
-          ],
-        },
+        cards: [
+          { title: 'Token Bucket', description: 'Bucket holds N tokens. Each request uses 1. Refills at fixed rate. Allows bursts up to bucket size.', icon: '🪣', color: 'blue' },
+          { title: 'Fixed Window', description: 'Count requests per time window. Simple but burst at window boundaries.', icon: '⏰', color: 'amber' },
+          { title: 'Sliding Window Log', description: 'Track every request timestamp. Most accurate but memory-intensive.', icon: '📜', color: 'purple' },
+          { title: 'Sliding Window Counter', description: 'Weighted overlap of current and previous window. Best balance of accuracy and efficiency.', icon: '📊', color: 'emerald' },
+        ],
         keyTakeaway:
           'Token Bucket is best for APIs that need burst tolerance. Sliding Window Counter is best for general-purpose rate limiting. Fixed Window is simplest but has edge-case bursts.',
       },
@@ -1539,13 +1515,7 @@ app.use('/api/auth/login', rateLimiter({
           'Consistent hashing solves this by imagining a **ring** (circle) with values 0 to 2^32.\n\n**Setup:**\n1. Hash each server name and place it on the ring. Server A might land at position 1000, Server B at position 4000, etc.\n2. When you need to store data, hash the key and find its position on the ring.\n3. Walk clockwise from that position until you hit the first server. That server owns the key.\n\n**What happens when a server is removed?**\nOnly the keys between the removed server and the previous server (counter-clockwise) need to move to the next server clockwise. Everything else stays put!\n\n**What happens when a server is added?**\nThe new server takes responsibility for keys between itself and the previous server. Only those keys move.\n\n**Key insight:** With N servers, adding or removing one only remaps ~1/N of the keys (instead of nearly all of them with modular hashing).',
         analogy:
           'Imagine musical chairs arranged in a circle. Each chair represents a server. When the music stops (you hash a key), the person (data) sits in the nearest chair clockwise. If a chair is removed, only the person in that chair needs to find a new seat — everyone else stays put.',
-        visual: 'diagram',
-        visualData: {
-          type: 'ring',
-          label: 'Hash Ring with 4 Servers',
-          description:
-            'Ring from 0 to 2^32. Server A at ~1000, Server B at ~4000, Server C at ~7000, Server D at ~10000. Keys walk clockwise to find their server.',
-        },
+        diagram: `         0 (top of ring)\n         │\n    D ●───┼───● A\n   10K    │   1K\n         │\n    C ●───┼───● B\n   7K     │   4K\n         │\n      (bottom)\n\n  Key hashes to position 2500\n  → walks clockwise → lands on B (4K)\n  If B removed → key goes to C (7K)`,
         keyTakeaway:
           'Consistent hashing uses a ring where keys walk clockwise to find their server. When a server is added/removed, only ~1/N of keys are remapped.',
       },
@@ -1695,11 +1665,16 @@ ch.removeServer('cache-server-2');`,
           '**Advantages of Microservices:**\n- **Independent scaling** — Scale only the services that need it (e.g., scale the image processing service without touching auth).\n- **Independent deployment** — Deploy the payment service without risking the chat feature.\n- **Technology freedom** — Write each service in the best language for the job.\n- **Team autonomy** — Small teams own individual services end-to-end.\n- **Fault isolation** — If the recommendation service crashes, the rest of the app keeps working.\n\n**Disadvantages:**\n- **Distributed system complexity** — Network failures, timeouts, retries, consistency challenges.\n- **Data management** — Each service has its own database. Cross-service queries are hard.\n- **Operational overhead** — You need: service discovery, load balancing per service, distributed tracing, centralized logging, health monitoring.\n- **Testing complexity** — Integration testing across services is much harder.\n- **Latency** — Inter-service network calls add milliseconds to every operation.\n\n**The honest truth:** Microservices solve organizational problems (big teams, many features, independent release cycles), not technical ones. If you\'re a team of 5, microservices will slow you down.',
         analogy:
           'Microservices are like moving into a house with separate rooms. Everyone has privacy and can decorate independently. But now you need hallways (networking), locks on doors (auth between services), and someone to coordinate dinner (orchestration).',
-        visual: 'comparison',
-        visualData: {
+        comparison: {
+          leftTitle: 'Monolith',
+          rightTitle: 'Microservices',
           items: [
-            { label: 'Monolith', pros: 'Simple, fast dev, easy debug', cons: 'Scales all-or-nothing, risky deploys' },
-            { label: 'Microservices', pros: 'Independent scaling/deploys', cons: 'Complex ops, hard to debug' },
+            { left: 'One codebase, one deploy', right: 'Many codebases, independent deploys' },
+            { left: 'Simple to develop and debug', right: 'Complex ops, distributed tracing needed' },
+            { left: 'Scales as a whole unit', right: 'Scale individual services independently' },
+            { left: 'Shared database', right: 'Each service owns its database' },
+            { left: 'Great for small teams (< 10)', right: 'Great for large organizations (50+)' },
+            { left: 'Single point of failure', right: 'Fault isolation per service' },
           ],
         },
         keyTakeaway:
@@ -1919,22 +1894,9 @@ function decode(str: string): number {
         title: 'Step 5: High-Level Architecture',
         content:
           'Here is the complete system architecture:\n\n**Write Path (Create Short URL):**\n1. Client sends POST with long URL\n2. API server validates input\n3. Check if URL already exists (optional deduplication)\n4. Get a unique short code (from key service or base62 encoding)\n5. Store mapping in database\n6. Return short URL to client\n\n**Read Path (Redirect):**\n1. User visits `short.ly/abc123`\n2. Request hits the load balancer\n3. API server checks Redis cache for `abc123`\n4. Cache hit → return 301 redirect immediately\n5. Cache miss → query database → populate cache → return 301\n6. Log the click event to the analytics pipeline (async, via message queue)\n\n**Components:**\n- **Load Balancer** — Distribute traffic across API servers\n- **API Servers** — Stateless, horizontally scalable\n- **Redis Cache** — Cache hot short codes (90%+ of redirects hit cache)\n- **PostgreSQL/DynamoDB** — Persistent storage for URL mappings\n- **Key Generation Service** — Pre-generate unique short codes\n- **Analytics Pipeline** — Kafka → ClickHouse for click tracking\n- **CDN** — Optional, for redirect caching at edge locations',
-        visual: 'diagram',
-        visualData: {
-          type: 'architecture',
-          components: [
-            'Client',
-            'CDN',
-            'Load Balancer',
-            'API Servers (stateless)',
-            'Redis Cache',
-            'Database (PostgreSQL)',
-            'Key Generation Service',
-            'Kafka → Analytics Store',
-          ],
-        },
+        diagram: `┌────────┐   ┌─────┐   ┌──────────────┐\n│ Client │──►│ CDN │──►│Load Balancer │\n└────────┘   └─────┘   └──────┬───────┘\n                               │\n                    ┌──────────┴──────────┐\n                    │   API Servers (x3)  │\n                    └──┬──────┬───────┬───┘\n                       │      │       │\n               ┌───────┘  ┌───┘   ┌───┘\n               ▼          ▼       ▼\n         ┌─────────┐ ┌────────┐ ┌────────────┐\n         │  Redis  │ │Postgres│ │Key Gen Svc │\n         │  Cache  │ │  / DB  │ │(short codes│\n         └─────────┘ └────────┘ └────────────┘\n                          │\n                    ┌─────┴──────┐\n                    │Kafka→Click │\n                    │  House     │\n                    └────────────┘`,
         keyTakeaway:
-          'The redirect path must be blazing fast: cache → DB → redirect. Analytics are logged asynchronously via a message queue.',
+          'The redirect path must be blazing fast: cache -> DB -> redirect. Analytics are logged asynchronously via a message queue.',
       },
       {
         title: 'Step 6: Deep Dive — Handling Scale',
@@ -2038,20 +2000,7 @@ GET    /api/v1/users/:id/presence         → Get user presence`,
         title: 'Step 4: High-Level Architecture',
         content:
           '**Connection Layer:**\n- Users connect via WebSocket to a Chat Server\n- Each Chat Server handles ~50K concurrent connections\n- With 10M concurrent users, you need ~200 Chat Servers\n- A connection registry (Redis) maps user_id → which chat server they\'re connected to\n\n**Message Flow (1-on-1):**\n1. User A sends message via WebSocket to Chat Server 1\n2. Chat Server 1 validates, generates message ID, stores in Cassandra\n3. Looks up User B\'s connection in Redis registry\n4. If online: forwards message to Chat Server 3 (where User B is connected) → delivered to User B\n5. If offline: pushes message to Push Notification service (FCM/APNs)\n\n**Message Flow (Group Chat):**\n1. User A sends to group (200 members)\n2. Chat Server stores message in Cassandra once\n3. Looks up all online members\' connections\n4. Fans out the message to each member\'s Chat Server\n5. Offline members get push notifications\n\n**Key Components:**\n- Load Balancer (sticky sessions for WebSocket)\n- Chat Servers (WebSocket handlers)\n- Connection Registry (Redis: user_id → server)\n- Message Store (Cassandra)\n- Push Notification Service\n- Media Upload Service (S3 + CDN)\n- Presence Service (Redis)',
-        visual: 'diagram',
-        visualData: {
-          type: 'architecture',
-          components: [
-            'Clients',
-            'Load Balancer (sticky)',
-            'Chat Servers (WebSocket)',
-            'Connection Registry (Redis)',
-            'Message Store (Cassandra)',
-            'Push Notification Service',
-            'Media Service (S3 + CDN)',
-            'Presence Service (Redis)',
-          ],
-        },
+        diagram: `┌────────┐        ┌──────────────┐\n│Client A│◄─WS──►│Chat Server 1 │\n└────────┘        └──────┬───────┘\n                         │\n┌────────┐        ┌──────┴───────┐     ┌───────────┐\n│Client B│◄─WS──►│Chat Server 2 │────►│ Cassandra │\n└────────┘        └──────┬───────┘     │(messages) │\n                         │             └───────────┘\n              ┌──────────┴──────────┐\n              │Redis: Connection    │\n              │Registry + Presence  │\n              └──────────┬──────────┘\n                         │\n              ┌──────────┴──────────┐\n              │Push Notifications   │\n              │(FCM / APNs)         │\n              └─────────────────────┘`,
         keyTakeaway:
           'Messages flow through WebSocket chat servers, get stored in Cassandra, and are routed to recipients via a connection registry. Offline users get push notifications.',
       },
@@ -2222,12 +2171,14 @@ GET    /api/v1/stories/feed        → Get stories from followed users`,
         title: 'Step 4: News Feed Generation — Push vs Pull',
         content:
           'The hardest part: generating a personalized feed for 500M users. Two approaches:\n\n**Pull Model (Fan-out on Read):**\nWhen User A opens their feed, the system:\n1. Gets list of people A follows (say 200 users)\n2. Fetches recent posts from each (200 queries)\n3. Merges and ranks them\n4. Returns the top N posts\n\n- Pro: No wasted computation (only computed when requested)\n- Con: Slow! Merging 200 users\' posts on every feed load is expensive. High latency.\n\n**Push Model (Fan-out on Write):**\nWhen User B creates a post, the system:\n1. Gets all of B\'s followers (say 1,000 users)\n2. Pushes the post into each follower\'s pre-computed feed (in Redis)\n3. When User A opens their feed, it\'s already ready — just read from Redis\n\n- Pro: Feed reads are instant (pre-computed)\n- Con: Expensive writes. If a user has 10M followers, creating one post triggers 10M writes.\n\n**Hybrid Approach (What Instagram actually uses):**\n- For regular users (< 10K followers): Push model. Fan-out is manageable.\n- For celebrities (> 10K followers): Pull model. Don\'t fan out to 10M feeds.\n- When loading feed: merge pre-computed feed with recent celebrity posts on the fly.',
-        visual: 'comparison',
-        visualData: {
+        comparison: {
+          leftTitle: 'Pull (Fan-out on Read)',
+          rightTitle: 'Push (Fan-out on Write)',
           items: [
-            { label: 'Pull (Fan-out on Read)', pros: 'No wasted writes', cons: 'Slow reads, high latency' },
-            { label: 'Push (Fan-out on Write)', pros: 'Instant reads', cons: 'Expensive writes, celebrity problem' },
-            { label: 'Hybrid', pros: 'Best of both', cons: 'More complex' },
+            { left: 'Compute feed at read time', right: 'Pre-compute feed at write time' },
+            { left: 'No wasted writes', right: 'Instant reads from Redis' },
+            { left: 'Slow reads (~500ms, merge 200 streams)', right: 'Expensive writes (10M fan-out for celebs)' },
+            { left: 'Good for high-follower accounts', right: 'Good for normal users (< 10K followers)' },
           ],
         },
         keyTakeaway:
@@ -2237,21 +2188,7 @@ GET    /api/v1/stories/feed        → Get stories from followed users`,
         title: 'Step 5: High-Level Architecture',
         content:
           '**Upload Flow:**\n1. Client uploads image to Image Upload Service\n2. Image stored in S3, job published to processing queue\n3. Image Processing Service creates thumbnails (150x150, 640x640, 1080x1080)\n4. CDN URLs generated for each size\n5. Post metadata stored in database\n6. Feed Fan-out Service pushes post_id to followers\' feeds in Redis\n\n**Feed Flow:**\n1. Client requests GET /feed?cursor=xxx\n2. Feed Service reads pre-computed feed from Redis (list of post_ids)\n3. Post Service fetches full post data (batch query)\n4. Merge with celebrity posts (pull on read)\n5. Apply ranking algorithm (chronological + engagement signals)\n6. Return ranked feed page\n\n**Components:**\n- Web Servers (stateless, behind LB)\n- Image Upload Service + S3 + Image Processing Workers\n- CDN (serves all images)\n- Feed Service + Redis (pre-computed feeds)\n- Post Service + PostgreSQL/Cassandra\n- Fan-out Service + Kafka (distributes posts to follower feeds)\n- Notification Service (push notifications for likes, comments, follows)\n- Search Service (Elasticsearch for user/hashtag search)',
-        visual: 'diagram',
-        visualData: {
-          type: 'architecture',
-          components: [
-            'Clients',
-            'CDN',
-            'Load Balancer',
-            'Web Servers',
-            'Image Upload + S3 + Processing Workers',
-            'Feed Service + Redis',
-            'Post Service + Database',
-            'Fan-out Service + Kafka',
-            'Search (Elasticsearch)',
-          ],
-        },
+        diagram: `┌────────┐   ┌─────┐   ┌──────────┐   ┌────────────┐\n│ Client │──►│ CDN │◄──│    LB    │──►│ Web Servers│\n└────────┘   └──┬──┘   └──────────┘   └─────┬──────┘\n                │                        ┌────┴────┐\n           ┌────┘                   ┌────┘    ┌───┘\n           ▼                        ▼         ▼\n     ┌───────────┐          ┌──────────┐ ┌────────┐\n     │  S3 + Img │          │Feed Svc  │ │Post Svc│\n     │  Workers  │          │+ Redis   │ │+ DB    │\n     └───────────┘          └────┬─────┘ └────────┘\n                                 │\n                           ┌─────┴──────┐\n                           │Fan-out Svc │\n                           │+ Kafka     │\n                           └────────────┘`,
         keyTakeaway:
           'The architecture separates image storage (S3+CDN), feed generation (Redis+Kafka fan-out), and post storage (database). Each can scale independently.',
       },
@@ -2571,19 +2508,13 @@ async function findNearbyDrivers(
         title: 'Step 4: Ride Matching Algorithm',
         content:
           'When a rider requests a ride, the matching system:\n\n**Step 1: Find Candidates**\n- Query nearby available drivers within 5km radius\n- If fewer than 3 found, expand to 10km\n\n**Step 2: Rank Candidates**\nScore each driver based on:\n- **Distance** to pickup (lower = better, biggest factor)\n- **ETA** considering real-time traffic (not just straight-line distance)\n- **Driver rating** (higher = better)\n- **Vehicle type match** (rider requested UberX, filter out UberBLACK)\n- **Acceptance rate** (drivers who rarely decline rank higher)\n\n**Step 3: Offer the Ride**\n- Send ride request to the top-ranked driver\n- Driver has 15 seconds to accept\n- If declined or timeout → offer to the next driver\n- If all nearby drivers decline → expand radius and try again\n- After 3 failed rounds → notify rider "No drivers available"\n\n**Step 4: Match Confirmed**\n- Update driver status to "on_trip"\n- Create trip record in database\n- Start sending driver location to rider in real-time\n- Calculate and display ETA',
-        visual: 'flowchart',
-        visualData: {
-          nodes: [
-            'Rider Requests Ride',
-            'Find Nearby Drivers (5km)',
-            'Rank by Distance + ETA + Rating',
-            'Offer to Top Driver (15s timeout)',
-            'Accepted? → Create Trip',
-            'Declined? → Try Next Driver',
-            'No Drivers? → Expand Radius',
-          ],
-          flow: 'branching',
-        },
+        flow: [
+          { label: 'Rider Requests', description: 'Send pickup + destination', icon: '📍' },
+          { label: 'Find Drivers', description: 'Nearby within 5km radius', icon: '🔍' },
+          { label: 'Rank', description: 'Distance, ETA, rating', icon: '📊' },
+          { label: 'Offer', description: '15s timeout per driver', icon: '📲' },
+          { label: 'Match!', description: 'Create trip, start tracking', icon: '✅' },
+        ],
         keyTakeaway:
           'Matching is a ranked candidate selection: find nearby → rank by ETA/distance/rating → offer with timeout → fallback to next. Typically completes in 10-30 seconds.',
       },
@@ -2591,22 +2522,7 @@ async function findNearbyDrivers(
         title: 'Step 5: High-Level Architecture',
         content:
           '**Key Services:**\n\n1. **Location Service** — Ingests 500K location updates/sec from drivers. Stores in Redis GEO. This is the highest-throughput component.\n\n2. **Matching Service** — Handles ride requests. Queries Location Service for nearby drivers, runs ranking algorithm, sends offers. Stateful per active request.\n\n3. **Trip Service** — Manages the ride lifecycle (request → match → pickup → trip → complete). Stores trip state in PostgreSQL.\n\n4. **ETA Service** — Calculates estimated time of arrival using road network graph + real-time traffic data. Returns ETA for each candidate driver.\n\n5. **Pricing Service** — Computes fare estimates based on distance, duration, ride type, demand (surge pricing). Fare is locked at request time.\n\n6. **Payment Service** — Charges rider\'s payment method after trip completion. Handles splits, tips, refunds.\n\n7. **Notification Service** — Pushes ride status updates, driver location to riders via WebSocket/push notifications.\n\n**Data Flow:**\n- Driver locations: Driver App → Location Service → Redis GEO\n- Ride request: Rider App → API Gateway → Matching Service → Location Service → ETA Service → Driver App\n- Trip updates: Driver App → Trip Service → Notification Service → Rider App',
-        visual: 'diagram',
-        visualData: {
-          type: 'architecture',
-          components: [
-            'Rider App / Driver App',
-            'API Gateway + Load Balancer',
-            'Matching Service',
-            'Location Service + Redis GEO',
-            'Trip Service + PostgreSQL',
-            'ETA Service (road graph)',
-            'Pricing Service',
-            'Payment Service',
-            'Notification Service (WebSocket)',
-            'Kafka (event bus)',
-          ],
-        },
+        diagram: `┌──────────┐   ┌──────────┐\n│Rider App │   │Driver App│\n└────┬─────┘   └────┬─────┘\n     │    WebSocket  │ Location updates\n     ▼              ▼\n┌─────────────────────────┐\n│     API Gateway / LB    │\n└──┬────┬────┬────┬───────┘\n   │    │    │    │\n   ▼    ▼    ▼    ▼\n┌─────┐┌────┐┌───┐┌───────┐\n│Match││Trip││ETA││Pricing│\n│ Svc ││Svc ││Svc││  Svc  │\n└──┬──┘└─┬──┘└───┘└───────┘\n   │     │\n   ▼     ▼\n┌──────────────────┐\n│Location Svc+Redis│\n│  GEO + Kafka     │\n└──────────────────┘`,
         keyTakeaway:
           'The architecture centers on Location Service (high-throughput), Matching Service (real-time decision-making), and Trip Service (stateful lifecycle management).',
       },
@@ -2710,18 +2626,14 @@ GET    /api/v1/content/:id/status            → Transcoding job status`,
           'When Netflix receives a raw movie file (often 4K, 100+ GB), it must create dozens of versions:\n\n**Why Transcode?**\n- Different devices need different formats (H.264 for older devices, H.265/HEVC for modern, VP9 for Chrome)\n- Different resolutions: 240p, 360p, 480p, 720p, 1080p, 4K\n- Different bitrates within each resolution (for varying internet speeds)\n- Different audio tracks (5.1 surround, stereo, descriptions)\n- Subtitles in 30+ languages\n\n**The Pipeline:**\n1. **Upload**: Studio uploads raw master file to S3\n2. **Chunking**: Split video into 4-second chunks (segments)\n3. **Encoding**: Each chunk is independently encoded into every format/resolution/bitrate combination\n4. **Quality Check**: Automated quality metrics (VMAF score) verify each encoding\n5. **DRM**: Encrypt each chunk with Widevine/FairPlay/PlayReady\n6. **Manifest**: Generate a manifest file listing all available chunks and quality levels\n7. **CDN Distribution**: Push popular content to CDN edge servers globally\n\n**Scale**: One movie generates ~1,000 encoded files. Netflix runs this on thousands of EC2 instances in parallel.\n\nEncoding one 2-hour movie in all formats takes ~30 minutes with massive parallelism (vs 100+ hours on a single machine).',
         analogy:
           'Transcoding is like translating a book into 30 languages, 5 font sizes each, with braille and audiobook versions. Then shipping copies to every bookstore worldwide. The more formats you prepare upfront, the faster anyone can read it.',
-        visual: 'flowchart',
-        visualData: {
-          nodes: [
-            'Raw Upload (100GB)',
-            'Split into 4-sec chunks',
-            'Encode each chunk in 10+ formats',
-            'DRM Encryption',
-            'Generate Manifest',
-            'Push to CDN',
-          ],
-          flow: 'linear',
-        },
+        flow: [
+          { label: 'Upload', description: 'Raw 4K file to S3', icon: '📤' },
+          { label: 'Chunk', description: 'Split into 4s segments', icon: '✂️' },
+          { label: 'Encode', description: '10+ formats parallel', icon: '🔄' },
+          { label: 'Encrypt', description: 'DRM protection', icon: '🔒' },
+          { label: 'Manifest', description: 'List all qualities', icon: '📋' },
+          { label: 'CDN Push', description: 'Distribute globally', icon: '🌍' },
+        ],
         keyTakeaway:
           'The transcoding pipeline splits videos into chunks, encodes each in multiple formats/resolutions/bitrates, encrypts with DRM, and distributes to CDN. Massive parallelism makes this fast.',
       },
@@ -2800,20 +2712,7 @@ GET    /api/v1/content/:id/status            → Transcoding job status`,
         title: 'Step 7: Architecture and Bottlenecks',
         content:
           '**High-Level Architecture:**\n- **Control Plane** (AWS): API servers, user data, catalog, recommendations, billing\n- **Data Plane** (Open Connect): Video storage and streaming from OCAs worldwide\n- Control plane tells the client WHERE to stream from; data plane actually streams\n\n**Bottleneck 1: Thundering Herd on New Releases**\nMillions of users hit play on a new season at midnight.\nSolution: Pre-position content on all OCAs days before release. Stagger release by time zone.\n\n**Bottleneck 2: Transcoding Queue**\n100 new titles/week, each needing 1,000+ encoded versions.\nSolution: Massively parallel encoding on spot instances. Priority queue: upcoming releases go first.\n\n**Bottleneck 3: Playback Failures**\nAn OCA crashes → thousands of users lose their stream.\nSolution: Client detects failure (buffer running empty) and seamlessly switches to another OCA. The user sees a brief quality dip, nothing more.\n\n**Bottleneck 4: Cold Start in Recommendations**\nNew users have no watch history.\nSolution: Ask new users to pick a few titles they like. Use demographic signals (region, device, signup time) until enough data accumulates.\n\n**Key Metrics Netflix Monitors:**\n- Stream start time (target: < 1 second)\n- Re-buffer rate (target: < 0.1%)\n- Video quality distribution (% of streams at HD+)\n- Recommendation engagement (click-through rate)\n- OCA health (cache hit rate, latency)',
-        visual: 'diagram',
-        visualData: {
-          type: 'architecture',
-          components: [
-            'Client (Smart TV, Phone, Browser)',
-            'API Servers (AWS) — Catalog, Auth, Recs',
-            'User DB (PostgreSQL/Cassandra)',
-            'Recommendation Engine (ML)',
-            'Transcoding Pipeline (Kafka + Workers)',
-            'Object Storage (S3) — Master Files',
-            'Open Connect CDN (ISP OCAs)',
-            'Playback/Manifest Service',
-          ],
-        },
+        diagram: `CONTROL PLANE (AWS)          DATA PLANE (Open Connect)\n┌───────────────────┐        ┌─────────────────────┐\n│ API Servers       │        │ Open Connect CDN    │\n│ ├─ Catalog        │        │ ├─ ISP OCA (Tokyo)  │\n│ ├─ Auth           │   ───► │ ├─ ISP OCA (London) │\n│ ├─ Recommendations│manifest│ ├─ ISP OCA (NYC)    │\n│ └─ Playback Svc   │  URL   │ └─ ISP OCA (Mumbai) │\n├───────────────────┤        └──────────┬──────────┘\n│ User DB           │                   │ Video\n│ Rec Engine (ML)   │                   │ Stream\n│ Transcode Pipeline│                   ▼\n│ S3 (master files) │           ┌──────────────┐\n└───────────────────┘           │ Client (TV,  │\n                                │ Phone, PC)   │\n                                └──────────────┘`,
         keyTakeaway:
           'Netflix separates control plane (AWS: APIs, recommendations, catalog) from data plane (Open Connect: video delivery). This enables independent scaling of the two biggest workloads.',
       },

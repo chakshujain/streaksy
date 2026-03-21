@@ -6,6 +6,7 @@ import { asyncHandler } from '../../../common/utils/asyncHandler';
 const router = Router();
 
 router.use(authenticate);
+router.get('/global', asyncHandler(leaderboardController.getGlobalLeaderboard as any));
 router.get('/group/:groupId', asyncHandler(leaderboardController.getGroupLeaderboard as any));
 
 export default router;

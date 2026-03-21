@@ -23,26 +23,17 @@ export const oopsLessons: Record<string, {
         title: 'Procedural vs Object-Oriented',
         content:
           'Before OOP, most programs were written **procedurally** — a sequence of instructions executed top to bottom. Data and functions lived separately. As programs grew, this became a spaghetti nightmare. OOP bundles data with the functions that operate on it, making code easier to organize, reuse, and reason about.',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'Procedural',
-            items: [
-              'Data and functions are separate',
-              'Functions operate on external data',
-              'Hard to manage as code grows',
-              'Global state causes bugs',
-            ],
-          },
-          right: {
-            title: 'Object-Oriented',
-            items: [
-              'Data and functions bundled together',
-              'Objects manage their own state',
-              'Easier to scale and maintain',
-              'Encapsulation reduces bugs',
-            ],
-          },
+        comparison: {
+          leftTitle: 'Procedural',
+          rightTitle: 'Object-Oriented',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Data and functions are separate', right: 'Data and functions bundled together' },
+            { left: 'Functions operate on external data', right: 'Objects manage their own state' },
+            { left: 'Hard to manage as code grows', right: 'Easier to scale and maintain' },
+            { left: 'Global state causes bugs', right: 'Encapsulation reduces bugs' },
+          ],
         },
         keyTakeaway:
           'Procedural code separates data from functions; OOP bundles them into objects.',
@@ -107,12 +98,12 @@ print(account.balance)  # 1300`,
         title: 'The Four Pillars of OOP',
         content:
           'OOP rests on four foundational concepts. Every subsequent lesson dives deep into one of these:\n\n1. **Encapsulation** — Hide internal details, expose only what is needed.\n2. **Inheritance** — Reuse code by building child classes from parent classes.\n3. **Polymorphism** — One interface, many implementations.\n4. **Abstraction** — Focus on *what* an object does, not *how*.\n\nThink of these as the four legs of a table — remove any one and the design collapses.',
-        visual: 'diagram',
-        visualData: {
-          title: 'The Four Pillars',
-          nodes: ['Encapsulation', 'Inheritance', 'Polymorphism', 'Abstraction'],
-          center: 'OOP',
-        },
+        cards: [
+          { title: 'Encapsulation', description: 'Hide internal details, expose only what is needed.', icon: '🔒', color: 'blue' },
+          { title: 'Inheritance', description: 'Reuse code by building child classes from parents.', icon: '🧬', color: 'emerald' },
+          { title: 'Polymorphism', description: 'One interface, many implementations.', icon: '🎭', color: 'purple' },
+          { title: 'Abstraction', description: 'Focus on what an object does, not how.', icon: '🎨', color: 'amber' },
+        ],
         keyTakeaway:
           'Encapsulation, Inheritance, Polymorphism, and Abstraction are the four pillars of OOP.',
       },
@@ -464,15 +455,7 @@ print(e1.get_info())                   # Employee #1: Alice`,
         title: 'Objects in Memory',
         content:
           'When you write `Car car1 = new Car(...)` in Java, two things happen:\n\n1. The `new Car(...)` part allocates memory on the **heap** and runs the constructor.\n2. `car1` is a **reference** (pointer) stored on the **stack** that points to that heap object.\n\nThis means when you assign `car2 = car1`, both variables point to the **same** object. Changing `car2` changes `car1` too! To create an independent copy, you need to explicitly clone or create a new object.',
-        visual: 'diagram',
-        visualData: {
-          title: 'Object References in Memory',
-          nodes: [
-            'Stack: car1 → [address 0x1A]',
-            'Stack: car2 → [address 0x1A]',
-            'Heap: 0x1A = {make: Toyota, speed: 60}',
-          ],
-        },
+        diagram: `STACK                    HEAP\n┌──────────────┐     ┌────────────────────────┐\n│ car1 ─────────────►│ 0x1A: Car              │\n│              │     │  make: "Toyota"        │\n│ car2 ─────────────►│  speed: 60             │\n│              │     │  (SAME object!)        │\n└──────────────┘     └────────────────────────┘\n\ncar2 = car1 does NOT copy — both point\nto the same object on the heap.`,
         code: [
           {
             language: 'python',
@@ -539,8 +522,7 @@ print(car3.speed)  # 150 (independent)`,
         title: 'Access Modifiers — The Gates',
         content:
           'Languages use **access modifiers** to control who can see and change an object\'s properties:\n\n| Modifier | Java Keyword | Python Convention | Who Can Access |\n|----------|-------------|------------------|---------------|\n| Public | `public` | no prefix | Anyone |\n| Protected | `protected` | `_single_underscore` | Class + subclasses |\n| Private | `private` | `__double_underscore` | Class only |\n\nThink of these as security levels: public is the lobby (anyone enters), protected is the employee area (badge required), private is the vault (authorized personnel only).',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Level', 'Java', 'Python', 'Access'],
           rows: [
             ['Public', 'public', 'no prefix', 'Everyone'],
@@ -1035,16 +1017,12 @@ tesla.start_engine()
         title: 'Types of Inheritance',
         content:
           'There are several forms of inheritance:\n\n1. **Single** — One parent, one child (Dog extends Animal).\n2. **Multilevel** — Chain: Animal → Dog → GuideDog.\n3. **Hierarchical** — One parent, many children: Animal → Dog, Cat, Bird.\n4. **Multiple** — One child inherits from multiple parents. Java does NOT support this with classes (uses interfaces instead). Python supports it.\n\nThe **diamond problem** occurs with multiple inheritance when two parents share a common grandparent. Python resolves this with MRO (Method Resolution Order).',
-        visual: 'diagram',
-        visualData: {
-          title: 'Inheritance Types',
-          nodes: [
-            'Single: A → B',
-            'Multilevel: A → B → C',
-            'Hierarchical: A → B, A → C',
-            'Multiple: A,B → C (Python only for classes)',
-          ],
-        },
+        cards: [
+          { title: 'Single', description: 'One parent, one child: Animal -> Dog', icon: '↓', color: 'blue' },
+          { title: 'Multilevel', description: 'Chain: Animal -> Dog -> GuideDog', icon: '⬇️', color: 'emerald' },
+          { title: 'Hierarchical', description: 'One parent, many children: Animal -> Dog, Cat, Bird', icon: '🌿', color: 'purple' },
+          { title: 'Multiple', description: 'Two parents -> one child. Python yes, Java uses interfaces.', icon: '🔀', color: 'amber' },
+        ],
         keyTakeaway:
           'Java supports single, multilevel, and hierarchical inheritance with classes. Python also supports multiple inheritance.',
       },
@@ -1380,28 +1358,16 @@ public double totalArea(Shape[] shapes) {
         title: 'Compile-Time vs Runtime — Summary',
         content:
           'Let us nail down the difference once and for all:',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'Compile-Time (Overloading)',
-            items: [
-              'Same class, same method name',
-              'Different parameters',
-              'Resolved by compiler',
-              'Also called static polymorphism',
-              'Java supports natively',
-            ],
-          },
-          right: {
-            title: 'Runtime (Overriding)',
-            items: [
-              'Parent and child class',
-              'Same method signature',
-              'Resolved at runtime by JVM',
-              'Also called dynamic polymorphism',
-              'Both Java and Python support',
-            ],
-          },
+        comparison: {
+          leftTitle: 'Compile-Time (Overloading)',
+          rightTitle: 'Runtime (Overriding)',
+          items: [
+            { left: 'Same class, same method name', right: 'Parent and child class' },
+            { left: 'Different parameters', right: 'Same method signature' },
+            { left: 'Resolved by compiler', right: 'Resolved at runtime by JVM' },
+            { left: 'Also called static polymorphism', right: 'Also called dynamic polymorphism' },
+            { left: 'Java supports natively', right: 'Both Java and Python support' },
+          ],
         },
         keyTakeaway:
           'Overloading = compile-time (same class, different params). Overriding = runtime (parent-child, same signature).',
@@ -1456,26 +1422,15 @@ public double totalArea(Shape[] shapes) {
         title: 'Abstraction vs Encapsulation',
         content:
           'These two are often confused:\n\n- **Encapsulation** = Hiding the *data* (making fields private, using getters/setters). It is about **access control**.\n- **Abstraction** = Hiding the *complexity* (showing only what the user needs). It is about **simplifying the interface**.\n\nEncapsulation is a mechanism; abstraction is a design principle. Encapsulation *helps achieve* abstraction, but they solve different problems.',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'Encapsulation',
-            items: [
-              'Hides DATA (fields)',
-              'Uses access modifiers',
-              'About access control',
-              'Implementation technique',
-            ],
-          },
-          right: {
-            title: 'Abstraction',
-            items: [
-              'Hides COMPLEXITY (details)',
-              'Uses abstract classes / interfaces',
-              'About simplifying the interface',
-              'Design principle',
-            ],
-          },
+        comparison: {
+          leftTitle: 'Encapsulation',
+          rightTitle: 'Abstraction',
+          items: [
+            { left: 'Hides DATA (fields)', right: 'Hides COMPLEXITY (details)' },
+            { left: 'Uses access modifiers', right: 'Uses abstract classes / interfaces' },
+            { left: 'About access control', right: 'About simplifying the interface' },
+            { left: 'Implementation technique', right: 'Design principle' },
+          ],
         },
         keyTakeaway:
           'Encapsulation hides data; abstraction hides complexity. They complement each other.',
@@ -1828,8 +1783,7 @@ duck.land()   # Landing safely... (inherited concrete method)`,
         title: 'When to Use Interface vs Abstract Class',
         content:
           'This is one of the most common interview questions. Here is the decision framework:',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Criteria', 'Interface', 'Abstract Class'],
           rows: [
             ['Relationship', '"can-do" (Flyable, Printable)', '"is-a" (Animal, Vehicle)'],
@@ -2266,8 +2220,7 @@ service = UserService(PostgreSQLDatabase())  # inject any implementation
         title: 'SOLID Summary',
         content:
           'Let us recap all five principles with their one-line essence:',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Letter', 'Principle', 'One-Liner'],
           rows: [
             ['S', 'Single Responsibility', 'One class, one job'],
@@ -2511,28 +2464,16 @@ notif.send("Hello!")  # SMS: Hello!`,
         title: 'When to Use Each Pattern',
         content:
           'Use **Singleton** when:\n- Exactly one instance is needed (config, connection pool, cache)\n- You need a global access point\n\nUse **Factory** when:\n- The exact type of object to create is determined at runtime\n- You want to decouple creation logic from business logic\n- You have a family of related classes that share an interface\n- You want to centralize and simplify complex construction logic',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'Singleton',
-            items: [
-              'One instance only',
-              'Global access point',
-              'Database connections',
-              'Configuration managers',
-              'Logging services',
-            ],
-          },
-          right: {
-            title: 'Factory',
-            items: [
-              'Multiple instances of different types',
-              'Type determined at runtime',
-              'Notification systems',
-              'Document parsers (PDF, DOCX, CSV)',
-              'Payment processors',
-            ],
-          },
+        comparison: {
+          leftTitle: 'Singleton',
+          rightTitle: 'Factory',
+          items: [
+            { left: 'One instance only', right: 'Multiple instances of different types' },
+            { left: 'Global access point', right: 'Type determined at runtime' },
+            { left: 'Database connections', right: 'Notification systems' },
+            { left: 'Configuration managers', right: 'Document parsers (PDF, DOCX, CSV)' },
+            { left: 'Logging services', right: 'Payment processors' },
+          ],
         },
         keyTakeaway:
           'Singleton = one global instance. Factory = creating the right type at runtime.',
@@ -2931,28 +2872,16 @@ cart.checkout()  # Paid $79.98 via PayPal (alice@mail.com)`,
         title: 'Observer vs Strategy — When to Use Each',
         content:
           'Both decouple behavior, but in different ways:',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'Observer',
-            items: [
-              'One-to-many notification',
-              'Subject does not know observer types',
-              'Event-driven systems',
-              'Stock alerts, chat rooms, UI events',
-              'Observers come and go dynamically',
-            ],
-          },
-          right: {
-            title: 'Strategy',
-            items: [
-              'One-to-one algorithm swap',
-              'Context delegates to one strategy',
-              'Algorithm selection',
-              'Payment methods, sorting, routing',
-              'Strategy set once (or switched)',
-            ],
-          },
+        comparison: {
+          leftTitle: 'Observer',
+          rightTitle: 'Strategy',
+          items: [
+            { left: 'One-to-many notification', right: 'One-to-one algorithm swap' },
+            { left: 'Subject doesn\'t know observer types', right: 'Context delegates to one strategy' },
+            { left: 'Event-driven systems', right: 'Algorithm selection' },
+            { left: 'Stock alerts, chat rooms, UI events', right: 'Payment methods, sorting, routing' },
+            { left: 'Observers come and go dynamically', right: 'Strategy set once (or switched)' },
+          ],
         },
         keyTakeaway:
           'Observer = notify many when something changes. Strategy = swap one algorithm at runtime.',
@@ -3244,28 +3173,16 @@ analytics.track_event('{"event": "click", "page": "home"}')
         title: 'Builder vs Adapter — When to Use Each',
         content:
           'These patterns solve completely different problems:',
-        visual: 'comparison',
-        visualData: {
-          left: {
-            title: 'Builder',
-            items: [
-              'Creates complex objects step-by-step',
-              'Solves "too many constructor params"',
-              'Used at object CREATION time',
-              'HTTP requests, SQL queries, UI configs',
-              'Creational pattern',
-            ],
-          },
-          right: {
-            title: 'Adapter',
-            items: [
-              'Bridges incompatible interfaces',
-              'Solves "wrong interface" problem',
-              'Used to integrate existing systems',
-              'Legacy code, third-party libraries',
-              'Structural pattern',
-            ],
-          },
+        comparison: {
+          leftTitle: 'Builder',
+          rightTitle: 'Adapter',
+          items: [
+            { left: 'Creates complex objects step-by-step', right: 'Bridges incompatible interfaces' },
+            { left: 'Solves "too many constructor params"', right: 'Solves "wrong interface" problem' },
+            { left: 'Used at object CREATION time', right: 'Used to integrate existing systems' },
+            { left: 'HTTP requests, SQL queries, UI configs', right: 'Legacy code, third-party libraries' },
+            { left: 'Creational pattern', right: 'Structural pattern' },
+          ],
         },
         keyTakeaway:
           'Builder = construct complex objects. Adapter = make incompatible interfaces work together.',
@@ -3533,8 +3450,7 @@ urgent_email.send("Server down")  # Email: [URGENT] Server down`,
         title: 'When to Use Inheritance vs Composition',
         content:
           'Inheritance is not inherently bad — it is the right choice sometimes. Here is the decision guide:',
-        visual: 'table',
-        visualData: {
+        table: {
           headers: ['Question', 'If Yes...', 'Use'],
           rows: [
             ['Is it a clear IS-A relationship?', 'Dog IS-A Animal', 'Inheritance'],
@@ -3597,17 +3513,7 @@ urgent_email.send("Server down")  # Email: [URGENT] Server down`,
         title: 'Identifying the Classes',
         content:
           'From the requirements, we can identify these core classes:\n\n1. **ParkingLot** — The main system (Singleton)\n2. **Floor** — One level of the parking lot\n3. **ParkingSpot** — An individual spot (Small, Medium, Large)\n4. **Vehicle** — Base class (Motorcycle, Car, Truck)\n5. **Ticket** — Issued on entry, tracks time\n6. **FeeCalculator** — Strategy pattern for pricing\n\nRelationships:\n- ParkingLot HAS many Floors\n- Floor HAS many ParkingSpots\n- ParkingSpot HAS a Vehicle (when occupied)\n- Ticket references a Vehicle and a ParkingSpot',
-        visual: 'diagram',
-        visualData: {
-          title: 'Class Relationships',
-          nodes: [
-            'ParkingLot (1)',
-            'Floor (many)',
-            'ParkingSpot (many)',
-            'Vehicle',
-            'Ticket',
-          ],
-        },
+        diagram: `┌─────────────┐\n│ ParkingLot  │ (Singleton)\n│  (1 instance)│\n└──────┬──────┘\n       │ has many\n┌──────┴──────┐\n│   Floor     │\n└──────┬──────┘\n       │ has many\n┌──────┴──────┐     ┌──────────┐\n│ ParkingSpot │────►│ Vehicle  │\n│ (S/M/L)     │     │(abstract)│\n└─────────────┘     └────┬─────┘\n       │                 │ extends\n┌──────┴──────┐    ┌─────┴────────────┐\n│   Ticket    │    │Motorcycle|Car|Truck│\n│ (entry time)│    └──────────────────┘\n└─────────────┘`,
         keyTakeaway:
           'Identify nouns from requirements as classes and verbs as methods. Map relationships.',
       },
@@ -3969,18 +3875,7 @@ def create_parking_lot():
         title: 'Core Classes',
         content:
           'From the requirements, we identify:\n\n1. **ATM** — Main machine (Singleton per physical machine)\n2. **Account** — Bank account with balance\n3. **Card** — Links to an account, has PIN\n4. **Transaction** — Base class (Withdrawal, Deposit, Transfer)\n5. **CashDispenser** — Manages bill denominations\n6. **ATMState** — State pattern for flow control (Idle, Authentication, MainMenu, Transaction)\n7. **Receipt** — Transaction summary',
-        visual: 'diagram',
-        visualData: {
-          title: 'ATM Class Diagram',
-          nodes: [
-            'ATM (Singleton)',
-            'ATMState (State Pattern)',
-            'Account',
-            'Card',
-            'Transaction (abstract)',
-            'CashDispenser',
-          ],
-        },
+        diagram: `┌───────────────┐     ┌──────────────┐\n│ ATM (Singlet.)│────►│ ATMState     │\n│ - screen      │     │ (State Ptrn) │\n│ - dispenser   │     ├──────────────┤\n│ - cardReader  │     │Idle|Auth|Menu│\n└───────┬───────┘     │|Transaction  │\n        │             └──────────────┘\n   ┌────┴─────┐\n   │  Card    │────►┌──────────┐\n   │ - PIN    │     │ Account  │\n   └──────────┘     │ - balance│\n                    └──────────┘\n┌───────────────┐\n│ Transaction   │ (abstract)\n├───────────────┤\n│Withdrawal|    │\n│Deposit|Xfer  │\n└───────────────┘`,
         keyTakeaway:
           'The ATM design uses Singleton, State, and Strategy patterns together.',
       },

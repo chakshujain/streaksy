@@ -38,6 +38,7 @@ import powerupRoutes from './modules/powerup/routes/powerup.routes';
 import digestRoutes from './modules/digest/routes/digest.routes';
 import inviteRoutes from './modules/invite/routes/invite.routes';
 import prepRoutes from './modules/prep/routes/prep.routes';
+import roadmapRoutes from './modules/roadmaps/routes/roadmaps.routes';
 
 const app = express();
 
@@ -122,6 +123,7 @@ app.use('/api/powerups', powerupRoutes);
 app.use('/api/digest', digestRoutes);
 app.use('/api/invite', inviteRoutes);
 app.use('/api/prep', prepRoutes);
+app.use('/api/roadmaps', roadmapRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

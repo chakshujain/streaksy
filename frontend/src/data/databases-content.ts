@@ -16,16 +16,40 @@ export const databaseLessons: Record<
       {
         title: 'The Filing Cabinet in Your Office',
         content:
-          'Imagine you run a small business. At first you keep customer info on sticky notes. When you have 5 customers, that works. When you have 5,000, you need a filing cabinet with labeled drawers, folders, and an index card system so you can find anything in seconds.\n\nA database is that filing cabinet for software. It is a structured system for storing, organizing, and retrieving data efficiently. Every app you use — Instagram, your bank, even your thermostat — has a database behind it.',
+          'Imagine you run a small business. At first you keep customer info on sticky notes. When you have 5 customers, that works. When you have 5,000, you need a filing cabinet with labeled drawers, folders, and an index card system.',
         analogy:
-          'Sticky notes = storing data in random text files. A filing cabinet with labeled folders = a database. The label system is the schema, and the act of flipping to the right folder is a query.',
+          'Sticky notes = storing data in random text files. A filing cabinet with labeled folders = a database. The label system is the schema, and flipping to the right folder is a query.',
+        cards: [
+          { title: 'Store', description: 'Persist data safely on disk', icon: '💾', color: 'blue' },
+          { title: 'Organize', description: 'Structure data with schemas and relationships', icon: '📂', color: 'emerald' },
+          { title: 'Query', description: 'Retrieve exactly the data you need, fast', icon: '🔍', color: 'purple' },
+          { title: 'Protect', description: 'Enforce rules, handle crashes, control access', icon: '🛡️', color: 'amber' },
+        ],
         keyTakeaway:
           'A database is an organized, queryable store of data — not just a pile of files.',
       },
       {
         title: 'Why Not Just Use Files?',
         content:
-          "You could store everything in plain text or JSON files, right? Here is why that breaks down:\n\n1. **Concurrent access** — Two users editing the same file at the same time can corrupt it. Databases handle thousands of simultaneous readers and writers safely.\n\n2. **Querying** — Finding all orders over $100 in a JSON file means reading the whole file and looping through it. A database can answer that in milliseconds using indexes.\n\n3. **Integrity** — Files don't enforce rules. A database can guarantee that every order references a real customer (foreign keys) and that prices are never negative (constraints).\n\n4. **Crash recovery** — If your app dies mid-write to a file, the file can be left half-written. Databases use transactions and write-ahead logs to recover cleanly.",
+          'You could store everything in plain text or JSON files, right? Here is why that breaks down at scale.',
+        bullets: [
+          '**Concurrent access** — Two users editing the same file corrupt it. Databases handle thousands of simultaneous readers/writers safely.',
+          '**Querying** — Finding all orders over $100 in a JSON file means reading the whole file. A database answers in milliseconds using indexes.',
+          '**Integrity** — Files don\'t enforce rules. Databases guarantee every order references a real customer (foreign keys) and prices are never negative (constraints).',
+          '**Crash recovery** — Half-written files corrupt data. Databases use transactions and write-ahead logs to recover cleanly.',
+        ],
+        comparison: {
+          leftTitle: 'Plain Files',
+          rightTitle: 'Database',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'No concurrency control', right: 'Handles thousands of concurrent users' },
+            { left: 'Full scan to find anything', right: 'Index lookups in milliseconds' },
+            { left: 'No data validation', right: 'Constraints, types, foreign keys' },
+            { left: 'Half-written on crash', right: 'Transaction rollback + WAL recovery' },
+          ],
+        },
         analogy:
           'Using flat files for app data is like running a hospital where patient records are kept in a shared Google Doc. It works for two patients, but is a disaster at scale.',
         keyTakeaway:
@@ -34,7 +58,7 @@ export const databaseLessons: Record<
       {
         title: 'Relational Databases (SQL)',
         content:
-          'The most popular type. Data is stored in tables (rows and columns), and tables are connected by relationships. You interact with them using SQL (Structured Query Language).\n\nThink of a spreadsheet where each sheet is a table, each row is a record, and each column is a field. The difference? A database enforces types, relationships, and constraints that a spreadsheet never will.\n\nExamples: PostgreSQL, MySQL, SQLite, Oracle, SQL Server.',
+          'The most popular type. Data is stored in tables (rows and columns) connected by relationships. You interact with them using SQL (Structured Query Language). Think of a spreadsheet where each sheet is a table, each row is a record, and each column is a field.',
         code: [
           {
             language: 'sql',
@@ -42,13 +66,24 @@ export const databaseLessons: Record<
             code: `CREATE TABLE customers (\n  id       SERIAL PRIMARY KEY,\n  name     VARCHAR(100) NOT NULL,\n  email    VARCHAR(255) UNIQUE NOT NULL,\n  country  VARCHAR(50)\n);\n\nINSERT INTO customers (name, email, country)\nVALUES ('Alice', 'alice@example.com', 'US');`,
           },
         ],
+        table: {
+          headers: ['Database', 'Best For', 'License'],
+          rows: [
+            ['PostgreSQL', 'Most feature-rich, JSONB support', 'Open source'],
+            ['MySQL', 'Most widely deployed worldwide', 'Open source'],
+            ['SQLite', 'Embedded / mobile / small apps', 'Public domain'],
+            ['SQL Server', 'Enterprise / .NET ecosystem', 'Commercial'],
+          ],
+        },
         keyTakeaway:
           'Relational databases store data in structured tables linked by keys and are queried with SQL.',
       },
       {
         title: 'Document Databases (NoSQL)',
         content:
-          "Instead of rows in tables, document databases store data as flexible JSON-like documents. Each document can have a different shape, making them great for data that doesn't fit neatly into rows and columns.\n\nImagine instead of a rigid spreadsheet, you have a folder of index cards where each card can have whatever fields it needs. One card might have a \"phone\" field, another might not.\n\nExamples: MongoDB, CouchDB, Amazon DocumentDB.",
+          'Instead of rows in tables, document databases store data as flexible JSON-like documents. Each document can have a different shape, making them great for data that doesn\'t fit neatly into rows and columns.',
+        analogy:
+          'Instead of a rigid spreadsheet, you have a folder of index cards where each card can have whatever fields it needs. One card might have a "phone" field, another might not.',
         code: [
           {
             language: 'javascript',
@@ -62,7 +97,13 @@ export const databaseLessons: Record<
       {
         title: 'Key-Value, Column, and Graph Databases',
         content:
-          'Beyond relational and document stores, there are other specialized types:\n\n**Key-Value stores** — Think of a giant dictionary or hash map. You give it a key, it gives you a value. Blazing fast for simple lookups. Examples: Redis, DynamoDB, etcd.\n\n**Column-family stores** — Instead of storing data row-by-row, they store it column-by-column. Great for analytics where you read one column across millions of rows. Examples: Cassandra, HBase.\n\n**Graph databases** — Store data as nodes and edges (relationships). Perfect for social networks, recommendation engines, and fraud detection. Examples: Neo4j, Amazon Neptune.',
+          'Beyond relational and document stores, there are other specialized types. Each is optimized for a specific access pattern.',
+        cards: [
+          { title: 'Key-Value Stores', description: 'Giant hash map. Give key, get value. Blazing fast simple lookups. Redis, DynamoDB, etcd.', icon: '🔑', color: 'blue' },
+          { title: 'Column-Family', description: 'Data stored column-by-column. Great for analytics across millions of rows. Cassandra, HBase.', icon: '📊', color: 'purple' },
+          { title: 'Graph Databases', description: 'Nodes and edges (relationships). Perfect for social networks and recommendations. Neo4j, Neptune.', icon: '🕸️', color: 'emerald' },
+          { title: 'Time-Series', description: 'Optimized for timestamped data. IoT sensors, metrics, monitoring. InfluxDB, TimescaleDB.', icon: '⏱️', color: 'amber' },
+        ],
         analogy:
           'Key-value = a coat-check counter (give ticket, get coat). Column store = a library organized by subject across buildings. Graph DB = a social map where every person and friendship is a first-class citizen.',
         keyTakeaway:
@@ -71,7 +112,18 @@ export const databaseLessons: Record<
       {
         title: 'How to Pick the Right Database',
         content:
-          "Here is a quick decision framework:\n\n- **Structured data with relationships?** Go relational (PostgreSQL, MySQL).\n- **Flexible or nested data?** Document store (MongoDB).\n- **Ultra-fast simple lookups or caching?** Key-value (Redis).\n- **Massive analytics workloads?** Column store (Cassandra, ClickHouse).\n- **Highly connected data (social graphs)?** Graph DB (Neo4j).\n\nIn practice, most applications start with a relational database because it's the most versatile. You add specialized databases when you hit specific performance or modeling needs.\n\nMany production systems use multiple databases — for example, PostgreSQL for core data, Redis for caching, and Elasticsearch for search. This is called polyglot persistence.",
+          'Here is a quick decision framework. In practice, most applications start with a relational database because it is the most versatile.',
+        flow: [
+          { label: 'Structured + Relations?', description: 'PostgreSQL / MySQL', icon: '📋' },
+          { label: 'Flexible / Nested?', description: 'MongoDB', icon: '📄' },
+          { label: 'Fast Lookups / Cache?', description: 'Redis', icon: '⚡' },
+          { label: 'Analytics?', description: 'Cassandra / ClickHouse', icon: '📊' },
+          { label: 'Graph Data?', description: 'Neo4j', icon: '🕸️' },
+        ],
+        bullets: [
+          'Many production systems use **multiple databases** — PostgreSQL for core data, Redis for caching, Elasticsearch for search.',
+          'This is called **polyglot persistence** — using the right tool for each job.',
+        ],
         keyTakeaway:
           'Start with a relational database. Add specialized stores when a specific use case demands it.',
       },
@@ -109,16 +161,22 @@ export const databaseLessons: Record<
       {
         title: 'SQL is Ordering From a Menu',
         content:
-          "Imagine you walk into a restaurant with a huge menu. You don't want to eat everything — you want specific dishes. SQL lets you \"order\" exactly the data you need from a database.\n\n**SELECT** = \"I'd like these items\" (which columns).\n**FROM** = \"from this section of the menu\" (which table).\n**WHERE** = \"but only the vegetarian ones\" (filter).\n**ORDER BY** = \"sorted by price, cheapest first\" (sorting).\n\nSQL stands for Structured Query Language. It is the universal language for talking to relational databases — whether you are using PostgreSQL, MySQL, SQLite, or SQL Server, the core syntax is the same.",
+          'SQL stands for Structured Query Language. It is the universal language for talking to relational databases — PostgreSQL, MySQL, SQLite, or SQL Server all use the same core syntax.',
         analogy:
           'SELECT name, price FROM menu WHERE category = \'vegetarian\' ORDER BY price ASC is like telling the waiter: "Show me the names and prices of vegetarian dishes, cheapest first."',
+        cards: [
+          { title: 'SELECT', description: '"I\'d like these items" — which columns', icon: '✅', color: 'emerald' },
+          { title: 'FROM', description: '"From this section of the menu" — which table', icon: '📋', color: 'blue' },
+          { title: 'WHERE', description: '"But only the vegetarian ones" — filter rows', icon: '🔍', color: 'purple' },
+          { title: 'ORDER BY', description: '"Sorted by price, cheapest first" — sorting', icon: '↕️', color: 'amber' },
+        ],
         keyTakeaway:
           'SQL is a declarative language — you describe WHAT data you want, not HOW to get it.',
       },
       {
         title: 'Our Sample Table: employees',
         content:
-          "Let's set up a table we will use throughout this lesson. Picture a company with an employees table. Every row is one person, and every column is a piece of information about them.",
+          'Let us set up a table we will use throughout this lesson. Every row is one person, and every column is a piece of information about them.',
         code: [
           {
             language: 'sql',
@@ -126,13 +184,25 @@ export const databaseLessons: Record<
             code: `CREATE TABLE employees (\n  id         SERIAL PRIMARY KEY,\n  name       VARCHAR(100) NOT NULL,\n  department VARCHAR(50),\n  salary     NUMERIC(10, 2),\n  hire_date  DATE,\n  is_active  BOOLEAN DEFAULT true\n);\n\nINSERT INTO employees (name, department, salary, hire_date) VALUES\n  ('Alice',   'Engineering', 95000, '2020-03-15'),\n  ('Bob',     'Marketing',   72000, '2019-07-01'),\n  ('Charlie', 'Engineering', 110000, '2018-01-20'),\n  ('Diana',   'Sales',       68000, '2021-11-03'),\n  ('Eve',     'Engineering', 105000, '2020-06-10'),\n  ('Frank',   'Marketing',   78000, '2017-09-25'),\n  ('Grace',   'Sales',       71000, '2022-02-14');`,
           },
         ],
+        table: {
+          headers: ['id', 'name', 'department', 'salary', 'hire_date'],
+          rows: [
+            ['1', 'Alice', 'Engineering', '95,000', '2020-03-15'],
+            ['2', 'Bob', 'Marketing', '72,000', '2019-07-01'],
+            ['3', 'Charlie', 'Engineering', '110,000', '2018-01-20'],
+            ['4', 'Diana', 'Sales', '68,000', '2021-11-03'],
+            ['5', 'Eve', 'Engineering', '105,000', '2020-06-10'],
+            ['6', 'Frank', 'Marketing', '78,000', '2017-09-25'],
+            ['7', 'Grace', 'Sales', '71,000', '2022-02-14'],
+          ],
+        },
         keyTakeaway:
           'Always have a clear mental picture of the table you are querying — know the column names and types.',
       },
       {
         title: 'SELECT — Picking Your Columns',
         content:
-          'The SELECT clause tells the database which columns you want in your result. You can pick specific columns or use * for all columns.\n\nThink of it as choosing which columns of a spreadsheet to display. You rarely need every column, so selecting only what you need makes results cleaner and queries faster.',
+          'The SELECT clause tells the database which columns you want in your result. You rarely need every column, so selecting only what you need makes results cleaner and queries faster.',
         code: [
           {
             language: 'sql',
@@ -140,29 +210,42 @@ export const databaseLessons: Record<
             code: `-- Get all columns for all employees\nSELECT * FROM employees;\n\n-- Get only names and salaries\nSELECT name, salary FROM employees;\n\n-- Get unique departments (no duplicates)\nSELECT DISTINCT department FROM employees;\n\n-- Rename a column in the output with AS\nSELECT name, salary AS annual_pay FROM employees;`,
           },
         ],
+        analogy:
+          'SELECT is like choosing which columns of a spreadsheet to display. You never need to print every column when you only care about names and salaries.',
         keyTakeaway:
           'SELECT * is fine for exploring, but in production code always list the specific columns you need.',
       },
       {
         title: 'WHERE — Filtering Rows',
         content:
-          "WHERE is your filter. It keeps only the rows that satisfy a condition. You can combine conditions with AND, OR, and NOT.\n\nThink of WHERE as a bouncer at a club — only rows that meet the criteria get through.",
+          'WHERE is your filter. It keeps only the rows that satisfy a condition. You can combine conditions with AND, OR, and NOT.',
         code: [
           {
             language: 'sql',
             label: 'WHERE clause examples',
-            code: `-- Employees in Engineering\nSELECT name, salary FROM employees\nWHERE department = 'Engineering';\n\n-- Salary above 80k\nSELECT name, salary FROM employees\nWHERE salary > 80000;\n\n-- Combine conditions with AND\nSELECT name FROM employees\nWHERE department = 'Engineering' AND salary > 100000;\n\n-- Use OR for either condition\nSELECT name FROM employees\nWHERE department = 'Sales' OR department = 'Marketing';\n\n-- IN is shorthand for multiple OR\nSELECT name FROM employees\nWHERE department IN ('Sales', 'Marketing');\n\n-- Pattern matching with LIKE\nSELECT name FROM employees\nWHERE name LIKE 'A%';  -- names starting with A\n\n-- NULL checks (use IS NULL, not = NULL)\nSELECT name FROM employees\nWHERE department IS NOT NULL;`,
+            code: `-- Employees in Engineering\nSELECT name, salary FROM employees\nWHERE department = 'Engineering';\n\n-- Salary above 80k\nSELECT name, salary FROM employees\nWHERE salary > 80000;\n\n-- Combine conditions with AND\nSELECT name FROM employees\nWHERE department = 'Engineering' AND salary > 100000;\n\n-- IN is shorthand for multiple OR\nSELECT name FROM employees\nWHERE department IN ('Sales', 'Marketing');\n\n-- Pattern matching with LIKE\nSELECT name FROM employees\nWHERE name LIKE 'A%';  -- names starting with A\n\n-- NULL checks (use IS NULL, not = NULL)\nSELECT name FROM employees\nWHERE department IS NOT NULL;`,
           },
         ],
+        table: {
+          headers: ['Operator', 'Meaning', 'Example'],
+          rows: [
+            ['=', 'Exact match', "department = 'Sales'"],
+            ['>, <, >=, <=', 'Comparison', 'salary > 80000'],
+            ['IN', 'Match any in list', "dept IN ('A','B')"],
+            ['LIKE', 'Pattern match', "name LIKE 'A%'"],
+            ['IS NULL', 'Check for null', 'email IS NULL'],
+            ['BETWEEN', 'Range inclusive', 'salary BETWEEN 70000 AND 90000'],
+          ],
+        },
         analogy:
-          'WHERE is like telling a librarian: "I only want books published after 2020 that are under 300 pages." The librarian (database engine) filters the shelves for you.',
+          'WHERE is like a bouncer at a club — only rows that meet the criteria get through.',
         keyTakeaway:
           'Use = for exact matches, LIKE for patterns, IN for lists, IS NULL for null checks, and AND/OR to combine.',
       },
       {
         title: 'ORDER BY — Sorting Your Results',
         content:
-          "ORDER BY controls the sort order of your results. By default it sorts ascending (ASC). Add DESC for descending. You can sort by multiple columns — the second column breaks ties in the first.",
+          'ORDER BY controls the sort order of your results. By default it sorts ascending (ASC). Add DESC for descending. You can sort by multiple columns — the second column breaks ties in the first.',
         code: [
           {
             language: 'sql',
@@ -176,7 +259,9 @@ export const databaseLessons: Record<
       {
         title: 'LIMIT and OFFSET — Pagination',
         content:
-          'When you have thousands of results, you rarely want them all at once. LIMIT restricts how many rows you get back, and OFFSET skips a number of rows — together they give you pagination.\n\nThis is how every "Page 1, Page 2, Page 3..." feature works under the hood.',
+          'When you have thousands of results, you rarely want them all at once. LIMIT restricts how many rows you get back, and OFFSET skips a number of rows — together they give you pagination.',
+        analogy:
+          'This is how every "Page 1, Page 2, Page 3..." feature works under the hood.',
         code: [
           {
             language: 'sql',
@@ -190,7 +275,7 @@ export const databaseLessons: Record<
       {
         title: 'Aggregate Functions — COUNT, SUM, AVG, MIN, MAX',
         content:
-          "Sometimes you don't want individual rows — you want a summary. Aggregate functions collapse many rows into a single value. GROUP BY lets you get one summary per group (like per department).\n\nThink of it as asking a teacher: \"What is the class average?\" instead of \"What did each student score?\"",
+          'Sometimes you don\'t want individual rows — you want a summary. Aggregate functions collapse many rows into a single value. GROUP BY lets you get one summary per group.',
         code: [
           {
             language: 'sql',
@@ -206,13 +291,22 @@ export const databaseLessons: Record<
       {
         title: 'Putting It All Together',
         content:
-          "Let's write a real-world query that uses everything we have learned. Suppose your manager asks: \"Show me the top 3 departments by average salary, but only include departments with at least 2 employees, and sort from highest to lowest.\"",
+          'Let us write a real-world query combining everything. Your manager asks: "Show me the top 3 departments by average salary, but only include departments with at least 2 employees."',
         code: [
           {
             language: 'sql',
             label: 'Full query combining all concepts',
             code: `SELECT\n  department,\n  COUNT(*) AS headcount,\n  ROUND(AVG(salary), 2) AS avg_salary,\n  MIN(salary) AS lowest,\n  MAX(salary) AS highest\nFROM employees\nWHERE is_active = true\nGROUP BY department\nHAVING COUNT(*) >= 2\nORDER BY avg_salary DESC\nLIMIT 3;`,
           },
+        ],
+        flow: [
+          { label: 'FROM', description: 'Pick the table', icon: '📋' },
+          { label: 'WHERE', description: 'Filter individual rows', icon: '🔍' },
+          { label: 'GROUP BY', description: 'Form groups', icon: '📦' },
+          { label: 'HAVING', description: 'Filter groups', icon: '⚖️' },
+          { label: 'SELECT', description: 'Pick columns', icon: '✅' },
+          { label: 'ORDER BY', description: 'Sort results', icon: '↕️' },
+          { label: 'LIMIT', description: 'Cap output', icon: '✂️' },
         ],
         keyTakeaway:
           'The SQL execution order is: FROM -> WHERE -> GROUP BY -> HAVING -> SELECT -> ORDER BY -> LIMIT. Understanding this order prevents most beginner mistakes.',
@@ -257,16 +351,22 @@ export const databaseLessons: Record<
       {
         title: 'Why Do We Split Data Into Multiple Tables?',
         content:
-          "Imagine a spreadsheet where every order includes the customer's full address, phone number, and email — repeated on every single row. If Alice places 50 orders, her address appears 50 times. If she moves, you have to update all 50 rows.\n\nRelational databases solve this by splitting data into separate tables. Customers go in one table, orders go in another, and they are connected by a customer_id. This eliminates redundancy and keeps data consistent.\n\nBut now you have a problem: the data you need is spread across tables. JOINs bring it back together.",
+          'Imagine a spreadsheet where every order includes the customer\'s full address, phone number, and email — repeated on every row. If Alice places 50 orders, her address appears 50 times. If she moves, you update all 50 rows.',
+        bullets: [
+          'Relational databases solve this by **splitting data into separate tables**.',
+          'Customers go in one table, orders in another, connected by customer_id.',
+          'JOINs bring the data back together when you need it.',
+        ],
         analogy:
-          'Think of two phone contact lists. One has names and phone numbers, the other has names and email addresses. A JOIN is like merging them into one list by matching on the name.',
+          'Think of two phone contact lists. One has names and phone numbers, the other has names and emails. A JOIN merges them into one list by matching on the name.',
+        diagram: `┌──────────────┐     ┌──────────────────┐\n│  customers   │     │     orders       │\n├──────────────┤     ├──────────────────┤\n│ id (PK)      │◄────│ customer_id (FK) │\n│ name         │     │ id (PK)          │\n│ city         │     │ product          │\n│ email        │     │ amount           │\n└──────────────┘     └──────────────────┘`,
         keyTakeaway:
           'JOINs combine rows from two or more tables based on a related column (usually a foreign key).',
       },
       {
         title: 'Our Sample Tables',
         content:
-          "Let's set up two tables we will use for all our JOIN examples.",
+          'Let us set up two tables we will use for all our JOIN examples.',
         code: [
           {
             language: 'sql',
@@ -280,73 +380,93 @@ export const databaseLessons: Record<
       {
         title: 'INNER JOIN — Only the Matches',
         content:
-          'An INNER JOIN returns only rows where there is a match in BOTH tables. If a customer has no orders, they are excluded. If an order has no matching customer, it is excluded too.\n\nThis is the most common JOIN and often just written as JOIN (without the word INNER).',
+          'An INNER JOIN returns only rows where there is a match in BOTH tables. No match = excluded.',
         code: [
           {
             language: 'sql',
             label: 'INNER JOIN example',
-            code: `SELECT c.name, o.product, o.amount\nFROM customers c\nINNER JOIN orders o ON c.id = o.customer_id;\n\n-- Result:\n-- Alice   | Laptop   | 999.99\n-- Alice   | Mouse    |  29.99\n-- Bob     | Keyboard |  79.99\n-- Charlie | Monitor  | 349.99\n-- (Diana is excluded — no orders)\n-- (USB Cable is excluded — no customer)`,
+            code: `SELECT c.name, o.product, o.amount\nFROM customers c\nINNER JOIN orders o ON c.id = o.customer_id;\n\n-- Result:\n-- Alice   | Laptop   | 999.99\n-- Alice   | Mouse    |  29.99\n-- Bob     | Keyboard |  79.99\n-- Charlie | Monitor  | 349.99\n-- (Diana excluded — no orders)\n-- (USB Cable excluded — no customer)`,
           },
         ],
+        diagram: `  ┌─────────┐   ┌─────────┐\n  │customers│   │ orders  │\n  │  ┌──────┼───┼──┐      │\n  │  │INNER │   │  │      │\n  │  │ JOIN │   │  │      │\n  │  └──────┼───┼──┘      │\n  └─────────┘   └─────────┘\n  Only the overlapping rows`,
         analogy:
-          'INNER JOIN is like a Venn diagram — you only get the overlap. Think of two friend groups at a party: INNER JOIN returns only the people who are in BOTH groups.',
+          'INNER JOIN is like a Venn diagram — you only get the overlap. Two friend groups at a party: INNER JOIN returns only people in BOTH groups.',
         keyTakeaway:
           'INNER JOIN = give me only the rows that have a match on both sides.',
       },
       {
         title: 'LEFT JOIN — All From the Left, Matches From the Right',
         content:
-          'A LEFT JOIN returns ALL rows from the left table (customers), even if there is no match in the right table (orders). When there is no match, the right-side columns are filled with NULL.\n\nThis is incredibly useful when you want to find records that DON\'T have a match — like customers who have never placed an order.',
+          'A LEFT JOIN returns ALL rows from the left table, even if there is no match in the right table. When there is no match, right-side columns are NULL.',
         code: [
           {
             language: 'sql',
             label: 'LEFT JOIN example',
-            code: `SELECT c.name, o.product, o.amount\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id;\n\n-- Result:\n-- Alice   | Laptop   | 999.99\n-- Alice   | Mouse    |  29.99\n-- Bob     | Keyboard |  79.99\n-- Charlie | Monitor  | 349.99\n-- Diana   | NULL     | NULL     <-- included!\n\n-- Find customers with NO orders:\nSELECT c.name\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id\nWHERE o.id IS NULL;\n-- Result: Diana`,
+            code: `SELECT c.name, o.product, o.amount\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id;\n\n-- Result includes Diana with NULLs:\n-- Diana   | NULL     | NULL\n\n-- Find customers with NO orders:\nSELECT c.name\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id\nWHERE o.id IS NULL;\n-- Result: Diana`,
           },
         ],
         analogy:
-          'LEFT JOIN is like taking a class roster (left table) and matching it against submitted homework (right table). Every student appears — those who did not submit get a blank next to their name.',
+          'LEFT JOIN is like a class roster matched against submitted homework. Every student appears — those who did not submit get a blank next to their name.',
         keyTakeaway:
           'LEFT JOIN keeps all rows from the left table. NULLs appear where there is no match on the right.',
       },
       {
         title: 'RIGHT JOIN and FULL OUTER JOIN',
         content:
-          '**RIGHT JOIN** is the mirror of LEFT JOIN — it keeps all rows from the right table and fills NULLs for non-matching left rows. In practice, most developers just swap the table order and use LEFT JOIN instead.\n\n**FULL OUTER JOIN** keeps ALL rows from BOTH tables. If there is no match on either side, NULLs fill in the gaps. This is useful when you need a complete picture of both sides.',
+          'RIGHT JOIN is the mirror of LEFT JOIN. FULL OUTER JOIN keeps ALL rows from BOTH tables.',
         code: [
           {
             language: 'sql',
             label: 'RIGHT JOIN and FULL OUTER JOIN',
-            code: `-- RIGHT JOIN: all orders, even if no matching customer\nSELECT c.name, o.product, o.amount\nFROM customers c\nRIGHT JOIN orders o ON c.id = o.customer_id;\n-- Result includes USB Cable with NULL customer name\n\n-- FULL OUTER JOIN: everything from both sides\nSELECT c.name, o.product, o.amount\nFROM customers c\nFULL OUTER JOIN orders o ON c.id = o.customer_id;\n-- Result:\n-- Alice   | Laptop   | 999.99\n-- Alice   | Mouse    |  29.99\n-- Bob     | Keyboard |  79.99\n-- Charlie | Monitor  | 349.99\n-- Diana   | NULL     | NULL       <-- customer with no order\n-- NULL    | USB Cable|   9.99     <-- order with no customer`,
+            code: `-- RIGHT JOIN: all orders, even if no matching customer\nSELECT c.name, o.product, o.amount\nFROM customers c\nRIGHT JOIN orders o ON c.id = o.customer_id;\n-- Includes USB Cable with NULL customer\n\n-- FULL OUTER JOIN: everything from both sides\nSELECT c.name, o.product, o.amount\nFROM customers c\nFULL OUTER JOIN orders o ON c.id = o.customer_id;\n-- Diana -> NULLs on right, USB Cable -> NULL on left`,
           },
         ],
+        comparison: {
+          leftTitle: 'JOIN Type',
+          rightTitle: 'What It Returns',
+          items: [
+            { left: 'INNER JOIN', right: 'Only matching rows from both sides' },
+            { left: 'LEFT JOIN', right: 'All left rows + matching right (NULLs if no match)' },
+            { left: 'RIGHT JOIN', right: 'All right rows + matching left (NULLs if no match)' },
+            { left: 'FULL OUTER JOIN', right: 'All rows from both sides (NULLs where no match)' },
+            { left: 'CROSS JOIN', right: 'Every row paired with every other row (Cartesian product)' },
+          ],
+        },
         keyTakeaway:
           'RIGHT JOIN = mirror of LEFT JOIN. FULL OUTER JOIN = keep everything from both tables, NULLs where no match.',
       },
       {
         title: 'CROSS JOIN and Self JOIN',
         content:
-          '**CROSS JOIN** produces the Cartesian product — every row from table A paired with every row from table B. If A has 4 rows and B has 5, you get 20 rows. Rarely used directly but important to understand because an accidental cross join is a common performance disaster.\n\n**Self JOIN** is when a table is joined to itself. This is useful for hierarchical data like employees and their managers, where both are rows in the same table.',
+          'CROSS JOIN produces the Cartesian product — every row from A paired with every row from B. Self JOIN is when a table joins to itself, useful for hierarchical data.',
         code: [
           {
             language: 'sql',
             label: 'CROSS JOIN and Self JOIN',
-            code: `-- CROSS JOIN: every customer paired with every product\nSELECT c.name, o.product\nFROM customers c\nCROSS JOIN orders o;\n-- 4 customers x 5 orders = 20 rows\n\n-- Self JOIN: employees and their managers\nCREATE TABLE staff (\n  id         INT PRIMARY KEY,\n  name       VARCHAR(100),\n  manager_id INT REFERENCES staff(id)\n);\n\nINSERT INTO staff VALUES\n  (1, 'CEO', NULL),\n  (2, 'VP Engineering', 1),\n  (3, 'Senior Dev', 2);\n\nSELECT s.name AS employee, m.name AS manager\nFROM staff s\nLEFT JOIN staff m ON s.manager_id = m.id;`,
+            code: `-- CROSS JOIN: 4 customers x 5 orders = 20 rows\nSELECT c.name, o.product\nFROM customers c CROSS JOIN orders o;\n\n-- Self JOIN: employees and their managers\nCREATE TABLE staff (\n  id INT PRIMARY KEY, name VARCHAR(100),\n  manager_id INT REFERENCES staff(id)\n);\nINSERT INTO staff VALUES\n  (1, 'CEO', NULL), (2, 'VP Eng', 1), (3, 'Sr Dev', 2);\n\nSELECT s.name AS employee, m.name AS manager\nFROM staff s LEFT JOIN staff m ON s.manager_id = m.id;`,
           },
         ],
+        analogy:
+          'CROSS JOIN is like pairing every shirt with every pair of pants — the total outfits = shirts x pants. Self JOIN is like an employee looking up their own boss in the same company directory.',
         keyTakeaway:
           'CROSS JOIN = every combination (rarely desired). Self JOIN = a table joined to itself (great for hierarchies).',
       },
       {
         title: 'Joining Multiple Tables',
         content:
-          "Real applications often join three, four, or more tables in a single query. Each JOIN adds one more table to the result. The key is chaining the ON conditions so each table connects to something already in the query.\n\nLet's add a products table to see this in action.",
+          'Real applications often join three, four, or more tables. Each JOIN adds one more table to the result, chaining on ON conditions.',
         code: [
           {
             language: 'sql',
             label: 'Three-table JOIN',
-            code: `CREATE TABLE products (\n  id       SERIAL PRIMARY KEY,\n  name     VARCHAR(100),\n  category VARCHAR(50)\n);\n\nINSERT INTO products (name, category) VALUES\n  ('Laptop', 'Electronics'),\n  ('Mouse', 'Accessories'),\n  ('Keyboard', 'Accessories'),\n  ('Monitor', 'Electronics');\n\n-- Join customers -> orders -> products\nSELECT\n  c.name AS customer,\n  o.amount,\n  p.name AS product,\n  p.category\nFROM customers c\nJOIN orders o ON c.id = o.customer_id\nJOIN products p ON o.product = p.name\nWHERE p.category = 'Electronics'\nORDER BY o.amount DESC;`,
+            code: `CREATE TABLE products (\n  id SERIAL PRIMARY KEY, name VARCHAR(100), category VARCHAR(50)\n);\n\n-- Join customers -> orders -> products\nSELECT c.name AS customer, o.amount,\n  p.name AS product, p.category\nFROM customers c\nJOIN orders o ON c.id = o.customer_id\nJOIN products p ON o.product = p.name\nWHERE p.category = 'Electronics'\nORDER BY o.amount DESC;`,
           },
+        ],
+        flow: [
+          { label: 'customers', description: 'Start with base table', icon: '👤' },
+          { label: 'JOIN orders', description: 'ON c.id = o.customer_id', icon: '📦' },
+          { label: 'JOIN products', description: 'ON o.product = p.name', icon: '🏷️' },
+          { label: 'Result', description: 'Combined 3-table output', icon: '✅' },
         ],
         keyTakeaway:
           'You can chain as many JOINs as needed. Each subsequent JOIN connects to a column already present in the query.',
@@ -354,7 +474,14 @@ export const databaseLessons: Record<
       {
         title: 'JOIN Performance Tips',
         content:
-          "JOINs are powerful but can be slow if used carelessly. Here are the most important performance tips:\n\n1. **Always JOIN on indexed columns.** The columns in your ON clause should have indexes. Foreign key columns are indexed by default in many databases.\n\n2. **Select only the columns you need.** Don't SELECT * from a 5-table JOIN — that pulls every column from every table.\n\n3. **Be careful with FULL OUTER JOINs.** They are harder for the optimizer to handle than INNER or LEFT JOINs.\n\n4. **Watch for accidental CROSS JOINs.** If you forget the ON clause, some databases will treat it as a cross join and produce millions of rows.\n\n5. **Use EXPLAIN to see the query plan.** It shows you whether indexes are being used and where the database is doing full table scans.",
+          'JOINs are powerful but can be slow if used carelessly.',
+        bullets: [
+          '**Always JOIN on indexed columns.** FK columns should have indexes.',
+          '**Select only the columns you need.** Don\'t SELECT * from a 5-table JOIN.',
+          '**Be careful with FULL OUTER JOINs.** Harder for the optimizer than INNER/LEFT.',
+          '**Watch for accidental CROSS JOINs.** Missing ON clause = millions of rows.',
+          '**Use EXPLAIN** to see the query plan and verify indexes are used.',
+        ],
         keyTakeaway:
           'Index your JOIN columns, select only needed columns, and use EXPLAIN to verify the database is not doing unnecessary work.',
       },
@@ -363,22 +490,22 @@ export const databaseLessons: Record<
       {
         mistake: 'Forgetting the ON clause and accidentally creating a CROSS JOIN',
         explanation:
-          'If you write "FROM a, b" without a WHERE condition linking them, you get a Cartesian product. With 10,000 rows in each table, that is 100 million rows.',
+          'If you write "FROM a, b" without a WHERE condition, you get a Cartesian product. 10K rows each = 100 million rows.',
       },
       {
         mistake: 'Using the wrong JOIN type and silently dropping rows',
         explanation:
-          'An INNER JOIN drops customers with no orders. If your report says "100 customers" but you have 120, you probably needed a LEFT JOIN.',
+          'An INNER JOIN drops customers with no orders. If your report says 100 customers but you have 120, you probably need a LEFT JOIN.',
       },
       {
         mistake: 'Not using table aliases',
         explanation:
-          'When multiple tables have a column called "id" or "name", queries become ambiguous. Always use short aliases (c for customers, o for orders) and prefix columns.',
+          'When multiple tables have a column called "id" or "name", queries become ambiguous. Always use short aliases.',
       },
       {
         mistake: 'Joining on non-indexed columns',
         explanation:
-          'Without an index on the JOIN column, the database must scan the entire table for every row. This turns a fast query into a minutes-long crawl.',
+          'Without an index on the JOIN column, the database scans the entire table for every row. Fast query becomes minutes-long.',
       },
     ],
     practiceQuestions: [
@@ -398,74 +525,101 @@ export const databaseLessons: Record<
       {
         title: 'The Book Index Analogy',
         content:
-          'Imagine you have a 1,000-page textbook and you need to find every mention of "photosynthesis." Without an index, you read every single page — that is a full table scan. With the index at the back of the book, you look up "photosynthesis," find "pages 42, 187, 301," and jump directly there.\n\nA database index works the same way. It is a separate data structure that maps column values to the rows that contain them. When you search by an indexed column, the database jumps straight to the matching rows instead of scanning every row in the table.',
+          'Imagine a 1,000-page textbook. Without an index, you read every page to find "photosynthesis." With the index, you look up the page numbers and jump directly there.',
         analogy:
-          'No index = reading every page of a book to find a topic. Index = flipping to the back, finding the page number, and jumping there. The index takes extra pages (space), but saves enormous time.',
+          'No index = reading every page of a book. Index = flipping to the back, finding the page number, and jumping there. The index takes extra pages (space) but saves enormous time.',
+        comparison: {
+          leftTitle: 'Without Index',
+          rightTitle: 'With Index',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Scan all 10M rows', right: 'B-tree lookup in ~20 steps' },
+            { left: '~3 seconds', right: '~0.001 seconds' },
+            { left: 'O(n) linear scan', right: 'O(log n) tree traversal' },
+            { left: 'No extra storage', right: 'Extra disk space for index' },
+          ],
+        },
         keyTakeaway:
           'An index trades storage space for query speed — it lets the database find rows without scanning the entire table.',
       },
       {
-        title: 'How B-Tree Indexes Work (Simplified)',
+        title: 'How B-Tree Indexes Work',
         content:
-          "Most databases use a data structure called a B-tree (balanced tree) for indexes. Here is the simplified version:\n\nImagine you are looking for the name \"Maria\" in a phone book. You don't start at page 1. You open to the middle, see \"J\", know \"M\" is to the right, open to 3/4 of the way, see \"N\", go slightly left — and within 3-4 jumps you find \"M\" names. That is a B-tree search.\n\nA B-tree keeps values sorted in a tree structure. Each node contains multiple values and pointers to child nodes. To find a value, you start at the root and follow pointers down — each level cuts the search space dramatically. For a table with 1 million rows, a B-tree index can find any row in about 20 comparisons.",
+          'Most databases use B-trees for indexes. A B-tree keeps values sorted in a balanced tree structure. Each level cuts the search space dramatically. For 1 million rows, a B-tree finds any value in about 20 comparisons.',
         analogy:
-          "A B-tree is like a well-organized library. The root node is the building directory (Floor 1: A-M, Floor 2: N-Z). Each floor has section signs, each section has shelf labels. You narrow down at every level until you're at the exact book.",
+          'A B-tree is like a well-organized library. The root node is the building directory (Floor 1: A-M, Floor 2: N-Z). Each floor has sections, each section has shelves. You narrow down at every level.',
+        diagram: `           ┌──────────────┐\n           │  Root: [M]   │\n           └──┬───────┬───┘\n         ┌────┘       └────┐\n    ┌────┴─────┐    ┌──────┴────┐\n    │ [D] [H]  │    │ [R] [V]   │\n    └┬──┬──┬───┘    └┬──┬──┬───┘\n     │  │  │         │  │  │\n   ┌─┘ ┌┘ ┌┘       ┌─┘ ┌┘ ┌┘\n   ▼   ▼   ▼       ▼   ▼   ▼\n  A-C D-G H-L     M-Q R-U V-Z\n  (leaf nodes point to actual rows)`,
         keyTakeaway:
-          'B-trees keep data sorted in a balanced tree. Finding any value takes O(log n) comparisons — around 20 steps for a million rows.',
+          'B-trees keep data sorted in a balanced tree. Finding any value takes O(log n) — about 20 steps for a million rows.',
       },
       {
         title: 'Creating and Using Indexes',
         content:
-          "Creating an index is simple. The database does the heavy lifting of building and maintaining the B-tree. Let's see the most common patterns.",
+          'Creating an index is simple. The database does the heavy lifting of building and maintaining the B-tree.',
         code: [
           {
             language: 'sql',
             label: 'Creating indexes',
-            code: `-- Single-column index\nCREATE INDEX idx_employees_department\n  ON employees(department);\n\n-- Composite index (multiple columns)\nCREATE INDEX idx_employees_dept_salary\n  ON employees(department, salary);\n\n-- Unique index (also enforces uniqueness)\nCREATE UNIQUE INDEX idx_employees_email\n  ON employees(email);\n\n-- Partial index (only indexes some rows)\nCREATE INDEX idx_active_employees\n  ON employees(name)\n  WHERE is_active = true;\n\n-- Check existing indexes on a table (PostgreSQL)\nSELECT indexname, indexdef\nFROM pg_indexes\nWHERE tablename = 'employees';`,
+            code: `-- Single-column index\nCREATE INDEX idx_employees_department\n  ON employees(department);\n\n-- Composite index (multiple columns)\nCREATE INDEX idx_employees_dept_salary\n  ON employees(department, salary);\n\n-- Unique index (also enforces uniqueness)\nCREATE UNIQUE INDEX idx_employees_email\n  ON employees(email);\n\n-- Partial index (only indexes some rows)\nCREATE INDEX idx_active_employees\n  ON employees(name)\n  WHERE is_active = true;\n\n-- Check existing indexes (PostgreSQL)\nSELECT indexname, indexdef\nFROM pg_indexes WHERE tablename = 'employees';`,
           },
         ],
         keyTakeaway:
           'CREATE INDEX on columns you frequently search, filter, or join on. Composite indexes cover multi-column queries.',
       },
       {
-        title: 'When Indexes Help',
+        title: 'When Indexes Help vs Hurt',
         content:
-          "Indexes dramatically speed up these operations:\n\n1. **WHERE clauses** — Filtering rows by an indexed column is fast.\n2. **JOIN conditions** — Matching rows between tables uses the index.\n3. **ORDER BY** — If the index matches the sort order, no separate sort step is needed.\n4. **Aggregate queries** — MIN and MAX on an indexed column are nearly instant.\n\nLet's see the difference with a concrete example. On a table with 10 million rows:\n\n- WITHOUT index on email: `SELECT * FROM users WHERE email = 'alice@example.com'` scans all 10 million rows. Takes ~3 seconds.\n- WITH index on email: Same query does a B-tree lookup. Takes ~0.001 seconds.\n\nThat is a 3,000x speedup from one CREATE INDEX statement.",
-        keyTakeaway:
-          'Index columns that appear in WHERE, JOIN ON, and ORDER BY clauses — those are the hot paths your queries use.',
-      },
-      {
-        title: 'When Indexes Hurt',
-        content:
-          "Indexes are not free. They have real costs:\n\n1. **Storage space** — Each index is a separate data structure on disk. A table with 5 indexes uses significantly more disk than the table alone.\n\n2. **Slower writes** — Every INSERT, UPDATE, or DELETE must also update every index on that table. If you have 10 indexes, each insert does 10 extra write operations.\n\n3. **Low-selectivity columns** — An index on a boolean column (true/false) is nearly useless. The database would have to visit half the rows anyway — a full scan might be faster.\n\n4. **Small tables** — If the table has 100 rows, a full scan is instant. An index adds complexity for no benefit.\n\nThe rule of thumb: add indexes to support your most important queries, but don't sprinkle them everywhere blindly.",
+          'Indexes are not free. They have real costs that you must weigh against the benefits.',
+        comparison: {
+          leftTitle: 'Indexes Help',
+          rightTitle: 'Indexes Hurt',
+          leftColor: 'emerald',
+          rightColor: 'red',
+          items: [
+            { left: 'WHERE clause filters', right: 'Every INSERT updates all indexes' },
+            { left: 'JOIN conditions', right: 'Every UPDATE/DELETE updates indexes' },
+            { left: 'ORDER BY sorting', right: 'Extra disk storage per index' },
+            { left: 'MIN/MAX aggregations', right: 'Low-cardinality columns (boolean)' },
+            { left: 'Large tables (millions of rows)', right: 'Small tables (< 1000 rows)' },
+          ],
+        },
         analogy:
-          'Each index is like maintaining a separate sorted list of your contacts — one by name, one by city, one by birthday. Having 2-3 lists is helpful. Having 20 lists means every time you add a new contact, you are updating 20 lists.',
+          'Each index is like maintaining a separate sorted list of contacts — by name, by city, by birthday. 2-3 lists are helpful. 20 lists means every new contact requires 20 updates.',
         keyTakeaway:
           'Indexes speed up reads but slow down writes. Add them strategically for your most critical query patterns.',
       },
       {
         title: 'Composite Index Column Order Matters',
         content:
-          'When creating a composite index on multiple columns, the order matters enormously. A composite index on (department, salary) can be used for:\n\n- Queries filtering on department only\n- Queries filtering on department AND salary\n- Queries filtering on department and sorting by salary\n\nBut it CANNOT efficiently help with:\n- Queries filtering on salary only (without department)\n\nThis is the "leftmost prefix" rule. The index is like a phone book sorted by last name, then first name. You can look up all "Smiths" (first column). You can look up "Smith, Alice" (both columns). But you cannot efficiently find all "Alices" across all last names.',
+          'A composite index on (department, salary) follows the "leftmost prefix" rule. It can help queries that filter on department, or department + salary, but NOT salary alone.',
         code: [
           {
             language: 'sql',
             label: 'Composite index usage',
-            code: `CREATE INDEX idx_dept_salary ON employees(department, salary);\n\n-- Uses the index (filters on leftmost column)\nSELECT * FROM employees WHERE department = 'Engineering';\n\n-- Uses the index (filters on both columns)\nSELECT * FROM employees\nWHERE department = 'Engineering' AND salary > 100000;\n\n-- Does NOT efficiently use this index (skips leftmost column)\nSELECT * FROM employees WHERE salary > 100000;\n-- For this query, you would need a separate index on salary.`,
+            code: `CREATE INDEX idx_dept_salary ON employees(department, salary);\n\n-- Uses the index (leftmost column)\nSELECT * FROM employees WHERE department = 'Engineering';\n\n-- Uses the index (both columns)\nSELECT * FROM employees\nWHERE department = 'Engineering' AND salary > 100000;\n\n-- Does NOT use this index (skips leftmost)\nSELECT * FROM employees WHERE salary > 100000;\n-- Need a separate index on salary for this.`,
           },
         ],
+        analogy:
+          'A phone book is sorted by last name, then first name. You can find all "Smiths" or "Smith, Alice" easily. But finding all "Alices" across all last names requires scanning the whole book.',
         keyTakeaway:
           'Put the most-filtered column first in a composite index. The "leftmost prefix" rule determines which queries can use it.',
       },
       {
         title: 'Types of Indexes Beyond B-Tree',
         content:
-          "B-tree is the default, but databases offer specialized index types for different use cases:\n\n**Hash index** — Perfect for exact equality lookups (WHERE email = 'x'). Faster than B-tree for = comparisons but cannot handle range queries (>, <, BETWEEN).\n\n**GIN (Generalized Inverted Index)** — For full-text search, arrays, and JSONB columns. If you search inside JSON documents, this is your index.\n\n**GiST (Generalized Search Tree)** — For geometric data, ranges, and nearest-neighbor searches. Used in PostGIS for geographic queries.\n\n**BRIN (Block Range Index)** — Ultra-compact index for data that is naturally sorted on disk (like timestamps in a log table). Uses minimal space.",
+          'B-tree is the default, but databases offer specialized index types for different use cases.',
+        cards: [
+          { title: 'Hash Index', description: 'Perfect for exact equality (=). Cannot handle range queries (>, <).', icon: '#️⃣', color: 'blue' },
+          { title: 'GIN Index', description: 'Full-text search, arrays, JSONB. Search inside documents.', icon: '📝', color: 'emerald' },
+          { title: 'GiST Index', description: 'Geometric data, ranges, nearest-neighbor. PostGIS uses this.', icon: '🗺️', color: 'purple' },
+          { title: 'BRIN Index', description: 'Ultra-compact for naturally sorted data (timestamps in logs).', icon: '📅', color: 'amber' },
+        ],
         code: [
           {
             language: 'sql',
             label: 'Specialized index types (PostgreSQL)',
-            code: `-- Hash index for exact lookups\nCREATE INDEX idx_email_hash ON users USING hash(email);\n\n-- GIN index for full-text search\nCREATE INDEX idx_search ON articles USING gin(to_tsvector('english', body));\n\n-- GIN index for JSONB queries\nCREATE INDEX idx_metadata ON products USING gin(metadata);\n\n-- BRIN index for time-series data\nCREATE INDEX idx_created ON events USING brin(created_at);`,
+            code: `-- Hash index for exact lookups\nCREATE INDEX idx_email_hash ON users USING hash(email);\n\n-- GIN index for full-text search\nCREATE INDEX idx_search ON articles\n  USING gin(to_tsvector('english', body));\n\n-- GIN index for JSONB queries\nCREATE INDEX idx_metadata ON products USING gin(metadata);\n\n-- BRIN index for time-series data\nCREATE INDEX idx_created ON events USING brin(created_at);`,
           },
         ],
         keyTakeaway:
@@ -476,27 +630,27 @@ export const databaseLessons: Record<
       {
         mistake: 'Creating indexes on every column "just in case"',
         explanation:
-          'Each index slows down writes and uses disk space. Only index columns that appear in frequent WHERE, JOIN, and ORDER BY clauses. Profile your actual queries first.',
+          'Each index slows writes and uses disk space. Only index columns that appear in frequent WHERE, JOIN, and ORDER BY clauses.',
       },
       {
         mistake: 'Wrong column order in composite indexes',
         explanation:
-          'An index on (A, B) helps queries filtering on A or A+B, but not B alone. Put the most selective and most frequently filtered column first.',
+          'An index on (A, B) helps queries filtering on A or A+B, but not B alone. Put the most selective column first.',
       },
       {
         mistake: 'Indexing low-cardinality columns like booleans',
         explanation:
-          'An index on a column with only two values (true/false) is rarely useful. The database has to visit half the rows either way. Consider a partial index instead.',
+          'An index on true/false is rarely useful — half the rows match either way. Consider a partial index instead.',
       },
       {
         mistake: 'Never checking if indexes are actually being used',
         explanation:
-          'Use EXPLAIN ANALYZE to verify the database is using your index. Sometimes the query planner decides a full scan is faster — your index might be wasted.',
+          'Use EXPLAIN ANALYZE to verify the database is using your index. The planner may decide a full scan is faster.',
       },
     ],
     practiceQuestions: [
-      'Explain in plain English how a B-tree index speeds up a WHERE clause lookup.',
-      'You have a query: SELECT * FROM orders WHERE customer_id = 5 AND status = \'shipped\' ORDER BY created_at DESC. What composite index would you create?',
+      'Explain how a B-tree index speeds up a WHERE clause lookup.',
+      'You have: SELECT * FROM orders WHERE customer_id = 5 AND status = \'shipped\' ORDER BY created_at DESC. What composite index would you create?',
       'Why does an index on a boolean column provide little benefit?',
       'What is a partial index, and when would you use one?',
     ],
@@ -510,44 +664,51 @@ export const databaseLessons: Record<
       {
         title: 'The Messy Spreadsheet Problem',
         content:
-          'Imagine you work at a university and keep all student course data in one giant spreadsheet:\n\n| student_id | student_name | course_code | course_name | instructor | grade |\n| 1 | Alice | CS101 | Intro to CS | Dr. Smith | A |\n| 1 | Alice | MATH201 | Calculus II | Dr. Jones | B+ |\n| 2 | Bob | CS101 | Intro to CS | Dr. Smith | B |\n\nNotice the problems? "Alice" is repeated twice. "CS101" and "Intro to CS" and "Dr. Smith" are repeated. If Dr. Smith changes his name, you have to update every row that mentions him. If you misspell "Intro to CS" in one row, your data is inconsistent.\n\nNormalization is the process of reorganizing this messy spreadsheet into clean, separate tables that eliminate redundancy.',
+          'Imagine a university keeping all student data in one giant spreadsheet. "Alice" is repeated for every course. "CS101" and "Dr. Smith" appear in every row of that course. If Dr. Smith changes name, you update dozens of rows.',
         analogy:
-          'An unnormalized table is like a class roster where every row includes the full school address, the principal\'s name, and the building number. Normalization says: "Put the school info in its own table, and just reference it by school_id."',
+          'An unnormalized table is like a class roster where every row includes the full school address and principal name. Normalization says: put school info in its own table, reference it by school_id.',
+        diagram: `BEFORE (unnormalized):\n┌────┬───────┬────────┬───────────┬──────────┬───────┐\n│ ID │ Name  │ Course │ CourseName│Instructor│ Grade │\n├────┼───────┼────────┼───────────┼──────────┼───────┤\n│ 1  │ Alice │ CS101  │ Intro CS  │ Dr.Smith │  A    │\n│ 1  │ Alice │ MATH201│ Calc II   │ Dr.Jones │  B+   │\n│ 2  │ Bob   │ CS101  │ Intro CS  │ Dr.Smith │  B    │\n└────┴───────┴────────┴───────────┴──────────┴───────┘\n        ↑ Alice repeated    ↑ CS101+Dr.Smith repeated`,
         keyTakeaway:
           'Normalization eliminates data redundancy by splitting one big table into several smaller, related tables.',
       },
       {
         title: 'Why Normalization Matters',
         content:
-          "Redundant data causes three specific problems:\n\n**Update anomaly** — If the course name \"Intro to CS\" changes to \"Computer Science Fundamentals,\" you have to update it in every row that references it. Miss one and your data is inconsistent.\n\n**Insert anomaly** — You want to add a new course, but no student has enrolled yet. In the flat spreadsheet, you can't insert a course without a student — every row needs a student_id.\n\n**Delete anomaly** — If Alice drops all her courses, and she was the only student in MATH201, deleting her rows also deletes the fact that MATH201 exists.\n\nNormalization solves all three by ensuring each piece of information lives in exactly one place.",
+          'Redundant data causes three specific problems known as anomalies.',
+        cards: [
+          { title: 'Update Anomaly', description: 'Course name changes? Update every row referencing it. Miss one = inconsistent data.', icon: '✏️', color: 'red' },
+          { title: 'Insert Anomaly', description: 'New course with no students yet? Cannot insert without a student row.', icon: '➕', color: 'red' },
+          { title: 'Delete Anomaly', description: 'Delete last student in a course? The course info disappears too.', icon: '🗑️', color: 'red' },
+          { title: 'Normalization Fix', description: 'Each fact stored exactly once. No anomalies possible.', icon: '✅', color: 'emerald' },
+        ],
         keyTakeaway:
           'Without normalization, you get update, insert, and delete anomalies — bugs caused by data living in multiple places.',
       },
       {
         title: 'First Normal Form (1NF) — No Repeating Groups',
         content:
-          '1NF is the foundation. A table is in 1NF if:\n\n1. Every column contains only atomic (single) values — no lists or sets.\n2. Each row is unique (has a primary key).\n3. There are no repeating groups of columns.\n\nHere is a violation and its fix:',
+          '1NF requires every column to contain atomic (single) values, each row is unique, and no repeating groups of columns.',
         code: [
           {
             language: 'sql',
             label: 'Fixing a 1NF violation',
-            code: `-- VIOLATION: courses stored as a comma-separated list\n-- | student_id | name  | courses              |\n-- | 1          | Alice | CS101, MATH201       |\n-- | 2          | Bob   | CS101                |\n\n-- FIX: one row per student-course combination\nCREATE TABLE student_courses (\n  student_id   INT,\n  student_name VARCHAR(100),\n  course_code  VARCHAR(20),\n  PRIMARY KEY (student_id, course_code)\n);\n\nINSERT INTO student_courses VALUES\n  (1, 'Alice', 'CS101'),\n  (1, 'Alice', 'MATH201'),\n  (2, 'Bob',   'CS101');`,
+            code: `-- VIOLATION: comma-separated list in a column\n-- | student_id | name  | courses              |\n-- | 1          | Alice | CS101, MATH201       |\n\n-- FIX: one row per student-course pair\nCREATE TABLE student_courses (\n  student_id   INT,\n  student_name VARCHAR(100),\n  course_code  VARCHAR(20),\n  PRIMARY KEY (student_id, course_code)\n);`,
           },
         ],
         analogy:
-          "1NF says: Don't stuff a list into a single cell. It's like saying every box in your filing cabinet should contain exactly one document, not a stack of unrelated papers.",
+          '1NF says: don\'t stuff a list into a single cell. Every box in the filing cabinet should hold exactly one document.',
         keyTakeaway:
           '1NF: every cell holds a single value, every row is unique. No comma-separated lists in columns.',
       },
       {
         title: 'Second Normal Form (2NF) — Remove Partial Dependencies',
         content:
-          'A table is in 2NF if it is in 1NF AND every non-key column depends on the ENTIRE primary key, not just part of it. This only matters when you have a composite primary key.\n\nIn our student_courses table, the composite key is (student_id, course_code). The student_name depends only on student_id — not on the full key. That is a partial dependency and violates 2NF.\n\nThe fix: move student_name to its own table.',
+          '2NF requires 1NF AND every non-key column depends on the ENTIRE primary key, not just part. Only matters with composite keys.',
         code: [
           {
             language: 'sql',
             label: 'Decomposing to 2NF',
-            code: `-- Before (1NF but not 2NF):\n-- student_courses(student_id, course_code, student_name, grade)\n-- student_name depends only on student_id (partial dependency)\n\n-- After (2NF):\nCREATE TABLE students (\n  student_id   INT PRIMARY KEY,\n  student_name VARCHAR(100)\n);\n\nCREATE TABLE enrollments (\n  student_id  INT REFERENCES students(student_id),\n  course_code VARCHAR(20),\n  grade       CHAR(2),\n  PRIMARY KEY (student_id, course_code)\n);`,
+            code: `-- Before: student_name depends only on student_id\n-- (partial dependency on composite PK)\n\n-- After (2NF):\nCREATE TABLE students (\n  student_id   INT PRIMARY KEY,\n  student_name VARCHAR(100)\n);\n\nCREATE TABLE enrollments (\n  student_id  INT REFERENCES students(student_id),\n  course_code VARCHAR(20),\n  grade       CHAR(2),\n  PRIMARY KEY (student_id, course_code)\n);`,
           },
         ],
         keyTakeaway:
@@ -556,16 +717,22 @@ export const databaseLessons: Record<
       {
         title: 'Third Normal Form (3NF) — Remove Transitive Dependencies',
         content:
-          'A table is in 3NF if it is in 2NF AND no non-key column depends on another non-key column. This is called a transitive dependency.\n\nExample: In an enrollments table, suppose you also store course_name and instructor. The instructor depends on the course_code, not on the enrollment. Course_code determines course_name, and course_code determines instructor. These are transitive dependencies.\n\nThe fix: create a courses table.',
+          '3NF requires 2NF AND no non-key column depends on another non-key column. If course_code determines instructor, instructor belongs in the courses table.',
         code: [
           {
             language: 'sql',
             label: 'Decomposing to 3NF',
-            code: `-- Before (2NF but not 3NF):\n-- enrollments(student_id, course_code, grade, course_name, instructor)\n-- course_name and instructor depend on course_code, not the PK\n\n-- After (3NF): three clean tables\nCREATE TABLE students (\n  student_id   INT PRIMARY KEY,\n  student_name VARCHAR(100)\n);\n\nCREATE TABLE courses (\n  course_code VARCHAR(20) PRIMARY KEY,\n  course_name VARCHAR(100),\n  instructor  VARCHAR(100)\n);\n\nCREATE TABLE enrollments (\n  student_id  INT REFERENCES students(student_id),\n  course_code VARCHAR(20) REFERENCES courses(course_code),\n  grade       CHAR(2),\n  PRIMARY KEY (student_id, course_code)\n);`,
+            code: `-- Three clean tables:\nCREATE TABLE students (\n  student_id INT PRIMARY KEY, student_name VARCHAR(100)\n);\nCREATE TABLE courses (\n  course_code VARCHAR(20) PRIMARY KEY,\n  course_name VARCHAR(100), instructor VARCHAR(100)\n);\nCREATE TABLE enrollments (\n  student_id  INT REFERENCES students(student_id),\n  course_code VARCHAR(20) REFERENCES courses(course_code),\n  grade CHAR(2),\n  PRIMARY KEY (student_id, course_code)\n);`,
           },
         ],
         analogy:
-          '3NF says: if column A determines column B, and B determines column C, then C should be in B\'s table, not A\'s. It\'s like saying the instructor\'s phone number belongs in the instructor\'s file, not repeated in every course listing.',
+          '3NF: if A determines B and B determines C, then C belongs in B\'s table. The instructor\'s phone number belongs in the instructor file, not in every course listing.',
+        flow: [
+          { label: 'Unnormalized', description: 'One messy table', icon: '😵' },
+          { label: '1NF', description: 'Atomic values, no lists', icon: '1️⃣' },
+          { label: '2NF', description: 'No partial dependencies', icon: '2️⃣' },
+          { label: '3NF', description: 'No transitive dependencies', icon: '3️⃣' },
+        ],
         keyTakeaway:
           '3NF: no non-key column should depend on another non-key column. Each fact is stored in exactly one place.',
       },
@@ -577,18 +744,29 @@ export const databaseLessons: Record<
           {
             language: 'sql',
             label: 'Complete normalization example',
-            code: `-- STARTING POINT: One messy table\n-- flat_data(student_id, student_name, student_email,\n--           course_code, course_name, instructor, grade)\n\n-- Step 1 (1NF): Already in 1NF (no multi-valued columns)\n\n-- Step 2 (2NF): student_name and student_email depend only\n-- on student_id -> extract to students table\n\n-- Step 3 (3NF): course_name and instructor depend on\n-- course_code (not on the enrollment PK) -> extract to courses\n\n-- FINAL SCHEMA:\nCREATE TABLE students (\n  student_id    INT PRIMARY KEY,\n  student_name  VARCHAR(100),\n  student_email VARCHAR(255) UNIQUE\n);\n\nCREATE TABLE courses (\n  course_code VARCHAR(20) PRIMARY KEY,\n  course_name VARCHAR(100),\n  instructor  VARCHAR(100)\n);\n\nCREATE TABLE enrollments (\n  student_id  INT REFERENCES students(student_id),\n  course_code VARCHAR(20) REFERENCES courses(course_code),\n  grade       CHAR(2),\n  PRIMARY KEY (student_id, course_code)\n);\n\n-- Query to get the original flat view back:\nSELECT s.student_name, c.course_name, c.instructor, e.grade\nFROM enrollments e\nJOIN students s ON e.student_id = s.student_id\nJOIN courses c ON e.course_code = c.course_code;`,
+            code: `-- FINAL 3NF SCHEMA:\nCREATE TABLE students (\n  student_id    INT PRIMARY KEY,\n  student_name  VARCHAR(100),\n  student_email VARCHAR(255) UNIQUE\n);\n\nCREATE TABLE courses (\n  course_code VARCHAR(20) PRIMARY KEY,\n  course_name VARCHAR(100),\n  instructor  VARCHAR(100)\n);\n\nCREATE TABLE enrollments (\n  student_id  INT REFERENCES students(student_id),\n  course_code VARCHAR(20) REFERENCES courses(course_code),\n  grade       CHAR(2),\n  PRIMARY KEY (student_id, course_code)\n);\n\n-- Reconstruct the original flat view with JOINs:\nSELECT s.student_name, c.course_name, c.instructor, e.grade\nFROM enrollments e\nJOIN students s ON e.student_id = s.student_id\nJOIN courses c ON e.course_code = c.course_code;`,
           },
         ],
+        diagram: `┌──────────┐     ┌──────────────┐     ┌──────────┐\n│ students │     │ enrollments  │     │ courses  │\n├──────────┤     ├──────────────┤     ├──────────┤\n│ id (PK)  │◄───│ student_id   │     │ code(PK) │\n│ name     │    │ course_code  │────►│ name     │\n│ email    │    │ grade        │     │ instruct │\n└──────────┘    └──────────────┘     └──────────┘`,
         keyTakeaway:
           'After normalization, each table stores one concept. JOINs reconstruct the original view when needed.',
       },
       {
         title: 'When to Denormalize',
         content:
-          "Normalization is not always the answer. In some cases, you intentionally denormalize — adding redundancy back — for performance.\n\n**Read-heavy systems**: If you constantly join 5 tables together and the data rarely changes, storing a pre-joined \"view\" can be faster.\n\n**Analytics/reporting**: Data warehouses often use denormalized star schemas because analysts query billions of rows and JOINs are expensive at that scale.\n\n**Caching layers**: Storing a user's display name alongside their posts (instead of always joining to the users table) reduces query complexity.\n\nThe principle: **normalize by default, denormalize with intention**. Know the rules before you break them.",
+          'Normalization is not always the answer. Sometimes you intentionally add redundancy back for performance.',
+        comparison: {
+          leftTitle: 'Normalize',
+          rightTitle: 'Denormalize',
+          items: [
+            { left: 'Write-heavy apps (fewer update anomalies)', right: 'Read-heavy apps (fewer JOINs)' },
+            { left: 'OLTP systems (transactions)', right: 'OLAP / data warehouses (analytics)' },
+            { left: 'Data integrity is critical', right: 'Query speed is critical' },
+            { left: 'Schema changes are frequent', right: 'Schema is stable, reads dominate' },
+          ],
+        },
         analogy:
-          "Normalization is like organizing your closet perfectly — everything in its place. Denormalization is like keeping a jacket by the front door because you use it every day, even though it 'belongs' in the closet.",
+          'Normalization is like organizing your closet perfectly — everything in its place. Denormalization is like keeping a jacket by the front door because you use it every day.',
         keyTakeaway:
           'Normalize by default. Denormalize strategically for read-heavy performance — but understand the trade-offs.',
       },
@@ -597,7 +775,7 @@ export const databaseLessons: Record<
       {
         mistake: 'Storing comma-separated values in a column',
         explanation:
-          'This violates 1NF and makes querying, updating, and validating individual values extremely difficult. Use a separate table with one row per value.',
+          'This violates 1NF and makes querying, updating, and validating individual values extremely difficult.',
       },
       {
         mistake: 'Over-normalizing to the point of needing 10-table JOINs',
@@ -607,15 +785,15 @@ export const databaseLessons: Record<
       {
         mistake: 'Confusing 2NF and 3NF',
         explanation:
-          '2NF addresses partial dependencies (non-key depends on PART of composite key). 3NF addresses transitive dependencies (non-key depends on another non-key). Both are about removing inappropriate dependencies.',
+          '2NF addresses partial dependencies (non-key depends on PART of composite key). 3NF addresses transitive dependencies (non-key depends on another non-key).',
       },
     ],
     practiceQuestions: [
-      'Given a table orders(order_id, customer_name, customer_email, product_name, product_price, quantity), identify the normalization violations and decompose into 3NF.',
-      'What are the three types of anomalies that normalization prevents? Give an example of each.',
+      'Given orders(order_id, customer_name, customer_email, product_name, product_price, quantity), decompose into 3NF.',
+      'What are the three types of anomalies that normalization prevents?',
       'Explain the difference between 2NF and 3NF in your own words.',
-      'When would you intentionally denormalize a schema? Give a concrete scenario.',
-      'Is a table with a single-column primary key automatically in 2NF? Why or why not?',
+      'When would you intentionally denormalize a schema?',
+      'Is a table with a single-column primary key automatically in 2NF?',
     ],
   },
 
@@ -627,37 +805,56 @@ export const databaseLessons: Record<
       {
         title: 'The Bank Transfer Problem',
         content:
-          "Imagine you are transferring $500 from your checking account to your savings account. This requires two steps:\n\n1. Subtract $500 from checking.\n2. Add $500 to savings.\n\nWhat happens if the system crashes after step 1 but before step 2? Your $500 just vanished into thin air. Or what if two transfers happen simultaneously and they both read the same balance before either writes?\n\nA transaction groups multiple operations into a single all-or-nothing unit. Either ALL the steps complete successfully, or NONE of them take effect. The database will never leave you in a half-done state.",
+          'Transferring $500 from checking to savings requires two steps: subtract from checking, add to savings. What if the system crashes between steps? Your $500 vanishes.',
         analogy:
-          'A transaction is like a handshake deal where both parties must follow through. If either side backs out, the whole deal is canceled and everything goes back to how it was before.',
+          'A transaction is like a handshake deal — both parties must follow through. If either side backs out, the whole deal is canceled.',
+        flow: [
+          { label: 'BEGIN', description: 'Start transaction', icon: '🚦' },
+          { label: 'Debit $500', description: 'Subtract from checking', icon: '➖' },
+          { label: 'Credit $500', description: 'Add to savings', icon: '➕' },
+          { label: 'COMMIT', description: 'All succeed together', icon: '✅' },
+        ],
         keyTakeaway:
           'A transaction groups multiple operations into one atomic unit — all succeed together or all fail together.',
       },
       {
+        title: 'The Four ACID Properties',
+        content:
+          'ACID is the guarantee that makes databases reliable. Each letter represents a critical property.',
+        cards: [
+          { title: 'Atomicity', description: 'All or nothing. If any step fails, everything rolls back. No half-done states.', icon: '⚛️', color: 'blue' },
+          { title: 'Consistency', description: 'Rules always hold. Constraints, foreign keys, and checks are never violated.', icon: '✅', color: 'emerald' },
+          { title: 'Isolation', description: 'Concurrent transactions don\'t interfere. Each behaves as if it\'s the only one.', icon: '🔒', color: 'purple' },
+          { title: 'Durability', description: 'Saved means saved. Once COMMIT returns, data survives any crash.', icon: '💾', color: 'amber' },
+        ],
+        keyTakeaway:
+          'ACID guarantees: Atomicity (all-or-nothing), Consistency (rules hold), Isolation (no interference), Durability (permanent once committed).',
+      },
+      {
         title: 'Atomicity — All or Nothing',
         content:
-          'The "A" in ACID. Atomicity guarantees that a transaction is treated as a single, indivisible operation. If any part fails, the entire transaction is rolled back and the database returns to its previous state.\n\nThis is what prevents the "lost $500" scenario. If the system crashes after debiting your checking but before crediting your savings, atomicity ensures the debit is also reversed.',
+          'If any part of a transaction fails, the entire thing rolls back. This prevents the "lost $500" scenario — if credit fails, the debit is also reversed.',
         code: [
           {
             language: 'sql',
             label: 'Atomicity in action',
-            code: `BEGIN;\n\n-- Step 1: Debit checking\nUPDATE accounts SET balance = balance - 500\nWHERE id = 1 AND account_type = 'checking';\n\n-- Step 2: Credit savings\nUPDATE accounts SET balance = balance + 500\nWHERE id = 1 AND account_type = 'savings';\n\n-- If everything worked:\nCOMMIT;\n\n-- If something went wrong:\n-- ROLLBACK;  (undoes both steps)`,
+            code: `BEGIN;\n\n-- Step 1: Debit checking\nUPDATE accounts SET balance = balance - 500\nWHERE id = 1 AND account_type = 'checking';\n\n-- Step 2: Credit savings\nUPDATE accounts SET balance = balance + 500\nWHERE id = 1 AND account_type = 'savings';\n\nCOMMIT;   -- both succeed\n-- or ROLLBACK;  -- both undone`,
           },
         ],
         analogy:
-          'Atomicity is like an elevator — it takes you all the way to your floor or brings you back to where you started. It never leaves you stuck between floors.',
+          'Atomicity is like an elevator — it takes you all the way to your floor or brings you back to where you started. Never stuck between floors.',
         keyTakeaway:
           'Atomicity: if any step in a transaction fails, ALL steps are undone. The database never shows a half-complete state.',
       },
       {
         title: 'Consistency — Rules Always Hold',
         content:
-          "The \"C\" in ACID. Consistency means that a transaction moves the database from one valid state to another valid state. It never violates the database's own rules (constraints, foreign keys, triggers, etc.).\n\nFor example, if there is a constraint that account balances cannot go negative, and a transfer would make your checking account -$100, the entire transaction is rejected. The database stays in a valid state.\n\nConsistency is enforced by:\n- CHECK constraints (balance >= 0)\n- NOT NULL constraints\n- UNIQUE constraints\n- Foreign key constraints\n- Triggers that validate data",
+          'Consistency means a transaction moves the database from one valid state to another. It never violates constraints, foreign keys, or triggers.',
         code: [
           {
             language: 'sql',
             label: 'Consistency enforcement',
-            code: `-- This constraint prevents negative balances\nALTER TABLE accounts\n  ADD CONSTRAINT positive_balance CHECK (balance >= 0);\n\n-- This transaction will FAIL if Alice has less than $500\nBEGIN;\nUPDATE accounts SET balance = balance - 500\nWHERE id = 1 AND account_type = 'checking';\n-- If balance goes below 0, the CHECK constraint fires\n-- and the entire transaction is rolled back.\nCOMMIT;`,
+            code: `-- Constraint prevents negative balances\nALTER TABLE accounts\n  ADD CONSTRAINT positive_balance CHECK (balance >= 0);\n\n-- This transaction FAILS if balance goes below 0\nBEGIN;\nUPDATE accounts SET balance = balance - 500\nWHERE id = 1 AND account_type = 'checking';\n-- CHECK constraint fires -> entire transaction rolled back\nCOMMIT;`,
           },
         ],
         keyTakeaway:
@@ -666,35 +863,49 @@ export const databaseLessons: Record<
       {
         title: 'Isolation — Transactions Do Not Interfere',
         content:
-          "The \"I\" in ACID. Isolation ensures that concurrent transactions do not interfere with each other. Even if 100 transactions are running simultaneously, each one behaves as if it were the only one.\n\nWithout isolation, you get problems like:\n\n**Dirty read** — Transaction A reads data that Transaction B has modified but not yet committed. If B rolls back, A just read phantom data.\n\n**Non-repeatable read** — Transaction A reads a row, then Transaction B modifies it and commits. When A reads it again, the value has changed.\n\n**Phantom read** — Transaction A runs a query and gets 10 rows. Transaction B inserts a new row. When A runs the same query again, it gets 11 rows.\n\nDatabases provide different isolation levels (which we'll cover in the next lesson) to control how strictly these problems are prevented.",
+          'Even if 100 transactions run simultaneously, each behaves as if it were the only one. Without isolation, you get dirty reads, non-repeatable reads, and phantom reads.',
+        table: {
+          headers: ['Problem', 'What Happens', 'Example'],
+          rows: [
+            ['Dirty Read', 'Read uncommitted data that may roll back', 'See $500 balance that was never committed'],
+            ['Non-Repeatable Read', 'Same query returns different results', 'Balance changes between two reads in same txn'],
+            ['Phantom Read', 'New rows appear between identical queries', 'Count goes from 10 to 11 mid-transaction'],
+          ],
+        },
         analogy:
-          'Isolation is like exam proctoring. Each student (transaction) works independently. Strict isolation = opaque dividers between desks. Relaxed isolation = you can glance at your neighbor, but there is a risk of copying wrong answers.',
+          'Isolation is like exam proctoring. Strict = opaque dividers. Relaxed = you can glance at neighbors but risk copying wrong answers.',
         keyTakeaway:
-          'Isolation: concurrent transactions cannot see each other\'s uncommitted changes. The strictness varies by isolation level.',
+          'Isolation: concurrent transactions cannot see each other\'s uncommitted changes. Strictness varies by isolation level.',
       },
       {
         title: 'Durability — Saved Means Saved',
         content:
-          "The \"D\" in ACID. Durability guarantees that once a transaction is committed, the data is permanently saved — even if the server crashes, loses power, or catches fire one second later.\n\nDatabases achieve this by writing committed data to disk (not just memory) before confirming the commit. Specifically, they use a Write-Ahead Log (WAL): before changing any data, the database first writes the change to a log file on disk. If the system crashes, it replays the log on startup to recover.\n\nThis is why databases are more reliable than just writing to a file — the WAL mechanism ensures crash recovery.",
+          'Once a transaction is committed, the data is permanently saved — even if the server crashes one second later. Databases achieve this with the Write-Ahead Log (WAL).',
+        flow: [
+          { label: 'Write to WAL', description: 'Log change to disk first', icon: '📝' },
+          { label: 'Update data', description: 'Modify actual data pages', icon: '💾' },
+          { label: 'COMMIT', description: 'Confirm to client', icon: '✅' },
+          { label: 'Crash?', description: 'Replay WAL on restart', icon: '🔄' },
+        ],
         analogy:
-          'Durability is like sending a certified letter. Once you get the receipt (COMMIT confirmed), the letter is guaranteed delivered. Even if the post office burns down, there is a record.',
+          'Durability is like a certified letter. Once you get the receipt (COMMIT confirmed), delivery is guaranteed even if the post office burns down.',
         keyTakeaway:
-          'Durability: once COMMIT returns success, the data survives any subsequent crash. The Write-Ahead Log (WAL) makes this possible.',
+          'Durability: once COMMIT returns, data survives any crash. The Write-Ahead Log (WAL) makes this possible.',
       },
       {
         title: 'Writing Transactions in Practice',
         content:
-          "Let's see the full pattern of using transactions in application code, including error handling.",
+          'Here is the full pattern including error handling in both SQL and application code.',
         code: [
           {
             language: 'sql',
             label: 'Full transaction pattern in SQL',
-            code: `-- Transfer $200 from account 1 to account 2\nBEGIN;\n\n-- Check sufficient funds\nSELECT balance FROM accounts WHERE id = 1 FOR UPDATE;\n-- FOR UPDATE locks the row so no one else can change it\n\n-- Debit sender\nUPDATE accounts SET balance = balance - 200 WHERE id = 1;\n\n-- Credit receiver\nUPDATE accounts SET balance = balance + 200 WHERE id = 2;\n\n-- Log the transfer\nINSERT INTO transfers (from_id, to_id, amount, created_at)\nVALUES (1, 2, 200, NOW());\n\nCOMMIT;`,
+            code: `BEGIN;\n\n-- Lock the row to prevent concurrent changes\nSELECT balance FROM accounts WHERE id = 1 FOR UPDATE;\n\nUPDATE accounts SET balance = balance - 200 WHERE id = 1;\nUPDATE accounts SET balance = balance + 200 WHERE id = 2;\n\n-- Log the transfer\nINSERT INTO transfers (from_id, to_id, amount, created_at)\nVALUES (1, 2, 200, NOW());\n\nCOMMIT;`,
           },
           {
             language: 'javascript',
             label: 'Transaction in Node.js (pg library)',
-            code: `const client = await pool.connect();\ntry {\n  await client.query('BEGIN');\n\n  await client.query(\n    'UPDATE accounts SET balance = balance - $1 WHERE id = $2',\n    [200, fromAccountId]\n  );\n\n  await client.query(\n    'UPDATE accounts SET balance = balance + $1 WHERE id = $2',\n    [200, toAccountId]\n  );\n\n  await client.query(\n    'INSERT INTO transfers (from_id, to_id, amount) VALUES ($1, $2, $3)',\n    [fromAccountId, toAccountId, 200]\n  );\n\n  await client.query('COMMIT');\n} catch (err) {\n  await client.query('ROLLBACK');\n  throw err;\n} finally {\n  client.release();\n}`,
+            code: `const client = await pool.connect();\ntry {\n  await client.query('BEGIN');\n  await client.query(\n    'UPDATE accounts SET balance = balance - $1 WHERE id = $2',\n    [200, fromAccountId]\n  );\n  await client.query(\n    'UPDATE accounts SET balance = balance + $1 WHERE id = $2',\n    [200, toAccountId]\n  );\n  await client.query('COMMIT');\n} catch (err) {\n  await client.query('ROLLBACK');\n  throw err;\n} finally {\n  client.release();\n}`,
           },
         ],
         keyTakeaway:
@@ -703,46 +914,48 @@ export const databaseLessons: Record<
       {
         title: 'SAVEPOINT — Partial Rollbacks',
         content:
-          "Sometimes you want to undo part of a transaction without throwing away all of it. SAVEPOINT creates a checkpoint you can roll back to.\n\nThis is useful in complex business logic where one step might fail but you want to continue with the rest.",
+          'Sometimes you want to undo part of a transaction without discarding all of it. SAVEPOINT creates a checkpoint you can roll back to.',
         code: [
           {
             language: 'sql',
             label: 'Using SAVEPOINTs',
-            code: `BEGIN;\n\nINSERT INTO orders (customer_id, total) VALUES (1, 100.00);\nSAVEPOINT after_order;\n\n-- Try to apply a discount coupon\nUPDATE coupons SET used = true WHERE code = 'SAVE20';\n-- If coupon does not exist, rollback just this part\nROLLBACK TO SAVEPOINT after_order;\n\n-- The order insert is still intact!\nCOMMIT;`,
+            code: `BEGIN;\n\nINSERT INTO orders (customer_id, total) VALUES (1, 100.00);\nSAVEPOINT after_order;\n\n-- Try to apply a discount coupon\nUPDATE coupons SET used = true WHERE code = 'SAVE20';\n-- If coupon doesn't exist, rollback just this part\nROLLBACK TO SAVEPOINT after_order;\n\n-- The order insert is still intact!\nCOMMIT;`,
           },
         ],
+        analogy:
+          'SAVEPOINT is like saving your game before a boss fight. If you lose, you reload the save — you don\'t restart the entire game.',
         keyTakeaway:
-          'SAVEPOINT creates a named checkpoint inside a transaction. You can roll back to it without losing earlier work.',
+          'SAVEPOINT creates a named checkpoint inside a transaction. Roll back to it without losing earlier work.',
       },
     ],
     commonMistakes: [
       {
         mistake: 'Not using transactions for multi-step operations',
         explanation:
-          'If you run two UPDATEs without a transaction and the second one fails, the first is already committed. Your data is now inconsistent. Always wrap related changes in BEGIN/COMMIT.',
+          'Two UPDATEs without a transaction: if the second fails, the first is already committed. Data is now inconsistent.',
       },
       {
         mistake: 'Holding transactions open for too long',
         explanation:
-          'Long-running transactions hold locks that block other users. Keep transactions as short as possible — do your computation outside the transaction, then do the writes quickly inside it.',
+          'Long transactions hold locks that block other users. Do computation outside the transaction, writes inside.',
       },
       {
         mistake: 'Assuming autocommit is off',
         explanation:
-          'Most databases and drivers default to autocommit mode, where each statement is its own transaction. If you need atomicity across multiple statements, you must explicitly BEGIN a transaction.',
+          'Most databases default to autocommit where each statement is its own transaction. Explicitly BEGIN for multi-statement atomicity.',
       },
       {
         mistake: 'Forgetting to ROLLBACK on error',
         explanation:
-          'If an error occurs inside a transaction and you do not ROLLBACK, the connection may be left in a broken state. Always use try/catch/finally with ROLLBACK in the catch block.',
+          'An error without ROLLBACK leaves the connection in a broken state. Always use try/catch/finally.',
       },
     ],
     practiceQuestions: [
-      'Explain each letter of ACID with your own real-world analogy.',
+      'Explain each letter of ACID with your own analogy.',
       'What would happen if a database guaranteed Atomicity but not Durability?',
-      'Write a SQL transaction that transfers funds between two accounts, including a check for sufficient balance.',
-      'What is the Write-Ahead Log (WAL) and why is it essential for durability?',
-      'Describe a scenario where a SAVEPOINT would be more useful than a full ROLLBACK.',
+      'Write a SQL transaction that transfers funds with a check for sufficient balance.',
+      'What is the Write-Ahead Log (WAL) and why is it essential?',
+      'Describe a scenario where SAVEPOINT is more useful than a full ROLLBACK.',
     ],
   },
 
@@ -752,88 +965,126 @@ export const databaseLessons: Record<
   'isolation-levels': {
     steps: [
       {
-        title: 'The Movie Theater Analogy',
+        title: 'The Privacy Settings Analogy',
         content:
-          'Imagine a movie theater where people are buying and swapping seats. Different "isolation levels" control how much you can see of other people\'s seat-picking activity:\n\n- **Read Uncommitted**: You can see someone hovering over a seat even before they confirm it. They might move — so what you saw could be wrong.\n- **Read Committed**: You only see seats that people have actually sat down in (committed). But if you look twice, someone might have moved between your glances.\n- **Repeatable Read**: Once you look at a seat, its status is frozen for you. No one can appear to move while you are watching.\n- **Serializable**: It is as if you are the only person in the theater. Everything is perfectly consistent, but it is slow because everyone has to take turns.\n\nHigher isolation = more consistency, less performance. Lower isolation = more speed, more risk of weird anomalies.',
+          'Isolation levels control how much one transaction can see of another\'s in-progress work. Think of them as privacy settings on a shared document.',
         analogy:
-          'Isolation levels are like privacy settings on a shared document. Read Uncommitted = anyone can see your unsaved drafts. Serializable = nobody sees anything until you hit publish.',
+          'Read Uncommitted = anyone sees your unsaved drafts. Read Committed = see only published versions. Repeatable Read = take a snapshot at the start. Serializable = nobody sees anything until you hit publish.',
+        cards: [
+          { title: 'Read Uncommitted', description: 'See uncommitted changes. Fast but risky. Almost never used.', icon: '👁️', color: 'red' },
+          { title: 'Read Committed', description: 'See only committed data. Default for PostgreSQL. Good enough for most apps.', icon: '📖', color: 'blue' },
+          { title: 'Repeatable Read', description: 'Snapshot at transaction start. Default for MySQL. Consistent reads.', icon: '📸', color: 'purple' },
+          { title: 'Serializable', description: 'Perfect isolation — as if running one at a time. Slowest but safest.', icon: '🔒', color: 'emerald' },
+        ],
         keyTakeaway:
           'Isolation levels control the trade-off between data consistency and concurrent performance.',
       },
       {
         title: 'The Three Anomalies',
         content:
-          "Before diving into each level, let's clearly define the three problems (anomalies) that isolation levels prevent:\n\n**Dirty Read** — Reading data from a transaction that has not committed yet. If that transaction rolls back, you just read data that never actually existed.\n\n**Non-Repeatable Read** — You read a row, another transaction modifies and commits it, and when you read it again within the same transaction, the value is different.\n\n**Phantom Read** — You run a query (e.g., \"all orders > $100\") and get 10 rows. Another transaction inserts a new matching row. You run the same query again and get 11 rows. A \"phantom\" row appeared.\n\nEach isolation level prevents a different set of these anomalies.",
+          'Each isolation level prevents a different set of anomalies.',
+        table: {
+          headers: ['Level', 'Dirty Read', 'Non-Repeatable', 'Phantom', 'Performance'],
+          rows: [
+            ['Read Uncommitted', 'Possible', 'Possible', 'Possible', 'Fastest'],
+            ['Read Committed', 'Prevented', 'Possible', 'Possible', 'Fast'],
+            ['Repeatable Read', 'Prevented', 'Prevented', 'Possible*', 'Moderate'],
+            ['Serializable', 'Prevented', 'Prevented', 'Prevented', 'Slowest'],
+          ],
+        },
+        bullets: [
+          '**Dirty Read** — Reading uncommitted data that may roll back.',
+          '**Non-Repeatable Read** — Same row returns different values in the same transaction.',
+          '**Phantom Read** — New rows appear between identical queries.',
+          '*PostgreSQL\'s Repeatable Read actually prevents phantom reads too (true snapshot isolation).',
+        ],
         keyTakeaway:
           'Dirty reads see uncommitted data, non-repeatable reads see changed data, phantom reads see newly inserted data.',
       },
       {
         title: 'Read Uncommitted — The Wild West',
         content:
-          "The lowest isolation level. Transactions can read data that other transactions have modified but not yet committed.\n\nThis means you might see data that never actually becomes permanent — if the writing transaction rolls back, you just made a decision based on ghost data.\n\n**Allows:** dirty reads, non-repeatable reads, phantom reads.\n\n**Use case:** Almost never. Some analytics systems use it when approximate results are acceptable and speed is critical. Most databases don't even implement this level differently from Read Committed.",
+          'The lowest level. You can read data another transaction modified but hasn\'t committed. If they roll back, you made decisions on ghost data. Almost never used in practice.',
         code: [
           {
             language: 'sql',
-            label: 'Read Uncommitted example',
-            code: `-- Session A:\nBEGIN;\nSET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\nSELECT balance FROM accounts WHERE id = 1;  -- sees $1000\n\n-- Session B (not yet committed):\nBEGIN;\nUPDATE accounts SET balance = 500 WHERE id = 1;\n-- B has NOT committed\n\n-- Session A:\nSELECT balance FROM accounts WHERE id = 1;  -- sees $500!\n-- This is a DIRTY READ — B might roll back\n\n-- Session B:\nROLLBACK;  -- B undoes the change\n\n-- Session A just used $500 in its logic, but the real balance is $1000`,
+            label: 'Dirty read example',
+            code: `-- Session A:\nBEGIN;\nSET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\nSELECT balance FROM accounts WHERE id = 1;  -- $1000\n\n-- Session B (NOT committed):\nBEGIN;\nUPDATE accounts SET balance = 500 WHERE id = 1;\n\n-- Session A sees $500 (DIRTY READ!)\nSELECT balance FROM accounts WHERE id = 1;  -- $500\n\n-- Session B rolls back:\nROLLBACK;  -- real balance is still $1000`,
           },
         ],
         keyTakeaway:
-          'Read Uncommitted allows dirty reads — you can see other transactions\' uncommitted changes. Avoid in almost all cases.',
+          'Read Uncommitted allows dirty reads — avoid in almost all cases.',
       },
       {
-        title: 'Read Committed — The Default for Most Databases',
+        title: 'Read Committed — The Safe Default',
         content:
-          'Read Committed guarantees that you only see data from transactions that have committed. No dirty reads.\n\nHowever, if you read a row twice within the same transaction, it might have changed between reads because another transaction committed in between.\n\nThis is the default isolation level in PostgreSQL, Oracle, and SQL Server.\n\n**Allows:** non-repeatable reads, phantom reads.\n**Prevents:** dirty reads.',
+          'You only see committed data. No dirty reads. But the same query can return different results within one transaction if another transaction commits in between.',
         code: [
           {
             language: 'sql',
-            label: 'Read Committed example',
-            code: `-- Session A:\nBEGIN;\nSET TRANSACTION ISOLATION LEVEL READ COMMITTED;\nSELECT balance FROM accounts WHERE id = 1;  -- sees $1000\n\n-- Session B:\nBEGIN;\nUPDATE accounts SET balance = 800 WHERE id = 1;\nCOMMIT;  -- B commits the change\n\n-- Session A:\nSELECT balance FROM accounts WHERE id = 1;  -- sees $800!\n-- Different value in the same transaction — NON-REPEATABLE READ\nCOMMIT;`,
+            label: 'Non-repeatable read example',
+            code: `-- Session A:\nBEGIN;\nSELECT balance FROM accounts WHERE id = 1;  -- $1000\n\n-- Session B commits a change:\nUPDATE accounts SET balance = 800 WHERE id = 1;\nCOMMIT;\n\n-- Session A reads again:\nSELECT balance FROM accounts WHERE id = 1;  -- $800!\n-- Different value in same transaction`,
           },
         ],
+        analogy:
+          'Read Committed is like checking a stock price. Each check shows the latest price, but it may have changed since you last looked.',
         keyTakeaway:
-          'Read Committed is the safest common default. No dirty reads, but the same query can return different results within one transaction.',
+          'Read Committed is the safest common default. No dirty reads, but queries can return different results within one transaction.',
       },
       {
         title: 'Repeatable Read — Frozen Snapshots',
         content:
-          'Repeatable Read guarantees that if you read a row, reading it again in the same transaction returns the same value — even if another transaction committed a change in between.\n\nThe database achieves this by taking a snapshot of the data at the start of the transaction. All reads within the transaction see this snapshot.\n\nThis is the default isolation level in MySQL/InnoDB.\n\n**Allows:** phantom reads (in some implementations).\n**Prevents:** dirty reads, non-repeatable reads.',
+          'The database takes a snapshot at the start of your transaction. All reads see this snapshot, even if other transactions commit changes.',
         code: [
           {
             language: 'sql',
             label: 'Repeatable Read example',
-            code: `-- Session A:\nBEGIN;\nSET TRANSACTION ISOLATION LEVEL REPEATABLE READ;\nSELECT balance FROM accounts WHERE id = 1;  -- sees $1000\n\n-- Session B:\nBEGIN;\nUPDATE accounts SET balance = 800 WHERE id = 1;\nCOMMIT;\n\n-- Session A:\nSELECT balance FROM accounts WHERE id = 1;  -- STILL sees $1000!\n-- The snapshot protects us from seeing B's change\nCOMMIT;\n\n-- After A commits, a new transaction would see $800`,
+            code: `-- Session A:\nBEGIN;\nSET TRANSACTION ISOLATION LEVEL REPEATABLE READ;\nSELECT balance FROM accounts WHERE id = 1;  -- $1000\n\n-- Session B commits:\nUPDATE accounts SET balance = 800 WHERE id = 1;\nCOMMIT;\n\n-- Session A:\nSELECT balance FROM accounts WHERE id = 1;  -- STILL $1000!\n-- Snapshot protects us\nCOMMIT;`,
           },
         ],
         analogy:
-          'Repeatable Read is like taking a photograph of a whiteboard at the start of a meeting. Even if someone erases and rewrites things during the meeting, your photo shows the original content.',
+          'Repeatable Read is like taking a photograph of a whiteboard at the start of a meeting. Even if someone rewrites it during the meeting, your photo shows the original.',
         keyTakeaway:
-          'Repeatable Read uses snapshot isolation — your transaction sees the data as it was when the transaction started.',
+          'Repeatable Read uses snapshot isolation — your transaction sees data as it was when the transaction started.',
       },
       {
         title: 'Serializable — Perfect but Slow',
         content:
-          "Serializable is the highest isolation level. It guarantees that concurrent transactions produce the same result as if they had run one at a time, in some serial order.\n\nThis prevents ALL anomalies — dirty reads, non-repeatable reads, and phantom reads. But it comes with a significant performance cost because the database must lock more aggressively or abort transactions that would conflict.\n\n**Prevents:** all anomalies.\n**Cost:** reduced concurrency, potential for serialization failures that require retry logic.",
+          'The highest level. Guarantees that concurrent transactions produce the same result as running one at a time. Prevents ALL anomalies but can cause transaction aborts.',
         code: [
           {
             language: 'sql',
             label: 'Serializable example',
-            code: `-- Session A:\nBEGIN;\nSET TRANSACTION ISOLATION LEVEL SERIALIZABLE;\nSELECT COUNT(*) FROM orders WHERE status = 'pending';  -- 5\n\n-- Session B:\nBEGIN;\nSET TRANSACTION ISOLATION LEVEL SERIALIZABLE;\nINSERT INTO orders (status) VALUES ('pending');\nCOMMIT;\n\n-- Session A:\nSELECT COUNT(*) FROM orders WHERE status = 'pending';  -- still 5!\n-- No phantom read. When A tries to COMMIT, the database\n-- may abort it with a serialization error if there is a conflict.\nCOMMIT;  -- might fail with: "could not serialize access"`,
+            code: `-- Session A:\nBEGIN;\nSET TRANSACTION ISOLATION LEVEL SERIALIZABLE;\nSELECT COUNT(*) FROM orders WHERE status = 'pending'; -- 5\n\n-- Session B:\nINSERT INTO orders (status) VALUES ('pending');\nCOMMIT;\n\n-- Session A still sees 5 (no phantom)\nSELECT COUNT(*) FROM orders WHERE status = 'pending'; -- 5\nCOMMIT;  -- may fail: "could not serialize access"`,
           },
           {
             language: 'python',
             label: 'Retry logic for serializable transactions',
-            code: `import psycopg2\n\ndef run_serializable(conn, operation):\n    max_retries = 3\n    for attempt in range(max_retries):\n        try:\n            with conn.cursor() as cur:\n                cur.execute("BEGIN ISOLATION LEVEL SERIALIZABLE")\n                operation(cur)\n                conn.commit()\n                return  # success\n        except psycopg2.errors.SerializationFailure:\n            conn.rollback()\n            if attempt == max_retries - 1:\n                raise\n            # retry the transaction`,
+            code: `import psycopg2\n\ndef run_serializable(conn, operation):\n    for attempt in range(3):\n        try:\n            with conn.cursor() as cur:\n                cur.execute("BEGIN ISOLATION LEVEL SERIALIZABLE")\n                operation(cur)\n                conn.commit()\n                return\n        except psycopg2.errors.SerializationFailure:\n            conn.rollback()\n            if attempt == 2:\n                raise`,
           },
         ],
         keyTakeaway:
-          'Serializable prevents all anomalies but can cause transaction aborts. Always implement retry logic when using it.',
+          'Serializable prevents all anomalies but can cause transaction aborts. Always implement retry logic.',
       },
       {
-        title: 'Summary — Which Level to Use?',
+        title: 'Which Level to Use?',
         content:
-          "Here is a quick comparison of all four levels:\n\n| Level | Dirty Read | Non-Repeatable Read | Phantom Read | Performance |\n|---|---|---|---|---|\n| Read Uncommitted | Possible | Possible | Possible | Fastest |\n| Read Committed | Prevented | Possible | Possible | Fast |\n| Repeatable Read | Prevented | Prevented | Possible* | Moderate |\n| Serializable | Prevented | Prevented | Prevented | Slowest |\n\n*PostgreSQL's Repeatable Read actually prevents phantom reads too (it uses true snapshot isolation).\n\n**Rules of thumb:**\n- **Read Committed** (the default) is fine for most applications.\n- Use **Repeatable Read** when you need consistent reads within a transaction (like generating a report).\n- Use **Serializable** only when absolute correctness is required (financial calculations, inventory decrements).\n- Almost never use **Read Uncommitted**.",
+          'Most applications are fine with Read Committed. Upgrade only when needed.',
+        comparison: {
+          leftTitle: 'Use Case',
+          rightTitle: 'Recommended Level',
+          items: [
+            { left: 'Social media feeds, dashboards', right: 'Read Committed (default)' },
+            { left: 'Report generation, consistent reads', right: 'Repeatable Read' },
+            { left: 'Financial calculations, inventory', right: 'Serializable (with retries)' },
+            { left: 'Approximate analytics', right: 'Read Uncommitted (rare)' },
+          ],
+        },
+        bullets: [
+          'PostgreSQL and Oracle default to **Read Committed**.',
+          'MySQL/InnoDB defaults to **Repeatable Read**.',
+          'Always check your database\'s default.',
+        ],
         keyTakeaway:
           'Start with Read Committed. Upgrade to Repeatable Read or Serializable only when your application requires stronger guarantees.',
       },
@@ -842,24 +1093,24 @@ export const databaseLessons: Record<
       {
         mistake: 'Assuming the default isolation level is the same everywhere',
         explanation:
-          'PostgreSQL and Oracle default to Read Committed. MySQL/InnoDB defaults to Repeatable Read. Always check your database\'s default.',
+          'PostgreSQL defaults to Read Committed. MySQL defaults to Repeatable Read. Always check.',
       },
       {
         mistake: 'Using Serializable without retry logic',
         explanation:
-          'Serializable isolation can abort transactions with serialization errors. Your application must catch these and retry the transaction, or users will see random failures.',
+          'Serializable can abort transactions with serialization errors. Your app must catch and retry.',
       },
       {
-        mistake: 'Not understanding which anomalies your application can tolerate',
+        mistake: 'Not understanding which anomalies your app can tolerate',
         explanation:
-          'If your app can tolerate slightly stale reads (e.g., a social media feed), Read Committed is fine. If it cannot tolerate inconsistent reads (e.g., bank balance), you need at least Repeatable Read.',
+          'Social feeds tolerate stale reads (Read Committed). Bank balances cannot (Repeatable Read or Serializable).',
       },
     ],
     practiceQuestions: [
       'Explain the difference between a dirty read, a non-repeatable read, and a phantom read.',
-      'Your e-commerce app sometimes shows an item as "in stock" but then fails at checkout because another user bought the last one. Which isolation level would prevent this?',
-      'Why does Serializable isolation require retry logic in application code?',
-      'What isolation level does your preferred database default to? Is that sufficient for most applications?',
+      'Your e-commerce app shows items "in stock" but checkout fails. Which isolation level fixes this?',
+      'Why does Serializable require retry logic?',
+      'What isolation level does your preferred database default to?',
     ],
   },
 
@@ -869,58 +1120,66 @@ export const databaseLessons: Record<
   'query-optimization': {
     steps: [
       {
-        title: 'Why Your Query is Slow — The GPS Analogy',
+        title: 'Why Your Query is Slow',
         content:
-          "When you ask your GPS for directions, it does not blindly drive every possible route. It evaluates options and picks the fastest path. Your database does the same thing with a query planner.\n\nWhen you write a SQL query, you are describing WHAT data you want, not HOW to get it. The database's query planner decides the strategy — which indexes to use, in what order to join tables, whether to sort in memory or use an index.\n\nQuery optimization is the art of helping the planner make good decisions. Sometimes it makes bad ones, and you need to understand why.",
+          'When you write SQL, you describe WHAT data you want, not HOW to get it. The query planner decides the strategy — which indexes to use, join order, sort method.',
         analogy:
-          'You are the passenger (writing SQL). The query planner is the GPS. EXPLAIN is like the GPS showing you the turn-by-turn route before you start driving. If the route looks bad, you adjust your query (or add an index) to give the GPS better roads.',
+          'You are the passenger (writing SQL). The query planner is the GPS. EXPLAIN is like the GPS showing you the route before you drive. If the route looks bad, adjust your query or add an index.',
+        flow: [
+          { label: 'You write SQL', description: 'Declare what you want', icon: '✍️' },
+          { label: 'Query Planner', description: 'Chooses execution strategy', icon: '🧠' },
+          { label: 'Execution', description: 'Runs the chosen plan', icon: '⚡' },
+          { label: 'Results', description: 'Data returned to you', icon: '📊' },
+        ],
         keyTakeaway:
           'The query planner turns your SQL into an execution plan. Optimization means helping it choose the best plan.',
       },
       {
         title: 'Reading EXPLAIN Output',
         content:
-          'EXPLAIN shows you the execution plan the database will use for your query. EXPLAIN ANALYZE actually runs the query and shows real timing data.\n\nThe key things to look for:\n- **Seq Scan** = full table scan (reading every row). Usually slow on large tables.\n- **Index Scan** = using an index. Much faster.\n- **Nested Loop / Hash Join / Merge Join** = the strategy for joining tables.\n- **Sort** = an in-memory sort (check if it could use an index instead).\n- **Cost** = estimated expense (lower is better).\n- **Rows** = estimated number of rows at each step.',
+          'EXPLAIN shows the execution plan. EXPLAIN ANALYZE runs the query and shows real timing.',
         code: [
           {
             language: 'sql',
             label: 'Using EXPLAIN and EXPLAIN ANALYZE',
-            code: `-- See the plan WITHOUT running the query\nEXPLAIN\nSELECT * FROM employees WHERE department = 'Engineering';\n\n-- Example output:\n-- Seq Scan on employees  (cost=0.00..12.50 rows=3 width=120)\n--   Filter: (department = 'Engineering')\n-- ^^^^ This is a full table scan! We need an index.\n\n-- Run the query and see actual timing\nEXPLAIN ANALYZE\nSELECT * FROM employees WHERE department = 'Engineering';\n\n-- Example output:\n-- Seq Scan on employees  (cost=0.00..12.50 rows=3 width=120)\n--                        (actual time=0.015..0.018 rows=3 loops=1)\n--   Filter: (department = 'Engineering')\n--   Rows Removed by Filter: 4\n-- Planning Time: 0.082 ms\n-- Execution Time: 0.035 ms\n\n-- After adding an index:\nCREATE INDEX idx_dept ON employees(department);\n\nEXPLAIN ANALYZE\nSELECT * FROM employees WHERE department = 'Engineering';\n-- Index Scan using idx_dept on employees\n--   (cost=0.14..8.16 rows=3 width=120)\n--   (actual time=0.006..0.008 rows=3 loops=1)`,
+            code: `-- See the plan WITHOUT running\nEXPLAIN\nSELECT * FROM employees WHERE department = 'Engineering';\n-- Seq Scan = full table scan (bad on big tables)\n\n-- Run and see actual timing\nEXPLAIN ANALYZE\nSELECT * FROM employees WHERE department = 'Engineering';\n\n-- After adding an index:\nCREATE INDEX idx_dept ON employees(department);\n\nEXPLAIN ANALYZE\nSELECT * FROM employees WHERE department = 'Engineering';\n-- Index Scan using idx_dept (much faster!)`,
           },
         ],
+        table: {
+          headers: ['What You See', 'What It Means', 'Fix'],
+          rows: [
+            ['Seq Scan', 'Full table scan (reading every row)', 'Add an index'],
+            ['Index Scan', 'Using an index (fast)', 'Already good'],
+            ['Nested Loop', 'For each row in A, scan all of B', 'Index the join column'],
+            ['Sort', 'In-memory sorting', 'Add index matching ORDER BY'],
+            ['High cost/time', 'Expensive step in the plan', 'Focus optimization here'],
+          ],
+        },
         keyTakeaway:
-          'EXPLAIN shows the plan. EXPLAIN ANALYZE shows actual execution times. Look for Seq Scans on large tables — they often need indexes.',
+          'EXPLAIN shows the plan. EXPLAIN ANALYZE shows actual times. Look for Seq Scans on large tables — they need indexes.',
       },
       {
-        title: 'The Top Query Performance Killers',
+        title: 'The Top Performance Killers',
         content:
-          "Here are the most common reasons queries are slow, in order of frequency:\n\n1. **Missing indexes** — The number one cause. A WHERE clause on an unindexed column forces a full table scan.\n\n2. **SELECT *** — Fetching every column when you only need 2 wastes I/O and memory, and prevents index-only scans.\n\n3. **N+1 query problem** — Your code runs 1 query to get a list, then N individual queries for each item's details. Use JOINs or batch queries instead.\n\n4. **Joining on non-indexed columns** — A JOIN without an index on the join column turns every join into a nested loop with a full scan.\n\n5. **Functions on indexed columns in WHERE** — WHERE YEAR(created_at) = 2024 cannot use an index on created_at. Rewrite as WHERE created_at >= '2024-01-01' AND created_at < '2025-01-01'.\n\n6. **Missing LIMIT** — Returning 1 million rows when the UI shows 20.",
-        keyTakeaway:
-          'Most slow queries are caused by missing indexes, SELECT *, or the N+1 problem. These are easy to fix once identified.',
-      },
-      {
-        title: 'Optimization: Avoid SELECT *',
-        content:
-          "This is one of the simplest and most impactful optimizations. Let's see why.",
-        code: [
-          {
-            language: 'sql',
-            label: 'SELECT * vs specific columns',
-            code: `-- BAD: fetches all columns, including large text/blob columns\nSELECT * FROM articles WHERE author_id = 5;\n-- Even if you only display the title, the DB reads\n-- the entire body (potentially megabytes per row)\n\n-- GOOD: fetch only what you need\nSELECT id, title, created_at FROM articles WHERE author_id = 5;\n\n-- EVEN BETTER: if there is an index on (author_id, title, created_at),\n-- the DB can answer entirely from the index without touching the table.\n-- This is called an INDEX-ONLY SCAN — extremely fast.\nCREATE INDEX idx_articles_author_covering\n  ON articles(author_id) INCLUDE (title, created_at);`,
-          },
+          'Here are the most common reasons queries are slow, in order of frequency.',
+        cards: [
+          { title: 'Missing Indexes', description: '#1 cause. WHERE on unindexed column = full table scan.', icon: '🔍', color: 'red' },
+          { title: 'SELECT *', description: 'Fetches every column. Wastes I/O, prevents index-only scans.', icon: '❌', color: 'red' },
+          { title: 'N+1 Problem', description: '1 query for list + N queries for details. Use JOINs instead.', icon: '🔁', color: 'red' },
+          { title: 'Functions on Indexes', description: 'WHERE YEAR(date) = 2024 cannot use index. Use range instead.', icon: '⚠️', color: 'amber' },
         ],
         keyTakeaway:
-          'Selecting specific columns reduces I/O and enables index-only scans. Never use SELECT * in production code.',
+          'Most slow queries are caused by missing indexes, SELECT *, or the N+1 problem. These are easy to fix.',
       },
       {
-        title: 'Optimization: Fix the N+1 Problem',
+        title: 'Fix the N+1 Problem',
         content:
-          'The N+1 problem is the most common performance bug in web applications. It happens when your code executes one query to fetch a list, then executes one query per item in that list.',
+          'The N+1 problem is the most common performance bug in web applications. One query for a list, then N separate queries for each item.',
         code: [
           {
             language: 'javascript',
             label: 'N+1 problem and its fix',
-            code: `// BAD: N+1 queries\nconst orders = await db.query('SELECT * FROM orders LIMIT 100');\nfor (const order of orders) {\n  // This runs 100 separate queries!\n  const customer = await db.query(\n    'SELECT name FROM customers WHERE id = $1',\n    [order.customer_id]\n  );\n  order.customerName = customer.rows[0].name;\n}\n// Total: 101 queries (1 + 100)\n\n// GOOD: Single query with JOIN\nconst results = await db.query(\`\n  SELECT o.*, c.name AS customer_name\n  FROM orders o\n  JOIN customers c ON o.customer_id = c.id\n  LIMIT 100\n\`);\n// Total: 1 query`,
+            code: `// BAD: N+1 queries (101 total!)\nconst orders = await db.query('SELECT * FROM orders LIMIT 100');\nfor (const order of orders) {\n  const customer = await db.query(\n    'SELECT name FROM customers WHERE id = $1',\n    [order.customer_id]\n  );\n}\n\n// GOOD: Single query with JOIN (1 total)\nconst results = await db.query(\`\n  SELECT o.*, c.name AS customer_name\n  FROM orders o\n  JOIN customers c ON o.customer_id = c.id\n  LIMIT 100\n\`);`,
           },
         ],
         analogy:
@@ -929,69 +1188,89 @@ export const databaseLessons: Record<
           'Replace N+1 queries with JOINs or batch queries (WHERE id IN (...)). One query beats a hundred.',
       },
       {
-        title: 'Optimization: Smart Indexing and Join Order',
+        title: 'Smart Indexing and Functions',
         content:
-          "The database's query planner usually picks good join orders, but sometimes it gets it wrong — especially when table statistics are outdated. Here are strategies to help.",
+          'Avoid applying functions to indexed columns in WHERE clauses — the database cannot use the index.',
         code: [
           {
             language: 'sql',
-            label: 'Index and join optimizations',
-            code: `-- Update statistics so the planner makes good decisions\nANALYZE employees;\nANALYZE orders;\n\n-- Covering index: include all columns needed by the query\nCREATE INDEX idx_orders_covering\n  ON orders(customer_id) INCLUDE (product, amount);\n\n-- The planner can now answer this query using only the index:\nSELECT product, amount FROM orders WHERE customer_id = 5;\n\n-- Avoid functions on indexed columns\n-- BAD: cannot use index on created_at\nSELECT * FROM orders WHERE EXTRACT(YEAR FROM created_at) = 2024;\n\n-- GOOD: range scan uses the index\nSELECT * FROM orders\nWHERE created_at >= '2024-01-01' AND created_at < '2025-01-01';\n\n-- Use EXISTS instead of IN for large subqueries\n-- BAD (can be slow with large subquery result):\nSELECT * FROM customers\nWHERE id IN (SELECT customer_id FROM orders WHERE amount > 1000);\n\n-- GOOD (stops at first match per customer):\nSELECT * FROM customers c\nWHERE EXISTS (\n  SELECT 1 FROM orders o\n  WHERE o.customer_id = c.id AND o.amount > 1000\n);`,
+            label: 'Index-friendly queries',
+            code: `-- BAD: function prevents index use\nSELECT * FROM orders\nWHERE EXTRACT(YEAR FROM created_at) = 2024;\n\n-- GOOD: range scan uses the index\nSELECT * FROM orders\nWHERE created_at >= '2024-01-01'\n  AND created_at < '2025-01-01';\n\n-- Covering index: answer query from index alone\nCREATE INDEX idx_orders_covering\n  ON orders(customer_id) INCLUDE (product, amount);\n\n-- Use EXISTS instead of IN for large subqueries\nSELECT * FROM customers c\nWHERE EXISTS (\n  SELECT 1 FROM orders o\n  WHERE o.customer_id = c.id AND o.amount > 1000\n);`,
           },
         ],
         keyTakeaway:
-          'Run ANALYZE to update statistics, use covering indexes, avoid functions on indexed columns, and prefer EXISTS over IN for subqueries.',
+          'Run ANALYZE to update statistics, use covering indexes, avoid functions on indexed columns, prefer EXISTS over IN.',
       },
       {
-        title: 'Optimization: Pagination Done Right',
+        title: 'Pagination Done Right',
         content:
-          'OFFSET-based pagination (LIMIT 20 OFFSET 10000) is common but slow. The database has to read and discard 10,000 rows before returning 20. Cursor-based (keyset) pagination is much faster.',
+          'OFFSET pagination is slow for deep pages. The database reads and discards thousands of rows. Cursor-based pagination is much faster.',
+        comparison: {
+          leftTitle: 'OFFSET (Slow)',
+          rightTitle: 'Cursor-Based (Fast)',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'LIMIT 20 OFFSET 10000', right: 'WHERE id > last_id LIMIT 20' },
+            { left: 'Scans and discards 10K rows', right: 'Index seek, no scanning' },
+            { left: 'Slower on deeper pages', right: 'Same speed on any page' },
+            { left: 'Simple implementation', right: 'Slightly more complex client code' },
+          ],
+        },
         code: [
           {
             language: 'sql',
             label: 'Cursor-based pagination',
-            code: `-- SLOW: offset pagination (scans and skips rows)\nSELECT * FROM orders\nORDER BY id\nLIMIT 20 OFFSET 10000;  -- skips 10,000 rows every time\n\n-- FAST: cursor-based pagination (jumps via index)\n-- First page:\nSELECT * FROM orders ORDER BY id LIMIT 20;\n-- Returns IDs 1-20. Client remembers last_id = 20.\n\n-- Next page:\nSELECT * FROM orders\nWHERE id > 20  -- index seek, no scanning\nORDER BY id\nLIMIT 20;`,
+            code: `-- First page:\nSELECT * FROM orders ORDER BY id LIMIT 20;\n-- Client remembers last_id = 20\n\n-- Next page (index seek, no scanning):\nSELECT * FROM orders\nWHERE id > 20 ORDER BY id LIMIT 20;`,
           },
         ],
         keyTakeaway:
-          'Replace OFFSET with cursor-based pagination (WHERE id > last_seen_id) for consistent fast performance regardless of page number.',
+          'Replace OFFSET with cursor-based pagination (WHERE id > last_seen_id) for consistent fast performance.',
       },
       {
-        title: 'Putting It All Together: An Optimization Checklist',
+        title: 'Optimization Checklist',
         content:
-          "When a query is slow, work through this checklist:\n\n1. Run EXPLAIN ANALYZE — identify the bottleneck (Seq Scan? Sort? Nested Loop?).\n2. Check for missing indexes on WHERE, JOIN, and ORDER BY columns.\n3. Replace SELECT * with specific columns.\n4. Check for N+1 queries in application code.\n5. Ensure statistics are up to date (ANALYZE).\n6. Look for functions on indexed columns (rewrite to range conditions).\n7. Consider covering indexes for frequently-run queries.\n8. Switch from OFFSET to cursor-based pagination.\n9. Review if the query can be simplified (unnecessary subqueries, redundant JOINs).\n10. For really complex queries, consider materialized views to pre-compute results.",
+          'When a query is slow, work through this checklist systematically.',
+        flow: [
+          { label: 'EXPLAIN ANALYZE', description: 'Identify the bottleneck', icon: '🔍' },
+          { label: 'Check indexes', description: 'WHERE/JOIN/ORDER BY columns', icon: '📇' },
+          { label: 'Fix SELECT *', description: 'List specific columns', icon: '✂️' },
+          { label: 'Find N+1', description: 'Replace with JOINs', icon: '🔗' },
+          { label: 'ANALYZE tables', description: 'Update statistics', icon: '📊' },
+          { label: 'Cursor pagination', description: 'Replace OFFSET', icon: '📄' },
+        ],
         keyTakeaway:
-          'Query optimization is systematic: EXPLAIN first, then fix the biggest bottleneck, repeat.',
+          'Query optimization is systematic: EXPLAIN first, fix the biggest bottleneck, repeat.',
       },
     ],
     commonMistakes: [
       {
         mistake: 'Optimizing without measuring first',
         explanation:
-          'Always run EXPLAIN ANALYZE before changing anything. Your assumption about what is slow might be wrong. Data-driven optimization beats guessing.',
+          'Always run EXPLAIN ANALYZE before changing anything. Your assumption about what is slow might be wrong.',
       },
       {
         mistake: 'Adding indexes without considering write performance',
         explanation:
-          'Every index slows down INSERT, UPDATE, and DELETE operations. On write-heavy tables, adding too many indexes can make writes the new bottleneck.',
+          'Every index slows down INSERT/UPDATE/DELETE. On write-heavy tables, too many indexes make writes the bottleneck.',
       },
       {
         mistake: 'Using OFFSET for deep pagination',
         explanation:
-          'OFFSET 100000 LIMIT 20 forces the database to read and discard 100,000 rows. Use cursor-based pagination (WHERE id > last_id) instead.',
+          'OFFSET 100000 LIMIT 20 reads and discards 100K rows. Use cursor-based pagination.',
       },
       {
-        mistake: 'Applying functions to indexed columns in WHERE clauses',
+        mistake: 'Applying functions to indexed columns in WHERE',
         explanation:
-          'WHERE LOWER(email) = \'alice@example.com\' cannot use a normal index on email. Either create a functional index on LOWER(email) or store emails in lowercase.',
+          'WHERE LOWER(email) = \'alice@example.com\' cannot use a normal index. Create a functional index or store lowercase.',
       },
     ],
     practiceQuestions: [
-      'You run EXPLAIN ANALYZE and see a Seq Scan on a 10-million-row table. What is likely the problem and how do you fix it?',
-      'What is the N+1 query problem? Show an example in code and its fix.',
-      'Explain why WHERE YEAR(created_at) = 2024 is slower than WHERE created_at >= \'2024-01-01\' AND created_at < \'2025-01-01\'.',
-      'What is cursor-based pagination and why is it faster than OFFSET-based pagination?',
-      'Design a covering index for this query: SELECT title, author FROM books WHERE category = \'fiction\' ORDER BY published_date DESC.',
+      'You see a Seq Scan on a 10M-row table. What is the problem and how do you fix it?',
+      'What is the N+1 problem? Show an example and its fix.',
+      'Why is WHERE YEAR(created_at) = 2024 slower than a range condition?',
+      'What is cursor-based pagination and why is it faster?',
+      'Design a covering index for: SELECT title, author FROM books WHERE category = \'fiction\' ORDER BY published_date DESC.',
     ],
   },
 
@@ -1003,44 +1282,89 @@ export const databaseLessons: Record<
       {
         title: 'The Library Branches Analogy',
         content:
-          "Imagine a city library that has grown so popular it can't fit all its books in one building. The solution? Open multiple branches:\n\n- Branch A holds books with authors A-M.\n- Branch B holds books with authors N-Z.\n\nNow each branch handles half the traffic and stores half the books. If one branch is busy, the other is still fast. If one branch floods, the other still works.\n\nSharding is exactly this concept applied to databases. Instead of one server holding all the data, you split (shard) the data across multiple servers. Each server holds a subset of the total data and handles queries for only its subset.",
+          'A city library too popular for one building opens branches: Branch A holds authors A-M, Branch B holds N-Z. Each handles half the traffic and stores half the books.',
         analogy:
-          'One giant library = one database server. Multiple library branches, each holding a portion of books = a sharded database. The catalog system that tells you which branch has your book = the shard routing logic.',
+          'One giant library = one database server. Multiple branches each holding a portion = a sharded database. The catalog that tells you which branch = shard routing logic.',
+        diagram: `┌─────────────────────────────────────────────┐\n│              Application Layer              │\n│         ┌──────────────────────┐            │\n│         │   Shard Router       │            │\n│         │  hash(user_id) % N   │            │\n│         └──┬──────┬──────┬────┘            │\n│            │      │      │                  │\n│      ┌─────┘  ┌───┘  ┌───┘                 │\n│      ▼        ▼      ▼                     │\n│  ┌────────┐┌────────┐┌────────┐            │\n│  │Shard 0 ││Shard 1 ││Shard 2 │            │\n│  │Users   ││Users   ││Users   │            │\n│  │0-999K  ││1M-1.9M ││2M-2.9M │            │\n│  └────────┘└────────┘└────────┘            │\n└─────────────────────────────────────────────┘`,
         keyTakeaway:
-          'Sharding splits a database across multiple servers so that each handles only a portion of the data and traffic.',
+          'Sharding splits a database across multiple servers so each handles only a portion of the data and traffic.',
       },
       {
         title: 'Why Shard? Vertical Scaling Has Limits',
         content:
-          "When your single database server gets slow, you have two options:\n\n**Vertical scaling (scale up)**: Buy a bigger server with more CPU, RAM, and disk. This works up to a point, but the biggest server in the world still has limits — and it gets exponentially expensive.\n\n**Horizontal scaling (scale out)**: Add more servers and split the data across them. This is sharding. There is no upper limit — you can keep adding servers.\n\nSharding becomes necessary when:\n- Your table has billions of rows and queries are slow despite indexes.\n- You are hitting I/O or CPU limits on a single machine.\n- You need geographic distribution (data in the US stays on US servers, EU data on EU servers).\n- You need fault isolation (one shard going down doesn't take down everything).",
+          'When your single server gets slow, you can scale up (bigger machine) or scale out (more machines). Scaling up has a ceiling. Scaling out (sharding) does not.',
+        comparison: {
+          leftTitle: 'Vertical (Scale Up)',
+          rightTitle: 'Horizontal (Shard)',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Buy bigger server', right: 'Add more servers' },
+            { left: 'Has an upper limit', right: 'No upper limit' },
+            { left: 'Simple — no code changes', right: 'Complex — routing, cross-shard queries' },
+            { left: 'Exponentially expensive', right: 'Linear cost scaling' },
+            { left: 'Single point of failure', right: 'Fault isolation per shard' },
+          ],
+        },
         keyTakeaway:
-          'Shard when a single server cannot handle the load. Vertical scaling has limits; horizontal scaling (sharding) does not.',
+          'Shard when a single server cannot handle the load. Vertical scaling has limits; horizontal scaling does not.',
       },
       {
         title: 'Horizontal vs Vertical Sharding',
         content:
-          "There are two ways to split data:\n\n**Horizontal sharding (most common)**: Split ROWS across servers. All servers have the same table schema, but each holds a different subset of rows. Example: Server A has users 1-1,000,000, Server B has users 1,000,001-2,000,000.\n\n**Vertical sharding**: Split COLUMNS (tables) across servers. Each server holds different tables. Example: The users table lives on Server A, the orders table on Server B, the analytics data on Server C.\n\nVertical sharding is simpler but limited — eventually your biggest table still won't fit on one server. Horizontal sharding is more complex but truly scalable.",
+          'There are two ways to split data. Horizontal splits rows. Vertical splits tables.',
+        comparison: {
+          leftTitle: 'Horizontal Sharding',
+          rightTitle: 'Vertical Sharding',
+          items: [
+            { left: 'Split ROWS across servers', right: 'Split TABLES across servers' },
+            { left: 'Same schema on all shards', right: 'Different tables on each server' },
+            { left: 'Truly scalable', right: 'Limited by largest table' },
+            { left: 'Example: users 1-1M on S1, 1M-2M on S2', right: 'Example: users on S1, orders on S2' },
+          ],
+        },
         analogy:
-          'Horizontal sharding = a department store where each floor sells the same types of items but for different customer groups (Floor 1: customers A-M, Floor 2: customers N-Z). Vertical sharding = different stores in a mall (one for clothes, one for electronics, one for food).',
+          'Horizontal = a department store where each floor serves different customer groups. Vertical = different stores in a mall (clothes, electronics, food).',
         keyTakeaway:
-          'Horizontal sharding splits rows across servers. Vertical sharding splits tables across servers. Horizontal is more scalable.',
+          'Horizontal sharding splits rows. Vertical sharding splits tables. Horizontal is more scalable.',
       },
       {
-        title: 'Shard Keys — How to Decide Where Data Goes',
+        title: 'Shard Keys — Where Does Data Go?',
         content:
-          "The shard key is the column that determines which shard holds a given row. Choosing the right shard key is the most important decision in sharding.\n\nA good shard key:\n- Distributes data evenly across shards (no \"hot\" shards).\n- Groups related data on the same shard (queries don't need to cross shards).\n- Is commonly used in queries (so routing is simple).\n\nCommon choices:\n- **user_id** — All of a user's data on one shard. Great for user-centric apps.\n- **geographic region** — US data on US shard, EU data on EU shard. Good for compliance.\n- **tenant_id** — In multi-tenant SaaS, each tenant's data on one shard.",
+          'The shard key is the column that determines which shard holds a given row. Choosing the right one is the most critical decision.',
+        bullets: [
+          'A good shard key **distributes data evenly** (no hot shards).',
+          'It **groups related data** on the same shard (queries stay local).',
+          'It is **commonly used in queries** (simple routing).',
+        ],
+        cards: [
+          { title: 'user_id', description: 'All of a user\'s data on one shard. Great for user-centric apps.', icon: '👤', color: 'blue' },
+          { title: 'geographic region', description: 'US data on US shard, EU on EU. Good for compliance.', icon: '🌍', color: 'emerald' },
+          { title: 'tenant_id', description: 'Multi-tenant SaaS: each tenant on one shard.', icon: '🏢', color: 'purple' },
+          { title: 'hash(id)', description: 'Even distribution via hashing. Kills range queries though.', icon: '#️⃣', color: 'amber' },
+        ],
         keyTakeaway:
           'The shard key determines data placement. Choose one that distributes evenly and keeps related queries on the same shard.',
       },
       {
         title: 'Hash Sharding vs Range Sharding',
         content:
-          "Once you have picked a shard key, you need a strategy for mapping key values to shards.\n\n**Hash sharding**: Apply a hash function to the shard key and use modulo to pick the shard. Hash(user_id) % num_shards = shard_number. This distributes data very evenly but makes range queries impossible (you can't ask for \"all users with ID 100-200\" efficiently).\n\n**Range sharding**: Divide the key space into ranges. Shard 1 holds IDs 1-1M, Shard 2 holds 1M-2M, etc. This supports range queries beautifully but can create hot spots if new data clusters at one end (all new users go to the highest shard).",
+          'Two strategies for mapping key values to shards. Each has distinct trade-offs.',
+        comparison: {
+          leftTitle: 'Hash Sharding',
+          rightTitle: 'Range Sharding',
+          items: [
+            { left: 'hash(key) % N = shard', right: 'Key ranges: 1-1M on S1, 1M-2M on S2' },
+            { left: 'Even distribution', right: 'Can create hot spots' },
+            { left: 'Range queries impossible', right: 'Range queries efficient' },
+            { left: 'Adding shards = major reshuffle', right: 'Adding shards = split one range' },
+          ],
+        },
         code: [
           {
             language: 'python',
             label: 'Hash sharding example',
-            code: `import hashlib\n\ndef get_shard(user_id: int, num_shards: int) -> int:\n    """Determine which shard holds this user's data."""\n    hash_val = int(hashlib.md5(str(user_id).encode()).hexdigest(), 16)\n    return hash_val % num_shards\n\n# With 4 shards:\nprint(get_shard(12345, 4))  # -> 2\nprint(get_shard(12346, 4))  # -> 0  (different shard)\nprint(get_shard(12347, 4))  # -> 3  (different shard)\n# Data is spread evenly across shards`,
+            code: `import hashlib\n\ndef get_shard(user_id: int, num_shards: int) -> int:\n    """Determine which shard holds this user's data."""\n    hash_val = int(hashlib.md5(\n        str(user_id).encode()\n    ).hexdigest(), 16)\n    return hash_val % num_shards\n\n# With 4 shards:\nprint(get_shard(12345, 4))  # -> 2\nprint(get_shard(12346, 4))  # -> 0  (different shard)\nprint(get_shard(12347, 4))  # -> 3  (spread evenly)`,
           },
         ],
         keyTakeaway:
@@ -1049,55 +1373,62 @@ export const databaseLessons: Record<
       {
         title: 'The Challenges of Sharding',
         content:
-          "Sharding solves the scale problem but introduces significant complexity:\n\n**Cross-shard queries**: If you need data from multiple shards (e.g., \"total revenue across all users\"), the query must fan out to every shard, run independently, and merge results. This is much slower than a single-server query.\n\n**Cross-shard transactions**: ACID transactions across shards require distributed transaction protocols (like 2-phase commit), which are slow and complex.\n\n**Resharding**: When you add more servers, you need to redistribute data. With hash sharding, changing num_shards means almost every row moves. Consistent hashing reduces this problem.\n\n**Operational complexity**: You now have N databases to back up, monitor, upgrade, and debug instead of 1.\n\n**Referential integrity**: Foreign keys cannot span shards. You lose the database's ability to enforce relationships across shards.",
+          'Sharding solves scale but introduces significant complexity.',
+        bullets: [
+          '**Cross-shard queries** — Must fan out to every shard and merge results. Much slower.',
+          '**Cross-shard transactions** — Require distributed protocols (2-phase commit). Slow and complex.',
+          '**Resharding** — Adding servers means redistributing data. Consistent hashing helps.',
+          '**Operational overhead** — N databases to back up, monitor, upgrade, and debug.',
+          '**No foreign keys** across shards. Referential integrity must be enforced in application code.',
+        ],
         analogy:
-          'Sharding is like splitting a puzzle across multiple tables. Each table can work on its piece fast, but seeing the full picture requires walking to every table and combining what you see.',
+          'Sharding is like splitting a puzzle across multiple tables. Each table works fast, but seeing the full picture requires walking to every table.',
         keyTakeaway:
-          'Sharding adds complexity: cross-shard queries, distributed transactions, resharding, and operational overhead. Only shard when you must.',
+          'Sharding adds complexity: cross-shard queries, distributed transactions, resharding. Only shard when you must.',
       },
       {
         title: 'Sharding in Practice',
         content:
-          "Let's see how popular systems handle sharding:",
+          'Sharding can be done at the database level (Citus, Vitess) or in application code.',
         code: [
           {
             language: 'sql',
-            label: 'PostgreSQL with Citus extension (sharding example)',
-            code: `-- Citus turns PostgreSQL into a distributed database\n-- Create a distributed table sharded by customer_id\nSELECT create_distributed_table('orders', 'customer_id');\n\n-- Queries that include customer_id are routed to one shard\nSELECT * FROM orders WHERE customer_id = 42;\n-- -> only hits the shard containing customer 42\n\n-- Queries without customer_id fan out to all shards\nSELECT COUNT(*) FROM orders WHERE amount > 100;\n-- -> runs on all shards, results are combined`,
+            label: 'PostgreSQL with Citus extension',
+            code: `-- Citus turns PostgreSQL into a distributed database\nSELECT create_distributed_table('orders', 'customer_id');\n\n-- Queries with customer_id route to one shard\nSELECT * FROM orders WHERE customer_id = 42;\n\n-- Queries without it fan out to all shards\nSELECT COUNT(*) FROM orders WHERE amount > 100;`,
           },
           {
             language: 'javascript',
             label: 'Application-level sharding in Node.js',
-            code: `const shards = [\n  new Pool({ host: 'shard0.db.internal', database: 'myapp' }),\n  new Pool({ host: 'shard1.db.internal', database: 'myapp' }),\n  new Pool({ host: 'shard2.db.internal', database: 'myapp' }),\n  new Pool({ host: 'shard3.db.internal', database: 'myapp' }),\n];\n\nfunction getShard(userId: number): Pool {\n  const shardIndex = userId % shards.length;\n  return shards[shardIndex];\n}\n\nasync function getUser(userId: number) {\n  const shard = getShard(userId);\n  const result = await shard.query(\n    'SELECT * FROM users WHERE id = $1',\n    [userId]\n  );\n  return result.rows[0];\n}`,
+            code: `const shards = [\n  new Pool({ host: 'shard0.db.internal' }),\n  new Pool({ host: 'shard1.db.internal' }),\n  new Pool({ host: 'shard2.db.internal' }),\n];\n\nfunction getShard(userId: number): Pool {\n  return shards[userId % shards.length];\n}\n\nasync function getUser(userId: number) {\n  const shard = getShard(userId);\n  const { rows } = await shard.query(\n    'SELECT * FROM users WHERE id = $1', [userId]\n  );\n  return rows[0];\n}`,
           },
         ],
         keyTakeaway:
-          'Sharding can be done at the database level (Citus, Vitess) or at the application level. Database-level is easier to manage.',
+          'Sharding can be database-level (Citus, Vitess) or application-level. Database-level is easier to manage.',
       },
     ],
     commonMistakes: [
       {
         mistake: 'Sharding too early',
         explanation:
-          'Sharding adds enormous complexity. Most applications never need it. Exhaust vertical scaling, read replicas, caching, and query optimization first.',
+          'Sharding adds enormous complexity. Exhaust vertical scaling, read replicas, caching, and query optimization first.',
       },
       {
         mistake: 'Choosing a bad shard key',
         explanation:
-          'A shard key with low cardinality (like country) creates uneven shards. A shard key not used in queries forces cross-shard lookups. The most common queries should include the shard key.',
+          'Low cardinality (like country) creates uneven shards. A key not used in queries forces cross-shard lookups.',
       },
       {
         mistake: 'Not planning for resharding',
         explanation:
-          'If you start with 4 shards and grow to need 8, moving data is painful. Use consistent hashing from the start to minimize data movement during resharding.',
+          'Growing from 4 to 8 shards is painful. Use consistent hashing from the start.',
       },
     ],
     practiceQuestions: [
-      'Explain the difference between horizontal and vertical sharding with an example.',
-      'You are building a multi-tenant SaaS app. What would you choose as the shard key and why?',
-      'What are the trade-offs between hash sharding and range sharding?',
-      'Why are cross-shard JOINs problematic? How would you work around them?',
-      'At what point should you consider sharding your database?',
+      'Explain horizontal vs vertical sharding with an example.',
+      'You are building a multi-tenant SaaS app. What shard key and why?',
+      'Trade-offs between hash sharding and range sharding?',
+      'Why are cross-shard JOINs problematic?',
+      'At what point should you consider sharding?',
     ],
   },
 
@@ -1109,101 +1440,145 @@ export const databaseLessons: Record<
       {
         title: 'Why Keep Copies?',
         content:
-          "Imagine you have a single copy of an important document. If you lose it — fire, flood, coffee spill — it is gone forever. The obvious solution: make copies and store them in different locations.\n\nDatabase replication applies this same principle. Instead of running one database server, you run multiple servers that contain copies of the same data. This gives you:\n\n**Availability**: If one server goes down, another can take over immediately.\n**Read performance**: Read queries can be spread across replicas instead of hammering one server.\n**Geographic proximity**: Put replicas near your users — US users read from a US server, EU users from an EU server.\n**Backup**: Replicas serve as live backups, always up to date.",
+          'A single copy of an important document can be lost to fire, flood, or coffee. Database replication maintains copies on multiple servers.',
+        cards: [
+          { title: 'Availability', description: 'If one server dies, another takes over immediately.', icon: '🟢', color: 'emerald' },
+          { title: 'Read Performance', description: 'Spread read queries across replicas instead of hammering one server.', icon: '⚡', color: 'blue' },
+          { title: 'Geographic Proximity', description: 'US users read from US server, EU from EU server.', icon: '🌍', color: 'purple' },
+          { title: 'Live Backup', description: 'Replicas are always up-to-date backups of your data.', icon: '💾', color: 'amber' },
+        ],
         analogy:
-          'Replication is like having backup keys for your house stored at a friend\'s place, your office, and your parents\' house. If you lose one, you can always get in.',
+          'Replication is like having backup keys for your house at a friend\'s place, your office, and your parents\' house.',
         keyTakeaway:
           'Replication maintains copies of your data on multiple servers for availability, performance, and safety.',
       },
       {
-        title: 'Leader-Follower (Master-Slave) Replication',
+        title: 'Leader-Follower Replication',
         content:
-          "The most common replication setup. One server is the leader (master) and one or more servers are followers (replicas).\n\n**Writes** go only to the leader. The leader then sends the changes to all followers.\n**Reads** can go to any server — the leader or any follower.\n\nThis is simple and works great when your workload is mostly reads (which is true for most web applications — reading a social media feed happens 100x more than posting).\n\nThe downside: the leader is a single point of failure for writes. If it goes down, no writes can happen until a follower is promoted to be the new leader.",
+          'The most common setup. One server is the leader (master). Writes go only to the leader. The leader sends changes to followers. Reads can go to any server.',
+        diagram: `┌──────────────┐\n│   Leader     │  ◄── All WRITES go here\n│  (Primary)   │\n└──┬──────┬────┘\n   │      │        Replication stream\n   ▼      ▼\n┌──────┐ ┌──────┐\n│Follow│ │Follow│  ◄── READS distributed here\n│  #1  │ │  #2  │\n└──────┘ └──────┘`,
         code: [
-          {
-            language: 'sql',
-            label: 'PostgreSQL streaming replication setup (conceptual)',
-            code: `-- On the leader (primary), postgresql.conf:\n-- wal_level = replica\n-- max_wal_senders = 3\n\n-- On each follower (standby), create standby.signal file\n-- and set in postgresql.conf:\n-- primary_conninfo = 'host=leader-ip port=5432 user=replicator'\n\n-- Application routing:\n-- Writes -> leader connection pool\n-- Reads  -> follower connection pool (round-robin)`,
-          },
           {
             language: 'javascript',
             label: 'Read/write splitting in Node.js',
-            code: `const leaderPool = new Pool({ host: 'db-leader.internal' });\nconst followerPool = new Pool({ host: 'db-follower.internal' });\n\nasync function writeQuery(sql: string, params: any[]) {\n  return leaderPool.query(sql, params);  // writes go to leader\n}\n\nasync function readQuery(sql: string, params: any[]) {\n  return followerPool.query(sql, params);  // reads go to follower\n}`,
+            code: `const leaderPool = new Pool({ host: 'db-leader.internal' });\nconst followerPool = new Pool({ host: 'db-follower.internal' });\n\nasync function writeQuery(sql: string, params: any[]) {\n  return leaderPool.query(sql, params);  // writes to leader\n}\n\nasync function readQuery(sql: string, params: any[]) {\n  return followerPool.query(sql, params); // reads from follower\n}`,
           },
         ],
         keyTakeaway:
-          'Leader-follower: all writes go to the leader, reads are distributed across followers. Simple and effective for read-heavy workloads.',
+          'Leader-follower: all writes to the leader, reads distributed across followers. Simple and effective for read-heavy workloads.',
       },
       {
         title: 'Synchronous vs Asynchronous Replication',
         content:
-          "When the leader sends changes to followers, should it wait for confirmation or fire-and-forget?\n\n**Synchronous replication**: The leader waits for at least one follower to confirm it received and wrote the change before telling the client \"success.\" This guarantees no data loss if the leader dies — the follower has the latest data. But it is slower because every write waits for a network round-trip.\n\n**Asynchronous replication**: The leader confirms the write immediately and sends changes to followers in the background. This is faster but introduces replication lag — the followers might be seconds behind the leader. If the leader dies before sending the change, that data is lost.\n\nMost production systems use **semi-synchronous**: one follower is synchronous (for safety), the rest are asynchronous (for speed).",
+          'Should the leader wait for followers to confirm receipt of changes?',
+        comparison: {
+          leftTitle: 'Synchronous',
+          rightTitle: 'Asynchronous',
+          items: [
+            { left: 'Leader waits for follower confirmation', right: 'Leader confirms immediately' },
+            { left: 'No data loss on leader failure', right: 'May lose recent writes on failure' },
+            { left: 'Slower writes (network round-trip)', right: 'Faster writes' },
+            { left: 'Good for critical data', right: 'Good for high throughput' },
+          ],
+        },
         analogy:
-          'Synchronous = sending a certified letter (you wait for the receipt). Asynchronous = dropping a letter in the mailbox (fast, but no guarantee it arrived). Semi-synchronous = sending one certified letter to your most important contact and regular mail to the rest.',
+          'Synchronous = certified letter (wait for receipt). Asynchronous = dropping in mailbox (fast, no guarantee). Semi-synchronous = one certified, rest regular.',
         keyTakeaway:
-          'Synchronous replication guarantees no data loss but is slower. Asynchronous is faster but risks losing recent writes during failover.',
+          'Synchronous guarantees no data loss but is slower. Asynchronous is faster but risks losing recent writes during failover.',
       },
       {
-        title: 'Replication Lag and Its Consequences',
+        title: 'Replication Lag and Read-After-Write',
         content:
-          "With asynchronous replication, followers are always slightly behind the leader. This delay is called replication lag. Usually it is milliseconds, but under heavy load it can grow to seconds or even minutes.\n\nReplication lag causes a frustrating user experience:\n\n**Read-after-write inconsistency**: A user posts a comment (write goes to leader), then immediately refreshes the page (read goes to follower). The follower does not have the comment yet — the user thinks it was lost.\n\n**Solutions:**\n1. After a write, read from the leader for a few seconds before switching back to the follower.\n2. Include a timestamp with each write and only read from followers that are caught up to that timestamp.\n3. Use synchronous replication for critical data.",
+          'With async replication, followers lag behind the leader. A user posts a comment, refreshes, and doesn\'t see it because the read hit a lagging follower.',
+        flow: [
+          { label: 'User writes', description: 'Goes to leader', icon: '✍️' },
+          { label: 'User reads', description: 'Goes to follower', icon: '👁️' },
+          { label: 'Follower behind!', description: 'Data not there yet', icon: '⏳' },
+          { label: 'User confused', description: '"Where is my comment?"', icon: '😕' },
+        ],
         code: [
           {
             language: 'javascript',
             label: 'Read-after-write consistency pattern',
-            code: `async function createComment(userId: number, text: string) {\n  // Write to leader\n  await leaderPool.query(\n    'INSERT INTO comments (user_id, text) VALUES ($1, $2)',\n    [userId, text]\n  );\n  // Store the write timestamp for this user\n  await redis.set(\`last-write:\${userId}\`, Date.now(), 'EX', 10);\n}\n\nasync function getComments(userId: number, postId: number) {\n  const lastWrite = await redis.get(\`last-write:\${userId}\`);\n  // If user wrote recently, read from leader to guarantee consistency\n  const pool = (lastWrite && Date.now() - Number(lastWrite) < 5000)\n    ? leaderPool\n    : followerPool;\n  return pool.query(\n    'SELECT * FROM comments WHERE post_id = $1 ORDER BY created_at',\n    [postId]\n  );\n}`,
+            code: `async function createComment(userId: number, text: string) {\n  await leaderPool.query(\n    'INSERT INTO comments (user_id, text) VALUES ($1, $2)',\n    [userId, text]\n  );\n  // Remember this user just wrote something\n  await redis.set(\`last-write:\${userId}\`, Date.now(), 'EX', 10);\n}\n\nasync function getComments(userId: number, postId: number) {\n  const lastWrite = await redis.get(\`last-write:\${userId}\`);\n  // If user wrote recently, read from leader\n  const pool = (lastWrite && Date.now() - Number(lastWrite) < 5000)\n    ? leaderPool\n    : followerPool;\n  return pool.query(\n    'SELECT * FROM comments WHERE post_id = $1', [postId]\n  );\n}`,
           },
         ],
         keyTakeaway:
-          'Replication lag can cause users to not see their own recent writes. Use read-after-write consistency patterns to solve this.',
+          'Replication lag can cause users to not see their own writes. Use read-after-write consistency patterns.',
       },
       {
-        title: 'Multi-Leader (Master-Master) Replication',
+        title: 'Multi-Leader Replication',
         content:
-          "In multi-leader replication, two or more servers accept writes. Each leader replicates its changes to the other leaders.\n\nThis is useful for:\n- **Multi-datacenter deployments**: Each datacenter has a local leader for low-latency writes.\n- **Offline-capable apps**: The local device acts as a leader, syncing when connectivity returns (think Google Docs).\n\nThe big problem: **write conflicts**. If two leaders modify the same row at the same time, whose version wins? Conflict resolution strategies include:\n- Last-write-wins (using timestamps) — simple but can lose data.\n- Application-level resolution — let the app decide (like merge conflicts in Git).\n- CRDTs (Conflict-free Replicated Data Types) — data structures designed to merge automatically.",
+          'Two or more servers accept writes. Each replicates to the others. Useful for multi-datacenter or offline-first apps. The big problem: write conflicts.',
+        bullets: [
+          '**Last-write-wins** — Simple but can lose data.',
+          '**Application-level resolution** — Like merge conflicts in Git.',
+          '**CRDTs** — Data structures designed to merge automatically.',
+        ],
         analogy:
-          'Multi-leader is like two people editing the same Google Doc simultaneously. Most of the time it works, but occasionally they edit the same sentence and the system has to figure out which version to keep.',
+          'Multi-leader is like two people editing the same Google Doc. Usually works, but occasionally they edit the same sentence and the system must choose.',
         keyTakeaway:
           'Multi-leader allows writes at multiple locations but introduces write conflicts that require a resolution strategy.',
       },
       {
-        title: 'Failover — What Happens When the Leader Dies?',
+        title: 'Failover — When the Leader Dies',
         content:
-          "When the leader server crashes, a follower must be promoted to become the new leader. This process is called failover.\n\n**Automatic failover** steps:\n1. **Detection**: A monitoring system detects the leader is unresponsive (usually via missed heartbeats).\n2. **Election**: The followers agree on which one becomes the new leader (typically the one with the most up-to-date data).\n3. **Reconfiguration**: The application is pointed to the new leader. Other followers start replicating from the new leader.\n\n**Dangers of failover:**\n- If using async replication, the new leader might be missing recent writes. Those writes are lost.\n- Split-brain: both the old leader (which recovered) and the new leader accept writes. Data diverges.\n- Failover can take 10-60 seconds, during which writes are blocked.\n\nManaged databases (like AWS RDS, Google Cloud SQL) handle failover automatically.",
+          'When the leader crashes, a follower must be promoted. This is failover.',
+        flow: [
+          { label: 'Detection', description: 'Missed heartbeats detected', icon: '💔' },
+          { label: 'Election', description: 'Most up-to-date follower chosen', icon: '🗳️' },
+          { label: 'Promotion', description: 'Follower becomes new leader', icon: '👑' },
+          { label: 'Reconfiguration', description: 'App points to new leader', icon: '🔄' },
+        ],
+        bullets: [
+          '**Data loss risk** — async follower may be missing recent writes.',
+          '**Split-brain** — old leader recovers and both accept writes. Data diverges.',
+          '**Downtime** — Failover takes 10-60 seconds. Writes blocked during this time.',
+          'Managed databases (AWS RDS, Cloud SQL) handle this automatically.',
+        ],
         keyTakeaway:
-          'Failover promotes a follower to leader when the leader fails. It can cause brief downtime and potentially lose recent async writes.',
+          'Failover promotes a follower to leader. It can cause brief downtime and potentially lose recent async writes.',
       },
       {
-        title: 'Replication in Practice',
+        title: 'Replication Strategy by Scale',
         content:
-          "Here is how you might think about replication for a real application:\n\n**Small app (< 1,000 users)**: Single server is fine. Use automated backups.\n\n**Medium app (1K-100K users)**: One leader + one or two async followers. Followers handle read traffic. Managed database service handles failover.\n\n**Large app (100K+ users)**: One leader + multiple followers across availability zones. Semi-synchronous replication. Read-after-write consistency for user-facing data.\n\n**Global app**: Multi-leader across regions (or use a globally distributed database like CockroachDB or Spanner). Local reads and writes for low latency.",
+          'Match your replication setup to your application size.',
+        table: {
+          headers: ['Scale', 'Strategy', 'Details'],
+          rows: [
+            ['< 1K users', 'Single server', 'Automated backups only'],
+            ['1K-100K users', 'Leader + 1-2 followers', 'Managed DB, async replication'],
+            ['100K+ users', 'Leader + multi-AZ followers', 'Semi-sync, read-after-write consistency'],
+            ['Global app', 'Multi-leader or Spanner', 'Local reads/writes per region'],
+          ],
+        },
         keyTakeaway:
-          'Start simple (single server with backups), add leader-follower replication as you grow, and go multi-leader only for global or offline use cases.',
+          'Start simple (single server), add leader-follower as you grow, go multi-leader only for global or offline use cases.',
       },
     ],
     commonMistakes: [
       {
         mistake: 'Treating replication as a backup strategy',
         explanation:
-          'Replication protects against server failure, not data corruption. If you accidentally DELETE all rows, that delete replicates to all followers instantly. You still need point-in-time recovery backups.',
+          'If you DELETE all rows, that replicates to all followers. You still need point-in-time recovery backups.',
       },
       {
-        mistake: 'Not accounting for replication lag in application code',
+        mistake: 'Not accounting for replication lag',
         explanation:
-          'If a user writes data and immediately reads it from a follower, they may not see their own write. Always implement read-after-write consistency for user-facing operations.',
+          'A user writes data and reads from a lagging follower — they don\'t see their own write. Implement read-after-write consistency.',
       },
       {
-        mistake: 'Using multi-leader replication without a conflict resolution strategy',
+        mistake: 'Multi-leader without a conflict resolution strategy',
         explanation:
-          'If two leaders modify the same row, you must have a clear strategy for which write wins. Without one, data silently diverges.',
+          'If two leaders modify the same row, you need a clear strategy for which write wins.',
       },
     ],
     practiceQuestions: [
-      'Explain the difference between synchronous and asynchronous replication. When would you use each?',
-      'What is replication lag, and how does it affect the user experience? How would you mitigate it?',
-      'Describe the steps of automatic failover when a leader database server goes down.',
-      'Why is replication not a substitute for backups? Give a scenario where replication alone fails.',
-      'Your app has users in the US and Europe. What replication topology would you recommend?',
+      'Difference between synchronous and asynchronous replication?',
+      'What is replication lag and how do you mitigate it?',
+      'Describe the steps of automatic failover.',
+      'Why is replication not a substitute for backups?',
+      'Your app has users in the US and Europe. What replication topology?',
     ],
   },
 
@@ -1215,81 +1590,111 @@ export const databaseLessons: Record<
       {
         title: 'The Restaurant Chain Analogy',
         content:
-          "Imagine you own a chain of restaurants across different cities, and they all share the same menu.\n\n**Consistency**: Every restaurant always has the exact same menu. When you add a new dish in New York, it instantly appears on the menu in Los Angeles.\n\n**Availability**: Every restaurant is always open and serving food. No matter which location a customer walks into, they get served.\n\n**Partition Tolerance**: Even if the phone lines between restaurants go down (a network partition), each restaurant keeps operating.\n\nThe CAP theorem says: if the phone lines go down (partition), you must choose between consistency (stop serving until menus can sync) and availability (keep serving, even if menus might be different).\n\nYou cannot have all three simultaneously during a network failure.",
+          'You own restaurants across cities sharing the same menu. Consistency = same menu everywhere. Availability = every location always open. Partition Tolerance = keeps working even if phone lines between locations go down.',
         analogy:
-          'CAP is like the project management triangle (fast, cheap, good — pick two). During a network partition, you pick either consistency or availability.',
+          'CAP is like the project management triangle (fast, cheap, good — pick two). During a network partition, pick either consistency or availability.',
+        diagram: `         Consistency (C)\n              /\\\n             /  \\\n            /    \\\n           / CP  \\\n          /______\\\n         /   CA   \\\n        /____||____\\\n       Availability   Partition\n           (A)      Tolerance (P)\n\n  During a partition: choose C or A\n  (P is mandatory in distributed systems)`,
         keyTakeaway:
-          'The CAP theorem states that during a network partition, a distributed system must choose between consistency and availability.',
+          'The CAP theorem: during a network partition, a distributed system must choose between consistency and availability.',
       },
       {
         title: 'What is a Network Partition?',
         content:
-          "A network partition happens when nodes in a distributed system cannot communicate with each other. The network splits into two or more groups that can communicate internally but not with each other.\n\nThis is not theoretical — it happens in production all the time:\n- A network cable gets cut.\n- A cloud availability zone has an outage.\n- A misconfigured firewall blocks traffic.\n- A switch fails.\n\nThe \"P\" in CAP is not optional. In any distributed system, network partitions WILL happen. So the real choice is between C and A during that partition.",
+          'A network partition happens when nodes cannot communicate. This is not theoretical — it happens in production regularly.',
+        bullets: [
+          'A network cable gets cut or a switch fails.',
+          'A cloud availability zone has an outage.',
+          'A misconfigured firewall blocks traffic.',
+          'The "P" in CAP is NOT optional. Partitions WILL happen.',
+        ],
         analogy:
-          'A network partition is like two office buildings losing their phone connection. People inside each building can still talk, but the buildings cannot talk to each other.',
+          'A network partition is like two office buildings losing their phone connection. People inside each building can still talk, but the buildings cannot communicate.',
         keyTakeaway:
-          'Network partitions are inevitable in distributed systems. The practical choice is: do you sacrifice consistency or availability when one happens?',
+          'Network partitions are inevitable. The practical choice is: sacrifice consistency or availability when one happens?',
       },
       {
-        title: 'CP Systems — Consistency over Availability',
+        title: 'CP vs AP Systems',
         content:
-          "A CP system guarantees that every read returns the most recent write, even during a partition. The trade-off is that some requests may be rejected (system becomes unavailable) during a partition, because the system cannot confirm the data is consistent.\n\n**Examples:**\n- **Traditional relational databases** (PostgreSQL, MySQL with synchronous replication): During a partition, the minority side refuses reads/writes to maintain consistency.\n- **etcd / ZooKeeper**: Used for distributed coordination. They choose consistency because stale data could cause split-brain scenarios.\n- **HBase**: Strongly consistent reads and writes.\n\n**When to choose CP**: Financial systems (account balances must be exact), inventory systems (cannot oversell), distributed locks (must be authoritative).",
+          'During a partition, you must choose: correct data (CP) or always available (AP).',
+        comparison: {
+          leftTitle: 'CP (Consistency)',
+          rightTitle: 'AP (Availability)',
+          items: [
+            { left: 'Every read returns latest write', right: 'Every request gets a response' },
+            { left: 'May reject requests during partition', right: 'May return stale data' },
+            { left: 'PostgreSQL, etcd, ZooKeeper, HBase', right: 'Cassandra, DynamoDB, CouchDB, DNS' },
+            { left: 'Banks, inventory, distributed locks', right: 'Social feeds, shopping carts, IoT' },
+          ],
+        },
         keyTakeaway:
-          'CP systems guarantee correct data but may become unavailable during partitions. Choose for financial and inventory systems.',
+          'CP guarantees correct data but may be unavailable. AP stays available but may return stale data.',
       },
       {
-        title: 'AP Systems — Availability over Consistency',
+        title: 'Eventual Consistency',
         content:
-          'An AP system stays available during a partition — every request gets a response. The trade-off is that different nodes may return different (stale or conflicting) data until the partition heals.\n\n**Examples:**\n- **Cassandra**: Always accepts writes, even during partitions. Consistency is eventually achieved when nodes sync up.\n- **DynamoDB**: Offers both modes but defaults to eventually consistent reads.\n- **CouchDB**: Designed for offline-first apps where availability is paramount.\n- **DNS**: The internet\'s address book is highly available but updates propagate slowly.\n\n**When to choose AP**: Social media feeds (slightly stale is fine), shopping carts (better to accept potentially stale data than to be down), IoT sensor data (availability matters more than perfect accuracy).',
-        keyTakeaway:
-          'AP systems stay available during partitions but may return stale data. Choose when uptime matters more than perfect accuracy.',
-      },
-      {
-        title: 'Eventual Consistency — The AP Compromise',
-        content:
-          "AP systems typically offer eventual consistency: if no new updates are made, all replicas will eventually converge to the same value.\n\n\"Eventually\" usually means milliseconds to seconds. In practice, the data is consistent the vast majority of the time. It is only during and immediately after a partition that inconsistencies appear.\n\nThink of it like this: when you post a photo on social media, some of your friends might see it 2 seconds before others. That is eventual consistency. It is annoying but not catastrophic.\n\nHowever, for a bank balance, eventual consistency is terrifying — you could withdraw money twice from different ATMs before the system catches up.",
+          'AP systems offer eventual consistency: if no new updates are made, all replicas eventually converge. "Eventually" usually means milliseconds to seconds.',
         analogy:
-          'Eventual consistency is like gossip. Tell one person, and eventually everyone in the group knows. It takes time, and for a brief window, some people know different things. For social news, that is fine. For medical records, it is not.',
+          'Eventual consistency is like gossip. Tell one person, eventually everyone knows. For a brief window, some people know different things. Fine for social news. Terrifying for bank balances.',
+        cards: [
+          { title: 'Acceptable For', description: 'Social feeds, product catalogs, analytics, caches', icon: '✅', color: 'emerald' },
+          { title: 'Dangerous For', description: 'Bank balances, inventory counts, medical records', icon: '⚠️', color: 'red' },
+        ],
         keyTakeaway:
-          'Eventual consistency means all replicas converge over time. Acceptable for social media and caches; dangerous for financial data.',
+          'Eventual consistency means replicas converge over time. Acceptable for social media; dangerous for financial data.',
       },
       {
-        title: 'CAP in Practice — It is a Spectrum',
+        title: 'CAP in Practice — A Spectrum',
         content:
-          "The original CAP theorem is a bit simplistic. In practice:\n\n1. **You can tune consistency per operation.** Cassandra lets you choose consistency levels per query. A read can be eventually consistent (fast) or strongly consistent (slower, reads from multiple replicas).\n\n2. **Partitions are rare.** Most of the time, you get both C and A. You only sacrifice one during the brief period of a partition.\n\n3. **PACELC extends CAP.** The PACELC theorem says: during a Partition, choose A or C. Else (normal operation), choose Latency or Consistency. Even without partitions, there is a trade-off between response time and consistency.\n\n4. **Modern databases blur the lines.** Google Spanner claims to be CA using GPS-synchronized clocks. CockroachDB provides strong consistency with high availability. The lines are getting fuzzier as technology improves.",
+          'The original CAP theorem is simplistic. In practice, modern databases offer nuanced trade-offs.',
+        bullets: [
+          '**Tunable per operation** — Cassandra lets you choose consistency level per query.',
+          '**Partitions are rare** — Most of the time you get both C and A.',
+          '**PACELC extends CAP** — During Partition: A or C. Else: Latency or Consistency.',
+          '**Modern DBs blur lines** — Google Spanner claims CA using GPS clocks. CockroachDB provides strong C with high A.',
+        ],
         keyTakeaway:
-          'CAP is a useful mental model, not a strict binary. Modern databases let you tune consistency vs availability on a per-query basis.',
+          'CAP is a useful mental model, not a strict binary. Modern databases let you tune consistency vs availability per query.',
       },
       {
-        title: 'Choosing the Right Trade-off for Your System',
+        title: 'Choosing the Right Trade-off',
         content:
-          "Here is a decision framework:\n\n**Choose CP (consistency) when:**\n- Incorrect data is worse than downtime.\n- Financial transactions, inventory counts, user authentication.\n- You need strong consistency guarantees.\n\n**Choose AP (availability) when:**\n- Downtime is worse than slightly stale data.\n- Social media feeds, product catalogs, analytics dashboards.\n- You can tolerate eventual consistency.\n\n**Real-world architectures often mix both:**\n- User account data: CP (never show wrong balance).\n- Social feed: AP (a few seconds of staleness is fine).\n- Shopping cart: AP (better to let the user shop than show an error).\n- Inventory check at checkout: CP (must be accurate to prevent overselling).",
+          'Most real architectures mix CP and AP strategies depending on the data type.',
+        table: {
+          headers: ['Data Type', 'Strategy', 'Why'],
+          rows: [
+            ['User account/balance', 'CP', 'Never show wrong balance'],
+            ['Social feed', 'AP', 'Few seconds of staleness is fine'],
+            ['Shopping cart', 'AP', 'Better to shop than see an error'],
+            ['Inventory at checkout', 'CP', 'Must be accurate to prevent overselling'],
+            ['Analytics dashboard', 'AP', 'Approximate data is acceptable'],
+          ],
+        },
         keyTakeaway:
-          'Most systems use a mix of CP and AP strategies depending on the data type. Match the consistency model to the business requirement.',
+          'Most systems use a mix of CP and AP strategies. Match the consistency model to the business requirement.',
       },
     ],
     commonMistakes: [
       {
         mistake: 'Thinking CAP means you must always sacrifice one of C, A, or P',
         explanation:
-          'You only sacrifice C or A during a network partition. During normal operation, most systems provide both consistency and availability.',
+          'You only sacrifice C or A during a network partition. Normal operation provides both.',
       },
       {
         mistake: 'Treating CAP as the only distributed systems concern',
         explanation:
-          'CAP is about behavior during partitions. You also need to think about latency, throughput, durability, and operational complexity.',
+          'You also need to think about latency, throughput, durability, and operational complexity.',
       },
       {
         mistake: 'Assuming eventual consistency means "inconsistent"',
         explanation:
-          'Eventual consistency means replicas converge quickly — usually within milliseconds. Data is consistent 99.9% of the time. The window of inconsistency is brief.',
+          'Replicas converge quickly — usually within milliseconds. The inconsistency window is brief.',
       },
     ],
     practiceQuestions: [
-      'Explain the CAP theorem in your own words using a real-world analogy.',
-      'You are building an e-commerce checkout system. Would you choose CP or AP for the inventory check? Why?',
-      'What is the difference between strong consistency and eventual consistency?',
-      'Give an example of a system that chooses availability over consistency. Why is that the right trade-off?',
+      'Explain the CAP theorem with a real-world analogy.',
+      'For an e-commerce checkout inventory check: CP or AP? Why?',
+      'Difference between strong consistency and eventual consistency?',
+      'Give an example of a system that chooses availability over consistency.',
     ],
   },
 
@@ -1301,22 +1706,39 @@ export const databaseLessons: Record<
       {
         title: 'Filing Cabinet vs Big Box Storage',
         content:
-          "Imagine you are organizing a company's records. You have two options:\n\n**Filing cabinet (SQL)**: Every document goes into a specific folder, in a specific drawer, with a specific label. Adding a document requires it to match the folder's format. Searching is fast because everything is organized. But reorganizing the cabinet (changing the schema) is a major project.\n\n**Big box storage (NoSQL)**: Throw documents into labeled boxes. Each box can contain different types of documents. Adding new types is easy — just toss them in. But finding something specific might mean digging through the box, and there are no enforced rules about what goes where.\n\nNeither is universally better. The right choice depends on your data and how you use it.",
+          'SQL = a meticulously organized filing cabinet with enforced rules. NoSQL = flexible storage bins where each bin can hold anything. Neither is universally better.',
         analogy:
-          'SQL = a meticulously organized filing cabinet with enforced rules. NoSQL = flexible storage bins where each bin can hold anything.',
+          'SQL databases are like a strict librarian who insists every book has a catalog card. NoSQL is like a creative studio where you pin things wherever they make sense.',
+        comparison: {
+          leftTitle: 'SQL (Relational)',
+          rightTitle: 'NoSQL (Non-Relational)',
+          items: [
+            { left: 'Fixed schema (tables, rows, columns)', right: 'Flexible schema (documents, key-value, etc.)' },
+            { left: 'ACID transactions', right: 'Eventual consistency (usually)' },
+            { left: 'Complex JOINs and queries', right: 'Simple lookups, denormalized data' },
+            { left: 'Vertical scaling (harder to shard)', right: 'Horizontal scaling (built-in sharding)' },
+            { left: 'Mature ecosystem, decades of tooling', right: 'Modern, purpose-built for specific workloads' },
+          ],
+        },
         keyTakeaway:
           'SQL enforces structure and relationships. NoSQL offers flexibility and scale. Choose based on your data and access patterns.',
       },
       {
         title: 'SQL Databases — Structured and Relational',
         content:
-          "SQL databases (also called relational databases) store data in tables with predefined schemas. Every row follows the same structure. Tables are linked by foreign keys.\n\n**Strengths:**\n- ACID transactions — strong consistency guarantees.\n- Complex queries — JOINs across multiple tables, aggregations, subqueries.\n- Data integrity — foreign keys, constraints, and types enforce correctness.\n- Mature ecosystem — decades of tooling, optimization, and community knowledge.\n\n**Weaknesses:**\n- Schema changes are expensive on large tables (ALTER TABLE can lock the table).\n- Horizontal scaling is hard (sharding relational databases is complex).\n- Not ideal for unstructured or rapidly changing data shapes.\n\n**Popular choices:** PostgreSQL (most feature-rich), MySQL (most widely deployed), SQLite (embedded), SQL Server, Oracle.",
+          'SQL databases store data in tables with predefined schemas. Tables are linked by foreign keys. They excel at complex queries, ACID transactions, and data integrity.',
         code: [
           {
             language: 'sql',
-            label: 'SQL database example — structured e-commerce data',
-            code: `-- Rigid schema, relationships enforced\nCREATE TABLE products (\n  id          SERIAL PRIMARY KEY,\n  name        VARCHAR(200) NOT NULL,\n  price       DECIMAL(10,2) NOT NULL CHECK (price > 0),\n  category_id INT REFERENCES categories(id)\n);\n\n-- Complex query with JOINs\nSELECT c.name AS category, COUNT(*) AS product_count,\n       AVG(p.price) AS avg_price\nFROM products p\nJOIN categories c ON p.category_id = c.id\nGROUP BY c.name\nORDER BY avg_price DESC;`,
+            label: 'SQL: structured e-commerce data',
+            code: `-- Rigid schema, relationships enforced\nCREATE TABLE products (\n  id          SERIAL PRIMARY KEY,\n  name        VARCHAR(200) NOT NULL,\n  price       DECIMAL(10,2) NOT NULL CHECK (price > 0),\n  category_id INT REFERENCES categories(id)\n);\n\n-- Complex query with JOINs\nSELECT c.name AS category, COUNT(*) AS count,\n       AVG(p.price) AS avg_price\nFROM products p\nJOIN categories c ON p.category_id = c.id\nGROUP BY c.name ORDER BY avg_price DESC;`,
           },
+        ],
+        cards: [
+          { title: 'PostgreSQL', description: 'Most feature-rich. JSONB support. Best all-rounder.', icon: '🐘', color: 'blue' },
+          { title: 'MySQL', description: 'Most widely deployed. Great community.', icon: '🐬', color: 'emerald' },
+          { title: 'SQLite', description: 'Embedded, zero-config. Great for mobile/small apps.', icon: '📦', color: 'purple' },
+          { title: 'SQL Server', description: 'Enterprise. .NET ecosystem integration.', icon: '🏢', color: 'amber' },
         ],
         keyTakeaway:
           'SQL databases excel at structured data with relationships, complex queries, and strong consistency.',
@@ -1324,54 +1746,92 @@ export const databaseLessons: Record<
       {
         title: 'NoSQL Databases — Flexible and Scalable',
         content:
-          "NoSQL (Not Only SQL) is an umbrella term for databases that do not use the traditional relational model. There are several types:\n\n**Document stores** (MongoDB, CouchDB): Store JSON-like documents. Each document can have a different shape. Great for content management, user profiles, catalogs.\n\n**Key-value stores** (Redis, DynamoDB): Store data as key-value pairs. Blazing fast for simple lookups. Great for caching, sessions, configuration.\n\n**Column-family stores** (Cassandra, HBase): Organize data by columns rather than rows. Great for time-series, analytics, write-heavy workloads.\n\n**Graph databases** (Neo4j, Neptune): Store nodes and edges. Great for social networks, recommendations, fraud detection.",
+          'NoSQL is an umbrella term for databases that do not use the traditional relational model. Several types exist for different use cases.',
         code: [
           {
             language: 'javascript',
-            label: 'MongoDB document store example — flexible e-commerce data',
-            code: `// Flexible schema — each product can have different attributes\ndb.products.insertMany([\n  {\n    name: "MacBook Pro",\n    price: 2499,\n    category: "Electronics",\n    specs: {\n      cpu: "M3 Pro",\n      ram: "18GB",\n      storage: "512GB SSD"\n    },\n    reviews: [\n      { user: "alice", rating: 5, text: "Amazing laptop" }\n    ]\n  },\n  {\n    name: "Running Shoes",\n    price: 129,\n    category: "Footwear",\n    sizes: [7, 8, 9, 10, 11],  // different shape entirely!\n    color: "blue",\n    material: "mesh"\n  }\n]);\n\n// Query nested data easily\ndb.products.find({ "specs.ram": "18GB" });`,
+            label: 'MongoDB: flexible e-commerce data',
+            code: `// Each product can have different attributes\ndb.products.insertMany([\n  {\n    name: "MacBook Pro", price: 2499,\n    category: "Electronics",\n    specs: { cpu: "M3 Pro", ram: "18GB" },\n    reviews: [{ user: "alice", rating: 5 }]\n  },\n  {\n    name: "Running Shoes", price: 129,\n    category: "Footwear",\n    sizes: [7, 8, 9, 10, 11],  // different shape!\n    color: "blue"\n  }\n]);`,
           },
         ],
+        cards: [
+          { title: 'Document (MongoDB)', description: 'JSON-like docs. Flexible schemas. Content, profiles, catalogs.', icon: '📄', color: 'emerald' },
+          { title: 'Key-Value (Redis)', description: 'Blazing fast lookups. Caching, sessions, config.', icon: '🔑', color: 'blue' },
+          { title: 'Column-Family (Cassandra)', description: 'Write-heavy, time-series, analytics at massive scale.', icon: '📊', color: 'purple' },
+          { title: 'Graph (Neo4j)', description: 'Nodes + edges. Social networks, recommendations, fraud.', icon: '🕸️', color: 'amber' },
+        ],
         keyTakeaway:
-          'NoSQL databases trade structure and consistency for flexibility, horizontal scalability, and varied data models.',
+          'NoSQL trades structure and consistency for flexibility, horizontal scalability, and varied data models.',
       },
       {
         title: 'PostgreSQL vs MongoDB — Head to Head',
         content:
-          "Let's compare the two most popular representatives directly:\n\n| Feature | PostgreSQL | MongoDB |\n|---|---|---|\n| Data model | Tables with rows | Collections with documents |\n| Schema | Fixed (ALTER TABLE to change) | Flexible (any shape per doc) |\n| Query language | SQL | MQL (MongoDB Query Language) |\n| JOINs | Native, powerful | $lookup (limited, slower) |\n| Transactions | Full ACID | Multi-document ACID (since 4.0) |\n| Scaling | Vertical (sharding is hard) | Horizontal (built-in sharding) |\n| Best for | Complex queries, relationships | Flexible schemas, rapid iteration |\n\nInteresting twist: PostgreSQL has excellent JSONB support, letting you store and query JSON documents inside a relational database. This blurs the line significantly — you can get document-like flexibility while keeping SQL power.",
+          'The two most popular representatives compared directly.',
+        table: {
+          headers: ['Feature', 'PostgreSQL', 'MongoDB'],
+          rows: [
+            ['Data model', 'Tables with rows', 'Collections with documents'],
+            ['Schema', 'Fixed (ALTER TABLE)', 'Flexible (any shape)'],
+            ['Query language', 'SQL', 'MQL (MongoDB Query Language)'],
+            ['JOINs', 'Native, powerful', '$lookup (limited, slower)'],
+            ['Transactions', 'Full ACID', 'Multi-doc ACID (since 4.0)'],
+            ['Scaling', 'Vertical (sharding hard)', 'Horizontal (built-in)'],
+          ],
+        },
         code: [
           {
             language: 'sql',
-            label: 'PostgreSQL JSONB — the best of both worlds',
-            code: `-- Store flexible JSON data in PostgreSQL\nCREATE TABLE products (\n  id     SERIAL PRIMARY KEY,\n  name   VARCHAR(200) NOT NULL,\n  price  DECIMAL(10,2) NOT NULL,\n  attrs  JSONB  -- flexible attributes!\n);\n\nINSERT INTO products (name, price, attrs) VALUES\n  ('MacBook', 2499, '{"cpu": "M3", "ram": "18GB"}'),\n  ('Shoes',   129,  '{"sizes": [7,8,9], "color": "blue"}');\n\n-- Query JSON fields\nSELECT name FROM products\nWHERE attrs->>'cpu' = 'M3';\n\n-- Index JSON fields for fast lookups\nCREATE INDEX idx_attrs ON products USING gin(attrs);`,
+            label: 'PostgreSQL JSONB — best of both worlds',
+            code: `-- Store flexible JSON inside a relational DB!\nCREATE TABLE products (\n  id    SERIAL PRIMARY KEY,\n  name  VARCHAR(200) NOT NULL,\n  price DECIMAL(10,2) NOT NULL,\n  attrs JSONB  -- flexible attributes\n);\n\nINSERT INTO products (name, price, attrs) VALUES\n  ('MacBook', 2499, '{"cpu": "M3", "ram": "18GB"}');\n\n-- Query JSON fields\nSELECT name FROM products WHERE attrs->>'cpu' = 'M3';\n\n-- Index JSON for fast lookups\nCREATE INDEX idx_attrs ON products USING gin(attrs);`,
           },
         ],
         keyTakeaway:
-          'PostgreSQL with JSONB often gives you SQL power plus document flexibility, reducing the need for a separate NoSQL database.',
+          'PostgreSQL with JSONB often gives SQL power plus document flexibility, reducing the need for a separate NoSQL database.',
       },
       {
         title: 'When to Choose SQL',
         content:
-          "Choose a relational (SQL) database when:\n\n1. **Your data has clear relationships.** Users have orders, orders have items, items belong to categories. Relational databases model this naturally with foreign keys and JOINs.\n\n2. **You need ACID transactions.** Banking, e-commerce checkout, inventory management — anywhere data correctness is critical.\n\n3. **You run complex analytical queries.** SQL excels at aggregations, window functions, CTEs, and multi-table JOINs.\n\n4. **Your schema is relatively stable.** If you know your data shape upfront and it won't change drastically, a fixed schema prevents bugs.\n\n5. **You need strong consistency.** Every read should return the latest write.\n\nMost web applications should start with PostgreSQL. It handles 90% of use cases and has excellent performance, ecosystem, and flexibility.",
+          'Choose relational databases when your data has clear relationships and you need strong consistency.',
+        bullets: [
+          '**Clear relationships** — Users have orders, orders have items. Foreign keys model this naturally.',
+          '**ACID transactions** — Banking, checkout, inventory management.',
+          '**Complex analytical queries** — Aggregations, window functions, CTEs, multi-table JOINs.',
+          '**Stable schema** — You know the data shape upfront.',
+          '**Strong consistency** — Every read returns the latest write.',
+        ],
         keyTakeaway:
           'Choose SQL for structured, relational data with strong consistency requirements. PostgreSQL is the safe default.',
       },
       {
         title: 'When to Choose NoSQL',
         content:
-          "Choose NoSQL when:\n\n1. **Your data shape varies significantly.** User-generated content, product catalogs with wildly different attributes, IoT sensor data. Document stores handle this naturally.\n\n2. **You need massive horizontal scale.** If you need to write millions of records per second across hundreds of servers, Cassandra or DynamoDB scale better than relational databases.\n\n3. **You need ultra-low latency for simple lookups.** Redis gives you sub-millisecond reads for caching, session storage, and real-time features.\n\n4. **Your data is graph-shaped.** Social networks, recommendation engines, and fraud detection are natural fits for graph databases.\n\n5. **You are iterating rapidly on a prototype.** Document stores let you change the data shape without ALTER TABLE migrations.",
+          'Choose NoSQL when flexibility, scale, or specialized access patterns outweigh SQL\'s advantages.',
+        bullets: [
+          '**Varying data shapes** — User-generated content, catalogs with wildly different attributes.',
+          '**Massive horizontal scale** — Millions of writes/sec across hundreds of servers.',
+          '**Ultra-low latency lookups** — Redis for caching, sessions, real-time features.',
+          '**Graph-shaped data** — Social networks, recommendations, fraud detection.',
+          '**Rapid prototyping** — Change data shape without ALTER TABLE migrations.',
+        ],
         keyTakeaway:
           'Choose NoSQL for flexible schemas, massive write scale, ultra-fast caching, or graph-shaped data.',
       },
       {
-        title: 'The Polyglot Persistence Pattern',
+        title: 'Polyglot Persistence',
         content:
-          "Most mature applications use MULTIPLE databases, each for what it does best. This is called polyglot persistence.\n\nA typical modern stack might look like:\n\n- **PostgreSQL** — Core business data (users, orders, payments). Structured, relational, ACID.\n- **Redis** — Caching, sessions, real-time leaderboards. Ultra-fast key-value.\n- **Elasticsearch** — Full-text search across products or articles. Specialized search engine.\n- **S3** — File storage (images, videos, documents). Object storage.\n- **ClickHouse** — Analytics and reporting. Column-oriented for fast aggregations.\n\nDon't pick one database and force everything into it. Use the right tool for each job.",
+          'Most mature applications use MULTIPLE databases, each for what it does best.',
+        flow: [
+          { label: 'PostgreSQL', description: 'Core data: users, orders, payments', icon: '🐘' },
+          { label: 'Redis', description: 'Caching, sessions, leaderboards', icon: '⚡' },
+          { label: 'Elasticsearch', description: 'Full-text search', icon: '🔍' },
+          { label: 'S3', description: 'File storage (images, videos)', icon: '📁' },
+          { label: 'ClickHouse', description: 'Analytics and reporting', icon: '📊' },
+        ],
         code: [
           {
             language: 'javascript',
-            label: 'Polyglot persistence in a Node.js app',
-            code: `// Different stores for different data\nimport { Pool } from 'pg';           // Core data\nimport Redis from 'ioredis';          // Caching\nimport { Client } from '@elastic/elasticsearch'; // Search\n\nconst pg = new Pool({ connectionString: DATABASE_URL });\nconst redis = new Redis(REDIS_URL);\nconst elastic = new Client({ node: ELASTICSEARCH_URL });\n\nasync function getProduct(id: string) {\n  // Check cache first (Redis)\n  const cached = await redis.get(\`product:\${id}\`);\n  if (cached) return JSON.parse(cached);\n\n  // Cache miss: query PostgreSQL\n  const { rows } = await pg.query(\n    'SELECT * FROM products WHERE id = $1', [id]\n  );\n  const product = rows[0];\n\n  // Store in cache for next time\n  await redis.set(\`product:\${id}\`, JSON.stringify(product), 'EX', 300);\n  return product;\n}\n\nasync function searchProducts(query: string) {\n  // Full-text search via Elasticsearch\n  return elastic.search({\n    index: 'products',\n    body: { query: { match: { name: query } } }\n  });\n}`,
+            label: 'Polyglot persistence in Node.js',
+            code: `import { Pool } from 'pg';           // Core data\nimport Redis from 'ioredis';          // Caching\nimport { Client } from '@elastic/elasticsearch';\n\nasync function getProduct(id: string) {\n  // Check cache first\n  const cached = await redis.get(\`product:\${id}\`);\n  if (cached) return JSON.parse(cached);\n\n  // Cache miss: query PostgreSQL\n  const { rows } = await pg.query(\n    'SELECT * FROM products WHERE id = $1', [id]\n  );\n  // Store in cache for next time\n  await redis.set(\`product:\${id}\`,\n    JSON.stringify(rows[0]), 'EX', 300);\n  return rows[0];\n}`,
           },
         ],
         keyTakeaway:
@@ -1380,32 +1840,32 @@ export const databaseLessons: Record<
     ],
     commonMistakes: [
       {
-        mistake: 'Choosing NoSQL because "it scales better" without understanding the trade-offs',
+        mistake: 'Choosing NoSQL because "it scales better" without understanding trade-offs',
         explanation:
-          'NoSQL trades consistency, transactions, and query power for flexibility and scale. If you need JOINs and ACID, NoSQL will make your life harder, not easier.',
+          'NoSQL trades consistency, transactions, and query power for flexibility and scale. If you need JOINs and ACID, NoSQL makes your life harder.',
       },
       {
-        mistake: 'Using MongoDB as if it were a relational database',
+        mistake: 'Using MongoDB as if it were relational',
         explanation:
-          'If you find yourself doing lots of $lookup (MongoDB\'s JOIN equivalent) and wishing for foreign keys, you probably need a relational database.',
+          'If you do lots of $lookup and wish for foreign keys, you probably need a relational database.',
       },
       {
-        mistake: 'Starting with multiple databases in a brand-new project',
+        mistake: 'Starting with multiple databases in a new project',
         explanation:
-          'Start with one database (usually PostgreSQL). Add specialized stores only when a concrete need arises. Premature polyglot persistence adds operational complexity for no benefit.',
+          'Start with one database (usually PostgreSQL). Add specialized stores when a concrete need arises.',
       },
       {
         mistake: 'Ignoring PostgreSQL JSONB',
         explanation:
-          'PostgreSQL JSONB gives you document-store flexibility inside a relational database. Before adding MongoDB, check if JSONB columns solve your problem.',
+          'JSONB gives document-store flexibility inside a relational database. Check if it solves your problem before adding MongoDB.',
       },
     ],
     practiceQuestions: [
-      'You are building a social media platform. Would you use SQL, NoSQL, or both? Justify for each data type (user profiles, posts, friendships, notifications).',
-      'Explain three scenarios where a document database is a better fit than a relational database.',
+      'Building a social platform. SQL, NoSQL, or both? Justify for each data type.',
+      'Three scenarios where a document database is a better fit than relational.',
       'What is polyglot persistence? Give an example architecture.',
-      'Your team chose MongoDB for an e-commerce platform but is struggling with multi-document transactions and data consistency. What went wrong?',
-      'How does PostgreSQL JSONB blur the line between SQL and NoSQL?',
+      'Your team chose MongoDB for e-commerce but struggles with transactions. What went wrong?',
+      'How does PostgreSQL JSONB blur the SQL/NoSQL line?',
     ],
   },
 
@@ -1417,136 +1877,161 @@ export const databaseLessons: Record<
       {
         title: 'Why Patterns Matter',
         content:
-          "Database design patterns are proven solutions to common problems. Just like software design patterns (Singleton, Observer, etc.), database patterns save you from reinventing the wheel and help you avoid pitfalls that others have already discovered.\n\nIn this lesson, we will cover the patterns you are most likely to encounter in real-world applications and system design interviews:\n\n1. **Star Schema** — The foundation of data warehousing.\n2. **Snowflake Schema** — Star schema's normalized cousin.\n3. **Soft Deletes** — Deleting without actually deleting.\n4. **Event Sourcing** — Storing events instead of current state.\n5. **CQRS** — Separating reads from writes.\n6. **Polymorphic Associations** — One table referencing many types.\n\nEach pattern has clear use cases and trade-offs.",
+          'Database design patterns are proven solutions to common problems, just like software design patterns. They save you from reinventing the wheel.',
+        cards: [
+          { title: 'Star Schema', description: 'Foundation of data warehousing. Central facts + dimension tables.', icon: '⭐', color: 'amber' },
+          { title: 'Soft Deletes', description: 'Delete without deleting. Set deleted_at timestamp instead.', icon: '🗑️', color: 'blue' },
+          { title: 'Event Sourcing', description: 'Store events, not state. Replay to derive current state.', icon: '📜', color: 'purple' },
+          { title: 'CQRS', description: 'Separate read and write models for independent optimization.', icon: '↔️', color: 'emerald' },
+        ],
         keyTakeaway:
-          'Database design patterns are reusable solutions to common data modeling problems. Learn them to make better architectural decisions.',
+          'Database design patterns are reusable solutions to common data modeling problems.',
       },
       {
         title: 'Star Schema — The Data Warehouse Standard',
         content:
-          'The star schema is the most common pattern for analytical databases (data warehouses). It has a central fact table surrounded by dimension tables, forming a star shape.\n\nThe **fact table** holds measurable events (sales, clicks, transactions) with numbers you want to aggregate. The **dimension tables** hold descriptive attributes (product details, customer info, dates) that you want to filter and group by.\n\nThis design is optimized for fast analytical queries — aggregating millions of facts by various dimensions.',
+          'A central fact table (events/measures) surrounded by dimension tables (descriptive attributes). Optimized for fast analytical queries.',
+        diagram: `         ┌──────────┐\n         │dim_date  │\n         └────┬─────┘\n              │\n┌──────────┐  │  ┌────────────┐\n│dim_product├──┼──┤ fact_sales │\n└──────────┘  │  └──┬─────────┘\n              │     │\n         ┌────┴─────┤\n         │dim_cust  │\n         └──────────┘\n\n  Fact = measurable events (sales, clicks)\n  Dimensions = descriptive (product, date, customer)`,
         code: [
           {
             language: 'sql',
-            label: 'Star schema for a retail data warehouse',
-            code: `-- Dimension tables (descriptive attributes)\nCREATE TABLE dim_product (\n  product_key  SERIAL PRIMARY KEY,\n  name         VARCHAR(200),\n  category     VARCHAR(100),\n  brand        VARCHAR(100)\n);\n\nCREATE TABLE dim_customer (\n  customer_key SERIAL PRIMARY KEY,\n  name         VARCHAR(100),\n  city         VARCHAR(100),\n  segment      VARCHAR(50)  -- 'Consumer', 'Business', etc.\n);\n\nCREATE TABLE dim_date (\n  date_key     INT PRIMARY KEY,  -- 20240315\n  full_date    DATE,\n  year         INT,\n  quarter      INT,\n  month        INT,\n  day_of_week  VARCHAR(10)\n);\n\n-- Fact table (measurable events)\nCREATE TABLE fact_sales (\n  sale_id      SERIAL PRIMARY KEY,\n  product_key  INT REFERENCES dim_product(product_key),\n  customer_key INT REFERENCES dim_customer(customer_key),\n  date_key     INT REFERENCES dim_date(date_key),\n  quantity     INT,\n  unit_price   DECIMAL(10,2),\n  total_amount DECIMAL(10,2)\n);\n\n-- Analytical query: sales by category and quarter\nSELECT\n  dp.category,\n  dd.year, dd.quarter,\n  SUM(fs.total_amount) AS revenue,\n  COUNT(*) AS num_sales\nFROM fact_sales fs\nJOIN dim_product dp ON fs.product_key = dp.product_key\nJOIN dim_date dd ON fs.date_key = dd.date_key\nGROUP BY dp.category, dd.year, dd.quarter\nORDER BY dd.year, dd.quarter;`,
+            label: 'Star schema for retail',
+            code: `-- Dimension tables\nCREATE TABLE dim_product (\n  product_key SERIAL PRIMARY KEY,\n  name VARCHAR(200), category VARCHAR(100), brand VARCHAR(100)\n);\n\nCREATE TABLE dim_date (\n  date_key INT PRIMARY KEY,\n  full_date DATE, year INT, quarter INT, month INT\n);\n\n-- Fact table\nCREATE TABLE fact_sales (\n  sale_id SERIAL PRIMARY KEY,\n  product_key INT REFERENCES dim_product,\n  date_key INT REFERENCES dim_date,\n  quantity INT, total_amount DECIMAL(10,2)\n);\n\n-- Analytical query: sales by category and quarter\nSELECT dp.category, dd.year, dd.quarter,\n  SUM(fs.total_amount) AS revenue\nFROM fact_sales fs\nJOIN dim_product dp ON fs.product_key = dp.product_key\nJOIN dim_date dd ON fs.date_key = dd.date_key\nGROUP BY dp.category, dd.year, dd.quarter;`,
           },
         ],
         analogy:
-          'A star schema is like a newspaper article. The fact table is the core story (who, when, how much). The dimension tables are the background details (who is this person, what is this product, what day was it).',
+          'Star schema is like a newspaper article. The fact table is the core story (who, when, how much). Dimension tables are the background details.',
         keyTakeaway:
-          'Star schema: central fact table (events/measures) surrounded by dimension tables (descriptive attributes). Optimized for analytics.',
-      },
-      {
-        title: 'Snowflake Schema — Normalized Star',
-        content:
-          "A snowflake schema is like a star schema, but the dimension tables are further normalized. Instead of one flat dim_product table, you might split it into dim_product, dim_category, and dim_brand.\n\nThis reduces redundancy in dimension tables but makes queries more complex (more JOINs) and can be slower for analytics.\n\n**Star vs Snowflake:**\n- Star: dimension tables are denormalized. Simpler queries, faster reads, some data redundancy.\n- Snowflake: dimension tables are normalized. Less redundancy, more JOINs, slower queries.\n\nIn practice, star schema is preferred for most data warehouses because query speed matters more than a little dimension table redundancy.",
-        code: [
-          {
-            language: 'sql',
-            label: 'Snowflake schema — normalized dimensions',
-            code: `-- Snowflake: dimension tables are further normalized\nCREATE TABLE dim_brand (\n  brand_key SERIAL PRIMARY KEY,\n  brand_name VARCHAR(100)\n);\n\nCREATE TABLE dim_category (\n  category_key SERIAL PRIMARY KEY,\n  category_name VARCHAR(100)\n);\n\nCREATE TABLE dim_product (\n  product_key  SERIAL PRIMARY KEY,\n  name         VARCHAR(200),\n  category_key INT REFERENCES dim_category(category_key),\n  brand_key    INT REFERENCES dim_brand(brand_key)\n);\n\n-- Query now requires extra JOINs\nSELECT dc.category_name, SUM(fs.total_amount)\nFROM fact_sales fs\nJOIN dim_product dp ON fs.product_key = dp.product_key\nJOIN dim_category dc ON dp.category_key = dc.category_key\nGROUP BY dc.category_name;`,
-          },
-        ],
-        keyTakeaway:
-          'Snowflake schema normalizes dimension tables. Use star schema for speed, snowflake when dimension data is large and frequently updated.',
+          'Star schema: central fact table surrounded by dimension tables. Optimized for analytics.',
       },
       {
         title: 'Soft Deletes — Never Actually Delete',
         content:
-          "Instead of running DELETE to remove a row, you add a deleted_at timestamp column and set it when the record is \"deleted.\" The row stays in the database but is filtered out of normal queries.\n\n**Why soft deletes?**\n- **Audit trail**: You can always see what was deleted and when.\n- **Undo**: Users can restore accidentally deleted items.\n- **Referential integrity**: Other tables that reference this row won't have broken foreign keys.\n- **Legal requirements**: Some industries require you to retain records for years.\n\n**The trade-off:** Your queries must always include WHERE deleted_at IS NULL, which is easy to forget. Use a database view or application-level default scope to avoid this.",
+          'Instead of DELETE, set a deleted_at timestamp. The row stays in the database but is filtered out of normal queries.',
+        bullets: [
+          '**Audit trail** — Always see what was deleted and when.',
+          '**Undo** — Users can restore accidentally deleted items.',
+          '**Referential integrity** — Other tables referencing this row won\'t break.',
+          '**Legal requirements** — Some industries require retaining records for years.',
+        ],
         code: [
           {
             language: 'sql',
             label: 'Soft delete pattern',
-            code: `-- Add soft delete column\nALTER TABLE posts ADD COLUMN deleted_at TIMESTAMPTZ DEFAULT NULL;\n\n-- "Delete" a post (soft delete)\nUPDATE posts SET deleted_at = NOW() WHERE id = 42;\n\n-- Normal query: only show non-deleted posts\nSELECT * FROM posts WHERE deleted_at IS NULL;\n\n-- Create a view for convenience\nCREATE VIEW active_posts AS\n  SELECT * FROM posts WHERE deleted_at IS NULL;\n\n-- Now queries are clean\nSELECT * FROM active_posts;\n\n-- Restore a deleted post\nUPDATE posts SET deleted_at = NULL WHERE id = 42;\n\n-- Actually delete (for GDPR compliance, cleanup, etc.)\nDELETE FROM posts WHERE deleted_at < NOW() - INTERVAL '90 days';\n\n-- Partial index for performance (only index non-deleted rows)\nCREATE INDEX idx_active_posts ON posts(created_at)\n  WHERE deleted_at IS NULL;`,
+            code: `ALTER TABLE posts ADD COLUMN deleted_at TIMESTAMPTZ;\n\n-- "Delete" a post\nUPDATE posts SET deleted_at = NOW() WHERE id = 42;\n\n-- Normal queries only show non-deleted\nCREATE VIEW active_posts AS\n  SELECT * FROM posts WHERE deleted_at IS NULL;\n\n-- Restore a deleted post\nUPDATE posts SET deleted_at = NULL WHERE id = 42;\n\n-- Partial index for performance\nCREATE INDEX idx_active_posts ON posts(created_at)\n  WHERE deleted_at IS NULL;`,
           },
         ],
         keyTakeaway:
-          'Soft deletes set a deleted_at timestamp instead of removing the row. Great for audit trails and undo, but remember to filter in all queries.',
+          'Soft deletes set deleted_at instead of removing the row. Great for audit trails and undo.',
       },
       {
         title: 'Event Sourcing — Store Events, Not State',
         content:
-          "Traditional databases store the current state: \"Alice's balance is $750.\" Event sourcing stores the sequence of events that led to that state: \"Alice deposited $1000, then withdrew $200, then was charged $50.\"\n\nThe current state is derived by replaying all events. This gives you:\n\n**Complete audit trail**: Every change is recorded as an immutable event. You can answer \"what happened at 3pm last Tuesday?\" trivially.\n\n**Time travel**: Rebuild the state at any point in time by replaying events up to that moment.\n\n**Debugging**: When something goes wrong, you can replay events to see exactly how the system reached a bad state.\n\n**Event-driven architecture**: Other systems can subscribe to events and react (send an email when an order is placed).",
+          'Traditional databases store current state: "Balance is $750." Event sourcing stores the sequence of events that led to that state. The current state is derived by replaying events.',
+        flow: [
+          { label: 'Deposit $1000', description: 'Event 1', icon: '➕' },
+          { label: 'Withdraw $200', description: 'Event 2', icon: '➖' },
+          { label: 'Fee $50', description: 'Event 3', icon: '💰' },
+          { label: 'Balance: $750', description: 'Derived state', icon: '📊' },
+        ],
         code: [
           {
             language: 'sql',
             label: 'Event sourcing for a bank account',
-            code: `-- Events table (append-only, never updated or deleted)\nCREATE TABLE account_events (\n  event_id    SERIAL PRIMARY KEY,\n  account_id  UUID NOT NULL,\n  event_type  VARCHAR(50) NOT NULL,  -- 'deposit', 'withdrawal', 'fee'\n  amount      DECIMAL(10,2) NOT NULL,\n  metadata    JSONB,\n  created_at  TIMESTAMPTZ DEFAULT NOW()\n);\n\n-- Record events (never UPDATE or DELETE)\nINSERT INTO account_events (account_id, event_type, amount)\nVALUES\n  ('acct-1', 'deposit',    1000.00),\n  ('acct-1', 'withdrawal',  200.00),\n  ('acct-1', 'fee',          50.00);\n\n-- Derive current balance by replaying events\nSELECT account_id,\n  SUM(CASE\n    WHEN event_type = 'deposit' THEN amount\n    WHEN event_type IN ('withdrawal', 'fee') THEN -amount\n    ELSE 0\n  END) AS current_balance\nFROM account_events\nWHERE account_id = 'acct-1'\nGROUP BY account_id;\n-- Result: $750\n\n-- Time travel: balance at a specific point\nSELECT SUM(CASE\n    WHEN event_type = 'deposit' THEN amount\n    ELSE -amount\n  END) AS balance_at_time\nFROM account_events\nWHERE account_id = 'acct-1'\n  AND created_at <= '2024-01-15 12:00:00';`,
+            code: `-- Events table (append-only, never update/delete)\nCREATE TABLE account_events (\n  event_id   SERIAL PRIMARY KEY,\n  account_id UUID NOT NULL,\n  event_type VARCHAR(50) NOT NULL,\n  amount     DECIMAL(10,2) NOT NULL,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\n\n-- Derive current balance by replaying events\nSELECT account_id,\n  SUM(CASE\n    WHEN event_type = 'deposit' THEN amount\n    ELSE -amount\n  END) AS current_balance\nFROM account_events\nWHERE account_id = 'acct-1'\nGROUP BY account_id;`,
           },
         ],
         analogy:
-          'Traditional DB = a whiteboard with the current scoreboard. Event sourcing = a play-by-play log of every goal. You can always recalculate the scoreboard from the log, and you know exactly who scored when.',
+          'Traditional DB = a whiteboard scoreboard. Event sourcing = a play-by-play log. You can always recalculate the score from the log.',
         keyTakeaway:
-          'Event sourcing stores immutable events instead of mutable state. Replay events to derive current state. Great for audit trails and time travel.',
+          'Event sourcing stores immutable events. Replay to derive current state. Great for audit trails and time travel.',
       },
       {
         title: 'CQRS — Separating Reads and Writes',
         content:
-          'CQRS (Command Query Responsibility Segregation) uses separate models for reading and writing data. The write model handles commands (create, update, delete) and the read model handles queries.\n\nWhy separate them? Because reads and writes have fundamentally different requirements:\n\n- **Writes** need validation, business rules, and consistency. They are complex but infrequent.\n- **Reads** need speed and flexibility. They are simple but happen 10-100x more than writes.\n\nWith CQRS, you can optimize each side independently. The write side can use a normalized relational schema. The read side can use denormalized views, materialized tables, or even a different database entirely.',
+          'Reads and writes have different requirements. Writes need validation and consistency. Reads need speed. CQRS optimizes each independently.',
+        comparison: {
+          leftTitle: 'Write Side',
+          rightTitle: 'Read Side',
+          items: [
+            { left: 'Normalized relational schema', right: 'Denormalized materialized views' },
+            { left: 'Validation, business rules', right: 'Speed, flexibility' },
+            { left: 'Complex but infrequent', right: 'Simple but 10-100x more frequent' },
+            { left: 'Strong consistency', right: 'Can tolerate slight staleness' },
+          ],
+        },
         code: [
           {
             language: 'sql',
             label: 'CQRS with materialized view',
-            code: `-- WRITE side: normalized tables\nCREATE TABLE orders (\n  id          SERIAL PRIMARY KEY,\n  customer_id INT REFERENCES customers(id),\n  status      VARCHAR(20),\n  created_at  TIMESTAMPTZ DEFAULT NOW()\n);\n\nCREATE TABLE order_items (\n  id       SERIAL PRIMARY KEY,\n  order_id INT REFERENCES orders(id),\n  product_id INT,\n  quantity INT,\n  price    DECIMAL(10,2)\n);\n\n-- READ side: denormalized materialized view for fast queries\nCREATE MATERIALIZED VIEW order_summaries AS\nSELECT\n  o.id AS order_id,\n  c.name AS customer_name,\n  c.email AS customer_email,\n  o.status,\n  o.created_at,\n  COUNT(oi.id) AS item_count,\n  SUM(oi.quantity * oi.price) AS total_amount\nFROM orders o\nJOIN customers c ON o.customer_id = c.id\nJOIN order_items oi ON oi.order_id = o.id\nGROUP BY o.id, c.name, c.email, o.status, o.created_at;\n\n-- Refresh the read model periodically\nREFRESH MATERIALIZED VIEW CONCURRENTLY order_summaries;\n\n-- Reads are now a simple scan of the pre-computed view\nSELECT * FROM order_summaries\nWHERE customer_name = 'Alice'\nORDER BY created_at DESC;`,
+            code: `-- WRITE side: normalized\nCREATE TABLE orders (id SERIAL PRIMARY KEY, customer_id INT, status VARCHAR(20));\nCREATE TABLE order_items (id SERIAL PRIMARY KEY, order_id INT, quantity INT, price DECIMAL);\n\n-- READ side: denormalized materialized view\nCREATE MATERIALIZED VIEW order_summaries AS\nSELECT o.id, c.name, o.status,\n  COUNT(oi.id) AS items, SUM(oi.quantity * oi.price) AS total\nFROM orders o\nJOIN customers c ON o.customer_id = c.id\nJOIN order_items oi ON oi.order_id = o.id\nGROUP BY o.id, c.name, o.status;\n\n-- Reads are now a simple scan\nSELECT * FROM order_summaries WHERE name = 'Alice';`,
           },
         ],
         keyTakeaway:
-          'CQRS separates read and write models for independent optimization. Writes use normalized schemas; reads use denormalized views.',
+          'CQRS separates read and write models. Writes use normalized schemas; reads use denormalized views.',
       },
       {
-        title: 'Polymorphic Associations — One Table, Many Types',
+        title: 'Polymorphic Associations',
         content:
-          'Sometimes one table needs to reference rows from several different tables. For example, a comments table where comments can be on posts, photos, or videos.\n\nThe polymorphic pattern stores both the referenced ID and the type of thing it references.',
+          'When one table needs to reference rows from several different tables — like comments on posts, photos, and videos.',
         code: [
           {
             language: 'sql',
             label: 'Polymorphic associations pattern',
-            code: `-- Approach 1: Polymorphic columns (simple but no FK constraint)\nCREATE TABLE comments (\n  id             SERIAL PRIMARY KEY,\n  body           TEXT NOT NULL,\n  commentable_type VARCHAR(50) NOT NULL,  -- 'post', 'photo', 'video'\n  commentable_id   INT NOT NULL,\n  created_at     TIMESTAMPTZ DEFAULT NOW()\n);\n\nINSERT INTO comments (body, commentable_type, commentable_id)\nVALUES ('Great post!', 'post', 42);\n\nINSERT INTO comments (body, commentable_type, commentable_id)\nVALUES ('Nice photo!', 'photo', 17);\n\n-- Query comments for a specific post\nSELECT * FROM comments\nWHERE commentable_type = 'post' AND commentable_id = 42;\n\n-- Index for fast lookups\nCREATE INDEX idx_commentable ON comments(commentable_type, commentable_id);\n\n-- Approach 2: Separate FK columns (enforces integrity but has NULLs)\nCREATE TABLE comments_v2 (\n  id       SERIAL PRIMARY KEY,\n  body     TEXT NOT NULL,\n  post_id  INT REFERENCES posts(id),\n  photo_id INT REFERENCES photos(id),\n  video_id INT REFERENCES videos(id),\n  -- Ensure exactly one FK is set\n  CONSTRAINT one_parent CHECK (\n    (post_id IS NOT NULL)::int +\n    (photo_id IS NOT NULL)::int +\n    (video_id IS NOT NULL)::int = 1\n  )\n);`,
+            code: `-- Approach 1: type + id columns (simple)\nCREATE TABLE comments (\n  id SERIAL PRIMARY KEY,\n  body TEXT NOT NULL,\n  commentable_type VARCHAR(50) NOT NULL,\n  commentable_id INT NOT NULL\n);\nCREATE INDEX idx_commentable\n  ON comments(commentable_type, commentable_id);\n\n-- Approach 2: separate FK columns (enforces integrity)\nCREATE TABLE comments_v2 (\n  id SERIAL PRIMARY KEY, body TEXT NOT NULL,\n  post_id INT REFERENCES posts(id),\n  photo_id INT REFERENCES photos(id),\n  CONSTRAINT one_parent CHECK (\n    (post_id IS NOT NULL)::int +\n    (photo_id IS NOT NULL)::int = 1\n  )\n);`,
           },
         ],
         analogy:
-          'Polymorphic association is like a comment card at a hotel. The same card can be about the room, the restaurant, or the pool. You write what you are commenting on (the type) and the specific one (the ID).',
+          'Polymorphic association is like a hotel comment card. The same card can be about the room, restaurant, or pool. Write what you\'re commenting on (type) and which one (ID).',
         keyTakeaway:
-          'Polymorphic associations let one table reference multiple other tables. Use type+id columns or separate nullable FKs with a CHECK constraint.',
+          'Polymorphic associations let one table reference multiple other tables using type+id columns.',
       },
       {
         title: 'Choosing the Right Pattern',
         content:
-          "Here is a cheat sheet for when to use each pattern:\n\n**Star/Snowflake Schema** — Building a data warehouse or analytics dashboard. Star for speed, snowflake for normalized dimensions.\n\n**Soft Deletes** — Any user-facing application where undo, audit trails, or legal retention is needed. Most SaaS apps use this.\n\n**Event Sourcing** — Financial systems, audit-heavy domains, systems where you need to reconstruct past states. Often combined with CQRS.\n\n**CQRS** — Applications where read and write patterns are very different (e.g., complex write validations but simple read queries). Often overkill for simple CRUD apps.\n\n**Polymorphic Associations** — Content systems where multiple entity types share a common feature (comments, tags, likes, attachments).\n\nRemember: patterns are tools, not rules. Use them when they solve a real problem you have, not just because they sound sophisticated.",
+          'Match the pattern to the problem. Use them when they solve a real problem, not just because they sound sophisticated.',
+        table: {
+          headers: ['Pattern', 'Best For', 'Avoid When'],
+          rows: [
+            ['Star Schema', 'Data warehouses, analytics dashboards', 'Simple CRUD apps'],
+            ['Soft Deletes', 'Audit trails, undo, legal retention', 'Storage is extremely constrained'],
+            ['Event Sourcing', 'Financial systems, audit-heavy domains', 'Simple CRUD, adds complexity'],
+            ['CQRS', 'Very different read/write patterns', 'Simple apps (overkill)'],
+            ['Polymorphic', 'Comments, tags, likes across entity types', 'Need strict FK enforcement'],
+          ],
+        },
         keyTakeaway:
-          'Match the pattern to the problem. Star schema for analytics, soft deletes for audit trails, event sourcing for financial systems, CQRS for complex read/write separation.',
+          'Match the pattern to the problem. Star schema for analytics, soft deletes for audit trails, event sourcing for financial systems.',
       },
     ],
     commonMistakes: [
       {
         mistake: 'Using event sourcing for simple CRUD applications',
         explanation:
-          'Event sourcing adds significant complexity (event replay, eventual consistency, event versioning). For a simple blog or todo app, it is massive overkill.',
+          'Event sourcing adds significant complexity. For a simple blog or todo app, it is massive overkill.',
       },
       {
-        mistake: 'Forgetting to filter soft-deleted records in queries',
+        mistake: 'Forgetting to filter soft-deleted records',
         explanation:
-          'Every query that reads "active" data must include WHERE deleted_at IS NULL. Use views or ORM default scopes to avoid accidentally showing deleted data.',
+          'Every query must include WHERE deleted_at IS NULL. Use views or ORM default scopes.',
       },
       {
-        mistake: 'Using polymorphic associations without an index on (type, id)',
+        mistake: 'Polymorphic associations without an index on (type, id)',
         explanation:
-          'Without a composite index on (commentable_type, commentable_id), every query to find comments for a specific entity does a full table scan.',
+          'Without a composite index, every query to find comments for a specific entity does a full table scan.',
       },
       {
-        mistake: 'Implementing CQRS with a single database and no read model',
+        mistake: 'CQRS with a single database and no read model',
         explanation:
-          'The point of CQRS is to have an optimized read model. If you still run complex JOINs for reads, you have the complexity of CQRS without the benefits.',
+          'The point of CQRS is an optimized read model. Without it, you have complexity with no benefit.',
       },
     ],
     practiceQuestions: [
-      'Design a star schema for an e-learning platform that tracks course completions, quiz scores, and time spent.',
-      'You are building a document management system where users need to restore deleted files. Which pattern would you use and how would you implement it?',
-      'Explain event sourcing to a non-technical stakeholder. Why would a bank use it?',
+      'Design a star schema for an e-learning platform tracking course completions.',
+      'You need users to restore deleted files. Which pattern and how?',
+      'Explain event sourcing to a non-technical stakeholder.',
       'When is CQRS overkill? When is it essential?',
-      'Your application has a "likes" feature where users can like posts, comments, and photos. Design the database schema using polymorphic associations.',
+      'Design a "likes" feature for posts, comments, and photos using polymorphic associations.',
     ],
   },
 };
