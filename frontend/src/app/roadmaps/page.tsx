@@ -20,7 +20,7 @@ import { roadmapTemplates } from '@/lib/roadmap-templates';
 
 const templates = roadmapTemplates;
 
-const categories = ['All', 'Coding & Tech', 'Fitness & Health', 'Learning & Reading'];
+const categories = ['All', 'Coding & Tech', 'Fitness & Health', 'Learning & Reading', 'Languages', 'Personal Growth'];
 
 const colorClasses: Record<string, { border: string; bg: string; text: string; badge: string }> = {
   emerald: { border: 'border-emerald-500/20', bg: 'bg-emerald-500/10', text: 'text-emerald-400', badge: 'bg-emerald-500/10 text-emerald-400' },
@@ -28,6 +28,15 @@ const colorClasses: Record<string, { border: string; bg: string; text: string; b
   purple: { border: 'border-purple-500/20', bg: 'bg-purple-500/10', text: 'text-purple-400', badge: 'bg-purple-500/10 text-purple-400' },
   amber: { border: 'border-amber-500/20', bg: 'bg-amber-500/10', text: 'text-amber-400', badge: 'bg-amber-500/10 text-amber-400' },
   red: { border: 'border-red-500/20', bg: 'bg-red-500/10', text: 'text-red-400', badge: 'bg-red-500/10 text-red-400' },
+  cyan: { border: 'border-cyan-500/20', bg: 'bg-cyan-500/10', text: 'text-cyan-400', badge: 'bg-cyan-500/10 text-cyan-400' },
+  violet: { border: 'border-violet-500/20', bg: 'bg-violet-500/10', text: 'text-violet-400', badge: 'bg-violet-500/10 text-violet-400' },
+  pink: { border: 'border-pink-500/20', bg: 'bg-pink-500/10', text: 'text-pink-400', badge: 'bg-pink-500/10 text-pink-400' },
+  gray: { border: 'border-zinc-500/20', bg: 'bg-zinc-500/10', text: 'text-zinc-400', badge: 'bg-zinc-500/10 text-zinc-400' },
+  slate: { border: 'border-slate-500/20', bg: 'bg-slate-500/10', text: 'text-slate-400', badge: 'bg-slate-500/10 text-slate-400' },
+  orange: { border: 'border-orange-500/20', bg: 'bg-orange-500/10', text: 'text-orange-400', badge: 'bg-orange-500/10 text-orange-400' },
+  green: { border: 'border-green-500/20', bg: 'bg-green-500/10', text: 'text-green-400', badge: 'bg-green-500/10 text-green-400' },
+  yellow: { border: 'border-yellow-500/20', bg: 'bg-yellow-500/10', text: 'text-yellow-400', badge: 'bg-yellow-500/10 text-yellow-400' },
+  rose: { border: 'border-rose-500/20', bg: 'bg-rose-500/10', text: 'text-rose-400', badge: 'bg-rose-500/10 text-rose-400' },
 };
 
 const difficultyColors: Record<string, string> = {

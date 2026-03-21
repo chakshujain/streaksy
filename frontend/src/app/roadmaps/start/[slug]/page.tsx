@@ -158,7 +158,12 @@ export default function RoadmapStartPage() {
         localStorage.setItem('streaksy_active_roadmaps', JSON.stringify(existing));
       } catch { /* localStorage not available */ }
 
-      router.push('/roadmaps');
+      // Redirect to group page if group mode, otherwise roadmaps
+      if (groupId) {
+        router.push(`/groups/${groupId}`);
+      } else {
+        router.push('/roadmaps');
+      }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string };
       setError(e.response?.data?.error || e.message || 'Something went wrong. Please try again.');

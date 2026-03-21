@@ -29,13 +29,32 @@ export default function GroupInvitePage() {
 
   useEffect(() => { hydrate(); }, [hydrate]);
 
-  // Fetch preview data (public, no auth needed)
+  // Fetch preview data and auto-join if logged in
   useEffect(() => {
     inviteApi.resolveGroup(code)
-      .then(({ data }) => setPreview(data))
+      .then(({ data }) => {
+        setPreview(data);
+        // Auto-join if user is logged in
+        if (user && !authLoading) {
+          setJoining(true);
+          inviteApi.joinGroup(code)
+            .then(({ data: joinData }) => {
+              setJoined(true);
+              router.push(`/groups/${joinData.group?.id || data.id}`);
+            })
+            .catch((err: { response?: { status?: number } }) => {
+              if (err.response?.status === 409) {
+                // Already a member — redirect directly
+                router.push(`/groups/${data.id}`);
+              } else {
+                setJoining(false);
+              }
+            });
+        }
+      })
       .catch(() => setError('This invite link is invalid or has expired.'))
       .finally(() => setLoading(false));
-  }, [code]);
+  }, [code, user, authLoading, router]);
 
   const handleJoin = async () => {
     setJoining(true);

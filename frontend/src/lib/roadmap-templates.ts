@@ -35,6 +35,24 @@ export const roadmapTemplates: RoadmapTemplateData[] = [
   // Learning & Reading
   { slug: 'read-book-month', name: 'Read 1 Book/Month', icon: '📖', category: 'Learning & Reading', color: 'amber', duration: 30, difficulty: 'beginner', description: 'Daily reading goals', participants: 312 },
   { slug: 'daily-journal-30', name: 'Daily Journal', icon: '✍️', category: 'Learning & Reading', color: 'amber', duration: 30, difficulty: 'beginner', description: 'Daily journaling for self-reflection', participants: 78 },
+  // ── NEW: Coding & Tech ──────────────────────────────────────────────
+  { slug: 'learn-frontend', name: 'Learn Frontend Dev', icon: '🎨', category: 'Coding & Tech', color: 'cyan', duration: 30, difficulty: 'beginner', description: 'HTML, CSS, JS, and React — build real UIs every day', participants: 0 },
+  { slug: 'learn-backend', name: 'Learn Backend Dev', icon: '⚙️', category: 'Coding & Tech', color: 'emerald', duration: 30, difficulty: 'intermediate', description: 'Node.js, APIs, databases, auth, and deployment', participants: 0 },
+  { slug: 'learn-devops', name: 'Learn DevOps & Cloud', icon: '☁️', category: 'Coding & Tech', color: 'violet', duration: 21, difficulty: 'intermediate', description: 'Docker, Kubernetes, CI/CD, and AWS essentials', participants: 0 },
+  { slug: 'learn-ai-ml', name: 'Learn AI/ML', icon: '🤖', category: 'Coding & Tech', color: 'pink', duration: 30, difficulty: 'intermediate', description: 'Python, NumPy, scikit-learn — build your first ML models', participants: 0 },
+  { slug: 'learn-cybersecurity', name: 'Cybersecurity Basics', icon: '🔐', category: 'Coding & Tech', color: 'red', duration: 21, difficulty: 'intermediate', description: 'Networking, encryption, attacks, and defense', participants: 0 },
+  { slug: 'learn-mobile-dev', name: 'Mobile Development', icon: '📱', category: 'Coding & Tech', color: 'blue', duration: 21, difficulty: 'intermediate', description: 'Build cross-platform apps with React Native', participants: 0 },
+  { slug: 'master-git', name: 'Git & GitHub Mastery', icon: '🌿', category: 'Coding & Tech', color: 'gray', duration: 7, difficulty: 'beginner', description: 'Branching, PRs, rebasing, and collaboration workflows', participants: 0 },
+  { slug: 'learn-linux', name: 'Linux & Command Line', icon: '🐧', category: 'Coding & Tech', color: 'slate', duration: 14, difficulty: 'beginner', description: 'Terminal, scripting, permissions, and essential tools', participants: 0 },
+  // ── NEW: Languages ──────────────────────────────────────────────────
+  { slug: 'learn-french', name: 'Learn French', icon: '🇫🇷', category: 'Languages', color: 'blue', duration: 90, difficulty: 'beginner', description: 'Bonjour! Daily vocab, grammar, and conversation — 15 min/day', participants: 0 },
+  { slug: 'learn-german', name: 'Learn German', icon: '🇩🇪', category: 'Languages', color: 'amber', duration: 90, difficulty: 'beginner', description: 'Hallo! Daily vocab, grammar cases, and conversation — 15 min/day', participants: 0 },
+  { slug: 'learn-spanish', name: 'Learn Spanish', icon: '🇪🇸', category: 'Languages', color: 'red', duration: 90, difficulty: 'beginner', description: 'Hola! Daily vocab, grammar, and conversation — 15 min/day', participants: 0 },
+  { slug: 'learn-japanese', name: 'Learn Japanese', icon: '🇯🇵', category: 'Languages', color: 'rose', duration: 90, difficulty: 'intermediate', description: 'Hiragana to basic kanji — reading, writing, and speaking', participants: 0 },
+  // ── NEW: Personal Growth ────────────────────────────────────────────
+  { slug: 'public-speaking-30', name: 'Public Speaking', icon: '🎤', category: 'Personal Growth', color: 'orange', duration: 30, difficulty: 'beginner', description: 'From nervous to confident — daily speaking exercises', participants: 0 },
+  { slug: 'financial-literacy', name: 'Financial Literacy', icon: '💰', category: 'Personal Growth', color: 'green', duration: 21, difficulty: 'beginner', description: 'Budgeting, saving, investing — money skills for life', participants: 0 },
+  { slug: 'productivity-14', name: 'Productivity Masterclass', icon: '⚡', category: 'Personal Growth', color: 'yellow', duration: 14, difficulty: 'beginner', description: 'Focus systems, time management, and habit stacking', participants: 0 },
 ];
 
 export const templatesBySlug: Record<string, RoadmapTemplateData> = Object.fromEntries(
