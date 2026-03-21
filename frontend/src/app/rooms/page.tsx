@@ -451,7 +451,7 @@ export default function RoomsPage() {
 
         {/* Tab content */}
         {activeTab === 'rooms' && (
-          <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+          <div>
             {loading ? (
               <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}</div>
             ) : (
@@ -517,7 +517,7 @@ export default function RoomsPage() {
         )}
 
         {activeTab === 'upcoming' && (
-          <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+          <div>
             {upcomingLoading ? (
               <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}</div>
             ) : upcomingRooms && upcomingRooms.length > 0 ? (
@@ -563,7 +563,7 @@ export default function RoomsPage() {
         )}
 
         {activeTab === 'leaderboard' && (
-          <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+          <div>
             {leaderboardLoading ? (
               <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-2xl" />)}</div>
             ) : leaderboard && leaderboard.length > 0 ? (

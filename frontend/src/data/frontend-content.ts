@@ -1,0 +1,951 @@
+import type { LessonStep } from '@/lib/learn-data';
+
+export const frontendLessons: Record<
+  string,
+  {
+    steps: LessonStep[];
+    commonMistakes?: { mistake: string; explanation: string }[];
+    practiceQuestions?: string[];
+  }
+> = {
+  // ───────────────────────────────────────────────
+  // 1. HTML Fundamentals
+  // ───────────────────────────────────────────────
+  'html-fundamentals': {
+    steps: [
+      {
+        title: 'What is HTML?',
+        content:
+          'HTML (HyperText Markup Language) is the skeleton of every web page. Browsers read HTML to build a tree of elements called the DOM, then paint pixels on screen.',
+        analogy:
+          'Think of a web page as a human body. HTML is the skeleton that provides structure, CSS is the clothing and appearance, and JavaScript is the muscles that create movement.',
+        flow: [
+          { label: 'Write HTML', description: 'Create .html file with tags', icon: '📝' },
+          { label: 'Browser Parses', description: 'Reads HTML top to bottom', icon: '🔍' },
+          { label: 'Builds DOM Tree', description: 'Converts tags to nodes', icon: '🌳' },
+          { label: 'Renders Pixels', description: 'Paints the page on screen', icon: '🖥️' },
+        ],
+        keyTakeaway:
+          'HTML defines the structure and content of a web page — the browser converts it into a DOM tree and renders it visually.',
+      },
+      {
+        title: 'Semantic HTML',
+        content:
+          'Semantic elements describe their meaning to both the browser and the developer. Using the right element improves accessibility, SEO, and code readability.',
+        comparison: {
+          leftTitle: 'Div Soup',
+          rightTitle: 'Semantic HTML',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: '<div class="header">', right: '<header>' },
+            { left: '<div class="nav">', right: '<nav>' },
+            { left: '<div class="main">', right: '<main>' },
+            { left: '<div class="article">', right: '<article>' },
+            { left: '<div class="footer">', right: '<footer>' },
+          ],
+        },
+        code: [
+          {
+            language: 'html',
+            label: 'Semantic page structure',
+            code: `<header>\n  <nav>\n    <a href="/">Home</a>\n    <a href="/about">About</a>\n  </nav>\n</header>\n<main>\n  <article>\n    <h1>My First Post</h1>\n    <p>Hello, world!</p>\n  </article>\n</main>\n<footer>\n  <p>&copy; 2026 My Site</p>\n</footer>`,
+          },
+        ],
+        keyTakeaway:
+          'Semantic tags like <header>, <nav>, <main>, and <article> replace meaningless <div> elements and improve accessibility and SEO.',
+      },
+      {
+        title: 'Forms and Inputs',
+        content:
+          'Forms are how users send data back to a server. Every form needs an action (where to send) and a method (how to send). Inputs capture different types of data.',
+        analogy:
+          'A form is like a paper form at a doctor\'s office. Each input field is a blank to fill in, and hitting submit is handing the clipboard back to the receptionist.',
+        code: [
+          {
+            language: 'html',
+            label: 'A simple signup form',
+            code: `<form action="/signup" method="POST">\n  <label for="email">Email</label>\n  <input type="email" id="email" name="email" required />\n\n  <label for="password">Password</label>\n  <input type="password" id="password" name="password"\n         minlength="8" required />\n\n  <button type="submit">Sign Up</button>\n</form>`,
+          },
+        ],
+        table: {
+          headers: ['Input Type', 'Purpose', 'Example'],
+          rows: [
+            ['text', 'Single-line text', 'Name, city'],
+            ['email', 'Email with validation', 'user@example.com'],
+            ['password', 'Hidden text', 'Login password'],
+            ['number', 'Numeric value', 'Age, quantity'],
+            ['checkbox', 'Boolean toggle', 'Accept terms'],
+            ['select', 'Dropdown list', 'Country picker'],
+          ],
+        },
+        keyTakeaway:
+          'Forms collect user input with typed fields, labels for accessibility, and built-in validation attributes like required and minlength.',
+      },
+      {
+        title: 'Accessibility Essentials',
+        content:
+          'One in five people has a disability. Accessible HTML ensures everyone can use your site, including people using screen readers, keyboard-only navigation, or voice control.',
+        bullets: [
+          '**Alt text** on images describes what the image shows for screen readers.',
+          '**Labels** on form inputs let assistive tech announce what each field is for.',
+          '**Heading hierarchy** (h1 > h2 > h3) creates a navigable document outline.',
+          '**ARIA roles** supplement native semantics when HTML alone isn\'t enough.',
+        ],
+        code: [
+          {
+            language: 'html',
+            label: 'Accessible image and button',
+            code: `<!-- Descriptive alt text -->\n<img src="chart.png"\n     alt="Bar chart showing sales growth from $10K to $50K in 2025" />\n\n<!-- Accessible button with icon -->\n<button aria-label="Close modal">\n  <span aria-hidden="true">&times;</span>\n</button>`,
+          },
+        ],
+        keyTakeaway:
+          'Use alt text, proper labels, heading hierarchy, and ARIA attributes to make your pages usable by everyone.',
+      },
+      {
+        title: 'Building a Complete Page',
+        content:
+          'Every HTML document follows the same boilerplate structure. The DOCTYPE tells the browser to use modern standards, the head holds metadata, and the body holds visible content.',
+        code: [
+          {
+            language: 'html',
+            label: 'Complete HTML boilerplate',
+            code: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8" />\n  <meta name="viewport"\n        content="width=device-width, initial-scale=1.0" />\n  <title>My Portfolio</title>\n  <link rel="stylesheet" href="styles.css" />\n</head>\n<body>\n  <header>\n    <h1>Jane Doe — Developer</h1>\n    <nav>\n      <a href="#projects">Projects</a>\n      <a href="#contact">Contact</a>\n    </nav>\n  </header>\n  <main>\n    <section id="projects">\n      <h2>Projects</h2>\n      <article><!-- project card --></article>\n    </section>\n  </main>\n  <footer>Built with HTML &amp; CSS</footer>\n</body>\n</html>`,
+          },
+        ],
+        keyTakeaway:
+          'Always start with DOCTYPE, use the lang attribute, include the viewport meta tag for mobile, and structure content with semantic elements.',
+      },
+    ],
+    commonMistakes: [
+      { mistake: 'Using only <div> and <span> for everything', explanation: 'Semantic elements like <nav>, <main>, and <article> improve accessibility and SEO. Screen readers rely on them to navigate.' },
+      { mistake: 'Skipping the viewport meta tag', explanation: 'Without it, mobile browsers render pages at desktop width and zoom out, making text tiny and unusable.' },
+      { mistake: 'Forgetting alt text on images', explanation: 'Screen readers announce images as "image" with no context. Alt text describes the image for users who cannot see it.' },
+      { mistake: 'Nesting block elements inside inline elements', explanation: 'Placing a <div> inside a <span> or <a> (in older HTML) produces unexpected layout behavior. Always check nesting rules.' },
+    ],
+    practiceQuestions: [
+      'What is the difference between <section> and <div>? When would you use each?',
+      'Write an HTML form with email, password, and a submit button that validates input before sending.',
+      'Explain why the viewport meta tag is important for mobile devices.',
+      'How does a screen reader interpret a page that uses only <div> elements vs one with semantic HTML?',
+    ],
+  },
+
+  // ───────────────────────────────────────────────
+  // 2. CSS Basics
+  // ───────────────────────────────────────────────
+  'css-basics': {
+    steps: [
+      {
+        title: 'How CSS Works',
+        content:
+          'CSS (Cascading Style Sheets) controls the visual appearance of HTML. The browser combines the DOM tree with CSS rules to produce a render tree that determines what you see.',
+        analogy:
+          'If HTML is the skeleton of a house (walls, doors, windows), CSS is the interior design — paint colors, furniture placement, and decorations.',
+        flow: [
+          { label: 'Parse HTML', description: 'Build DOM tree', icon: '🌳' },
+          { label: 'Parse CSS', description: 'Build CSSOM', icon: '🎨' },
+          { label: 'Combine', description: 'DOM + CSSOM = Render Tree', icon: '🔗' },
+          { label: 'Layout', description: 'Calculate sizes and positions', icon: '📐' },
+          { label: 'Paint', description: 'Draw pixels on screen', icon: '🖌️' },
+        ],
+        keyTakeaway:
+          'CSS rules are matched to DOM nodes to build a render tree, which the browser uses to calculate layout and paint pixels.',
+      },
+      {
+        title: 'Selectors and Specificity',
+        content:
+          'Selectors target which elements to style. When multiple rules target the same element, specificity determines which wins.',
+        analogy:
+          'CSS specificity is like a court system. An inline style is the Supreme Court (highest authority), an ID is the Appeals Court, a class is a District Court, and an element selector is a Local Court.',
+        table: {
+          headers: ['Selector', 'Example', 'Specificity'],
+          rows: [
+            ['Element', 'p, h1, div', '0-0-1'],
+            ['Class', '.card, .active', '0-1-0'],
+            ['ID', '#header', '1-0-0'],
+            ['Inline', 'style="..."', '1-0-0-0'],
+            ['!important', 'color: red !important', 'Overrides all'],
+          ],
+        },
+        code: [
+          {
+            language: 'css',
+            label: 'Specificity in action',
+            code: `/* Specificity: 0-0-1 */\np { color: black; }\n\n/* Specificity: 0-1-0 — wins over element */\n.highlight { color: blue; }\n\n/* Specificity: 1-0-0 — wins over class */\n#title { color: red; }\n\n/* A paragraph with class="highlight" id="title"\n   will be RED because ID beats class beats element */`,
+          },
+        ],
+        keyTakeaway:
+          'Specificity goes: inline > ID > class > element. Avoid !important — it makes debugging nightmarish.',
+      },
+      {
+        title: 'The Box Model',
+        content:
+          'Every element is a rectangular box with four layers: content, padding, border, and margin. Understanding the box model is essential for controlling layout.',
+        diagram:
+          '┌───────────── Margin ──────────────┐\n│  ┌────────── Border ──────────┐   │\n│  │  ┌─────── Padding ──────┐  │   │\n│  │  │                      │  │   │\n│  │  │      Content         │  │   │\n│  │  │    (width x height)  │  │   │\n│  │  │                      │  │   │\n│  │  └──────────────────────┘  │   │\n│  └────────────────────────────┘   │\n└───────────────────────────────────┘',
+        code: [
+          {
+            language: 'css',
+            label: 'Box model with box-sizing',
+            code: `/* Without box-sizing: width = content only\n   Total = 300 + 20*2 + 2*2 = 344px */\n.card {\n  width: 300px;\n  padding: 20px;\n  border: 2px solid gray;\n}\n\n/* With box-sizing: width INCLUDES padding + border\n   Total = 300px exactly */\n.card {\n  box-sizing: border-box;\n  width: 300px;\n  padding: 20px;\n  border: 2px solid gray;\n}`,
+          },
+        ],
+        keyTakeaway:
+          'Always use box-sizing: border-box so that width and height include padding and border — it makes sizing predictable.',
+      },
+      {
+        title: 'Flexbox — One-Dimensional Layout',
+        content:
+          'Flexbox arranges items in a single row or column. It handles alignment, spacing, and wrapping without manual calculations.',
+        analogy:
+          'Flexbox is like arranging books on a shelf. You decide the direction (horizontal or vertical), how to space them out, and whether they wrap to a new row when the shelf is full.',
+        code: [
+          {
+            language: 'css',
+            label: 'Common flexbox patterns',
+            code: `/* Horizontal navigation */\n.nav {\n  display: flex;\n  justify-content: space-between; /* spread items */\n  align-items: center;            /* vertically center */\n  gap: 1rem;                      /* space between items */\n}\n\n/* Card grid that wraps */\n.grid {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 1rem;\n}\n.grid .card {\n  flex: 1 1 300px; /* grow, shrink, min-width */\n}`,
+          },
+        ],
+        cards: [
+          { title: 'justify-content', description: 'Controls spacing along the main axis', icon: '↔️', color: 'blue' },
+          { title: 'align-items', description: 'Aligns items on the cross axis', icon: '↕️', color: 'purple' },
+          { title: 'flex-wrap', description: 'Allows items to wrap to new lines', icon: '↩️', color: 'emerald' },
+          { title: 'gap', description: 'Adds space between flex items', icon: '⬜', color: 'amber' },
+        ],
+        keyTakeaway:
+          'Flexbox handles one-dimensional layouts. Use justify-content for main axis and align-items for cross axis alignment.',
+      },
+      {
+        title: 'CSS Grid — Two-Dimensional Layout',
+        content:
+          'Grid handles rows AND columns simultaneously. It excels at complex page layouts where flexbox would require nested containers.',
+        comparison: {
+          leftTitle: 'Flexbox',
+          rightTitle: 'CSS Grid',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'One-dimensional (row or column)', right: 'Two-dimensional (rows and columns)' },
+            { left: 'Content drives layout size', right: 'Layout drives content placement' },
+            { left: 'Best for components (nav, cards)', right: 'Best for page layouts' },
+            { left: 'Items flow naturally', right: 'Items are placed in explicit cells' },
+          ],
+        },
+        code: [
+          {
+            language: 'css',
+            label: 'Dashboard layout with grid',
+            code: `.dashboard {\n  display: grid;\n  grid-template-columns: 250px 1fr;       /* sidebar + main */\n  grid-template-rows: 60px 1fr 40px;      /* header + body + footer */\n  grid-template-areas:\n    "header  header"\n    "sidebar main"\n    "footer  footer";\n  min-height: 100vh;\n}\n.header  { grid-area: header; }\n.sidebar { grid-area: sidebar; }\n.main    { grid-area: main; }\n.footer  { grid-area: footer; }`,
+          },
+        ],
+        keyTakeaway:
+          'Use CSS Grid for two-dimensional page layouts and Flexbox for one-dimensional component layouts — they complement each other.',
+      },
+    ],
+    commonMistakes: [
+      { mistake: 'Not using box-sizing: border-box globally', explanation: 'The default content-box makes width calculations confusing because padding and border are added on top. Set *, *::before, *::after { box-sizing: border-box; }.' },
+      { mistake: 'Using !important as a first resort', explanation: '!important breaks the natural cascade and makes future overrides nearly impossible. Fix specificity issues instead.' },
+      { mistake: 'Setting fixed heights on containers', explanation: 'Content length varies. Use min-height instead of height to avoid overflow issues.' },
+      { mistake: 'Using px for font sizes', explanation: 'Pixels override user zoom settings. Use rem for scalable, accessible typography.' },
+    ],
+    practiceQuestions: [
+      'Explain the difference between margin and padding. When would you use each?',
+      'Create a navigation bar with a logo on the left and links on the right using Flexbox.',
+      'Build a responsive 3-column layout that collapses to 1 column on mobile using CSS Grid.',
+      'What is specificity? How would you resolve two conflicting CSS rules targeting the same element?',
+    ],
+  },
+
+  // ───────────────────────────────────────────────
+  // 3. JavaScript Essentials
+  // ───────────────────────────────────────────────
+  'javascript-essentials': {
+    steps: [
+      {
+        title: 'Variables and Types',
+        content:
+          'JavaScript has three ways to declare variables: let for things that change, const for things that don\'t, and var (legacy — avoid it). Every value has a type.',
+        analogy:
+          'Variables are labeled boxes. const is a sealed box — you can look inside but never swap the contents. let is a box with a lid you can open and replace things.',
+        code: [
+          {
+            language: 'javascript',
+            label: 'Variable declarations and types',
+            code: `const name = "Alice";     // string — never reassigned\nlet score = 0;            // number — will change\nlet isActive = true;      // boolean\nlet items = [1, 2, 3];    // array (object)\nlet user = { age: 25 };   // object\n\n// typeof tells you the type\nconsole.log(typeof name);     // "string"\nconsole.log(typeof score);    // "number"\nconsole.log(typeof items);    // "object" (arrays are objects!)`,
+          },
+        ],
+        table: {
+          headers: ['Type', 'Examples', 'Falsy?'],
+          rows: [
+            ['string', '"hello", \'world\', ``', 'Empty string "" is falsy'],
+            ['number', '42, 3.14, NaN, Infinity', '0 and NaN are falsy'],
+            ['boolean', 'true, false', 'false is falsy'],
+            ['null', 'null', 'Always falsy'],
+            ['undefined', 'undefined', 'Always falsy'],
+            ['object', '{}, [], new Date()', 'Never falsy (even empty)'],
+          ],
+        },
+        keyTakeaway:
+          'Use const by default and let only when you need to reassign. Avoid var — it has confusing scoping rules.',
+      },
+      {
+        title: 'Functions and Scope',
+        content:
+          'Functions are reusable blocks of code. Arrow functions are the modern syntax. Scope determines where variables are visible.',
+        code: [
+          {
+            language: 'javascript',
+            label: 'Function syntax and scope',
+            code: `// Function declaration — hoisted\nfunction greet(name) {\n  return "Hello, " + name;\n}\n\n// Arrow function — concise, no own 'this'\nconst add = (a, b) => a + b;\n\n// Scope example\nconst x = "global";\nfunction demo() {\n  const y = "local";\n  console.log(x); // "global" — visible\n  console.log(y); // "local"  — visible\n}\nconsole.log(y); // ReferenceError — y is not defined here`,
+          },
+        ],
+        diagram:
+          'Global Scope\n├── x = "global"\n├── greet()\n└── demo()\n    └── Local Scope\n        └── y = "local"',
+        keyTakeaway:
+          'Functions create their own scope. Inner scopes can see outer variables, but outer scopes cannot see inner variables.',
+      },
+      {
+        title: 'Working with the DOM',
+        content:
+          'The DOM (Document Object Model) is the browser\'s in-memory representation of your HTML. JavaScript can read and modify it to create dynamic pages.',
+        analogy:
+          'The DOM is like a puppet show. HTML builds the puppets, CSS dresses them, and JavaScript pulls the strings to make them move.',
+        code: [
+          {
+            language: 'javascript',
+            label: 'Common DOM operations',
+            code: `// Select elements\nconst title = document.querySelector("h1");\nconst buttons = document.querySelectorAll(".btn");\n\n// Read and modify\ntitle.textContent = "Updated!";\ntitle.style.color = "blue";\ntitle.classList.add("active");\n\n// Create and append\nconst card = document.createElement("div");\ncard.className = "card";\ncard.innerHTML = "<h2>New Card</h2>";\ndocument.querySelector(".grid").appendChild(card);`,
+          },
+        ],
+        keyTakeaway:
+          'querySelector and querySelectorAll find elements, then you can change their text, styles, classes, and even add new elements dynamically.',
+      },
+      {
+        title: 'Event Handling',
+        content:
+          'Events are things that happen in the browser — clicks, key presses, form submissions, scrolls. You attach listener functions that run when an event fires.',
+        code: [
+          {
+            language: 'javascript',
+            label: 'Event listeners',
+            code: `const button = document.querySelector("#submit");\n\n// Listen for clicks\nbutton.addEventListener("click", (event) => {\n  event.preventDefault(); // stop form submission\n  console.log("Button clicked!");\n});\n\n// Listen for keyboard input\nconst input = document.querySelector("#search");\ninput.addEventListener("input", (e) => {\n  console.log("Typed:", e.target.value);\n});\n\n// Event delegation — handle clicks on dynamic children\ndocument.querySelector(".list").addEventListener("click", (e) => {\n  if (e.target.matches(".delete-btn")) {\n    e.target.closest("li").remove();\n  }\n});`,
+          },
+        ],
+        bullets: [
+          '**addEventListener** attaches a handler to an element for a specific event type.',
+          '**event.preventDefault()** stops the browser\'s default action (like form submission or link navigation).',
+          '**Event delegation** attaches one listener to a parent instead of many listeners to children — more efficient for dynamic lists.',
+        ],
+        keyTakeaway:
+          'Use addEventListener to react to user interactions. Event delegation on a parent element is the best pattern for dynamic content.',
+      },
+      {
+        title: 'ES6+ Modern Features',
+        content:
+          'Modern JavaScript added powerful syntax that makes code shorter and more readable. These features are used everywhere in React and modern frameworks.',
+        code: [
+          {
+            language: 'javascript',
+            label: 'Essential ES6+ features',
+            code: `// Destructuring — unpack values\nconst { name, age } = user;\nconst [first, ...rest] = items;\n\n// Template literals — embed expressions\nconst msg = \`Hello, \${name}! You are \${age}.\`;\n\n// Spread operator — copy and merge\nconst updated = { ...user, age: 26 };\nconst all = [...items, 4, 5];\n\n// Optional chaining — safe property access\nconst city = user?.address?.city ?? "Unknown";\n\n// Array methods — functional style\nconst adults = users\n  .filter(u => u.age >= 18)\n  .map(u => u.name)\n  .sort();`,
+          },
+        ],
+        keyTakeaway:
+          'Master destructuring, template literals, spread, optional chaining, and array methods — they are the foundation of modern JavaScript.',
+      },
+    ],
+    commonMistakes: [
+      { mistake: 'Using == instead of ===', explanation: '== performs type coercion (e.g., "1" == 1 is true). Always use === for strict equality to avoid subtle bugs.' },
+      { mistake: 'Mutating state directly', explanation: 'Modifying objects or arrays in place causes bugs in React and makes debugging hard. Use spread or array methods to create new copies.' },
+      { mistake: 'Forgetting that const does not mean immutable', explanation: 'const prevents reassignment, but object properties and array elements can still be changed. Use Object.freeze() for true immutability.' },
+      { mistake: 'Not handling null/undefined before accessing properties', explanation: 'Accessing a property on null or undefined throws a TypeError. Use optional chaining (?.) or null checks.' },
+    ],
+    practiceQuestions: [
+      'What is the difference between let, const, and var? Give a scenario where each is appropriate.',
+      'Write a function that takes an array of numbers and returns only the even ones using filter().',
+      'Explain event delegation and why it is more efficient than adding listeners to every child element.',
+      'Use destructuring and spread to merge two objects, with the second object overriding shared keys.',
+    ],
+  },
+
+  // ───────────────────────────────────────────────
+  // 4. Responsive Design
+  // ───────────────────────────────────────────────
+  'responsive-design': {
+    steps: [
+      {
+        title: 'Why Responsive Design Matters',
+        content:
+          'Over 60% of web traffic comes from mobile devices. A site that only works on desktop loses most of its audience. Responsive design makes your layout adapt to any screen size.',
+        analogy:
+          'Responsive design is like water. Pour it in a glass, it becomes the glass. Pour it in a bottle, it becomes the bottle. Your layout should flow to fit any container.',
+        cards: [
+          { title: 'Mobile', description: '< 640px — phones', icon: '📱', color: 'blue' },
+          { title: 'Tablet', description: '640px–1024px — tablets', icon: '📋', color: 'purple' },
+          { title: 'Desktop', description: '> 1024px — laptops/monitors', icon: '🖥️', color: 'emerald' },
+        ],
+        keyTakeaway:
+          'Responsive design ensures your site looks good on every device — from phones to ultra-wide monitors.',
+      },
+      {
+        title: 'Mobile-First Approach',
+        content:
+          'Start by designing for the smallest screen, then add complexity for larger ones. This forces you to prioritize content and keep things simple.',
+        comparison: {
+          leftTitle: 'Desktop-First',
+          rightTitle: 'Mobile-First',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Start big, squeeze down', right: 'Start small, expand up' },
+            { left: 'Override with max-width queries', right: 'Enhance with min-width queries' },
+            { left: 'Mobile is an afterthought', right: 'Mobile is the default' },
+            { left: 'Loads desktop CSS on mobile', right: 'Loads only what mobile needs' },
+          ],
+        },
+        code: [
+          {
+            language: 'css',
+            label: 'Mobile-first media queries',
+            code: `/* Base styles — mobile (default) */\n.grid {\n  display: grid;\n  grid-template-columns: 1fr;  /* single column */\n  gap: 1rem;\n}\n\n/* Tablet and up */\n@media (min-width: 640px) {\n  .grid {\n    grid-template-columns: repeat(2, 1fr);\n  }\n}\n\n/* Desktop and up */\n@media (min-width: 1024px) {\n  .grid {\n    grid-template-columns: repeat(3, 1fr);\n  }\n}`,
+          },
+        ],
+        keyTakeaway:
+          'Mobile-first means your base CSS targets phones, and media queries with min-width progressively enhance for larger screens.',
+      },
+      {
+        title: 'Media Queries Deep Dive',
+        content:
+          'Media queries let you apply CSS conditionally based on screen width, height, orientation, or even user preferences like dark mode.',
+        code: [
+          {
+            language: 'css',
+            label: 'Useful media queries',
+            code: `/* Width breakpoint */\n@media (min-width: 768px) {\n  .sidebar { display: block; }\n}\n\n/* Dark mode preference */\n@media (prefers-color-scheme: dark) {\n  body { background: #1a1a1a; color: #fff; }\n}\n\n/* Reduced motion preference */\n@media (prefers-reduced-motion: reduce) {\n  * { animation: none !important; }\n}\n\n/* Print styles */\n@media print {\n  .no-print { display: none; }\n}`,
+          },
+        ],
+        table: {
+          headers: ['Breakpoint', 'Width', 'Typical Device'],
+          rows: [
+            ['sm', '640px', 'Large phones'],
+            ['md', '768px', 'Tablets'],
+            ['lg', '1024px', 'Laptops'],
+            ['xl', '1280px', 'Desktops'],
+            ['2xl', '1536px', 'Large monitors'],
+          ],
+        },
+        keyTakeaway:
+          'Media queries adapt layout by screen size, user preference (dark mode, reduced motion), and medium (print). Use common breakpoints consistently.',
+      },
+      {
+        title: 'Fluid Typography and Spacing',
+        content:
+          'Instead of jumping between fixed sizes at breakpoints, fluid values scale smoothly. The clamp() function sets a minimum, preferred, and maximum value in one line.',
+        code: [
+          {
+            language: 'css',
+            label: 'Fluid sizing with clamp()',
+            code: `/* Font scales smoothly from 1rem to 2.5rem */\nh1 {\n  font-size: clamp(1rem, 4vw, 2.5rem);\n}\n\n/* Container has fluid padding */\n.container {\n  padding: clamp(1rem, 3vw, 3rem);\n  max-width: 1200px;\n  margin: 0 auto;\n}\n\n/* Responsive units overview */\n/* rem — relative to root font size (scalable) */\n/* vw — 1% of viewport width (fluid) */\n/* % — relative to parent element */`,
+          },
+        ],
+        keyTakeaway:
+          'Use clamp() for fluid sizing that scales smoothly between a minimum and maximum. Prefer rem and vw over px for responsive values.',
+      },
+      {
+        title: 'Responsive Images and Media',
+        content:
+          'Images are often the largest files on a page. Serving the right size for each device saves bandwidth and speeds up loading.',
+        code: [
+          {
+            language: 'html',
+            label: 'Responsive images',
+            code: `<!-- Basic responsive image -->\n<img src="photo.jpg" alt="Landscape"\n     style="max-width: 100%; height: auto;" />\n\n<!-- Serve different sizes for different screens -->\n<img srcset="photo-400.jpg 400w,\n             photo-800.jpg 800w,\n             photo-1200.jpg 1200w"\n     sizes="(max-width: 640px) 100vw,\n            (max-width: 1024px) 50vw,\n            33vw"\n     src="photo-800.jpg"\n     alt="Landscape" />`,
+          },
+        ],
+        keyTakeaway:
+          'Use max-width: 100% for basic responsiveness and srcset with sizes for optimized image delivery across devices.',
+      },
+    ],
+    commonMistakes: [
+      { mistake: 'Using px for everything instead of relative units', explanation: 'Pixels do not scale with user preferences or screen sizes. Use rem for text, em for component spacing, and vw/vh for viewport-relative sizing.' },
+      { mistake: 'Forgetting the viewport meta tag', explanation: 'Without <meta name="viewport" content="width=device-width, initial-scale=1.0">, mobile browsers render pages at desktop width.' },
+      { mistake: 'Targeting specific devices instead of content-based breakpoints', explanation: 'Device sizes change yearly. Set breakpoints where your layout breaks, not where a specific phone screen ends.' },
+      { mistake: 'Not testing on real devices', explanation: 'Browser DevTools emulation misses touch targets, real scroll behavior, and performance issues. Test on actual phones.' },
+    ],
+    practiceQuestions: [
+      'What is the difference between min-width and max-width media queries? Which is mobile-first?',
+      'Write CSS that creates a 3-column layout on desktop, 2 columns on tablet, and 1 column on mobile.',
+      'Explain how srcset and sizes attributes work together for responsive images.',
+      'Use clamp() to create a heading that scales from 1.5rem on mobile to 3rem on desktop.',
+    ],
+  },
+
+  // ───────────────────────────────────────────────
+  // 5. React Basics
+  // ───────────────────────────────────────────────
+  'react-basics': {
+    steps: [
+      {
+        title: 'Why React?',
+        content:
+          'React lets you build UIs from small, reusable pieces called components. Instead of manipulating the DOM directly, you describe what the UI should look like and React updates it efficiently.',
+        analogy:
+          'React components are like LEGO bricks. Each brick is self-contained with its own shape and color. You snap them together to build complex structures, and you can swap out individual bricks without rebuilding the whole thing.',
+        comparison: {
+          leftTitle: 'Vanilla JS',
+          rightTitle: 'React',
+          leftColor: 'amber',
+          rightColor: 'blue',
+          items: [
+            { left: 'Manually update DOM nodes', right: 'Declare UI, React updates for you' },
+            { left: 'State scattered across the DOM', right: 'State lives in component variables' },
+            { left: 'Hard to reuse UI pieces', right: 'Components are reusable by design' },
+            { left: 'Page reloads for navigation', right: 'Client-side routing, no reloads' },
+          ],
+        },
+        keyTakeaway:
+          'React\'s component model lets you build complex UIs from simple, reusable pieces with declarative state management.',
+      },
+      {
+        title: 'JSX — HTML in JavaScript',
+        content:
+          'JSX is a syntax extension that lets you write HTML-like code inside JavaScript. The build tool converts it to function calls that create DOM elements.',
+        code: [
+          {
+            language: 'tsx',
+            label: 'JSX basics',
+            code: `// JSX looks like HTML but lives in JavaScript\nfunction Welcome() {\n  const name = "Alice";\n  const isLoggedIn = true;\n\n  return (\n    <div className="card">\n      <h1>Hello, {name}!</h1>         {/* expressions in braces */}\n      {isLoggedIn && <p>Welcome back</p>}  {/* conditional */}\n      <ul>\n        {["React", "Vue", "Svelte"].map(fw => (\n          <li key={fw}>{fw}</li>        /* lists need keys */\n        ))}\n      </ul>\n    </div>\n  );\n}`,
+          },
+        ],
+        bullets: [
+          '**className** instead of class (class is a reserved word in JS).',
+          '**{expression}** — curly braces embed any JavaScript expression.',
+          '**key** attribute is required on list items so React can track changes efficiently.',
+          '**Self-closing tags** — <img />, <input />, <br /> must be closed.',
+        ],
+        keyTakeaway:
+          'JSX lets you write HTML-like syntax in JavaScript. Use curly braces for dynamic expressions and always provide key props for lists.',
+      },
+      {
+        title: 'Components and Props',
+        content:
+          'Components are functions that return JSX. Props are the arguments you pass to customize them — like function parameters for your UI.',
+        analogy:
+          'A component is like a cookie cutter. It defines the shape. Props are the dough — they determine the flavor and color of each cookie you make with that cutter.',
+        code: [
+          {
+            language: 'tsx',
+            label: 'Creating and using components',
+            code: `// A reusable component with props\nfunction UserCard({ name, role, avatar }: {\n  name: string;\n  role: string;\n  avatar: string;\n}) {\n  return (\n    <div className="card">\n      <img src={avatar} alt={name} />\n      <h2>{name}</h2>\n      <p>{role}</p>\n    </div>\n  );\n}\n\n// Using the component\nfunction Team() {\n  return (\n    <div>\n      <UserCard name="Alice" role="Engineer" avatar="/alice.jpg" />\n      <UserCard name="Bob" role="Designer" avatar="/bob.jpg" />\n    </div>\n  );\n}`,
+          },
+        ],
+        keyTakeaway:
+          'Components are reusable UI functions. Props flow one way (parent to child) and make components configurable.',
+      },
+      {
+        title: 'State — Making Things Interactive',
+        content:
+          'State is data that changes over time within a component. When state updates, React re-renders the component with the new values.',
+        code: [
+          {
+            language: 'tsx',
+            label: 'useState basics',
+            code: `import { useState } from "react";\n\nfunction Counter() {\n  // Declare state: [currentValue, updaterFunction]\n  const [count, setCount] = useState(0);\n\n  return (\n    <div>\n      <p>Count: {count}</p>\n      <button onClick={() => setCount(count + 1)}>\n        Increment\n      </button>\n      <button onClick={() => setCount(0)}>\n        Reset\n      </button>\n    </div>\n  );\n}`,
+          },
+        ],
+        flow: [
+          { label: 'User Clicks', description: 'Event triggers handler', icon: '👆' },
+          { label: 'setState Called', description: 'New state value queued', icon: '📝' },
+          { label: 'Re-render', description: 'Component function runs again', icon: '🔄' },
+          { label: 'DOM Updated', description: 'React patches only what changed', icon: '✅' },
+        ],
+        keyTakeaway:
+          'useState gives components memory. Calling the setter triggers a re-render with the new value — React handles the DOM updates.',
+      },
+      {
+        title: 'Conditional Rendering and Lists',
+        content:
+          'React renders different UI based on state using standard JavaScript — ternaries, && operators, and map for lists.',
+        code: [
+          {
+            language: 'tsx',
+            label: 'Conditionals and lists',
+            code: `function TodoApp() {\n  const [todos, setTodos] = useState([\n    { id: 1, text: "Learn React", done: true },\n    { id: 2, text: "Build a project", done: false },\n  ]);\n\n  return (\n    <div>\n      <h1>Todos ({todos.filter(t => !t.done).length} left)</h1>\n\n      {todos.length === 0\n        ? <p>No todos yet!</p>           /* ternary */\n        : (\n          <ul>\n            {todos.map(todo => (           /* list rendering */\n              <li key={todo.id}\n                  style={{\n                    textDecoration: todo.done\n                      ? "line-through" : "none"\n                  }}>\n                {todo.text}\n              </li>\n            ))}\n          </ul>\n        )}\n    </div>\n  );\n}`,
+          },
+        ],
+        keyTakeaway:
+          'Use ternary operators for if/else, && for conditional display, and .map() with key props for lists.',
+      },
+    ],
+    commonMistakes: [
+      { mistake: 'Mutating state directly instead of using the setter', explanation: 'React does not detect direct mutations. Always call setX() with a new value. For objects/arrays, spread to create a copy.' },
+      { mistake: 'Missing key prop on list items', explanation: 'Without unique keys, React cannot efficiently track which items changed, moved, or were removed, causing bugs and poor performance.' },
+      { mistake: 'Calling the state setter in the render body (outside event handlers)', explanation: 'This causes an infinite re-render loop. State updates should happen in event handlers, useEffect, or callbacks.' },
+      { mistake: 'Using index as key for dynamic lists', explanation: 'If items are reordered, added, or removed, index keys cause React to re-render the wrong items. Use unique IDs instead.' },
+    ],
+    practiceQuestions: [
+      'What is JSX and how does it differ from HTML? Name three differences.',
+      'Build a toggle component that switches between "ON" and "OFF" when clicked, using useState.',
+      'Explain why keys are important when rendering lists in React.',
+      'What is the difference between props and state? When would you use each?',
+      'Create a UserCard component that accepts name, email, and avatar props and renders a card.',
+    ],
+  },
+
+  // ───────────────────────────────────────────────
+  // 6. React State & Effects
+  // ───────────────────────────────────────────────
+  'react-state-and-effects': {
+    steps: [
+      {
+        title: 'useState Deep Dive',
+        content:
+          'useState can hold any value — numbers, strings, booleans, arrays, and objects. When updating objects or arrays, always create a new reference.',
+        code: [
+          {
+            language: 'tsx',
+            label: 'State with objects and arrays',
+            code: `const [user, setUser] = useState({ name: "Alice", age: 25 });\n\n// WRONG — mutating directly (React won't re-render)\nuser.age = 26;\n\n// RIGHT — spread to create a new object\nsetUser({ ...user, age: 26 });\n\n// Arrays — adding an item\nconst [items, setItems] = useState(["apple"]);\nsetItems([...items, "banana"]); // new array\n\n// Arrays — removing an item\nsetItems(items.filter(item => item !== "apple"));\n\n// Arrays — updating an item\nsetItems(items.map(item =>\n  item === "apple" ? "green apple" : item\n));`,
+          },
+        ],
+        keyTakeaway:
+          'Never mutate state directly. Use spread for objects and map/filter for arrays to create new references that trigger re-renders.',
+      },
+      {
+        title: 'useEffect — Side Effects',
+        content:
+          'Side effects are operations that reach outside the component — fetching data, setting timers, or subscribing to events. useEffect runs after the component renders.',
+        analogy:
+          'useEffect is like a post-it note that says "after you finish painting the wall, go buy more supplies." The painting (render) happens first, then the side effect runs.',
+        code: [
+          {
+            language: 'tsx',
+            label: 'useEffect patterns',
+            code: `import { useState, useEffect } from "react";\n\nfunction Timer() {\n  const [seconds, setSeconds] = useState(0);\n\n  // Runs ONCE on mount (empty dependency array)\n  useEffect(() => {\n    const id = setInterval(() => {\n      setSeconds(s => s + 1); // updater function\n    }, 1000);\n\n    // Cleanup — runs on unmount\n    return () => clearInterval(id);\n  }, []); // [] = run only once\n\n  return <p>Seconds: {seconds}</p>;\n}`,
+          },
+        ],
+        flow: [
+          { label: 'Component Renders', description: 'JSX is computed', icon: '🎨' },
+          { label: 'DOM Updated', description: 'Browser paints', icon: '🖥️' },
+          { label: 'Effect Runs', description: 'Side effect executes', icon: '⚡' },
+          { label: 'Cleanup', description: 'Previous effect cleaned up', icon: '🧹' },
+        ],
+        keyTakeaway:
+          'useEffect runs after render. The dependency array controls when it re-runs, and the cleanup function prevents memory leaks.',
+      },
+      {
+        title: 'Dependency Array Rules',
+        content:
+          'The dependency array tells React when to re-run the effect. Getting it wrong is the #1 source of useEffect bugs.',
+        table: {
+          headers: ['Dependency Array', 'When Effect Runs', 'Use Case'],
+          rows: [
+            ['No array', 'After every render', 'Rare — logging, debugging'],
+            ['[]', 'Only on mount', 'Fetch initial data, setup subscriptions'],
+            ['[a, b]', 'When a or b changes', 'Fetch when ID changes, sync with state'],
+          ],
+        },
+        code: [
+          {
+            language: 'tsx',
+            label: 'Fetching data when an ID changes',
+            code: `function UserProfile({ userId }: { userId: string }) {\n  const [user, setUser] = useState(null);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    setLoading(true);\n    fetch(\`/api/users/\${userId}\`)\n      .then(res => res.json())\n      .then(data => {\n        setUser(data);\n        setLoading(false);\n      });\n  }, [userId]); // re-fetch when userId changes\n\n  if (loading) return <p>Loading...</p>;\n  return <h1>{user?.name}</h1>;\n}`,
+          },
+        ],
+        keyTakeaway:
+          'Always include every variable your effect reads in the dependency array. An empty array means "run once on mount."',
+      },
+      {
+        title: 'Component Lifecycle with Hooks',
+        content:
+          'Class components had lifecycle methods (componentDidMount, componentDidUpdate, componentWillUnmount). Hooks replace all of them with useEffect.',
+        comparison: {
+          leftTitle: 'Class Lifecycle',
+          rightTitle: 'Hooks Equivalent',
+          leftColor: 'amber',
+          rightColor: 'blue',
+          items: [
+            { left: 'componentDidMount', right: 'useEffect(() => {}, [])' },
+            { left: 'componentDidUpdate', right: 'useEffect(() => {}, [dep])' },
+            { left: 'componentWillUnmount', right: 'useEffect cleanup return' },
+            { left: 'shouldComponentUpdate', right: 'React.memo()' },
+          ],
+        },
+        keyTakeaway:
+          'useEffect with different dependency arrays replaces all class lifecycle methods. The cleanup function handles unmount logic.',
+      },
+      {
+        title: 'useRef and Custom Hooks',
+        content:
+          'useRef holds a mutable value that persists across renders without causing re-renders. Custom hooks let you extract and reuse stateful logic.',
+        code: [
+          {
+            language: 'tsx',
+            label: 'useRef and custom hooks',
+            code: `// useRef — access DOM element\nfunction FocusInput() {\n  const inputRef = useRef<HTMLInputElement>(null);\n\n  return (\n    <>\n      <input ref={inputRef} />\n      <button onClick={() => inputRef.current?.focus()}>\n        Focus\n      </button>\n    </>\n  );\n}\n\n// Custom hook — reusable logic\nfunction useLocalStorage<T>(key: string, initial: T) {\n  const [value, setValue] = useState<T>(() => {\n    const stored = localStorage.getItem(key);\n    return stored ? JSON.parse(stored) : initial;\n  });\n\n  useEffect(() => {\n    localStorage.setItem(key, JSON.stringify(value));\n  }, [key, value]);\n\n  return [value, setValue] as const;\n}`,
+          },
+        ],
+        keyTakeaway:
+          'useRef gives you a persistent mutable box. Custom hooks (use-prefixed functions) let you reuse stateful logic across components.',
+      },
+    ],
+    commonMistakes: [
+      { mistake: 'Missing dependencies in the useEffect array', explanation: 'If your effect reads a variable but it is not in the dependency array, the effect uses stale values. The ESLint exhaustive-deps rule catches this.' },
+      { mistake: 'Forgetting the cleanup function in useEffect', explanation: 'Subscriptions, timers, and event listeners that are not cleaned up cause memory leaks. Always return a cleanup function.' },
+      { mistake: 'Creating infinite loops with useEffect', explanation: 'If the effect updates a state variable that is in its own dependency array, it triggers itself infinitely. Restructure the logic or use a ref.' },
+      { mistake: 'Using useRef when useState is needed', explanation: 'useRef does not trigger re-renders. If the UI should update when the value changes, use useState instead.' },
+    ],
+    practiceQuestions: [
+      'Explain the difference between useEffect with no dependency array, an empty array, and an array with values.',
+      'Write a custom hook called useWindowSize that tracks the browser window width and height.',
+      'Why does updating an object in state require spreading instead of direct mutation?',
+      'Build a component that fetches data from an API on mount, shows a loading spinner, and handles errors.',
+    ],
+  },
+
+  // ───────────────────────────────────────────────
+  // 7. API Integration
+  // ───────────────────────────────────────────────
+  'api-integration': {
+    steps: [
+      {
+        title: 'What is an API?',
+        content:
+          'An API (Application Programming Interface) is a contract between your frontend and a server. You send an HTTP request with a specific shape, and you get a structured response back.',
+        analogy:
+          'An API is like a restaurant menu. The menu lists what you can order (endpoints), what information the kitchen needs (request body), and what you will get back (response). You do not walk into the kitchen — you use the waiter (HTTP).',
+        flow: [
+          { label: 'Frontend', description: 'Sends HTTP request', icon: '📤' },
+          { label: 'Internet', description: 'Routes to server', icon: '🌐' },
+          { label: 'Server', description: 'Processes request', icon: '⚙️' },
+          { label: 'Database', description: 'Reads/writes data', icon: '🗄️' },
+          { label: 'Response', description: 'JSON sent back', icon: '📥' },
+        ],
+        keyTakeaway:
+          'APIs are the bridge between frontend and backend. You communicate through HTTP requests and receive structured JSON responses.',
+      },
+      {
+        title: 'Fetch and Async/Await',
+        content:
+          'The fetch API is built into every browser. Combined with async/await, it makes HTTP calls clean and readable.',
+        code: [
+          {
+            language: 'typescript',
+            label: 'Fetching data with async/await',
+            code: `// GET request — fetch data\nasync function getUsers(): Promise<User[]> {\n  const response = await fetch("/api/users");\n\n  if (!response.ok) {\n    throw new Error(\`HTTP \${response.status}\`);\n  }\n\n  return response.json(); // parse JSON body\n}\n\n// POST request — send data\nasync function createUser(data: { name: string; email: string }) {\n  const response = await fetch("/api/users", {\n    method: "POST",\n    headers: { "Content-Type": "application/json" },\n    body: JSON.stringify(data),\n  });\n\n  if (!response.ok) {\n    const error = await response.json();\n    throw new Error(error.message);\n  }\n\n  return response.json();\n}`,
+          },
+        ],
+        keyTakeaway:
+          'Use fetch with async/await for clean HTTP calls. Always check response.ok and parse the JSON body.',
+      },
+      {
+        title: 'Loading, Error, and Empty States',
+        content:
+          'Every API call has three phases: loading, success, and error. A good UI handles all three with clear visual feedback.',
+        code: [
+          {
+            language: 'tsx',
+            label: 'Complete data fetching pattern',
+            code: `function UserList() {\n  const [users, setUsers] = useState<User[]>([]);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState<string | null>(null);\n\n  useEffect(() => {\n    fetch("/api/users")\n      .then(res => {\n        if (!res.ok) throw new Error("Failed to fetch");\n        return res.json();\n      })\n      .then(data => setUsers(data))\n      .catch(err => setError(err.message))\n      .finally(() => setLoading(false));\n  }, []);\n\n  if (loading) return <Spinner />;\n  if (error) return <ErrorBanner message={error} />;\n  if (users.length === 0) return <EmptyState />;\n\n  return (\n    <ul>\n      {users.map(u => <li key={u.id}>{u.name}</li>)}\n    </ul>\n  );\n}`,
+          },
+        ],
+        cards: [
+          { title: 'Loading', description: 'Show spinner or skeleton while waiting', icon: '⏳', color: 'blue' },
+          { title: 'Error', description: 'Show message with retry button', icon: '❌', color: 'red' },
+          { title: 'Empty', description: 'Show helpful message when no data exists', icon: '📭', color: 'amber' },
+          { title: 'Success', description: 'Render the actual data', icon: '✅', color: 'emerald' },
+        ],
+        keyTakeaway:
+          'Always handle loading, error, and empty states. Users should never see a blank screen or unhandled error.',
+      },
+      {
+        title: 'HTTP Methods and Status Codes',
+        content:
+          'REST APIs use HTTP methods to indicate the action and status codes to communicate the result.',
+        table: {
+          headers: ['Method', 'Purpose', 'Example'],
+          rows: [
+            ['GET', 'Read data', 'GET /api/users'],
+            ['POST', 'Create data', 'POST /api/users'],
+            ['PUT', 'Replace data', 'PUT /api/users/123'],
+            ['PATCH', 'Partial update', 'PATCH /api/users/123'],
+            ['DELETE', 'Remove data', 'DELETE /api/users/123'],
+          ],
+        },
+        code: [
+          {
+            language: 'typescript',
+            label: 'CRUD operations',
+            code: `// Full CRUD example\nconst API = "/api/todos";\n\n// Create\nawait fetch(API, {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({ text: "Buy milk" }),\n});\n\n// Read\nconst todos = await fetch(API).then(r => r.json());\n\n// Update\nawait fetch(\`\${API}/1\`, {\n  method: "PATCH",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({ done: true }),\n});\n\n// Delete\nawait fetch(\`\${API}/1\`, { method: "DELETE" });`,
+          },
+        ],
+        keyTakeaway:
+          'Use the right HTTP method for each operation: GET to read, POST to create, PATCH to update, DELETE to remove.',
+      },
+      {
+        title: 'Authentication Headers',
+        content:
+          'Most APIs require authentication. The common pattern is sending a JWT token in the Authorization header with every request.',
+        code: [
+          {
+            language: 'typescript',
+            label: 'Authenticated API calls',
+            code: `// Helper that adds auth header automatically\nasync function apiFetch(url: string, options: RequestInit = {}) {\n  const token = localStorage.getItem("token");\n\n  const response = await fetch(url, {\n    ...options,\n    headers: {\n      "Content-Type": "application/json",\n      ...(token && { Authorization: \`Bearer \${token}\` }),\n      ...options.headers,\n    },\n  });\n\n  // Handle expired token\n  if (response.status === 401) {\n    localStorage.removeItem("token");\n    window.location.href = "/login";\n    throw new Error("Session expired");\n  }\n\n  return response;\n}`,
+          },
+        ],
+        keyTakeaway:
+          'Wrap fetch in a helper that automatically attaches the auth token and handles 401 (unauthorized) responses globally.',
+      },
+    ],
+    commonMistakes: [
+      { mistake: 'Not checking response.ok before parsing', explanation: 'fetch does not throw on 4xx/5xx errors. A 404 response is still a "successful" fetch. Always check response.ok or response.status.' },
+      { mistake: 'Storing sensitive tokens in localStorage', explanation: 'localStorage is vulnerable to XSS attacks. For high-security apps, use httpOnly cookies. For SPAs, localStorage is a common trade-off but sanitize all inputs.' },
+      { mistake: 'Firing API calls without cleanup in useEffect', explanation: 'If the component unmounts before the fetch completes, calling setState on an unmounted component causes a warning. Use an AbortController.' },
+      { mistake: 'Not handling the empty state', explanation: 'An empty array from the API is not an error, but showing nothing confuses users. Always show a helpful empty state message.' },
+    ],
+    practiceQuestions: [
+      'Write a custom hook useFetch(url) that returns { data, loading, error } and refetches when the URL changes.',
+      'Explain the difference between PUT and PATCH. When would you use each?',
+      'How would you handle token refresh when a 401 response is returned?',
+      'Build a search component that calls an API as the user types, with debouncing to avoid too many requests.',
+    ],
+  },
+
+  // ───────────────────────────────────────────────
+  // 8. Build & Deploy
+  // ───────────────────────────────────────────────
+  'build-and-deploy': {
+    steps: [
+      {
+        title: 'What Happens at Build Time',
+        content:
+          'A build tool transforms your development code into optimized files browsers can understand. It bundles modules, compiles TypeScript/JSX, minifies code, and tree-shakes unused exports.',
+        analogy:
+          'Building is like packaging a product for shipping. You take raw materials (source code), assemble them (bundle), shrink-wrap them (minify), and remove packing peanuts (tree-shake) so the box is as small and efficient as possible.',
+        flow: [
+          { label: 'Source Code', description: 'JSX, TS, CSS modules', icon: '📝' },
+          { label: 'Compile', description: 'TypeScript → JavaScript, JSX → JS', icon: '⚙️' },
+          { label: 'Bundle', description: 'Combine into fewer files', icon: '📦' },
+          { label: 'Minify', description: 'Remove whitespace, shorten names', icon: '🗜️' },
+          { label: 'Tree-shake', description: 'Remove unused code', icon: '🌿' },
+          { label: 'Output', description: 'Optimized static files', icon: '✅' },
+        ],
+        keyTakeaway:
+          'The build process compiles, bundles, minifies, and tree-shakes your code into optimized files ready for production.',
+      },
+      {
+        title: 'Vite — The Modern Build Tool',
+        content:
+          'Vite is the fastest build tool for modern web apps. It uses native ES modules for development (instant start) and Rollup for production builds.',
+        code: [
+          {
+            language: 'bash',
+            label: 'Create a Vite project',
+            code: `# Create a new React + TypeScript project\nnpm create vite@latest my-app -- --template react-ts\ncd my-app\nnpm install\n\n# Development — instant hot module replacement\nnpm run dev\n\n# Production build — optimized output\nnpm run build\n\n# Preview the production build locally\nnpm run preview`,
+          },
+        ],
+        comparison: {
+          leftTitle: 'Webpack',
+          rightTitle: 'Vite',
+          leftColor: 'amber',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Bundles everything before serving', right: 'Serves files individually via ESM' },
+            { left: 'Slow cold start (seconds)', right: 'Instant cold start' },
+            { left: 'Complex configuration', right: 'Zero-config for most projects' },
+            { left: 'Mature plugin ecosystem', right: 'Growing plugin ecosystem' },
+          ],
+        },
+        keyTakeaway:
+          'Vite provides instant dev server startup and fast builds. It is the recommended build tool for new React projects.',
+      },
+      {
+        title: 'Environment Variables',
+        content:
+          'Environment variables let you configure your app differently for development, staging, and production without changing code.',
+        code: [
+          {
+            language: 'bash',
+            label: '.env files',
+            code: `# .env.local — local development (git-ignored)\nVITE_API_URL=http://localhost:3001\nVITE_APP_NAME=MyApp\n\n# .env.production — production values\nVITE_API_URL=https://api.myapp.com\nVITE_APP_NAME=MyApp`,
+          },
+          {
+            language: 'typescript',
+            label: 'Using env vars in code',
+            code: `// Vite exposes env vars prefixed with VITE_\nconst apiUrl = import.meta.env.VITE_API_URL;\n\nfetch(\`\${apiUrl}/api/users\`);`,
+          },
+        ],
+        bullets: [
+          '**Never commit secrets** — .env.local should be in .gitignore.',
+          '**Prefix matters** — Vite only exposes variables starting with VITE_. Next.js uses NEXT_PUBLIC_.',
+          '**Build-time replacement** — env vars are baked into the bundle at build time, not read at runtime.',
+        ],
+        keyTakeaway:
+          'Use .env files for configuration. Only prefix-exposed variables are included in the bundle — never put secrets in frontend env vars.',
+      },
+      {
+        title: 'Deploying to Vercel',
+        content:
+          'Vercel is the easiest way to deploy a frontend app. Connect your GitHub repo and it automatically builds and deploys on every push.',
+        flow: [
+          { label: 'Push to GitHub', description: 'Commit and push code', icon: '📤' },
+          { label: 'Vercel Detects', description: 'Webhook triggers build', icon: '🔔' },
+          { label: 'Build Runs', description: 'npm run build in the cloud', icon: '🏗️' },
+          { label: 'Deploy', description: 'Static files served on CDN', icon: '🌍' },
+          { label: 'Live URL', description: 'your-app.vercel.app', icon: '✅' },
+        ],
+        code: [
+          {
+            language: 'bash',
+            label: 'Deploy with Vercel CLI',
+            code: `# Install Vercel CLI\nnpm i -g vercel\n\n# Deploy from project root\nvercel\n\n# Deploy to production\nvercel --prod\n\n# Set environment variables\nvercel env add VITE_API_URL`,
+          },
+        ],
+        keyTakeaway:
+          'Vercel and Netlify offer zero-config deployment. Connect your repo and every push automatically builds and deploys.',
+      },
+      {
+        title: 'Performance Optimization',
+        content:
+          'A fast site means better user experience and higher SEO rankings. Focus on the three Core Web Vitals that Google measures.',
+        table: {
+          headers: ['Metric', 'What It Measures', 'Target'],
+          rows: [
+            ['LCP', 'Largest Contentful Paint — loading speed', '< 2.5 seconds'],
+            ['FID', 'First Input Delay — interactivity', '< 100 ms'],
+            ['CLS', 'Cumulative Layout Shift — visual stability', '< 0.1'],
+          ],
+        },
+        bullets: [
+          '**Code splitting** — Use React.lazy() and dynamic imports to load pages on demand.',
+          '**Image optimization** — Use next/image or modern formats like WebP/AVIF.',
+          '**Caching** — Set proper Cache-Control headers for static assets.',
+          '**Bundle analysis** — Use vite-plugin-visualizer to find large dependencies.',
+        ],
+        code: [
+          {
+            language: 'tsx',
+            label: 'Lazy loading a route',
+            code: `import { lazy, Suspense } from "react";\n\n// Load the component only when needed\nconst Dashboard = lazy(() => import("./pages/Dashboard"));\n\nfunction App() {\n  return (\n    <Suspense fallback={<Spinner />}>\n      <Dashboard />\n    </Suspense>\n  );\n}`,
+          },
+        ],
+        keyTakeaway:
+          'Optimize for Core Web Vitals with code splitting, image optimization, and proper caching. Use Lighthouse to measure.',
+      },
+    ],
+    commonMistakes: [
+      { mistake: 'Committing .env files with secrets to version control', explanation: 'Anyone with repo access can see your API keys. Add .env.local to .gitignore and use platform env vars for production.' },
+      { mistake: 'Not code-splitting large pages', explanation: 'Shipping one giant bundle means users download code for pages they never visit. Use React.lazy() for route-based splitting.' },
+      { mistake: 'Ignoring build warnings', explanation: 'TypeScript errors, unused imports, and large bundle warnings often indicate real problems. Fix them before deploying.' },
+      { mistake: 'Forgetting to set environment variables in production', explanation: 'Your app works locally because of .env.local, but the production build has no env vars unless you set them in Vercel/Netlify.' },
+    ],
+    practiceQuestions: [
+      'Explain the difference between development and production builds. What optimizations does a production build apply?',
+      'How do environment variables work in Vite? Why must they be prefixed with VITE_?',
+      'Set up a Vite project with React and TypeScript, then deploy it to Vercel.',
+      'What is tree-shaking and how does it reduce bundle size?',
+      'Use React.lazy and Suspense to lazy-load a page component.',
+    ],
+  },
+};
