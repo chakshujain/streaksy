@@ -19,6 +19,8 @@ export const backendLessons: Record<
           'The web runs on a simple idea: clients ask questions, servers answer them. Your browser is a client. When you type a URL, it sends a request to a server, which sends back the page.',
         analogy:
           'Think of a restaurant. You (the client) sit at a table, look at the menu, and place an order. The waiter (HTTP) carries your order to the kitchen (server), which prepares your food (data) and sends it back.',
+        diagram:
+          'Request-Response Cycle:\n\n  ┌──────────┐                    ┌──────────┐\n  │  Client  │── HTTP Request ──►│  Server  │\n  │ (Browser)│   GET /api/users  │ (Node.js)│\n  │          │                   │          │\n  │          │◄─ HTTP Response ──│          │\n  │          │   200 OK + JSON   │          │\n  └──────────┘                    └────┬─────┘\n                                       │\n                                       ▼\n                                 ┌──────────┐\n                                 │ Database │\n                                 │(Postgres)│\n                                 └──────────┘',
         flow: [
           { label: 'Client', description: 'Browser sends HTTP request', icon: '💻' },
           { label: 'DNS', description: 'Domain resolved to IP', icon: '📖' },
@@ -33,6 +35,14 @@ export const backendLessons: Record<
         title: 'HTTP — The Language of the Web',
         content:
           'HTTP (HyperText Transfer Protocol) defines how messages are formatted and transmitted. Every request has a method, URL, headers, and optionally a body.',
+        cards: [
+          { title: 'GET', description: 'Read data — no request body', icon: '📖', color: 'blue' },
+          { title: 'POST', description: 'Create new resource with body', icon: '➕', color: 'emerald' },
+          { title: 'PUT', description: 'Replace entire resource', icon: '🔄', color: 'purple' },
+          { title: 'PATCH', description: 'Partial update to resource', icon: '✏️', color: 'amber' },
+          { title: 'DELETE', description: 'Remove a resource', icon: '🗑️', color: 'red' },
+          { title: 'HEAD', description: 'GET without response body', icon: '📋', color: 'cyan' },
+        ],
         code: [
           {
             language: 'bash',
@@ -58,6 +68,8 @@ export const backendLessons: Record<
         title: 'Building a Raw HTTP Server',
         content:
           'Node.js has a built-in http module that lets you create a server in a few lines. This is the foundation that frameworks like Express build on.',
+        diagram:
+          'Node.js HTTP Server:\n\n  Incoming Request\n       │\n       ▼\n  ┌─────────────────────┐\n  │  http.createServer  │\n  │  (req, res) => {    │\n  │                     │\n  │  req.method  "GET"  │\n  │  req.url     "/api" │\n  │  req.headers {...}  │\n  │                     │\n  │  res.writeHead(200) │\n  │  res.end(json)      │\n  │  }                  │\n  └─────────────────────┘\n       │\n       ▼\n  Response sent to client',
         code: [
           {
             language: 'javascript',
@@ -79,6 +91,13 @@ export const backendLessons: Record<
           { title: 'Data Storage', description: 'Read/write to databases', icon: '💾', color: 'amber' },
           { title: 'Auth', description: 'Verify who the user is', icon: '🔐', color: 'red' },
           { title: 'Responses', description: 'Format and send data back', icon: '📤', color: 'cyan' },
+        ],
+        flow: [
+          { label: 'Request In', description: 'HTTP arrives at server', icon: '📨' },
+          { label: 'Route Match', description: 'Find the right handler', icon: '🗺️' },
+          { label: 'Validate', description: 'Check input data', icon: '✅' },
+          { label: 'Process', description: 'Business logic + DB', icon: '⚙️' },
+          { label: 'Respond', description: 'Send JSON back', icon: '📤' },
         ],
         keyTakeaway:
           'A backend handles routing, validation, business logic, data storage, and authentication — not just serving files.',
@@ -106,7 +125,7 @@ export const backendLessons: Record<
         content:
           'Node.js runs JavaScript outside the browser using the V8 engine. Its non-blocking, event-driven architecture makes it great for I/O-heavy tasks like APIs and real-time apps.',
         analogy:
-          'Node.js is like a chef who takes orders non-stop without waiting. When a dish needs time in the oven, the chef moves to the next order and comes back when the timer beeps. This is non-blocking I/O.',
+          'Node.js is like a chef who takes orders non-stop without waiting. When a dish needs time in the oven, the chef moves to the next order and comes back when the timer beeps.',
         comparison: {
           leftTitle: 'Traditional (Blocking)',
           rightTitle: 'Node.js (Non-blocking)',
@@ -119,6 +138,8 @@ export const backendLessons: Record<
             { left: 'Good for CPU-heavy work', right: 'Great for I/O-heavy work (APIs, chat)' },
           ],
         },
+        diagram:
+          'Node.js Event Loop:\n\n  Incoming Requests\n  ──►──►──►──►──►\n       │\n       ▼\n  ┌─────────────────┐\n  │   Event Queue   │\n  │  [req1][req2].. │\n  └────────┬────────┘\n           │\n           ▼\n  ┌─────────────────┐     ┌───────────────┐\n  │   Event Loop    │────►│  Thread Pool  │\n  │  (single thread)│     │  (I/O: DB,    │\n  │                 │◄────│   file, net)  │\n  └────────┬────────┘     └───────────────┘\n           │\n           ▼\n  Responses sent back\n  ◄──◄──◄──◄──◄──',
         keyTakeaway:
           'Node.js uses a single-threaded event loop with non-blocking I/O, making it efficient for concurrent API requests and real-time applications.',
       },
@@ -138,6 +159,12 @@ export const backendLessons: Record<
             code: `import express from "express";\n\nconst app = express();\n\n// Parse JSON request bodies\napp.use(express.json());\n\n// Define a route\napp.get("/api/hello", (req, res) => {\n  res.json({ message: "Hello from Express!" });\n});\n\n// Start the server\napp.listen(3001, () => {\n  console.log("Server running on http://localhost:3001");\n});`,
           },
         ],
+        bullets: [
+          '**express()** creates an app instance with routing and middleware.',
+          '**express.json()** parses incoming JSON request bodies.',
+          '**app.get/post/put/delete** define route handlers.',
+          '**app.listen** starts the server on a port.',
+        ],
         keyTakeaway:
           'Express simplifies Node.js server creation with clean routing and built-in middleware. A working API takes under 15 lines.',
       },
@@ -145,6 +172,15 @@ export const backendLessons: Record<
         title: 'Routing',
         content:
           'Routes match HTTP methods and URL patterns to handler functions. Express supports route parameters, query strings, and route grouping with Router.',
+        table: {
+          headers: ['Pattern', 'Example URL', 'req.params'],
+          rows: [
+            ['/users', '/users', '{}'],
+            ['/users/:id', '/users/123', '{ id: "123" }'],
+            ['/users/:id/posts', '/users/123/posts', '{ id: "123" }'],
+            ['/search?q=hello', '/search?q=hello', 'req.query.q = "hello"'],
+          ],
+        },
         code: [
           {
             language: 'typescript',
@@ -160,7 +196,9 @@ export const backendLessons: Record<
         content:
           'Middleware functions sit between the request and the response. Each can read/modify the request, send a response, or pass control to the next middleware.',
         analogy:
-          'Middleware is like airport security checkpoints. Each checkpoint (middleware) inspects your luggage (request), and either lets you pass to the next one or stops you. Only after passing all checkpoints do you board the plane (reach the route handler).',
+          'Middleware is like airport security checkpoints. Each checkpoint (middleware) inspects your luggage (request), and either lets you pass to the next one or stops you.',
+        diagram:
+          'Express Middleware Pipeline:\n\n  Request ──►┐\n             │\n  ┌──────────▼──────────┐\n  │   express.json()    │  Parse body\n  └──────────┬──────────┘\n             │\n  ┌──────────▼──────────┐\n  │   cors()            │  Set headers\n  └──────────┬──────────┘\n             │\n  ┌──────────▼──────────┐\n  │   logger()          │  Log request\n  └──────────┬──────────┘\n             │\n  ┌──────────▼──────────┐\n  │   requireAuth()     │  Check JWT\n  └──────────┬──────────┘\n             │\n  ┌──────────▼──────────┐\n  │   Route Handler     │  Process + respond\n  └─────────────────────┘',
         flow: [
           { label: 'Request', description: 'Incoming HTTP request', icon: '📨' },
           { label: 'Logger', description: 'Logs method, URL, time', icon: '📝' },
@@ -168,11 +206,17 @@ export const backendLessons: Record<
           { label: 'Validation', description: 'Checks request body', icon: '✅' },
           { label: 'Handler', description: 'Processes and responds', icon: '⚙️' },
         ],
+        cards: [
+          { title: 'Application-level', description: 'app.use() — runs on every request', icon: '🌐', color: 'blue' },
+          { title: 'Router-level', description: 'router.use() — runs on router routes', icon: '🗺️', color: 'purple' },
+          { title: 'Error-handling', description: '4 params: (err, req, res, next)', icon: '❌', color: 'red' },
+          { title: 'Third-party', description: 'cors, helmet, morgan, etc.', icon: '📦', color: 'emerald' },
+        ],
         code: [
           {
             language: 'typescript',
             label: 'Custom middleware',
-            code: `// Logging middleware\napp.use((req, res, next) => {\n  console.log(\`\${req.method} \${req.url}\`);\n  next(); // pass to next middleware\n});\n\n// Auth middleware\nfunction requireAuth(req, res, next) {\n  const token = req.headers.authorization?.split(" ")[1];\n  if (!token) return res.status(401).json({ error: "No token" });\n\n  try {\n    req.user = jwt.verify(token, SECRET);\n    next();\n  } catch {\n    res.status(401).json({ error: "Invalid token" });\n  }\n}\n\n// Use on specific routes\napp.get("/api/profile", requireAuth, (req, res) => {\n  res.json(req.user);\n});`,
+            code: `// Logging middleware\napp.use((req, res, next) => {\n  console.log(\`\\\${req.method} \\\${req.url}\`);\n  next(); // pass to next middleware\n});\n\n// Auth middleware\nfunction requireAuth(req, res, next) {\n  const token = req.headers.authorization?.split(" ")[1];\n  if (!token) return res.status(401).json({ error: "No token" });\n\n  try {\n    req.user = jwt.verify(token, SECRET);\n    next();\n  } catch {\n    res.status(401).json({ error: "Invalid token" });\n  }\n}\n\n// Use on specific routes\napp.get("/api/profile", requireAuth, (req, res) => {\n  res.json(req.user);\n});`,
           },
         ],
         keyTakeaway:
@@ -182,6 +226,12 @@ export const backendLessons: Record<
         title: 'Error Handling',
         content:
           'Express has a special error-handling middleware with four parameters. It catches errors thrown in route handlers and sends structured error responses.',
+        flow: [
+          { label: 'Error Thrown', description: 'In route or middleware', icon: '💥' },
+          { label: 'next(err)', description: 'Passed to error handler', icon: '➡️' },
+          { label: 'Error Middleware', description: '4-param handler catches it', icon: '🛡️' },
+          { label: 'Response', description: 'Structured error JSON', icon: '📤' },
+        ],
         code: [
           {
             language: 'typescript',
@@ -189,6 +239,17 @@ export const backendLessons: Record<
             code: `// Async handler wrapper — catches promise rejections\nconst asyncHandler = (fn) => (req, res, next) =>\n  Promise.resolve(fn(req, res, next)).catch(next);\n\n// Route using asyncHandler\napp.get("/api/users/:id", asyncHandler(async (req, res) => {\n  const user = await db.findUser(req.params.id);\n  if (!user) {\n    const err = new Error("User not found");\n    err.status = 404;\n    throw err; // caught by error handler below\n  }\n  res.json(user);\n}));\n\n// Error handler — MUST have 4 params\napp.use((err, req, res, next) => {\n  const status = err.status || 500;\n  res.status(status).json({\n    error: err.message,\n    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),\n  });\n});`,
           },
         ],
+        comparison: {
+          leftTitle: 'Without asyncHandler',
+          rightTitle: 'With asyncHandler',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Unhandled rejection crashes server', right: 'Errors caught and forwarded' },
+            { left: 'Need try/catch in every route', right: 'Clean route code, no try/catch' },
+            { left: 'Inconsistent error responses', right: 'Centralized error formatting' },
+          ],
+        },
         keyTakeaway:
           'Use asyncHandler to catch async errors and a centralized error middleware (4 parameters) to format all error responses consistently.',
       },
@@ -224,6 +285,19 @@ export const backendLessons: Record<
           '**Stateless** — each request contains all information needed. No session state on the server.',
           '**JSON** is the standard response format for modern APIs.',
         ],
+        comparison: {
+          leftTitle: 'REST',
+          rightTitle: 'GraphQL',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Multiple endpoints per resource', right: 'Single endpoint for everything' },
+            { left: 'Server decides response shape', right: 'Client specifies exactly what it needs' },
+            { left: 'Simple, well-understood', right: 'Flexible but more complex' },
+            { left: 'Over-fetching / under-fetching', right: 'Exact data, no waste' },
+            { left: 'Cacheable with HTTP headers', right: 'Needs custom caching' },
+          ],
+        },
         keyTakeaway:
           'REST models your data as resources (nouns) accessed via HTTP methods (verbs). Each request is self-contained and stateless.',
       },
@@ -267,6 +341,20 @@ export const backendLessons: Record<
           { title: '4xx Client Error', description: '400 Bad Request, 401 Unauthorized, 404 Not Found', icon: '⚠️', color: 'amber' },
           { title: '5xx Server Error', description: '500 Internal Error, 503 Unavailable', icon: '❌', color: 'red' },
         ],
+        table: {
+          headers: ['Code', 'Name', 'When to Use'],
+          rows: [
+            ['200', 'OK', 'Successful GET, PUT, PATCH'],
+            ['201', 'Created', 'Successful POST that creates a resource'],
+            ['204', 'No Content', 'Successful DELETE'],
+            ['400', 'Bad Request', 'Validation failed, malformed JSON'],
+            ['401', 'Unauthorized', 'Missing or invalid auth token'],
+            ['403', 'Forbidden', 'Authenticated but not allowed'],
+            ['404', 'Not Found', 'Resource does not exist'],
+            ['409', 'Conflict', 'Duplicate email, username taken'],
+            ['500', 'Internal Error', 'Unhandled server bug'],
+          ],
+        },
         code: [
           {
             language: 'typescript',
@@ -281,6 +369,8 @@ export const backendLessons: Record<
         title: 'Pagination, Filtering, and Sorting',
         content:
           'Real APIs return thousands of records. Pagination, filtering, and sorting let clients request exactly the data they need.',
+        diagram:
+          'Pagination Strategies:\n\n  Offset-Based:             Cursor-Based:\n  ?page=2&limit=10          ?cursor=abc123&limit=10\n\n  Page 1: items 1-10        First: items 1-10\n  Page 2: items 11-20       Next:  cursor=last_id\n  Page 3: items 21-30       Next:  cursor=last_id\n\n  ✓ Simple                  ✓ Consistent with inserts\n  ✗ Skips if rows added     ✓ Better for real-time data\n  ✗ Slow on large offsets   ✗ No "jump to page 5"',
         code: [
           {
             language: 'typescript',
@@ -295,13 +385,6 @@ export const backendLessons: Record<
         title: 'Versioning and Documentation',
         content:
           'APIs evolve. Versioning prevents breaking existing clients when you make changes. Documentation ensures developers can use your API.',
-        code: [
-          {
-            language: 'typescript',
-            label: 'API versioning with URL prefix',
-            code: `// Version in URL — most common approach\napp.use("/api/v1/users", usersV1Router);\napp.use("/api/v2/users", usersV2Router);\n\n// V1 returns basic user\n// V2 returns user with preferences`,
-          },
-        ],
         comparison: {
           leftTitle: 'URL Versioning',
           rightTitle: 'Header Versioning',
@@ -314,6 +397,19 @@ export const backendLessons: Record<
             { left: 'Most common approach', right: 'Used by GitHub API' },
           ],
         },
+        code: [
+          {
+            language: 'typescript',
+            label: 'API versioning with URL prefix',
+            code: `// Version in URL — most common approach\napp.use("/api/v1/users", usersV1Router);\napp.use("/api/v2/users", usersV2Router);\n\n// V1 returns basic user\n// V2 returns user with preferences`,
+          },
+        ],
+        bullets: [
+          '**Version from day one** — it is hard to add later.',
+          '**Deprecation policy** — give clients 6+ months to migrate.',
+          '**Document every endpoint** — include request/response examples.',
+          '**Use OpenAPI/Swagger** for auto-generated, interactive docs.',
+        ],
         keyTakeaway:
           'Version your API from day one using URL prefixes (/api/v1/). Document every endpoint with request/response examples.',
       },
@@ -340,9 +436,22 @@ export const backendLessons: Record<
       {
         title: 'Choosing a Database',
         content:
-          'Your choice of database shapes your entire architecture. For most web apps, PostgreSQL is the safe default — it handles relational data, JSON, and full-text search.',
+          'Your choice of database shapes your entire architecture. For most web apps, PostgreSQL is the safe default.',
         analogy:
           'Choosing a database is like choosing a vehicle. A sedan (PostgreSQL) handles most trips. A pickup truck (MongoDB) is great for hauling unstructured loads. A race car (Redis) is the fastest but carries almost nothing.',
+        comparison: {
+          leftTitle: 'SQL (Relational)',
+          rightTitle: 'NoSQL (Document)',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Fixed schema (tables, columns)', right: 'Flexible schema (JSON documents)' },
+            { left: 'ACID transactions', right: 'Eventual consistency (usually)' },
+            { left: 'JOINs across tables', right: 'Embedded/denormalized data' },
+            { left: 'PostgreSQL, MySQL, SQLite', right: 'MongoDB, DynamoDB, Firestore' },
+            { left: 'Best for structured, relational data', right: 'Best for flexible, rapidly changing schemas' },
+          ],
+        },
         table: {
           headers: ['Database', 'Type', 'Best For'],
           rows: [
@@ -360,6 +469,12 @@ export const backendLessons: Record<
         title: 'SQL Basics for Backend Devs',
         content:
           'SQL is how you talk to relational databases. Four operations cover 90% of backend work: SELECT, INSERT, UPDATE, DELETE.',
+        cards: [
+          { title: 'SELECT', description: 'Read data from tables', icon: '📖', color: 'blue' },
+          { title: 'INSERT', description: 'Add new rows to a table', icon: '➕', color: 'emerald' },
+          { title: 'UPDATE', description: 'Modify existing rows', icon: '✏️', color: 'amber' },
+          { title: 'DELETE', description: 'Remove rows from a table', icon: '🗑️', color: 'red' },
+        ],
         code: [
           {
             language: 'sql',
@@ -376,6 +491,8 @@ export const backendLessons: Record<
           'The pg library connects Node.js to PostgreSQL. Use a connection pool to reuse connections efficiently instead of creating a new one per request.',
         analogy:
           'A connection pool is like phone lines to a call center. Instead of installing a new phone line for each caller, you keep a fixed number of lines open and callers wait briefly for a free one.',
+        diagram:
+          'Connection Pool:\n\n  Express App\n  ┌──────────────────────────┐\n  │  Request 1 ──► conn #1  │\n  │  Request 2 ──► conn #2  ├──────► PostgreSQL\n  │  Request 3 ──► conn #3  │        Database\n  │  Request 4 ──  (waits)  │\n  │              ──► conn #1│  (conn #1 freed)\n  └──────────────────────────┘\n       Pool (max: 20 connections)',
         code: [
           {
             language: 'typescript',
@@ -390,6 +507,8 @@ export const backendLessons: Record<
         title: 'JOINs — Connecting Related Data',
         content:
           'Real applications store data across multiple tables. JOINs let you combine related rows in a single query.',
+        diagram:
+          'JOIN Types:\n\n  Users           Posts\n  ┌─────┐        ┌─────┐\n  │  A  │────────│ P1  │\n  │  B  │────────│ P2  │\n  │  C  │        │ P3  │──── (author_id = A)\n  │  D  │        └─────┘\n  └─────┘\n\n  INNER JOIN: A+P1, A+P3, B+P2  (only matches)\n  LEFT JOIN:  A+P1, A+P3, B+P2, C+null, D+null\n  RIGHT JOIN: A+P1, A+P3, B+P2  (+ orphan posts)',
         code: [
           {
             language: 'sql',
@@ -397,6 +516,18 @@ export const backendLessons: Record<
             code: `-- Users and their posts (INNER JOIN — only users with posts)\nSELECT u.name, p.title, p.created\nFROM users u\nINNER JOIN posts p ON p.author_id = u.id;\n\n-- All users, even those without posts (LEFT JOIN)\nSELECT u.name, COUNT(p.id) AS post_count\nFROM users u\nLEFT JOIN posts p ON p.author_id = u.id\nGROUP BY u.name;\n\n-- Posts with author name and comment count\nSELECT p.title, u.name AS author,\n       COUNT(c.id) AS comments\nFROM posts p\nJOIN users u ON u.id = p.author_id\nLEFT JOIN comments c ON c.post_id = p.id\nGROUP BY p.title, u.name;`,
           },
         ],
+        comparison: {
+          leftTitle: 'INNER JOIN',
+          rightTitle: 'LEFT JOIN',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Only rows with matches in both tables', right: 'All rows from left + matches from right' },
+            { left: 'Excludes users without posts', right: 'Includes users with 0 posts (NULL)' },
+            { left: 'Smaller result set', right: 'Complete result set' },
+            { left: 'Use for required relationships', right: 'Use for optional relationships' },
+          ],
+        },
         keyTakeaway:
           'INNER JOIN returns only matching rows. LEFT JOIN returns all rows from the left table plus matches from the right. Use JOINs to avoid multiple round trips.',
       },
@@ -422,6 +553,12 @@ export const backendLessons: Record<
             label: 'Prisma ORM example',
             code: `// schema.prisma defines your models\n// model User {\n//   id    String @id @default(uuid())\n//   name  String\n//   email String @unique\n//   posts Post[]\n// }\n\nimport { PrismaClient } from "@prisma/client";\nconst prisma = new PrismaClient();\n\n// Create a user — type-safe, auto-complete\nconst user = await prisma.user.create({\n  data: { name: "Alice", email: "alice@example.com" },\n});\n\n// Query with relations\nconst users = await prisma.user.findMany({\n  include: { posts: true }, // auto-joins!\n  where: { name: { contains: "Ali" } },\n});`,
           },
+        ],
+        bullets: [
+          '**Start with an ORM** for rapid development and type safety.',
+          '**Drop to raw SQL** for complex queries and performance-critical paths.',
+          '**Learn both** — ORMs generate SQL, understanding SQL helps debug.',
+          '**Migrations** — use ORM migrations or a tool like db-migrate for schema changes.',
         ],
         keyTakeaway:
           'Start with an ORM for rapid development. Drop to raw SQL for complex queries and performance-critical paths.',
@@ -449,7 +586,7 @@ export const backendLessons: Record<
       {
         title: 'Hashing vs Encryption',
         content:
-          'Hashing is one-way: you can turn a password into a hash but never turn the hash back into the password. Encryption is two-way: you can encrypt and decrypt with a key.',
+          'Hashing is one-way: you can turn a password into a hash but never turn the hash back. Encryption is two-way: you can encrypt and decrypt with a key.',
         analogy:
           'Hashing is like a meat grinder. You put a steak in and get ground beef out — you can never un-grind it. Encryption is like a safe — you lock something inside and unlock it with the key.',
         comparison: {
@@ -471,15 +608,24 @@ export const backendLessons: Record<
             code: `import bcrypt from "bcrypt";\n\n// Hash a password (on signup)\nconst password = "user-password-123";\nconst saltRounds = 12;\nconst hash = await bcrypt.hash(password, saltRounds);\n// Store 'hash' in the database — NEVER store the plain password\n\n// Verify a password (on login)\nconst isMatch = await bcrypt.compare("user-password-123", hash);\n// isMatch === true`,
           },
         ],
+        diagram:
+          'Password Hashing Flow:\n\n  Signup:\n  "password123" ──► bcrypt.hash() ──► "$2b$12$x8K..." ──► DB\n                    (+ salt + 12 rounds)\n\n  Login:\n  "password123" ──► bcrypt.compare() ──► true/false\n                         ▲\n  "$2b$12$x8K..." ───────┘ (from DB)',
         keyTakeaway:
           'Always hash passwords with bcrypt or argon2 before storing. Never store plain text passwords. Never encrypt passwords — hash them.',
       },
       {
         title: 'JWT — JSON Web Tokens',
         content:
-          'A JWT is a signed token the server creates after successful login. The client sends it with every request to prove identity. The server verifies the signature without checking a database.',
+          'A JWT is a signed token the server creates after successful login. The client sends it with every request to prove identity.',
         diagram:
-          'JWT Structure:\n┌──────────────────────────────────────────┐\n│ Header     │ Payload     │ Signature    │\n│ {alg, typ} │ {userId,    │ HMAC(        │\n│            │  exp, iat}  │  header +    │\n│            │             │  payload,    │\n│            │             │  SECRET)     │\n└──────────────────────────────────────────┘\n    base64   .   base64    .   base64',
+          'JWT Structure:\n┌──────────────────────────────────────────┐\n│ Header     │ Payload     │ Signature    │\n│ {alg, typ} │ {userId,    │ HMAC(        │\n│            │  exp, iat}  │  header +    │\n│            │             │  payload,    │\n│            │             │  SECRET)     │\n└──────────────────────────────────────────┘\n    base64   .   base64    .   base64\n\n  eyJhbGci...  eyJ1c2Vy...  SflKxwRJ...',
+        flow: [
+          { label: 'Login', description: 'User sends credentials', icon: '🔑' },
+          { label: 'Verify', description: 'Server checks password', icon: '✅' },
+          { label: 'Sign JWT', description: 'Server creates token', icon: '🔏' },
+          { label: 'Store', description: 'Client saves token', icon: '💾' },
+          { label: 'Use', description: 'Token sent in headers', icon: '📤' },
+        ],
         code: [
           {
             language: 'typescript',
@@ -507,13 +653,15 @@ export const backendLessons: Record<
             { left: 'Better for server-rendered apps', right: 'Better for SPAs and APIs' },
           ],
         },
+        diagram:
+          'Session-Based:              Token-Based (JWT):\n\n  Client    Server              Client    Server\n    │         │                   │         │\n    ├─login──►│                   ├─login──►│\n    │         ├─create session    │         ├─create JWT\n    │◄─cookie─┤  (in Redis)      │◄─token──┤  (signed)\n    │         │                   │         │\n    ├─cookie──►│                  ├─Bearer──►│\n    │         ├─lookup session   │         ├─verify signature\n    │◄─data───┤  (from Redis)    │◄─data───┤  (no DB needed)\n    │         │                   │         │',
         keyTakeaway:
           'JWTs are stateless and great for APIs/SPAs. Sessions are easier to revoke and better for server-rendered apps. Many apps use both.',
       },
       {
         title: 'OAuth 2.0 — "Login with Google"',
         content:
-          'OAuth lets users log in with an existing account (Google, GitHub) instead of creating a new password. The app never sees the user\'s Google password.',
+          'OAuth lets users log in with an existing account (Google, GitHub) instead of creating a new password. The app never sees the user\'s password.',
         flow: [
           { label: 'User Clicks', description: '"Login with Google"', icon: '👆' },
           { label: 'Redirect', description: 'Sent to Google consent screen', icon: '↪️' },
@@ -522,6 +670,8 @@ export const backendLessons: Record<
           { label: 'Exchange', description: 'Server trades code for access token', icon: '🔄' },
           { label: 'Profile', description: 'Server fetches user info from Google', icon: '👤' },
         ],
+        diagram:
+          'OAuth 2.0 Authorization Code Flow:\n\n  User        Your App       Google\n   │             │              │\n   ├──click──►   │              │\n   │             ├──redirect───►│\n   │             │              │\n   │◄────────────────consent────┤\n   ├──approve───────────────────►│\n   │             │              │\n   │             │◄──auth code──┤\n   │             │              │\n   │             ├──code + ─────►│\n   │             │  secret       │\n   │             │◄──token──────┤\n   │             │              │\n   │             ├──GET profile─►│\n   │             │◄──user info──┤\n   │◄──logged in─┤              │',
         keyTakeaway:
           'OAuth 2.0 delegates authentication to a trusted provider. Your app gets a token to read user info but never sees the user\'s password.',
       },
@@ -529,6 +679,12 @@ export const backendLessons: Record<
         title: 'Protecting Routes',
         content:
           'Authentication (who are you?) and authorization (what can you do?) are different. Middleware handles both by checking tokens and roles.',
+        cards: [
+          { title: 'Authentication (401)', description: 'Is the user logged in?', icon: '🔑', color: 'blue' },
+          { title: 'Authorization (403)', description: 'Does the user have permission?', icon: '🛡️', color: 'purple' },
+          { title: 'RBAC', description: 'Role-Based Access Control: admin, user, moderator', icon: '👥', color: 'emerald' },
+          { title: 'ABAC', description: 'Attribute-Based: own resources, same group', icon: '📋', color: 'amber' },
+        ],
         code: [
           {
             language: 'typescript',
@@ -562,7 +718,7 @@ export const backendLessons: Record<
       {
         title: 'Why Validate Input?',
         content:
-          'Never trust data from the client. Users make mistakes, and attackers deliberately send malformed data. Validation ensures your server only processes valid requests.',
+          'Never trust data from the client. Users make mistakes, and attackers deliberately send malformed data.',
         analogy:
           'Validation is like a bouncer at a club. The bouncer checks IDs before anyone gets in. Without a bouncer, anyone — including troublemakers — walks right in.',
         comparison: {
@@ -577,6 +733,12 @@ export const backendLessons: Record<
             { left: 'Inconsistent data stored', right: 'Only valid data persisted' },
           ],
         },
+        flow: [
+          { label: 'Request In', description: 'Raw user data', icon: '📨' },
+          { label: 'Validate', description: 'Check shape, types, ranges', icon: '🔍' },
+          { label: 'Pass?', description: 'Valid → continue, Invalid → 400', icon: '✅' },
+          { label: 'Process', description: 'Safe to use data now', icon: '⚙️' },
+        ],
         keyTakeaway:
           'Validate all incoming data at the API boundary. Never rely on the frontend to validate — attackers bypass it.',
       },
@@ -584,6 +746,14 @@ export const backendLessons: Record<
         title: 'Validation with Zod',
         content:
           'Zod is a TypeScript-first validation library. You define a schema, parse the input, and get either typed data or detailed errors.',
+        cards: [
+          { title: 'z.string()', description: 'Validates strings with .min(), .max(), .email()', icon: '📝', color: 'blue' },
+          { title: 'z.number()', description: 'Numbers with .int(), .min(), .max()', icon: '🔢', color: 'purple' },
+          { title: 'z.object()', description: 'Object shapes with nested validation', icon: '📦', color: 'emerald' },
+          { title: 'z.array()', description: 'Arrays with element validation', icon: '📋', color: 'amber' },
+          { title: 'z.enum()', description: 'One of a set of allowed values', icon: '🎯', color: 'cyan' },
+          { title: 'z.optional()', description: 'Field is not required', icon: '❓', color: 'red' },
+        ],
         code: [
           {
             language: 'typescript',
@@ -597,7 +767,9 @@ export const backendLessons: Record<
       {
         title: 'Validation Middleware',
         content:
-          'Instead of validating in every route handler, create a reusable middleware that validates the request body, params, or query against a Zod schema.',
+          'Instead of validating in every route handler, create a reusable middleware that validates against a Zod schema.',
+        diagram:
+          'Validation Middleware Flow:\n\n  Request Body: { name: "", email: "bad" }\n       │\n       ▼\n  ┌──────────────────────┐\n  │  validate(schema)    │\n  │  schema.safeParse()  │\n  └──────────┬───────────┘\n             │\n      ┌──────┴──────┐\n      ▼             ▼\n   Valid         Invalid\n      │             │\n      ▼             ▼\n   next()      400 + errors\n      │        [{field, message}]\n      ▼\n  Route Handler',
         code: [
           {
             language: 'typescript',
@@ -612,6 +784,17 @@ export const backendLessons: Record<
         title: 'Structured Error Responses',
         content:
           'Consistent error responses make life easier for frontend developers. Always include a status code, error message, and optional details.',
+        table: {
+          headers: ['Status', 'Error Type', 'When'],
+          rows: [
+            ['400', 'Validation Error', 'Bad input data'],
+            ['401', 'Unauthorized', 'Missing/invalid token'],
+            ['403', 'Forbidden', 'No permission'],
+            ['404', 'Not Found', 'Resource does not exist'],
+            ['409', 'Conflict', 'Duplicate entry'],
+            ['500', 'Internal Error', 'Unhandled bug'],
+          ],
+        },
         code: [
           {
             language: 'typescript',
@@ -626,6 +809,18 @@ export const backendLessons: Record<
         title: 'Logging Errors',
         content:
           'Console.log is not enough for production. A structured logger like Pino outputs JSON logs that can be searched and alerted on.',
+        comparison: {
+          leftTitle: 'console.log',
+          rightTitle: 'Pino (Structured)',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Unstructured text', right: 'JSON objects — searchable' },
+            { left: 'No log levels', right: 'debug, info, warn, error, fatal' },
+            { left: 'No context (request ID, user)', right: 'Attach any metadata' },
+            { left: 'Hard to filter in production', right: 'Query with tools like Datadog, ELK' },
+          ],
+        },
         code: [
           {
             language: 'typescript',
@@ -661,7 +856,7 @@ export const backendLessons: Record<
         content:
           'Files are sent as multipart/form-data requests. Unlike JSON, multipart encoding supports binary data like images, PDFs, and videos alongside text fields.',
         analogy:
-          'A multipart request is like a package with multiple compartments. One compartment holds a letter (text fields), another holds a photo (file data). The content boundary separates them.',
+          'A multipart request is like a package with multiple compartments. One compartment holds a letter (text fields), another holds a photo (file data).',
         flow: [
           { label: 'User Selects File', description: 'File picker in browser', icon: '📂' },
           { label: 'FormData Created', description: 'Binary data + metadata', icon: '📦' },
@@ -669,6 +864,8 @@ export const backendLessons: Record<
           { label: 'Server Receives', description: 'Multer parses the file', icon: '⚙️' },
           { label: 'File Stored', description: 'Disk, S3, or cloud storage', icon: '💾' },
         ],
+        diagram:
+          'Multipart Request:\n\n  ┌──────────────────────────────────┐\n  │  Content-Type: multipart/form-  │\n  │  data; boundary=----abc123      │\n  ├──────────────────────────────────┤\n  │  ------abc123                   │\n  │  Content-Disposition: form-data │\n  │  name="username"                │\n  │                                 │\n  │  alice                          │\n  ├──────────────────────────────────┤\n  │  ------abc123                   │\n  │  Content-Disposition: form-data │\n  │  name="avatar"; filename="a.jpg"│\n  │  Content-Type: image/jpeg       │\n  │                                 │\n  │  [binary image data...]         │\n  ├──────────────────────────────────┤\n  │  ------abc123--                 │\n  └──────────────────────────────────┘',
         keyTakeaway:
           'Files are uploaded as multipart/form-data, which supports binary data. Libraries like Multer handle the parsing on the server.',
       },
@@ -676,11 +873,17 @@ export const backendLessons: Record<
         title: 'Multer — Handling Uploads in Express',
         content:
           'Multer is Express middleware that parses multipart form data and gives you access to the uploaded file as req.file.',
+        bullets: [
+          '**multer.diskStorage** saves to local disk with custom filenames.',
+          '**multer.memoryStorage** keeps file in memory (for piping to S3).',
+          '**limits** sets maximum file size to prevent abuse.',
+          '**fileFilter** restricts allowed file types by extension.',
+        ],
         code: [
           {
             language: 'typescript',
             label: 'File upload with Multer',
-            code: `import multer from "multer";\nimport path from "path";\n\n// Configure storage\nconst storage = multer.diskStorage({\n  destination: "./uploads",\n  filename: (req, file, cb) => {\n    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);\n    cb(null, unique + path.extname(file.originalname));\n  },\n});\n\nconst upload = multer({\n  storage,\n  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max\n  fileFilter: (req, file, cb) => {\n    const allowed = [".jpg", ".jpeg", ".png", ".webp"];\n    const ext = path.extname(file.originalname).toLowerCase();\n    cb(null, allowed.includes(ext));\n  },\n});\n\n// Route — single file upload\napp.post("/api/avatar", requireAuth, upload.single("avatar"), (req, res) => {\n  if (!req.file) return res.status(400).json({ error: "No file" });\n  res.json({ url: \`/uploads/\${req.file.filename}\` });\n});`,
+            code: `import multer from "multer";\nimport path from "path";\n\n// Configure storage\nconst storage = multer.diskStorage({\n  destination: "./uploads",\n  filename: (req, file, cb) => {\n    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);\n    cb(null, unique + path.extname(file.originalname));\n  },\n});\n\nconst upload = multer({\n  storage,\n  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max\n  fileFilter: (req, file, cb) => {\n    const allowed = [".jpg", ".jpeg", ".png", ".webp"];\n    const ext = path.extname(file.originalname).toLowerCase();\n    cb(null, allowed.includes(ext));\n  },\n});\n\n// Route — single file upload\napp.post("/api/avatar", requireAuth, upload.single("avatar"), (req, res) => {\n  if (!req.file) return res.status(400).json({ error: "No file" });\n  res.json({ url: \`/uploads/\\\${req.file.filename}\` });\n});`,
           },
         ],
         keyTakeaway:
@@ -706,7 +909,7 @@ export const backendLessons: Record<
           {
             language: 'typescript',
             label: 'Upload to S3',
-            code: `import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";\n\nconst s3 = new S3Client({ region: "us-east-1" });\n\nasync function uploadToS3(file: Express.Multer.File) {\n  const key = \`avatars/\${Date.now()}-\${file.originalname}\`;\n\n  await s3.send(new PutObjectCommand({\n    Bucket: process.env.S3_BUCKET!,\n    Key: key,\n    Body: file.buffer,\n    ContentType: file.mimetype,\n  }));\n\n  return \`https://\${process.env.S3_BUCKET}.s3.amazonaws.com/\${key}\`;\n}`,
+            code: `import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";\n\nconst s3 = new S3Client({ region: "us-east-1" });\n\nasync function uploadToS3(file: Express.Multer.File) {\n  const key = \`avatars/\\\${Date.now()}-\\\${file.originalname}\`;\n\n  await s3.send(new PutObjectCommand({\n    Bucket: process.env.S3_BUCKET!,\n    Key: key,\n    Body: file.buffer,\n    ContentType: file.mimetype,\n  }));\n\n  return \`https://\\\${process.env.S3_BUCKET}.s3.amazonaws.com/\\\${key}\`;\n}`,
           },
         ],
         keyTakeaway:
@@ -722,11 +925,13 @@ export const backendLessons: Record<
           { label: 'Client Uploads', description: 'PUT directly to S3', icon: '📤' },
           { label: 'Client Confirms', description: 'Sends file key to server', icon: '✅' },
         ],
+        diagram:
+          'Presigned URL Flow:\n\n  Client          Server           S3\n    │               │               │\n    ├─GET /upload──►│               │\n    │  url           │               │\n    │               ├─sign URL──────►│\n    │               │◄──presigned───┤\n    │◄──url─────────┤               │\n    │               │               │\n    ├─PUT file──────────────────────►│\n    │  (direct to S3)                │\n    │◄──200 OK──────────────────────┤\n    │               │               │\n    ├─POST /confirm─►│              │\n    │  { key }       ├─save to DB   │\n    │◄──201─────────┤               │',
         code: [
           {
             language: 'typescript',
             label: 'Generate presigned upload URL',
-            code: `import { getSignedUrl } from "@aws-sdk/s3-request-presigner";\nimport { PutObjectCommand } from "@aws-sdk/client-s3";\n\napp.post("/api/upload-url", requireAuth, async (req, res) => {\n  const key = \`uploads/\${req.user.id}/\${Date.now()}.jpg\`;\n\n  const url = await getSignedUrl(s3, new PutObjectCommand({\n    Bucket: process.env.S3_BUCKET!,\n    Key: key,\n    ContentType: "image/jpeg",\n  }), { expiresIn: 300 }); // 5 minutes\n\n  res.json({ uploadUrl: url, key });\n});`,
+            code: `import { getSignedUrl } from "@aws-sdk/s3-request-presigner";\nimport { PutObjectCommand } from "@aws-sdk/client-s3";\n\napp.post("/api/upload-url", requireAuth, async (req, res) => {\n  const key = \`uploads/\\\${req.user.id}/\\\${Date.now()}.jpg\`;\n\n  const url = await getSignedUrl(s3, new PutObjectCommand({\n    Bucket: process.env.S3_BUCKET!,\n    Key: key,\n    ContentType: "image/jpeg",\n  }), { expiresIn: 300 }); // 5 minutes\n\n  res.json({ uploadUrl: url, key });\n});`,
           },
         ],
         keyTakeaway:
@@ -756,7 +961,9 @@ export const backendLessons: Record<
         content:
           'Docker packages your app with its dependencies into a container that runs identically on any machine. No more "it works on my machine" problems.',
         analogy:
-          'Docker is like a shipping container. No matter what is inside, every container has the same shape and fits on any truck, ship, or train. Your app runs the same way on your laptop, a coworker\'s Mac, or a cloud server.',
+          'Docker is like a shipping container. No matter what is inside, every container has the same shape and fits on any truck, ship, or train.',
+        diagram:
+          'Docker Architecture:\n\n  Your Machine\n  ┌──────────────────────────────────┐\n  │  Docker Engine                   │\n  │  ┌──────────┐  ┌──────────┐     │\n  │  │Container │  │Container │     │\n  │  │  API     │  │   DB     │     │\n  │  │ Node.js  │  │ Postgres │     │\n  │  │ Express  │  │          │     │\n  │  └──────────┘  └──────────┘     │\n  │       ▲              ▲          │\n  │       └──── network ─┘          │\n  └──────────────────────────────────┘\n\n  Same containers run on:\n  - Your laptop (Mac/Win/Linux)\n  - CI/CD pipeline\n  - Production server',
         code: [
           {
             language: 'dockerfile',
@@ -771,6 +978,12 @@ export const backendLessons: Record<
         title: 'Docker Compose — Multi-Service Setup',
         content:
           'Real apps need more than one container — your API, database, and Redis all run as separate services. Docker Compose orchestrates them.',
+        flow: [
+          { label: 'docker compose up', description: 'Start all services', icon: '▶️' },
+          { label: 'Build Images', description: 'Create containers', icon: '🏗️' },
+          { label: 'Create Network', description: 'Services can talk', icon: '🔗' },
+          { label: 'Start Services', description: 'API, DB, Redis running', icon: '✅' },
+        ],
         code: [
           {
             language: 'yaml',
@@ -791,6 +1004,18 @@ export const backendLessons: Record<
           '**Secrets manager** — AWS Secrets Manager or Vault for sensitive values like API keys.',
           '**Never commit secrets** — use .env.example with placeholder values.',
         ],
+        comparison: {
+          leftTitle: 'Hardcoded Config',
+          rightTitle: 'Environment Variables',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Secrets visible in source code', right: 'Secrets in env vars, not in code' },
+            { left: 'Different code per environment', right: 'Same code, different config' },
+            { left: 'Must rebuild to change values', right: 'Change without rebuild' },
+            { left: 'Accidentally committed to git', right: '.env is git-ignored' },
+          ],
+        },
         code: [
           {
             language: 'bash',
@@ -805,6 +1030,12 @@ export const backendLessons: Record<
         title: 'Process Management with PM2',
         content:
           'PM2 keeps your Node.js app running in production. It restarts on crashes, runs in cluster mode for multi-core CPUs, and provides monitoring.',
+        cards: [
+          { title: 'Auto-Restart', description: 'Restarts app on crash automatically', icon: '🔄', color: 'emerald' },
+          { title: 'Cluster Mode', description: 'Use all CPU cores with -i max', icon: '🖥️', color: 'blue' },
+          { title: 'Log Management', description: 'View, rotate, and persist logs', icon: '📋', color: 'purple' },
+          { title: 'Monitoring', description: 'pm2 monit for real-time stats', icon: '📊', color: 'amber' },
+        ],
         code: [
           {
             language: 'bash',
@@ -818,7 +1049,7 @@ export const backendLessons: Record<
       {
         title: 'Deployment Platforms',
         content:
-          'You have many options for deploying backend apps — from managed platforms to bare VPS. The right choice depends on your budget and scaling needs.',
+          'You have many options for deploying backend apps — from managed platforms to bare VPS.',
         table: {
           headers: ['Platform', 'Type', 'Best For', 'Cost'],
           rows: [
@@ -836,6 +1067,8 @@ export const backendLessons: Record<
           { label: 'Deploy', description: 'New container replaces old', icon: '🚀' },
           { label: 'Health Check', description: 'Verify app is responding', icon: '💚' },
         ],
+        diagram:
+          'Deployment Pipeline:\n\n  Developer   GitHub     CI/CD       Production\n     │          │          │             │\n     ├─push────►│          │             │\n     │          ├─trigger──►│            │\n     │          │          ├─lint        │\n     │          │          ├─test        │\n     │          │          ├─build       │\n     │          │          │             │\n     │          │          ├─deploy─────►│\n     │          │          │             ├─health check\n     │          │          │◄──green─────┤\n     │◄─────────────notify─┤             │\n     │          │          │             │',
         keyTakeaway:
           'Use managed platforms (Railway, Render) for simplicity or VPS (EC2, DigitalOcean) for control. Always deploy behind a CI/CD pipeline.',
       },

@@ -1,6 +1,6 @@
 # Streaksy - Claude Code Context
 
-Multiplayer DSA prep platform with LeetCode sync, groups, streaks, insights, revision hub, interactive learning content, and AI-powered tools.
+"Why Alone? Crush Your Goals With Friends." — A social goal-tracking platform with curated roadmaps, streak points, learning content, and collaborative features. Primary focus on coding/tech prep, but supports any goal (fitness, reading, habits).
 
 ## Project Structure
 
@@ -16,6 +16,7 @@ streaksy/
 - **Backend**: Express 5, TypeScript, PostgreSQL 16, Redis 7, Passport (OAuth), JWT, Zod, Pino (logging), Multer
 - **Frontend**: Next.js 14 (App Router), Zustand, Axios, Tailwind CSS, Lucide icons, date-fns
 - **Extension**: Chrome MV3 service worker + content scripts
+- **AI**: NVIDIA NIM API (Llama 3.3 70B) for hints, explanations, code review
 
 ## Key Commands
 
@@ -23,30 +24,20 @@ streaksy/
 # Backend
 cd backend && npm run dev          # Start dev server (tsx watch)
 cd backend && npm run build        # Compile TypeScript
-cd backend && npm test             # Run Jest tests (29 suites, 205 tests)
+cd backend && npm test             # Run Jest tests
 
 # Frontend
 cd frontend && npm run dev         # Start Next.js dev server
 cd frontend && npm run build       # Production build
 
 # Database
-cd backend && psql $DATABASE_URL -f scripts/schema.sql      # Init schema
-cd backend && psql $DATABASE_URL -f scripts/002-preferences.sql
-cd backend && psql $DATABASE_URL -f scripts/003-oauth.sql
-cd backend && psql $DATABASE_URL -f scripts/004-password-reset.sql
-cd backend && psql $DATABASE_URL -f scripts/005-email-verification.sql
-cd backend && psql $DATABASE_URL -f scripts/006-notifications.sql
-cd backend && psql $DATABASE_URL -f scripts/007-discussions.sql
-cd backend && psql $DATABASE_URL -f scripts/008-activity-feed.sql
-cd backend && psql $DATABASE_URL -f scripts/009-profile.sql
-cd backend && psql $DATABASE_URL -f scripts/010-revisions.sql
-cd backend && psql $DATABASE_URL -f scripts/011-contests.sql
-cd backend && psql $DATABASE_URL -f scripts/012-badges.sql
-cd backend && psql $DATABASE_URL -f scripts/013-search.sql
-cd backend && psql $DATABASE_URL -f scripts/seed.sql         # Seed data
-
-# Docker (PostgreSQL + Redis)
-cd backend/docker && docker compose up -d postgres redis
+cd backend && psql $DATABASE_URL -f scripts/schema.sql
+cd backend && psql $DATABASE_URL -f scripts/027-roadmap-pivot.sql
+cd backend && psql $DATABASE_URL -f scripts/028-roadmap-social.sql
+cd backend && psql $DATABASE_URL -f scripts/seed.sql
+cd backend && psql $DATABASE_URL -f scripts/seed-users.sql
+cd backend && psql $DATABASE_URL -f scripts/seed-roadmap-templates.sql
+cd backend && psql $DATABASE_URL -f scripts/seed-sheet-roadmaps.sql
 ```
 
 ## Backend Architecture
@@ -61,22 +52,113 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 ### Modules
 - **Core**: auth, problem, group, progress, sync, streak, leaderboard, notes, insights, sheets, preferences
 - **Features**: notification, discussion, activity, revision, contest, badge, room, poke, feed, daily
-- **New**: rating (community difficulty ratings + company tags), powerup (streak freeze, double XP, shield, points), digest (morning/evening/weekly email digests)
-- **AI**: ai service (`ai/service/ai.service.ts`) — shared NVIDIA NIM API caller with revision notes, hints, explanations, code review generation
+- **Roadmaps**: roadmaps module — categories, templates, user roadmaps, day progress, streaks, participants, discussions
+- **AI**: ai service — shared NVIDIA NIM API caller with revision notes, hints, explanations, code review
+- **Prep**: prep module (legacy interview planner, being replaced by roadmaps)
+- **Engagement**: rating, powerup, digest
 
-### Infrastructure
-- **Logging**: Pino structured logging (`backend/src/config/logger.ts`), JSON in prod, pretty in dev
-- **Request ID**: `backend/src/middleware/requestId.ts` — X-Request-ID header, child logger on `req.log`
-- **Caching**: Redis cache-aside via `backend/src/common/utils/cache.ts` (`cached<T>()`, `invalidate()`)
-- **Health Check**: `GET /health` — deep check pinging DB + Redis, returns 200/503 with per-component status
-- **Graceful Shutdown**: SIGTERM/SIGINT handlers in server.ts, 10s timeout
+### Key Database Tables
+- **Core**: users, problems, tags, sheets, groups, group_members, user_problem_status, user_streaks, notes
+- **Roadmaps**: roadmap_categories, roadmap_templates, template_tasks, user_roadmaps, roadmap_day_progress, roadmap_streaks, roadmap_participants, roadmap_discussions
+- **Features**: notifications, comments, group_activity, revision_notes, contests, badges, rooms, pokes
+- **user_streaks.total_points**: Global streak points currency for leaderboards
 
-## Config Files
+## Frontend Pages
 
-- `backend/.env` - Backend env vars (DB, Redis, JWT, OAuth credentials, SMTP)
-- `frontend/.env.local` - Frontend env vars (NEXT_PUBLIC_API_URL)
-- `extension/background.js` - API_BASE constant (hardcoded)
-- `extension/manifest.json` - host_permissions for API access
+### Public
+- `/` — Landing page: "Why Alone? Crush Your Goals With Friends."
+
+### Auth
+- `/auth/login`, `/auth/signup`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/verify-email`, `/auth/callback`
+
+### Main App (all use AppShell)
+- `/dashboard` — Command center: stats, today's tasks, active roadmaps, feed, groups, leaderboard peek, heatmap
+- `/feed` — Social feed: what friends and group members are doing
+- `/roadmaps` — Browse curated roadmaps by category (Coding, Fitness, Learning, Languages, Personal Growth)
+- `/roadmaps/start/[slug]` — Start roadmap wizard (4-step for coding: overview → customize topics/hours → study mode/groups → review)
+- `/roadmaps/create` — Custom roadmap creator
+- `/roadmaps/[id]` — Roadmap detail: today's task, participants, poke, discussion, leaderboard, day-by-day timeline
+- `/roadmaps/join/[code]` — Join shared roadmap
+- `/learn` — Learning Hub (8 topics: DSA Patterns, Databases, System Design, OOPs, Multithreading, Frontend, Backend, Git)
+- `/learn/[topic]` — Topic with lesson listing
+- `/learn/[topic]/[lesson]` — Lesson with visual steps, analogies, code, practice
+- `/patterns` — 19 DSA patterns with interactive simulations
+- `/patterns/[slug]` — Pattern detail: 10-section framework (intuition → simulation → code → dry run → mistakes → tips → practice)
+- `/problems` — Problem listing with sheets, filters, status toggle
+- `/problems/[slug]` — Problem detail: notes, discussions, AI tools (hints/explain/review), status toggle
+- `/groups` — Group listing, creation
+- `/groups/[id]` — Group detail: roadmaps, activity, leaderboard, members, invite
+- `/rooms` — War Rooms: live collaborative problem solving
+- `/rooms/[id]` — Room detail: timer, participants, chat, problems
+- `/leaderboard` — Global, Groups, My Groups tabs with streak points ranking
+- `/insights` — Analytics: difficulty breakdown, weekly activity, topic progress
+- `/revision` — Revision Hub: browse + quiz mode
+- `/profile` — Avatar, bio, social links, badges
+- `/settings` — User preferences
+- `/prepare` — Legacy interview prep wizard (still functional)
+
+### Invite Pages (public, no auth required)
+- `/invite/group/[code]` — Auto-joins logged-in users, redirects to group
+- `/invite/room/[code]` — Room invite
+
+## Roadmap System
+
+### Template Categories
+- **Coding & Tech**: Crack the Job Together (90d flagship), Solve Striver Sheet, Solve Love Babbar Sheet, LeetCode Top 150, DSA Patterns, Learn System Design, Learn Databases, Learn OOP, Learn Multithreading, Frontend Dev, Backend Dev, Git, 100 Days of Code
+- **Fitness & Health**: Go to Gym Daily, 10K Steps, Quit Smoking, Meditation
+- **Learning & Reading**: Read 1 Book/Month, Daily Journal
+- **Languages**: French, German, Spanish, Japanese
+- **Personal Growth**: Public Speaking, Financial Literacy, Productivity
+
+### Streak Points System
+- 10 points per completed task
+- Streak bonus: 5 points × consecutive days
+- 100 points for completing a roadmap
+- Group bonus: +20% on all activities
+- Points stored in user_streaks.total_points, ranked on /leaderboard
+
+### Roadmap Start Wizard (coding templates)
+1. Overview — start date, end date preview
+2. Customize — hours/day, topic selection, time allocation sliders
+3. Study Mode — solo/friends, group create/join, weekly war room scheduling, daily reminders
+4. Review — summary before starting
+
+## Learning Content
+
+### Content Files (`frontend/src/data/`)
+- `databases-content.ts` (13 lessons)
+- `system-design-content.ts` (17 lessons)
+- `oops-content.ts` (14 lessons)
+- `multithreading-content.ts` (12 lessons)
+- `frontend-content.ts` (8 lessons)
+- `backend-content.ts` (8 lessons)
+- `git-content.ts` (5 lessons)
+Total: 77 lessons + 19 DSA patterns = 96 learning units
+
+### Lesson Visual Components
+Each LessonStep supports: `bullets`, `comparison` (side-by-side table), `flow` (step diagram), `table`, `cards` (info grid), `diagram` (ASCII art), `analogy` (callout), `keyTakeaway`, `code` (multi-language tabs)
+
+### DSA Pattern Visualizers (`frontend/src/components/patterns/visualizers/`)
+Pure SVG: TreeVisualizer, LinkedListVisualizer, GraphVisualizer, StackVisualizer, QueueVisualizer, DPTableVisualizer, TrieVisualizer, ArrayVisualizer
+SimulationPlayer with play/pause, speed control, audio narration (Web Speech API)
+
+## AI Features (NVIDIA NIM)
+
+- **Model**: `meta/llama-3.3-70b-instruct`
+- **Config**: `AI_BASE_URL`, `NVIDIA_API_KEY`, `AI_MODEL` env vars
+- **AI Service**: `backend/src/modules/ai/service/ai.service.ts`
+- **Endpoints**: `/api/revisions/generate`, `/hints`, `/explain`, `/review`
+- **Rate Limiting**: 20 AI generations per user per day (Redis)
+
+## Sidebar Navigation
+
+Dashboard, Feed, Roadmaps, Learn, Problems, Groups, War Rooms, Leaderboard, Insights, Profile, Settings
+
+## Shared Data Files
+- `frontend/src/lib/roadmap-templates.ts` — All roadmap template definitions (shared between browse + start pages)
+- `frontend/src/lib/learn-data.ts` — Topic/Lesson definitions + content file imports
+- `frontend/src/lib/patterns-data.ts` — 19 DSA patterns with simulation data
+- `frontend/src/lib/interview-planner.ts` — Legacy prep roadmap generator
 
 ## Domain & Server
 
@@ -85,101 +167,15 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 - **Frontend**: `http://streaksy.in:3000`
 - **Backend API**: `http://streaksy.in:3001`
 
-## Auth
-
-- JWT-based with Bearer tokens
-- OAuth via Passport (Google + GitHub) — strategies in `backend/src/config/passport.ts`
-- Password reset flow: token-based with 1hr expiry, email delivery
-- Email verification: token on signup, non-blocking banner in AppShell
-- Profile management: avatar upload (multer), bio, location, social links
-- Frontend stores token in localStorage as `streaksy_token`
-
-## Database
-
-PostgreSQL database name: `streaksy`. Extensions: uuid-ossp, pgcrypto. All PKs are UUIDs.
-
-### Key Tables
-- **Core**: users, problems, tags, sheets, groups, group_members, user_problem_status, user_streaks, notes, user_preferences
-- **Auth**: password_reset_tokens (004), email verification columns on users (005)
-- **Features**: notifications (006), comments (007), group_activity (008), revision_notes (010)
-- **Engagement**: contests + contest_problems + contest_submissions (011), badges + user_badges (012)
-- **Search**: search_vector tsvector column + GIN index on problems (013)
-- **Profile**: avatar_url, bio, location, github_url, linkedin_url columns on users (009)
-- **Ratings**: problem_ratings, company_tags, problem_company_tags (022)
-- **Powerups**: user_powerups, powerup_log, points/freeze columns on user_streaks (023)
-- **Digest**: digest preferences columns on user_preferences, digest_log (024)
-
-## Frontend Pages
-
-- `/` — Landing page
-- `/auth/login`, `/auth/signup` — Auth with OAuth (Google/GitHub)
-- `/auth/forgot-password`, `/auth/reset-password` — Password reset flow
-- `/auth/verify-email` — Email verification
-- `/auth/callback` — OAuth callback (handles pending invites)
-- `/dashboard` — Stats, streak, heatmap, recent activity
-- `/problems` — Problem listing with sheets, filters
-- `/problems/[slug]` — Problem detail with notes, discussions, revision notes
-- `/revision` — Revision Hub (browse + quiz mode)
-- `/insights` — Charts and analytics
-- `/groups` — Group listing, creation, detail with activity feed
-- `/invite/group/[code]` — Shareable group invite (works for unauthenticated users)
-- `/invite/room/[code]` — Shareable room invite (works for unauthenticated users)
-- `/patterns` — DSA Patterns hub (19 patterns with interactive simulations)
-- `/patterns/[slug]` — Pattern detail (10-section learning: intuition, simulation, code, dry run, mistakes, tips)
-- `/learn` — Learning Hub (5 topics: DSA Patterns, Databases, System Design, OOPs, Multithreading)
-- `/learn/[topic]` — Topic page with lesson listing
-- `/learn/[topic]/[lesson]` — Lesson page with steps, visuals, code, analogies
-- `/prepare` — Interview prep wizard (role, days, hours, level, topics)
-- `/prepare/roadmap` — Personalized day-by-day study plan with progress tracking
-- `/profile` — Avatar upload, bio, social links, badges
-- `/settings` — User preferences
-
-## AI Features (NVIDIA NIM)
-
-- **Model**: `meta/llama-3.3-70b-instruct` via NVIDIA NIM API (`AI_BASE_URL`, `NVIDIA_API_KEY`, `AI_MODEL` env vars)
-- **AI Service**: `backend/src/modules/ai/service/ai.service.ts` — shared `callAI()` helper + JSON extraction
-- **Endpoints**: `POST /api/revisions/generate` (revision notes), `/hints` (progressive hints), `/explain` (problem explanation), `/review` (code review)
-- **Rate Limiting**: 20 AI generations per user per day (Redis counter)
-- **Frontend**: AI tools section on problem detail page with Hints, Explanation, Code Review panels
-
-## Learning Hub
-
-- **Patterns** (`frontend/src/lib/patterns-data.ts`): 19 DSA patterns with 10-section framework, SVG visualizers, multi-language code, audio narration
-- **Visualizers** (`frontend/src/components/patterns/visualizers/`): TreeVisualizer, LinkedListVisualizer, GraphVisualizer, StackVisualizer, QueueVisualizer, DPTableVisualizer, TrieVisualizer, ArrayVisualizer — all pure SVG
-- **Learn Data** (`frontend/src/lib/learn-data.ts`): Topic/Lesson/Step interfaces, populated from content files in `frontend/src/data/`
-- **Content Files**: `databases-content.ts` (13 lessons), `system-design-content.ts` (17 lessons), `oops-content.ts` (14 lessons), `multithreading-content.ts` (12 lessons)
-- **Interview Planner** (`frontend/src/lib/interview-planner.ts`): Role-based topic allocation, phase-based day generation, localStorage persistence
-- **Lesson Visuals**: Comparison tables, flow diagrams, info cards, ASCII diagrams, bullet lists, code tabs
-
-## Problem Status Toggle
-
-- `PUT /api/progress/status` — Toggle problem status (not_started/attempted/solved) without extension
-- Frontend: three-state toggle on problem detail page header
-
-## Security
-
-- **CORS**: Restricted to `frontendUrl` + localhost (not wide open)
-- **Rate Limiting**: Applied globally including sync endpoints; only `/health` is skipped
-- **Sync Endpoint**: Uses `req.user.userId` from JWT (never body userId) — prevents auth bypass
-- **Digest Triggers**: Admin-only via `X-Admin-Secret` header (set `ADMIN_SECRET` env var)
-- **Email Templates**: All user-controlled strings are HTML-escaped via `escapeHtml()` / `esc()`
-- **OAuth Callback**: Only exposes user `id` and `displayName` in redirect URL (no email)
-- **Socket Auth**: `room:join` verifies the user is a participant before joining
-- **Group Endpoints**: Activity, sheets, progress, and contest endpoints enforce group membership
-- **Contest Creation**: Requires group admin role + validates `startsAt < endsAt`
-
 ## Conventions
 
 - Async route handlers wrapped with `asyncHandler`
 - Errors use `AppError` class (badRequest, unauthorized, notFound, conflict, forbidden)
-- Global error handler middleware catches AppError and returns structured JSON
 - Validation via Zod schemas + `validate` middleware
-- Logging via Pino (`logger` from config, `req.log` child logger per request)
+- Logging via Pino (`logger` from config, `req.log` per request)
 - Caching via `cached(key, ttl, fn)` utility with Redis
-- Discussion routes split into `problemDiscussionRouter` (at `/api/problems`) and `commentRouter` (at `/api/comments`)
 - Frontend uses `cn()` utility (clsx + tailwind-merge) for conditional classes
 - State management via Zustand stores in `lib/store.ts`
 - Data fetching via `useAsync` hook in `hooks/useAsync.ts`
-- Logout disconnects WebSocket and clears localStorage
-- All delete operations require user confirmation (`confirm()`)
-- Room page does NOT call `disconnectSocket()` on cleanup — only removes its own listeners
+- Roadmap data stored in localStorage (`streaksy_active_roadmaps`) + backend API
+- All pages use AppShell wrapper (except landing page)
