@@ -52,6 +52,9 @@ export const authApi = {
   changePassword: (currentPassword: string, newPassword: string) =>
     api.post('/auth/change-password', { currentPassword, newPassword }),
   exportData: () => api.get('/auth/export', { responseType: 'blob' }),
+  getCalendarStatus: () => api.get('/auth/calendar/status'),
+  getCalendarConnectUrl: () => api.get('/auth/google/calendar'),
+  disconnectCalendar: () => api.post('/auth/calendar/disconnect'),
   uploadAvatar: (file: File) => {
     const formData = new FormData();
     formData.append('avatar', file);
@@ -187,6 +190,18 @@ export const notificationsApi = {
     api.patch(`/notifications/${id}/read`),
   markAllRead: () =>
     api.patch('/notifications/read-all'),
+  // Push notifications
+  getVapidKey: () =>
+    api.get('/notifications/push/vapid-key'),
+  subscribePush: (subscription: PushSubscriptionJSON) =>
+    api.post('/notifications/push/subscribe', { subscription }),
+  unsubscribePush: (endpoint: string) =>
+    api.post('/notifications/push/unsubscribe', { endpoint }),
+  // Notification preferences
+  getNotifPreferences: () =>
+    api.get('/notifications/preferences'),
+  updateNotifPreferences: (prefs: Record<string, unknown>) =>
+    api.put('/notifications/preferences', prefs),
 };
 
 // ── Discussions ──

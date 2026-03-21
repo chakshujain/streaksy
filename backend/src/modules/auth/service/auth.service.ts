@@ -137,6 +137,7 @@ export const authService = {
       location: user.location,
       githubUrl: user.github_url,
       linkedinUrl: user.linkedin_url,
+      googleCalendarConnected: (user as any).google_calendar_connected ?? false,
     };
   },
 

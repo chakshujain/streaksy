@@ -5,11 +5,12 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
-import { preferencesApi, authApi } from '@/lib/api';
+import { preferencesApi, authApi, notificationsApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { PageTransition } from '@/components/ui/PageTransition';
-import { Settings, Palette, LayoutGrid, Eye, Target, Check, Save, Lock, Download } from 'lucide-react';
+import { Settings, Palette, LayoutGrid, Eye, Target, Check, Save, Lock, Download, CalendarDays, Link2, Unlink, BellRing } from 'lucide-react';
 import { DigestSection } from '@/components/settings/DigestSection';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import type { UserPreferences } from '@/lib/types';
 
 const accentSwatches = [
@@ -90,6 +91,27 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Google Calendar state
+  const [calendarConnected, setCalendarConnected] = useState(false);
+  const [calendarLoading, setCalendarLoading] = useState(true);
+  const [calendarDisconnecting, setCalendarDisconnecting] = useState(false);
+
+  // Push notifications
+  const push = usePushNotifications();
+
+  // Notification preferences
+  const [notifPrefs, setNotifPrefs] = useState({
+    in_app_enabled: true,
+    email_enabled: true,
+    push_enabled: true,
+    social_enabled: true,
+    roadmap_enabled: true,
+    room_enabled: true,
+    achievement_enabled: true,
+    smart_enabled: true,
+  });
+  const [notifPrefsLoading, setNotifPrefsLoading] = useState(true);
+
   // Change password state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -107,6 +129,30 @@ export default function SettingsPage() {
       setWeeklyGoal(prefs.weekly_goal || 5);
     }
   }, [prefs]);
+
+  // Fetch Google Calendar connection status
+  useEffect(() => {
+    authApi.getCalendarStatus()
+      .then(r => setCalendarConnected(r.data.connected))
+      .catch(() => {})
+      .finally(() => setCalendarLoading(false));
+
+    // Check for callback params
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('calendar') === 'connected') {
+      setCalendarConnected(true);
+      setCalendarLoading(false);
+      window.history.replaceState({}, '', '/settings');
+    }
+
+    // Load notification preferences
+    notificationsApi.getNotifPreferences()
+      .then(r => {
+        if (r.data.preferences) setNotifPrefs(prev => ({ ...prev, ...r.data.preferences }));
+      })
+      .catch(() => {})
+      .finally(() => setNotifPrefsLoading(false));
+  }, []);
 
   const handleChangePassword = async () => {
     setPwError('');
@@ -285,6 +331,180 @@ export default function SettingsPage() {
                 <span>15</span>
               </div>
             </div>
+          </SectionCard>
+        </div>
+
+        {/* Google Calendar Integration */}
+        <div className="animate-slide-up" style={{ animationDelay: '225ms', animationFillMode: 'both' }}>
+          <SectionCard icon={CalendarDays} iconGradient="from-blue-500/30 to-indigo-500/30" title="Google Calendar">
+            <p className="text-sm text-zinc-400 mb-4">
+              Auto-add study sessions and war rooms to your Google Calendar when you start a roadmap or schedule a room.
+            </p>
+            {calendarLoading ? (
+              <div className="flex items-center gap-2 text-sm text-zinc-500">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-300" />
+                Checking connection...
+              </div>
+            ) : calendarConnected ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30" />
+                  <span className="text-sm text-emerald-400 font-medium">Connected</span>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={calendarDisconnecting}
+                  onClick={async () => {
+                    setCalendarDisconnecting(true);
+                    try {
+                      await authApi.disconnectCalendar();
+                      setCalendarConnected(false);
+                    } catch {}
+                    setCalendarDisconnecting(false);
+                  }}
+                  className="gap-2 text-zinc-400 hover:text-red-400"
+                >
+                  <Unlink className="h-3.5 w-3.5" />
+                  Disconnect
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="gradient"
+                onClick={async () => {
+                  try {
+                    const { data } = await authApi.getCalendarConnectUrl();
+                    window.location.href = data.url;
+                  } catch {
+                    // fallback
+                  }
+                }}
+                className="gap-2"
+              >
+                <Link2 className="h-4 w-4" />
+                Connect Google Calendar
+              </Button>
+            )}
+          </SectionCard>
+        </div>
+
+        {/* Notification Channels */}
+        <div className="animate-slide-up" style={{ animationDelay: '235ms', animationFillMode: 'both' }}>
+          <SectionCard icon={BellRing} iconGradient="from-amber-500/30 to-red-500/30" title="Notifications">
+            {notifPrefsLoading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-12 rounded-lg bg-zinc-800/50 animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {/* Channels */}
+                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Channels</p>
+                <Toggle
+                  label="In-App Notifications"
+                  description="Show notifications in the bell menu"
+                  enabled={notifPrefs.in_app_enabled}
+                  onChange={(v) => {
+                    setNotifPrefs(p => ({ ...p, in_app_enabled: v }));
+                    notificationsApi.updateNotifPreferences({ in_app_enabled: v }).catch(() => {});
+                  }}
+                />
+                <Toggle
+                  label="Email Notifications"
+                  description="Receive important notifications via email"
+                  enabled={notifPrefs.email_enabled}
+                  onChange={(v) => {
+                    setNotifPrefs(p => ({ ...p, email_enabled: v }));
+                    notificationsApi.updateNotifPreferences({ email_enabled: v }).catch(() => {});
+                  }}
+                />
+                <div className="flex items-center justify-between py-3.5 border-b border-zinc-800/30">
+                  <div>
+                    <p className="text-sm font-medium text-zinc-200">Browser Push Notifications</p>
+                    <p className="text-xs text-zinc-500 mt-0.5">Get notified even when Streaksy isn&apos;t open</p>
+                  </div>
+                  {push.isSupported ? (
+                    push.isSubscribed ? (
+                      <button
+                        onClick={async () => {
+                          await push.unsubscribe();
+                          notificationsApi.updateNotifPreferences({ push_enabled: false }).catch(() => {});
+                          setNotifPrefs(p => ({ ...p, push_enabled: false }));
+                        }}
+                        className="relative h-7 w-12 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/20 transition-all duration-300"
+                      >
+                        <span className="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-sm translate-x-[22px] transition-all duration-300" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={async () => {
+                          const ok = await push.subscribe();
+                          if (ok) {
+                            notificationsApi.updateNotifPreferences({ push_enabled: true }).catch(() => {});
+                            setNotifPrefs(p => ({ ...p, push_enabled: true }));
+                          }
+                        }}
+                        className="relative h-7 w-12 rounded-full bg-zinc-700 transition-all duration-300"
+                      >
+                        <span className="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-sm translate-x-0.5 transition-all duration-300" />
+                      </button>
+                    )
+                  ) : (
+                    <span className="text-xs text-zinc-600">Not supported</span>
+                  )}
+                </div>
+
+                {/* Categories */}
+                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-4 mb-2">Categories</p>
+                <Toggle
+                  label="Social"
+                  description="Friend requests, pokes, group activity"
+                  enabled={notifPrefs.social_enabled}
+                  onChange={(v) => {
+                    setNotifPrefs(p => ({ ...p, social_enabled: v }));
+                    notificationsApi.updateNotifPreferences({ social_enabled: v }).catch(() => {});
+                  }}
+                />
+                <Toggle
+                  label="Roadmaps"
+                  description="Progress updates, reminders, completions"
+                  enabled={notifPrefs.roadmap_enabled}
+                  onChange={(v) => {
+                    setNotifPrefs(p => ({ ...p, roadmap_enabled: v }));
+                    notificationsApi.updateNotifPreferences({ roadmap_enabled: v }).catch(() => {});
+                  }}
+                />
+                <Toggle
+                  label="War Rooms"
+                  description="Room starts, solves, and endings"
+                  enabled={notifPrefs.room_enabled}
+                  onChange={(v) => {
+                    setNotifPrefs(p => ({ ...p, room_enabled: v }));
+                    notificationsApi.updateNotifPreferences({ room_enabled: v }).catch(() => {});
+                  }}
+                />
+                <Toggle
+                  label="Achievements"
+                  description="Badges earned, streak milestones"
+                  enabled={notifPrefs.achievement_enabled}
+                  onChange={(v) => {
+                    setNotifPrefs(p => ({ ...p, achievement_enabled: v }));
+                    notificationsApi.updateNotifPreferences({ achievement_enabled: v }).catch(() => {});
+                  }}
+                />
+                <Toggle
+                  label="Smart Alerts"
+                  description="Lagging behind, friend activity, streak at risk"
+                  enabled={notifPrefs.smart_enabled}
+                  onChange={(v) => {
+                    setNotifPrefs(p => ({ ...p, smart_enabled: v }));
+                    notificationsApi.updateNotifPreferences({ smart_enabled: v }).catch(() => {});
+                  }}
+                />
+              </div>
+            )}
           </SectionCard>
         </div>
 

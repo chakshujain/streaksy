@@ -60,6 +60,53 @@ router.get('/google/callback',
   }
 );
 
+// Google Calendar Connect — returns the OAuth URL for the frontend to redirect to
+router.get('/google/calendar', authenticate, asyncHandler(async (req, res) => {
+  const { calendarService } = await import('../../calendar/service/calendar.service');
+  const userId = (req as any).user!.userId;
+  const url = calendarService.getConsentUrl(userId);
+  // Embed user ID in a signed JWT as the state param
+  const state = authService.generateToken(userId, 'calendar-connect');
+  const fullUrl = url.replace(/state=[^&]*/, `state=${encodeURIComponent(state)}`);
+  res.json({ url: fullUrl });
+}));
+
+router.get('/google/calendar/callback', async (req, res) => {
+  try {
+    const state = req.query.state as string;
+    if (!state) throw new Error('Missing state');
+
+    // Decode user from state JWT
+    const jwt = await import('jsonwebtoken');
+    const decoded = jwt.default.verify(state, env.jwt.secret) as { userId: string };
+    const userId = decoded.userId;
+
+    const code = req.query.code as string;
+    if (!code) throw new Error('Missing code');
+
+    const { calendarService } = await import('../../calendar/service/calendar.service');
+    await calendarService.handleCallback(code, userId);
+
+    res.redirect(`${env.frontendUrl}/settings?calendar=connected`);
+  } catch (err) {
+    res.redirect(`${env.frontendUrl}/settings?calendar=error`);
+  }
+});
+
+router.get('/calendar/status', authenticate, asyncHandler(async (req, res) => {
+  const { user } = req as any;
+  const { calendarService } = await import('../../calendar/service/calendar.service');
+  const connected = await calendarService.isConnected(user.userId);
+  res.json({ connected });
+}));
+
+router.post('/calendar/disconnect', authenticate, asyncHandler(async (req, res) => {
+  const { user } = req as any;
+  const { calendarService } = await import('../../calendar/service/calendar.service');
+  await calendarService.disconnect(user.userId);
+  res.json({ message: 'Google Calendar disconnected' });
+}));
+
 // GitHub OAuth
 router.get('/github', (req, res, next) => {
   const platform = req.query.platform || 'web';

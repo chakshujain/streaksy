@@ -20,7 +20,23 @@ export const friendsService = {
       }
     }
 
-    return friendsRepository.sendRequest(requesterId, addresseeId);
+    const result = await friendsRepository.sendRequest(requesterId, addresseeId);
+
+    // Notify addressee of friend request
+    import('../../auth/repository/auth.repository').then(async m => {
+      const requester = await m.authRepository.findById(requesterId);
+      if (requester) {
+        const { notificationHub } = await import('../../notification/service/notification-hub');
+        await notificationHub.send(
+          addresseeId,
+          'friend_request',
+          `${requester.display_name} sent you a friend request`,
+          'Accept their request to start tracking goals together!',
+        );
+      }
+    }).catch(() => {});
+
+    return result;
   },
 
   async acceptRequest(friendshipId: string, userId: string) {
@@ -28,6 +44,25 @@ export const friendsService = {
     if (!friendship) {
       throw AppError.notFound('Friend request not found');
     }
+
+    // Notify the requester that their request was accepted
+    import('../../auth/repository/auth.repository').then(async m => {
+      const accepter = await m.authRepository.findById(userId);
+      if (accepter) {
+        // Notify the other person
+        const otherId = (friendship as any).user_id_1 === userId
+          ? (friendship as any).user_id_2
+          : (friendship as any).user_id_1;
+        const { notificationHub } = await import('../../notification/service/notification-hub');
+        await notificationHub.send(
+          otherId,
+          'friend_accepted',
+          `${accepter.display_name} accepted your friend request!`,
+          'You can now track each other\'s progress and poke each other!',
+        );
+      }
+    }).catch(() => {});
+
     return friendship;
   },
 

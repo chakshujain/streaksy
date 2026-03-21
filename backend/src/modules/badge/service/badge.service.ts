@@ -78,6 +78,10 @@ export const badgeService = {
           import('../../feed/service/feed.service').then(m => {
             m.feedService.postEvent(userId, 'badge_earned', `Earned the "${badge.name}" badge`, undefined, { badgeId: badge.id, badgeName: badge.name });
           }).catch(() => {});
+          // Notify user about badge
+          import('../../notification/service/notification-hub').then(m => {
+            m.notificationHub.send(userId, 'badge_earned', `You earned the "${badge.name}" badge!`, badge.description, { badgeId: badge.id });
+          }).catch(() => {});
         }
       }
     } catch (err) {

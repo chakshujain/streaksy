@@ -1,6 +1,6 @@
 import { pokeRepository } from '../repository/poke.repository';
 import { humorEngine } from './humor';
-import { notificationService } from '../../notification/service/notification.service';
+import { notificationHub } from '../../notification/service/notification-hub';
 import { sendEmail } from '../../../config/email';
 import { authRepository } from '../../auth/repository/auth.repository';
 import { groupRepository } from '../../group/repository/group.repository';
@@ -50,11 +50,8 @@ export const pokeService = {
 
     const poke = await pokeRepository.create(fromUserId, toUserId, message, 'manual', 3, groupId);
 
-    // Send in-app notification
-    notificationService.notify(toUserId, 'poke', `${fromUser?.display_name} poked you! 👉`, message).catch(() => {});
-
-    // Send email if user has email nudges enabled
-    this.sendPokeEmail(toUser.email, toUser.display_name, message, fromUser?.display_name || 'A friend').catch(() => {});
+    // Send via notification hub (in-app + push + email based on preferences)
+    notificationHub.send(toUserId, 'poke', `${fromUser?.display_name} poked you! 👉`, message).catch(() => {});
 
     return poke;
   },
@@ -106,7 +103,7 @@ export const pokeService = {
 
     // Notify
     const message = humorEngine.recovery(targetCount);
-    notificationService.notify(userId, 'recovery_challenge', 'Streak Recovery Challenge! 🔥', message).catch(() => {});
+    notificationHub.send(userId, 'recovery_challenge', 'Streak Recovery Challenge! 🔥', message).catch(() => {});
 
     return { ...challenge, message };
   },
@@ -118,7 +115,7 @@ export const pokeService = {
 
     const updated = await pokeRepository.incrementChallenge(challenge.id);
     if (updated?.status === 'completed') {
-      notificationService.notify(userId, 'recovery_complete', 'Challenge Complete! 🎉', "You crushed the recovery challenge. You're back in the game!").catch(() => {});
+      notificationHub.send(userId, 'recovery_complete', 'Challenge Complete! 🎉', "You crushed the recovery challenge. You're back in the game!").catch(() => {});
     }
     return updated;
   },

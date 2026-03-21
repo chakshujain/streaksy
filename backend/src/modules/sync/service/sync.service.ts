@@ -82,6 +82,10 @@ export const syncService = {
           difficulty: problem.difficulty,
         });
       }).catch(err => logger.error({ err, userId }, 'Failed to post solve event to feed'));
+      // Notify friends about this solve (smart notification)
+      import('../../notification/service/smart-notifications').then(m => {
+        m.smartNotifications.notifyFriendsOfSolve(userId, problem.title, problem.difficulty);
+      }).catch(() => {});
     }
 
     // 6. Update leaderboards (non-blocking — don't let failures abort the sync response)

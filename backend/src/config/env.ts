@@ -40,6 +40,11 @@ export const env = {
     model: process.env.AI_MODEL || 'meta/llama-3.3-70b-instruct',
     baseUrl: process.env.AI_BASE_URL || 'https://integrate.api.nvidia.com/v1',
   },
+  vapid: {
+    publicKey: process.env.VAPID_PUBLIC_KEY || 'BCRxgTLGAASPB6QzyuC1J7i28XrI85XlbuUk9N3iJx4ZXkQTHGlMRKNOjwCBNjdZF-qM9r_27vEotUHivxmRz-0',
+    privateKey: process.env.VAPID_PRIVATE_KEY || 'mr-hnqd2YDWGFgPMTNh8ToK0I3qD2A_4a0gv8FcZQbQ',
+    subject: process.env.VAPID_SUBJECT || 'mailto:noreply@streaksy.in',
+  },
   logLevel: process.env.LOG_LEVEL || 'info',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   // Multiple allowed origins for CORS (comma-separated)

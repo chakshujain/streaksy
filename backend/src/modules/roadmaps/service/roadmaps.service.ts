@@ -48,6 +48,17 @@ export const roadmapsService = {
       await roadmapsRepository.addParticipant(data.templateId, userId, roadmap.id);
     }
 
+    // Auto-create Google Calendar events (non-blocking)
+    import('../../calendar/service/calendar.service').then(m => {
+      m.calendarService.createRoadmapEvents(userId, {
+        id: roadmap.id,
+        name: data.name,
+        startDate: data.startDate || new Date().toISOString().split('T')[0],
+        durationDays: data.durationDays,
+        hoursPerDay: (data as any).hoursPerDay,
+      }).catch(() => {});
+    }).catch(() => {});
+
     return roadmap;
   },
 
@@ -89,6 +100,12 @@ export const roadmapsService = {
     const roadmap = await roadmapsRepository.getRoadmapById(id);
     if (!roadmap) throw AppError.notFound('Roadmap not found');
     if (roadmap.user_id !== userId) throw AppError.forbidden('Not your roadmap');
+
+    // Clean up calendar events (non-blocking)
+    import('../../calendar/service/calendar.service').then(m => {
+      m.calendarService.deleteEventsForReference(userId, id).catch(() => {});
+    }).catch(() => {});
+
     await roadmapsRepository.deleteRoadmap(id);
   },
 

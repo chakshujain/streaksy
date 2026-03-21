@@ -35,6 +35,29 @@ async function start() {
     }
   }, 30_000);
 
+  // Smart notification scheduler — lagging behind, group pressure, streak risk
+  const { smartNotifications } = await import('./modules/notification/service/smart-notifications');
+  setInterval(async () => {
+    const now = new Date();
+    const hour = now.getUTCHours();
+    try {
+      // Lagging behind: send at 14:00 UTC (afternoon motivation)
+      if (hour === 14) {
+        await smartNotifications.checkLaggingBehind();
+      }
+      // Group pressure: send at 16:00 UTC
+      if (hour === 16) {
+        await smartNotifications.checkGroupPressure();
+      }
+      // Streak at risk: send at 18:00 and 20:00 UTC (evening warnings)
+      if (hour === 18 || hour === 20) {
+        await smartNotifications.checkStreakAtRisk();
+      }
+    } catch (err) {
+      logger.error({ err }, 'Failed to run smart notifications');
+    }
+  }, 30 * 60_000); // Check every 30 minutes
+
   // Digest scheduler — morning at 8am, evening at 9pm, weekly on Monday 9am
   const { digestService } = await import('./modules/digest/service/digest.service');
   setInterval(async () => {

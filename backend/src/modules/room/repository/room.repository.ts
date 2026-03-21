@@ -277,4 +277,8 @@ export const roomRepository = {
       [userId, count]
     );
   },
+
+  async updateCalendarEventId(roomId: string, eventId: string): Promise<void> {
+    await query('UPDATE rooms SET calendar_event_id = $1 WHERE id = $2', [eventId, roomId]);
+  },
 };

@@ -9,6 +9,7 @@ export interface User {
   location?: string;
   githubUrl?: string;
   linkedinUrl?: string;
+  googleCalendarConnected?: boolean;
 }
 
 export interface Problem {

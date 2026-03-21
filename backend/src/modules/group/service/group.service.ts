@@ -14,6 +14,23 @@ export const groupService = {
     if (already) throw AppError.conflict('Already a member of this group');
 
     await groupRepository.addMember(group.id, userId);
+
+    // Notify all existing group members
+    import('../../auth/repository/auth.repository').then(async m => {
+      const joiner = await m.authRepository.findById(userId);
+      if (!joiner) return;
+      const members = await groupRepository.getMembers(group.id);
+      const { notificationHub } = await import('../../notification/service/notification-hub');
+      const otherIds = members.map(m => m.user_id).filter(id => id !== userId);
+      await notificationHub.sendToMany(
+        otherIds,
+        'group_join',
+        `${joiner.display_name} joined "${group.name}"`,
+        'Your group is growing! Welcome the new member.',
+        { groupId: group.id }
+      );
+    }).catch(() => {});
+
     return group;
   },
 

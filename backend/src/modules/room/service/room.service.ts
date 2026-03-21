@@ -28,6 +28,24 @@ export const roomService = {
     });
     await roomRepository.addParticipant(room.id, hostId);
 
+    // Auto-create Google Calendar event for scheduled rooms (non-blocking)
+    if (scheduledAt) {
+      import('../../calendar/service/calendar.service').then(m => {
+        m.calendarService.createRoomEvent(hostId, {
+          id: room.id,
+          name,
+          scheduledAt,
+          timeLimitMinutes,
+          meetLink,
+          recurrence: opts?.recurrence,
+        }).then(eventId => {
+          if (eventId) {
+            roomRepository.updateCalendarEventId(room.id, eventId).catch(() => {});
+          }
+        }).catch(() => {});
+      }).catch(() => {});
+    }
+
     // Add multiple problems if provided
     if (opts?.problemIds && opts.problemIds.length > 0) {
       await roomRepository.addProblems(room.id, opts.problemIds);
@@ -45,9 +63,23 @@ export const roomService = {
     await roomRepository.addParticipant(room.id, userId);
 
     // Notify host
-    import('../../notification/service/notification.service').then(m => {
-      m.notificationService.notify(room.host_id, 'room_join', 'Someone joined your room!', `A participant joined "${room.name}"`, { roomId: room.id });
+    import('../../notification/service/notification-hub').then(m => {
+      m.notificationHub.send(room.host_id, 'room_join', 'Someone joined your room!', `A participant joined "${room.name}"`, { roomId: room.id });
     }).catch(() => {});
+
+    // Auto-create calendar event for joining user if room is scheduled
+    if (room.scheduled_at) {
+      import('../../calendar/service/calendar.service').then(m => {
+        m.calendarService.createRoomEvent(userId, {
+          id: room.id,
+          name: room.name,
+          scheduledAt: new Date(room.scheduled_at!).toISOString(),
+          timeLimitMinutes: room.time_limit_minutes,
+          meetLink: room.meet_link || undefined,
+          recurrence: room.recurrence || undefined,
+        }).catch(() => {});
+      }).catch(() => {});
+    }
 
     return room;
   },
@@ -71,10 +103,10 @@ export const roomService = {
 
     // Notify all participants
     const participants = await roomRepository.getParticipants(roomId);
-    import('../../notification/service/notification.service').then(m => {
+    import('../../notification/service/notification-hub').then(m => {
       participants.forEach(p => {
         if (p.user_id !== userId) {
-          m.notificationService.notify(p.user_id, 'room_start', 'Room started! \u{1F3C1}', `"${room!.name}" has started. Time to solve!`, { roomId });
+          m.notificationHub.send(p.user_id, 'room_start', 'Room started! \u{1F3C1}', `"${room!.name}" has started. Time to solve!`, { roomId });
         }
       });
     }).catch(() => {});
@@ -95,10 +127,10 @@ export const roomService = {
     }
 
     // Notify all participants
-    import('../../notification/service/notification.service').then(m => {
+    import('../../notification/service/notification-hub').then(m => {
       participants.forEach(p => {
         if (p.user_id !== userId) {
-          m.notificationService.notify(p.user_id, 'room_end', 'Room ended! \u{1F3C6}', `"${room!.name}" has ended. Check the results!`, { roomId });
+          m.notificationHub.send(p.user_id, 'room_end', 'Room ended! \u{1F3C6}', `"${room!.name}" has ended. Check the results!`, { roomId });
         }
       });
     }).catch(() => {});
@@ -200,10 +232,10 @@ export const roomService = {
 
     // Notify all participants
     const participants = await roomRepository.getParticipants(roomId);
-    import('../../notification/service/notification.service').then(m => {
+    import('../../notification/service/notification-hub').then(m => {
       participants.forEach(p => {
         if (p.user_id !== userId) {
-          m.notificationService.notify(p.user_id, 'room_solve', 'Someone solved it! \u{1F389}', `A participant solved the problem in "${roomData?.name}"`, { roomId });
+          m.notificationHub.send(p.user_id, 'room_solve', 'Someone solved it! \u{1F389}', `A participant solved the problem in "${roomData?.name}"`, { roomId });
         }
       });
     }).catch(() => {});
@@ -228,10 +260,9 @@ export const roomService = {
     for (const room of rooms) {
       await roomRepository.updateStatus(room.id, 'active');
       const participants = await roomRepository.getParticipants(room.id);
-      import('../../notification/service/notification.service').then(m => {
-        participants.forEach(p => {
-          m.notificationService.notify(p.user_id, 'room_start', 'Room started! \u{1F3C1}', `"${room.name}" has started. Time to solve!`, { roomId: room.id });
-        });
+      import('../../notification/service/notification-hub').then(m => {
+        const ids = participants.map(p => p.user_id);
+        m.notificationHub.sendToMany(ids, 'room_start', 'Room started! \u{1F3C1}', `"${room.name}" has started. Time to solve!`, { roomId: room.id });
       }).catch(() => {});
     }
     return rooms.length;
