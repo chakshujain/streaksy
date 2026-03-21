@@ -394,15 +394,14 @@ export default function RoadmapStartPage() {
       // Auto-create weekly war room if scheduled
       if (scheduleWeeklyRoom && weeklyRoomDay && weeklyRoomTime) {
         try {
-          // Calculate the first scheduled date
           const dayMap: Record<string, number> = {
             monday: 1, tuesday: 2, wednesday: 3, thursday: 4,
             friday: 5, saturday: 6, sunday: 0,
           };
           const targetDay = dayMap[weeklyRoomDay.toLowerCase()] ?? 6;
           const now = new Date();
-          const currentDay = now.getDay();
-          let daysUntil = targetDay - currentDay;
+          const curDay = now.getDay();
+          let daysUntil = targetDay - curDay;
           if (daysUntil <= 0) daysUntil += 7;
 
           const scheduledDate = new Date(now);
@@ -415,9 +414,9 @@ export default function RoadmapStartPage() {
             scheduledAt: scheduledDate.toISOString(),
             recurrence: 'weekly',
             timeLimitMinutes: 60,
-            mode: 'collaborative',
+            mode: 'multi',
           });
-        } catch { /* Room creation failed — non-critical, continue */ }
+        } catch { /* Room creation failed — non-critical */ }
       }
 
       router.push(`/roadmaps/${roadmapId}`);
