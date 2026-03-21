@@ -127,4 +127,26 @@ export const roadmapsController = {
     const leaderboard = await roadmapsService.getGlobalLeaderboard();
     res.json({ leaderboard });
   },
+
+  async getTemplateParticipants(req: Request, res: Response) {
+    const slug = param(req, 'slug');
+    const participants = await roadmapsService.getParticipants(slug);
+    res.json({ participants });
+  },
+
+  async getTemplateDiscussions(req: Request, res: Response) {
+    const slug = param(req, 'slug');
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+    const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
+    const discussions = await roadmapsService.getDiscussions(slug, limit, offset);
+    res.json({ discussions });
+  },
+
+  async createTemplateDiscussion(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const slug = param(req, 'slug');
+    const { content, parentId } = req.body;
+    const discussion = await roadmapsService.createDiscussion(slug, user!.userId, content, parentId);
+    res.status(201).json({ discussion });
+  },
 };

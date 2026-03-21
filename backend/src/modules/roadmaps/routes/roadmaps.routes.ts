@@ -12,6 +12,9 @@ router.get('/categories', asyncHandler(roadmapsController.getCategories));
 router.get('/templates', asyncHandler(roadmapsController.getTemplates));
 router.get('/templates/featured', asyncHandler(roadmapsController.getFeaturedTemplates));
 router.get('/templates/:slug', asyncHandler(roadmapsController.getTemplateBySlug));
+router.get('/templates/:slug/participants', asyncHandler(roadmapsController.getTemplateParticipants));
+router.get('/templates/:slug/discussions', asyncHandler(roadmapsController.getTemplateDiscussions));
+router.post('/templates/:slug/discussions', asyncHandler(roadmapsController.createTemplateDiscussion));
 
 // Today's tasks across all active roadmaps
 router.get('/today', asyncHandler(roadmapsController.getTodayTasks));

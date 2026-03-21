@@ -390,6 +390,9 @@ export const roadmapsApi = {
   updateProgress: (id: string, day: number, completed: boolean) =>
     api.put(`/roadmaps/${id}/progress`, { day, completed }),
   getToday: () => api.get('/roadmaps/today'),
+  getParticipants: (slug: string) => api.get(`/roadmaps/templates/${slug}/participants`),
+  getDiscussions: (slug: string) => api.get(`/roadmaps/templates/${slug}/discussions`),
+  postDiscussion: (slug: string, content: string) => api.post(`/roadmaps/templates/${slug}/discussions`, { content }),
 };
 
 export default api;

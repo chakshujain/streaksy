@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { ContributionHeatmap } from '@/components/dashboard/ContributionHeatmap';
@@ -19,6 +19,7 @@ import {
 } from '@/lib/api';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { cn } from '@/lib/cn';
@@ -40,13 +41,14 @@ import {
   Award,
   Zap,
   Radio,
+  Map,
 } from 'lucide-react';
 import { RecoveryChallenge } from '@/components/poke/RecoveryChallenge';
 import { PowerupsWidget } from '@/components/dashboard/PowerupsWidget';
 import { PrepProgressWidget } from '@/components/dashboard/PrepProgressWidget';
 import { HelpTooltip } from '@/components/onboarding/HelpTooltip';
 import { formatDistanceToNow } from 'date-fns';
-import type { ProblemProgress, Group, FeedEvent, LeaderboardEntry } from '@/lib/types';
+import type { ProblemProgress, Group, FeedEvent, LeaderboardEntry, UserRoadmap } from '@/lib/types';
 
 /* ── helpers ─────────────────────────────────────────── */
 
@@ -642,6 +644,75 @@ function ActiveRoomsSection({
   );
 }
 
+function YourRoadmapsSection({ roadmaps }: { roadmaps: UserRoadmap[] }) {
+  if (roadmaps.length === 0) {
+    return (
+      <Card className="border-emerald-500/10 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15">
+            <Map className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-zinc-100">Start a roadmap with your friends</h2>
+            <p className="text-xs text-zinc-500">Pick a roadmap, invite friends, crush goals together</p>
+          </div>
+        </div>
+        <Link href="/roadmaps">
+          <Button variant="primary" size="md" className="mt-2">
+            Explore Roadmaps <ArrowRight className="h-4 w-4 ml-1" />
+          </Button>
+        </Link>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-emerald-500/10 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15">
+            <Map className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-zinc-100">Your Roadmaps</h2>
+            <p className="text-xs text-zinc-500">{roadmaps.length} active</p>
+          </div>
+        </div>
+        <Link href="/roadmaps" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1">
+          View all <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {roadmaps.map((rm) => {
+          const pct = rm.durationDays > 0 ? Math.round((rm.completedDays / rm.durationDays) * 100) : 0;
+          return (
+            <Link
+              key={rm.id}
+              href={`/roadmaps/${rm.id}`}
+              className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-2xl">{rm.icon}</span>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-semibold text-zinc-200 group-hover:text-white transition-colors truncate">{rm.name}</h3>
+                  <p className="text-[11px] text-zinc-500">Day {rm.completedDays}/{rm.durationDays}</p>
+                </div>
+                {rm.currentStreak > 0 && (
+                  <span className="text-xs font-medium text-orange-400 shrink-0">🔥 {rm.currentStreak}d</span>
+                )}
+              </div>
+              <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                <div className="h-full rounded-full bg-emerald-500/60 transition-all" style={{ width: `${pct}%` }} />
+              </div>
+              <p className="text-[10px] text-zinc-600 mt-1">{pct}% complete</p>
+            </Link>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
 function RecentActivitySection({
   progressLoading,
   progressData,
@@ -716,6 +787,14 @@ export default function DashboardPage() {
     []
   );
 
+  const [activeRoadmaps, setActiveRoadmaps] = useState<UserRoadmap[]>([]);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('streaksy_active_roadmaps');
+      if (stored) setActiveRoadmaps(JSON.parse(stored));
+    } catch { /* empty */ }
+  }, []);
+
   /* derived */
   const currentStreak = streak?.currentStreak ?? 0;
   const longestStreak = streak?.longestStreak ?? 0;
@@ -780,6 +859,9 @@ export default function DashboardPage() {
 
           {/* ─── Recovery Challenge ─────────────────────── */}
           <RecoveryChallenge />
+
+          {/* ─── Your Roadmaps ───────────────────────────── */}
+          <YourRoadmapsSection roadmaps={activeRoadmaps} />
 
           {/* ─── Stats ─────────────────────────────────── */}
           <StatsSection

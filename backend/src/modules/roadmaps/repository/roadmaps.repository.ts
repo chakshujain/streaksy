@@ -354,6 +354,80 @@ export const roadmapsRepository = {
     );
   },
 
+  async getParticipants(templateId: string, limit = 20) {
+    return query<{
+      user_id: string;
+      display_name: string;
+      avatar_url: string | null;
+      joined_at: Date;
+      current_streak: number;
+      completed_days: number;
+    }>(`
+      SELECT rp.user_id, u.display_name, u.avatar_url, rp.joined_at,
+        COALESCE(rs.current_streak, 0)::int as current_streak,
+        (SELECT COUNT(*)::int FROM roadmap_day_progress rdp WHERE rdp.roadmap_id = rp.roadmap_id AND rdp.user_id = rp.user_id AND rdp.completed) as completed_days
+      FROM roadmap_participants rp
+      JOIN users u ON u.id = rp.user_id
+      LEFT JOIN roadmap_streaks rs ON rs.roadmap_id = rp.roadmap_id AND rs.user_id = rp.user_id
+      WHERE rp.template_id = $1
+      ORDER BY rs.current_streak DESC NULLS LAST
+      LIMIT $2
+    `, [templateId, limit]);
+  },
+
+  async addParticipant(templateId: string, userId: string, roadmapId: string) {
+    await query(
+      `INSERT INTO roadmap_participants (template_id, user_id, roadmap_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
+      [templateId, userId, roadmapId]
+    );
+    await query(
+      `UPDATE roadmap_templates SET participant_count = participant_count + 1 WHERE id = $1`,
+      [templateId]
+    );
+  },
+
+  async getDiscussions(templateId: string, limit = 50, offset = 0) {
+    return query<{
+      id: string;
+      user_id: string;
+      display_name: string;
+      avatar_url: string | null;
+      content: string;
+      parent_id: string | null;
+      created_at: Date;
+    }>(`
+      SELECT rd.id, rd.user_id, u.display_name, u.avatar_url, rd.content, rd.parent_id, rd.created_at
+      FROM roadmap_discussions rd
+      JOIN users u ON u.id = rd.user_id
+      WHERE rd.template_id = $1
+      ORDER BY rd.created_at DESC
+      LIMIT $2 OFFSET $3
+    `, [templateId, limit, offset]);
+  },
+
+  async createDiscussion(templateId: string, userId: string, content: string, parentId?: string) {
+    return queryOne<{
+      id: string;
+      template_id: string;
+      user_id: string;
+      content: string;
+      parent_id: string | null;
+      created_at: Date;
+    }>(`
+      INSERT INTO roadmap_discussions (template_id, user_id, content, parent_id)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *
+    `, [templateId, userId, content, parentId || null]);
+  },
+
+  async getParticipantCount(templateId: string) {
+    const row = await queryOne<{ count: string }>(
+      `SELECT participant_count as count FROM roadmap_templates WHERE id = $1`,
+      [templateId]
+    );
+    return parseInt(row?.count || '0');
+  },
+
   async getByShareCode(code: string): Promise<UserRoadmapRow | null> {
     return queryOne<UserRoadmapRow>(
       `SELECT ur.*,

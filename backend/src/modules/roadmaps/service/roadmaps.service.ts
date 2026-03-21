@@ -43,7 +43,14 @@ export const roadmapsService = {
       );
       if (!member) throw AppError.forbidden('Not a member of this group');
     }
-    return roadmapsRepository.createUserRoadmap(userId, data);
+    const roadmap = await roadmapsRepository.createUserRoadmap(userId, data);
+
+    // Auto-add user as participant on the template
+    if (data.templateId) {
+      await roadmapsRepository.addParticipant(data.templateId, userId, roadmap.id);
+    }
+
+    return roadmap;
   },
 
   async getActiveRoadmaps(userId: string) {
@@ -157,5 +164,24 @@ export const roadmapsService = {
 
   async getGlobalLeaderboard() {
     return roadmapsRepository.getGlobalLeaderboard(50);
+  },
+
+  async getParticipants(slug: string) {
+    const template = await roadmapsRepository.getTemplateBySlug(slug);
+    if (!template) throw AppError.notFound('Template not found');
+    return roadmapsRepository.getParticipants(template.id);
+  },
+
+  async getDiscussions(slug: string, limit?: number, offset?: number) {
+    const template = await roadmapsRepository.getTemplateBySlug(slug);
+    if (!template) throw AppError.notFound('Template not found');
+    return roadmapsRepository.getDiscussions(template.id, limit, offset);
+  },
+
+  async createDiscussion(slug: string, userId: string, content: string, parentId?: string) {
+    const template = await roadmapsRepository.getTemplateBySlug(slug);
+    if (!template) throw AppError.notFound('Template not found');
+    if (!content || content.trim().length === 0) throw AppError.badRequest('Content is required');
+    return roadmapsRepository.createDiscussion(template.id, userId, content.trim(), parentId);
   },
 };
