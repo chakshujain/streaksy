@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -272,6 +272,8 @@ export const feedApi = {
     api.get(`/feed/${eventId}/comments`),
   deleteComment: (commentId: string) =>
     api.delete(`/feed/comments/${commentId}`),
+  createPost: (content: string) =>
+    api.post('/feed/post', { content }),
 };
 
 // ── Daily ──
@@ -305,6 +307,40 @@ export const roomsApi = {
     api.get(`/rooms/${id}/problems`),
   suggestProblems: (mode: string, count?: number, sheetId?: string) =>
     api.get('/rooms/suggest', { params: { mode, count, sheetId } }),
+};
+
+// ── Ratings ──
+export const ratingsApi = {
+  rate: (problemId: string, rating: number) =>
+    api.post('/ratings', { problemId, rating }),
+  getStats: (problemId: string) =>
+    api.get(`/ratings/${problemId}`),
+  getMine: (problemId: string) =>
+    api.get(`/ratings/${problemId}/mine`),
+  listCompanyTags: () =>
+    api.get('/ratings/companies'),
+  getCompanyTags: (problemId: string) =>
+    api.get(`/ratings/${problemId}/companies`),
+  reportCompanyTag: (problemId: string, companyTagId: string) =>
+    api.post(`/ratings/${problemId}/companies`, { companyTagId }),
+};
+
+// ── Powerups ──
+export const powerupsApi = {
+  getInventory: () => api.get('/powerups'),
+  getLog: () => api.get('/powerups/log'),
+  getCosts: () => api.get('/powerups/costs'),
+  purchase: (type: string) => api.post('/powerups/purchase', { type }),
+  useFreeze: () => api.post('/powerups/freeze'),
+};
+
+// ── Digest ──
+export const digestApi = {
+  getPreferences: () => api.get('/digest/preferences'),
+  updatePreferences: (prefs: Record<string, unknown>) =>
+    api.put('/digest/preferences', prefs),
+  preview: (type: string) =>
+    api.post('/digest/preview', null, { params: { type } }),
 };
 
 export default api;

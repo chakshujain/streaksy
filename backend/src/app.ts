@@ -24,7 +24,7 @@ import insightsRoutes from './modules/insights/routes/insights.routes';
 import sheetsRoutes from './modules/sheets/routes/sheets.routes';
 import preferencesRoutes from './modules/preferences/routes/preferences.routes';
 import notificationRoutes from './modules/notification/routes/notification.routes';
-import discussionRoutes from './modules/discussion/routes/discussion.routes';
+import discussionRoutes, { commentRouter } from './modules/discussion/routes/discussion.routes';
 import activityRoutes from './modules/activity/routes/activity.routes';
 import revisionRoutes from './modules/revision/routes/revision.routes';
 import contestRoutes from './modules/contest/routes/contest.routes';
@@ -33,6 +33,9 @@ import roomRoutes from './modules/room/routes/room.routes';
 import pokeRoutes from './modules/poke/routes/poke.routes';
 import feedRoutes from './modules/feed/routes/feed.routes';
 import dailyRoutes from './modules/daily/routes/daily.routes';
+import ratingRoutes from './modules/rating/routes/rating.routes';
+import powerupRoutes from './modules/powerup/routes/powerup.routes';
+import digestRoutes from './modules/digest/routes/digest.routes';
 
 const app = express();
 
@@ -46,7 +49,10 @@ app.use(helmet({
   crossOriginOpenerPolicy: false,
   hsts: false,
 }));
-app.use(cors());
+app.use(cors({
+  origin: [env.frontendUrl, 'http://localhost:3000'],
+  credentials: true,
+}));
 app.use(express.json({ limit: '1mb' }));
 app.use(passport.initialize());
 configurePassport();
@@ -56,7 +62,7 @@ app.use(
     max: env.rateLimit.max,
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => req.path.startsWith('/api/sync') || req.path === '/health',
+    skip: (req) => req.path === '/health',
   })
 );
 
@@ -99,7 +105,7 @@ app.use('/api/sheets', sheetsRoutes);
 app.use('/api/preferences', preferencesRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/problems', discussionRoutes);
-app.use('/api/comments', discussionRoutes);
+app.use('/api/comments', commentRouter);
 app.use('/api/groups', activityRoutes);
 app.use('/api/revisions', revisionRoutes);
 app.use('/api/groups', contestRoutes);
@@ -109,6 +115,9 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/pokes', pokeRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/daily', dailyRoutes);
+app.use('/api/ratings', ratingRoutes);
+app.use('/api/powerups', powerupRoutes);
+app.use('/api/digest', digestRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

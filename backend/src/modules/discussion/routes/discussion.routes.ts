@@ -5,17 +5,18 @@ import { validate } from '../../../middleware/validate';
 import { createCommentSchema, updateCommentSchema } from '../validation/discussion.schema';
 import { asyncHandler } from '../../../common/utils/asyncHandler';
 
-const router = Router();
+// Problem-scoped routes (mounted at /api/problems)
+const problemDiscussionRouter = Router();
+problemDiscussionRouter.use(authenticate);
+problemDiscussionRouter.get('/:slug/comments', asyncHandler(discussionController.getComments));
+problemDiscussionRouter.post('/:slug/comments', validate(createCommentSchema), asyncHandler(discussionController.createComment));
 
-router.use(authenticate);
+// Comment-scoped routes (mounted at /api/comments)
+const commentRouter = Router();
+commentRouter.use(authenticate);
+commentRouter.get('/:id/replies', asyncHandler(discussionController.getReplies));
+commentRouter.put('/:id', validate(updateCommentSchema), asyncHandler(discussionController.updateComment));
+commentRouter.delete('/:id', asyncHandler(discussionController.deleteComment));
 
-// Problem-scoped comment routes
-router.get('/:slug/comments', asyncHandler(discussionController.getComments));
-router.post('/:slug/comments', validate(createCommentSchema), asyncHandler(discussionController.createComment));
-
-// Comment-scoped routes
-router.get('/:id/replies', asyncHandler(discussionController.getReplies));
-router.put('/:id', validate(updateCommentSchema), asyncHandler(discussionController.updateComment));
-router.delete('/:id', asyncHandler(discussionController.deleteComment));
-
-export default router;
+export default problemDiscussionRouter;
+export { commentRouter };

@@ -69,8 +69,9 @@ export const pokeService = {
 
     // Calculate hours left (streak breaks at midnight)
     const now = new Date();
-    const midnight = new Date();
-    midnight.setHours(23, 59, 59, 999);
+    const midnight = new Date(now);
+    midnight.setDate(midnight.getDate() + 1);
+    midnight.setHours(0, 0, 0, 0);
     const hoursLeft = Math.max(1, Math.round((midnight.getTime() - now.getTime()) / 3600000));
 
     return {
@@ -134,8 +135,8 @@ export const pokeService = {
     <div class="container"><div class="card">
       <div class="logo">🔥 <span>Streaksy</span></div>
       <div class="poke-emoji">👉</div>
-      <h1>${fromName} poked you!</h1>
-      <div class="message">"${message}"</div>
+      <h1>${fromName.replace(/</g, '&lt;').replace(/>/g, '&gt;')} poked you!</h1>
+      <div class="message">"${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}"</div>
       <p>Don't let your friends down. Solve a problem and show them what you've got!</p>
       <a href="${env.frontendUrl}/problems" class="btn">Solve a Problem Now</a>
     </div>

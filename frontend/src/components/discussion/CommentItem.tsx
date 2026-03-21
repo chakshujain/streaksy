@@ -28,8 +28,13 @@ export function CommentItem({ comment, problemSlug, onUpdated, depth = 0 }: Comm
   );
 
   const handleDelete = async () => {
-    await discussionsApi.deleteComment(comment.id);
-    onUpdated?.();
+    if (!confirm('Delete this comment?')) return;
+    try {
+      await discussionsApi.deleteComment(comment.id);
+      onUpdated?.();
+    } catch {
+      // Silently handle - comment may already be deleted
+    }
   };
 
   const initials = comment.display_name

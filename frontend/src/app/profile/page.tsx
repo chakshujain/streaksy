@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -37,14 +37,16 @@ export default function ProfilePage() {
   const [initialized, setInitialized] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  if (profile && !initialized) {
-    setDisplayName(profile.displayName || '');
-    setBio(profile.bio || '');
-    setLocation(profile.location || '');
-    setGithubUrl(profile.githubUrl || '');
-    setLinkedinUrl(profile.linkedinUrl || '');
-    setInitialized(true);
-  }
+  useEffect(() => {
+    if (profile && !initialized) {
+      setDisplayName(profile.displayName || '');
+      setBio(profile.bio || '');
+      setLocation(profile.location || '');
+      setGithubUrl(profile.githubUrl || '');
+      setLinkedinUrl(profile.linkedinUrl || '');
+      setInitialized(true);
+    }
+  }, [profile, initialized]);
 
   const handleSave = async () => {
     setSaving(true);

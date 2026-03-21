@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { useAsync } from '@/hooks/useAsync';
 import { roomsApi } from '@/lib/api';
-import { getSocket, disconnectSocket } from '@/lib/socket';
+import { getSocket } from '@/lib/socket';
 import { useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/cn';
 import {
@@ -110,7 +110,13 @@ export default function RoomDetailPage() {
 
     return () => {
       socket.emit('room:leave', roomId);
-      disconnectSocket();
+      socket.off('connect');
+      socket.off('room:participants');
+      socket.off('room:started');
+      socket.off('room:ended');
+      socket.off('room:solve_event');
+      socket.off('room:new_message');
+      socket.off('disconnect');
     };
   }, [roomId]);
 
@@ -176,8 +182,22 @@ export default function RoomDetailPage() {
   };
 
   const copyCode = () => {
-    if (room?.code) {
-      navigator.clipboard.writeText(room.code);
+    if (!room?.code) return;
+    const text = room.code;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

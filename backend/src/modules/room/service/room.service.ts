@@ -147,6 +147,15 @@ export const roomService = {
         return null;
     }
 
+    // Carry over problem IDs from the original room for multi-problem mode
+    let problemIds: string[] | undefined;
+    if (room.mode === 'multi') {
+      const roomProblems = await roomRepository.getRoomProblems(room.id);
+      if (roomProblems.length > 0) {
+        problemIds = roomProblems.map(p => p.problem_id);
+      }
+    }
+
     return this.createRoom(
       room.host_id,
       room.name,
@@ -158,6 +167,7 @@ export const roomService = {
         sheetId: room.sheet_id || undefined,
         recurrence: room.recurrence,
         meetLink: room.meet_link || undefined,
+        problemIds,
       }
     );
   },

@@ -30,7 +30,7 @@ export function MemberList({ members, groupId }: MemberListProps) {
               </div>
               <div>
                 <Link href={`/user/${member.user_id}`} className="text-sm font-medium text-zinc-200 hover:text-emerald-400 transition-colors">{member.display_name}</Link>
-                <p className="text-xs text-zinc-500">{member.email}</p>
+                {member.role && <p className="text-xs text-zinc-500 capitalize">{member.role}</p>}
               </div>
             </div>
             <div className="flex items-center gap-2">

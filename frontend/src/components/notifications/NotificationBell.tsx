@@ -66,15 +66,26 @@ export function NotificationBell() {
   }, []);
 
   const markAllRead = async () => {
-    await notificationsApi.markAllRead();
+    const prevCount = unreadCount;
+    const prevNotifications = notifications;
     setUnreadCount(0);
-    setNotifications(notifications.map((n) => ({ ...n, read_at: new Date().toISOString() })));
+    setNotifications(notifications.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
+    try {
+      await notificationsApi.markAllRead();
+    } catch {
+      setUnreadCount(prevCount);
+      setNotifications(prevNotifications);
+    }
   };
 
   const markRead = async (id: string) => {
-    await notificationsApi.markRead(id);
-    setNotifications(notifications.map((n) => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
-    setUnreadCount(Math.max(0, unreadCount - 1));
+    try {
+      await notificationsApi.markRead(id);
+      setNotifications(notifications.map((n) => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
+      setUnreadCount(Math.max(0, unreadCount - 1));
+    } catch {
+      // Silently handle
+    }
   };
 
   return (

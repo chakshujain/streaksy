@@ -31,6 +31,7 @@ export default function GroupDetailPage() {
   const [editingPlan, setEditingPlan] = useState(false);
   const [planForm, setPlanForm] = useState({ plan: '', objective: '', targetDate: '' });
   const [planSaving, setPlanSaving] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   // Sheet assignment state
   const [showSheetSelector, setShowSheetSelector] = useState(false);
@@ -122,6 +123,7 @@ export default function GroupDetailPage() {
 
   const savePlan = async () => {
     setPlanSaving(true);
+    setActionError('');
     try {
       await groupsApi.updatePlan(groupId, {
         plan: planForm.plan || undefined,
@@ -130,8 +132,9 @@ export default function GroupDetailPage() {
       });
       setEditingPlan(false);
       refetchGroup();
-    } catch {
-      // error handled by interceptor
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setActionError(e.response?.data?.error || 'Failed to save plan');
     } finally {
       setPlanSaving(false);
     }
@@ -139,33 +142,39 @@ export default function GroupDetailPage() {
 
   const handleAssignSheet = async (sheetId: string) => {
     setAssigningSheet(true);
+    setActionError('');
     try {
       await groupsApi.assignSheet(groupId, sheetId);
       setShowSheetSelector(false);
       refetchSheets();
-    } catch {
-      // error handled by interceptor
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setActionError(e.response?.data?.error || 'Failed to assign sheet');
     } finally {
       setAssigningSheet(false);
     }
   };
 
   const handleRemoveSheet = async (sheetId: string) => {
+    setActionError('');
     try {
       await groupsApi.removeSheet(groupId, sheetId);
       refetchSheets();
-    } catch {
-      // error handled by interceptor
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setActionError(e.response?.data?.error || 'Failed to remove sheet');
     }
   };
 
   const handleLeaveGroup = async () => {
     setLeaving(true);
+    setActionError('');
     try {
       await groupsApi.leave(groupId);
       router.push('/groups');
-    } catch {
-      // error handled by interceptor
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setActionError(e.response?.data?.error || 'Failed to leave group');
     } finally {
       setLeaving(false);
     }
@@ -270,6 +279,14 @@ export default function GroupDetailPage() {
             )}
           </div>
         </div>
+
+        {/* Error banner */}
+        {actionError && (
+          <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 flex items-center justify-between">
+            <p className="text-sm text-red-400">{actionError}</p>
+            <button onClick={() => setActionError('')} className="text-red-400 hover:text-red-300 text-xs">Dismiss</button>
+          </div>
+        )}
 
         {/* Plan & Objective */}
         <Card>

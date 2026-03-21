@@ -43,7 +43,7 @@ router.get('/google/callback',
   (req, res) => {
     const user = req.user as any;
     const token = authService.generateToken(user.id, user.email);
-    res.redirect(`${env.frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, displayName: user.display_name }))}`);
+    res.redirect(`${env.frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: user.id, displayName: user.display_name }))}`);
   }
 );
 
@@ -55,7 +55,7 @@ router.get('/github/callback',
   (req, res) => {
     const user = req.user as any;
     const token = authService.generateToken(user.id, user.email);
-    res.redirect(`${env.frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, displayName: user.display_name }))}`);
+    res.redirect(`${env.frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: user.id, displayName: user.display_name }))}`);
   }
 );
 

@@ -1,5 +1,6 @@
 import { contestRepository } from '../repository/contest.repository';
 import { AppError } from '../../../common/errors/AppError';
+import { groupRepository } from '../../group/repository/group.repository';
 
 export const contestService = {
   async create(groupId: string, userId: string, data: {
@@ -9,6 +10,14 @@ export const contestService = {
     endsAt: string;
     problemIds?: string[];
   }) {
+    const member = await groupRepository.getMember(groupId, userId);
+    if (!member) throw AppError.forbidden('Not a member of this group');
+    if (member.role !== 'admin') throw AppError.forbidden('Only group admins can create contests');
+
+    if (new Date(data.endsAt) <= new Date(data.startsAt)) {
+      throw AppError.badRequest('End time must be after start time');
+    }
+
     const contest = await contestRepository.create(
       groupId, data.title, data.description || null, data.startsAt, data.endsAt, userId
     );

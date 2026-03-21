@@ -139,13 +139,18 @@ function CreateGroupForm({ onDone, onCancel }: { onDone: () => void; onCancel: (
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     try {
       await groupsApi.create({ name, description: description || undefined });
       onDone();
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setError(e.response?.data?.error || 'Failed to create group');
     } finally {
       setLoading(false);
     }
@@ -160,6 +165,11 @@ function CreateGroupForm({ onDone, onCancel }: { onDone: () => void; onCancel: (
           </div>
           <h3 className="text-sm font-semibold text-zinc-200">Create a new group</h3>
         </div>
+        {error && (
+          <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-2.5">
+            <p className="text-xs text-red-400">{error}</p>
+          </div>
+        )}
         <Input id="group-name" label="Group Name" value={name} onChange={(e) => setName(e.target.value)} required />
         <Input id="group-desc" label="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} />
         <div className="flex gap-2 justify-end pt-2">

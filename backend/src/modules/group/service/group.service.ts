@@ -50,11 +50,19 @@ export const groupService = {
     await groupRepository.removeSheet(groupId, sheetId);
   },
 
-  async getGroupSheets(groupId: string) {
+  async getGroupSheets(groupId: string, userId?: string) {
+    if (userId) {
+      const isMember = await groupRepository.isMember(groupId, userId);
+      if (!isMember) throw AppError.forbidden('Not a member of this group');
+    }
     return groupRepository.getGroupSheets(groupId);
   },
 
-  async getMemberSheetProgress(groupId: string, sheetId: string) {
+  async getMemberSheetProgress(groupId: string, sheetId: string, userId?: string) {
+    if (userId) {
+      const isMember = await groupRepository.isMember(groupId, userId);
+      if (!isMember) throw AppError.forbidden('Not a member of this group');
+    }
     return groupRepository.getMemberSheetProgress(groupId, sheetId);
   },
 

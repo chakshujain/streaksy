@@ -10,8 +10,9 @@ import { FeedCard } from '@/components/feed/FeedCard';
 import { useAsync } from '@/hooks/useAsync';
 import { feedApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
-import { Rss, Zap, ThumbsUp, MessageCircle, TrendingUp } from 'lucide-react';
+import { Rss, Zap, ThumbsUp, MessageCircle } from 'lucide-react';
 import { HelpTooltip } from '@/components/onboarding/HelpTooltip';
+import { SharePost } from '@/components/feed/SharePost';
 import Link from 'next/link';
 import type { FeedEvent } from '@/lib/types';
 
@@ -22,6 +23,7 @@ export default function FeedPage() {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState<FilterTab>('all');
+  const [refreshKey, setRefreshKey] = useState(0);
   const LIMIT = 20;
 
   const { loading } = useAsync(
@@ -35,7 +37,7 @@ export default function FeedPage() {
       setHasMore(newEvents.length === LIMIT);
       return newEvents;
     }),
-    [offset]
+    [offset, refreshKey]
   );
 
   const totalLikes = useMemo(() => allEvents.reduce((sum, e) => sum + (e.like_count || 0), 0), [allEvents]);
@@ -62,17 +64,6 @@ export default function FeedPage() {
                 <HelpTooltip id="feed" text="See what your group members are solving. Like and comment to encourage each other!" />
               </div>
               <p className="text-sm text-zinc-500">See what your peers are up to</p>
-            </div>
-          </div>
-
-          {/* Trending card */}
-          <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 flex items-center gap-3 animate-slide-up" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15">
-              <TrendingUp className="h-5 w-5 text-amber-400" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-amber-400 uppercase tracking-wider">Trending</p>
-              <p className="text-sm text-zinc-200">Two Sum is the most solved problem today</p>
             </div>
           </div>
 
@@ -112,14 +103,11 @@ export default function FeedPage() {
                 </button>
               ))}
             </div>
-            <div className="flex-1 max-w-xs">
-              <input
-                type="text"
-                disabled
-                placeholder="Share what you're working on..."
-                className="w-full rounded-lg border border-zinc-800/50 bg-zinc-900/30 px-3 py-1.5 text-xs text-zinc-400 placeholder:text-zinc-600 cursor-not-allowed"
-              />
-            </div>
+          </div>
+
+          {/* Share Post */}
+          <div className="animate-slide-up" style={{ animationDelay: '160ms', animationFillMode: 'both' }}>
+            <SharePost onPost={() => { setOffset(0); setRefreshKey(k => k + 1); }} />
           </div>
 
           {/* Feed content */}
@@ -141,7 +129,7 @@ export default function FeedPage() {
                 </div>
               ))}
 
-              {hasMore && filter === 'all' && (
+              {hasMore && (
                 <Button variant="ghost" onClick={() => setOffset(o => o + LIMIT)} loading={loading && offset > 0} className="w-full">
                   Load More
                 </Button>

@@ -53,9 +53,12 @@ export const badgeService = {
       );
       const revisionCount = Number(revisionCountRow[0]?.count || 0);
 
+      // Batch fetch all earned badges to avoid N+1 queries
+      const earnedBadges = await badgeRepository.getUserBadges(userId);
+      const earnedIds = new Set(earnedBadges.map(b => b.badge_id));
+
       for (const badge of badges) {
-        const already = await badgeRepository.hasEarned(userId, badge.id);
-        if (already) continue;
+        if (earnedIds.has(badge.id)) continue;
 
         const criteria = badge.criteria as any;
         let earned = false;

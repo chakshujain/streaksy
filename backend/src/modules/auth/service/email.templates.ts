@@ -1,5 +1,9 @@
 import { env } from '../../../config/env';
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 const baseStyles = `
   body { margin: 0; padding: 0; background-color: #09090b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
   .container { max-width: 560px; margin: 0 auto; padding: 40px 24px; }
@@ -25,7 +29,7 @@ export function welcomeEmail(displayName: string): { subject: string; html: stri
     html: `<!DOCTYPE html><html><head><style>${baseStyles}</style></head><body>
       <div class="container"><div class="card">
         <div class="logo">🔥 <span>Streaksy</span></div>
-        <h1>Welcome aboard, ${displayName}!</h1>
+        <h1>Welcome aboard, ${escapeHtml(displayName)}!</h1>
         <p>You've just joined a community of developers who are serious about mastering data structures and algorithms. Here's what you can do next:</p>
         <div class="feature"><div class="feature-dot"></div><div class="feature-text"><strong>Connect your LeetCode account</strong> — Auto-sync your accepted submissions.</div></div>
         <div class="feature"><div class="feature-dot"></div><div class="feature-text"><strong>Browse problem sheets</strong> — Striver, Top 150, Love Babbar, and more.</div></div>
@@ -48,7 +52,7 @@ export function streakMilestoneEmail(displayName: string, streakDays: number): {
       <div class="container"><div class="card">
         <div class="logo">🔥 <span>Streaksy</span></div>
         <h1>${emoji} ${streakDays}-Day Streak!</h1>
-        <p>Incredible work, ${displayName}! You've solved at least one problem every day for <strong>${streakDays} days straight</strong>. That's serious dedication.</p>
+        <p>Incredible work, ${escapeHtml(displayName)}! You've solved at least one problem every day for <strong>${streakDays} days straight</strong>. That's serious dedication.</p>
         <div style="text-align: center; margin: 24px 0;">
           <div class="stat"><div class="stat-value">${streakDays}</div><div class="stat-label">Day Streak</div></div>
         </div>
@@ -76,7 +80,7 @@ export function weeklyProgressEmail(
       <div class="container"><div class="card">
         <div class="logo">🔥 <span>Streaksy</span></div>
         <h1>Weekly Recap</h1>
-        <p>Here's how your week went, ${displayName}:</p>
+        <p>Here's how your week went, ${escapeHtml(displayName)}:</p>
         <div style="text-align: center; margin: 24px 0;">
           <div class="stat"><div class="stat-value">${solvedThisWeek}</div><div class="stat-label">This Week</div></div>
           <div class="stat"><div class="stat-value">${totalSolved}</div><div class="stat-label">Total Solved</div></div>
@@ -105,7 +109,7 @@ export function groupInviteEmail(
       <div class="container"><div class="card">
         <div class="logo">🔥 <span>Streaksy</span></div>
         <h1>You're Invited!</h1>
-        <p><strong>${inviterName}</strong> wants you to join the study group <strong>"${groupName}"</strong> on Streaksy.</p>
+        <p><strong>${escapeHtml(inviterName)}</strong> wants you to join the study group <strong>"${escapeHtml(groupName)}"</strong> on Streaksy.</p>
         <p>Use this invite code to join:</p>
         <div style="background: #27272a; border-radius: 8px; padding: 16px; text-align: center; margin: 16px 0;">
           <span style="font-size: 24px; font-weight: 700; color: #10b981; letter-spacing: 4px;">${inviteCode}</span>
@@ -126,7 +130,7 @@ export function passwordResetEmail(displayName: string, resetUrl: string): { sub
       <div class="container"><div class="card">
         <div class="logo">🔥 <span>Streaksy</span></div>
         <h1>Password Reset</h1>
-        <p>Hey ${displayName}, we received a request to reset your password. Click the button below to set a new one:</p>
+        <p>Hey ${escapeHtml(displayName)}, we received a request to reset your password. Click the button below to set a new one:</p>
         <a href="${resetUrl}" class="btn">Reset Password</a>
         <hr class="divider" />
         <p style="font-size: 13px; color: #71717a;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
@@ -143,7 +147,7 @@ export function verificationEmail(displayName: string, verifyUrl: string): { sub
       <div class="container"><div class="card">
         <div class="logo">🔥 <span>Streaksy</span></div>
         <h1>Verify Your Email</h1>
-        <p>Hey ${displayName}, please verify your email address to unlock all features:</p>
+        <p>Hey ${escapeHtml(displayName)}, please verify your email address to unlock all features:</p>
         <a href="${verifyUrl}" class="btn">Verify Email</a>
         <hr class="divider" />
         <p style="font-size: 13px; color: #71717a;">This link expires in 24 hours.</p>
@@ -160,7 +164,7 @@ export function inactivityReminderEmail(displayName: string, daysMissed: number,
       <div class="container"><div class="card">
         <div class="logo">🔥 <span>Streaksy</span></div>
         <h1>Don't break the chain!</h1>
-        <p>Hey ${displayName}, it's been <strong>${daysMissed} day${daysMissed > 1 ? 's' : ''}</strong> since your last solve. Your longest streak was <strong>${longestStreak} days</strong> — let's beat it!</p>
+        <p>Hey ${escapeHtml(displayName)}, it's been <strong>${daysMissed} day${daysMissed > 1 ? 's' : ''}</strong> since your last solve. Your longest streak was <strong>${longestStreak} days</strong> — let's beat it!</p>
         <p>Even solving one easy problem keeps your streak alive and builds the habit.</p>
         <a href="${env.frontendUrl}/problems" class="btn">Solve a Problem Now</a>
         <hr class="divider" />

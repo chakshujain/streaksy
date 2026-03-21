@@ -48,14 +48,15 @@ export const groupController = {
 
   async getGroupSheets(req: AuthRequest, res: Response) {
     const groupId = param(req, 'id');
-    const sheets = await groupService.getGroupSheets(groupId);
+    const sheets = await groupService.getGroupSheets(groupId, req.user!.userId);
     res.json({ sheets });
   },
 
   async getMemberSheetProgress(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
     const groupId = param(req, 'id');
     const sheetId = param(req, 'sheetId');
-    const progress = await groupService.getMemberSheetProgress(groupId, sheetId);
+    const progress = await groupService.getMemberSheetProgress(groupId, sheetId, user!.userId);
     res.json({ progress });
   },
 

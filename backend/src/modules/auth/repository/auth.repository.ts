@@ -124,12 +124,12 @@ export const authRepository = {
     const rows = await query<UserRow>(
       `UPDATE users SET
         display_name = COALESCE($2, display_name),
-        bio = COALESCE($3, bio),
-        location = COALESCE($4, location),
-        github_url = COALESCE($5, github_url),
-        linkedin_url = COALESCE($6, linkedin_url)
+        bio = CASE WHEN $3::text IS NOT NULL THEN $3 ELSE bio END,
+        location = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE location END,
+        github_url = CASE WHEN $5::text IS NOT NULL THEN $5 ELSE github_url END,
+        linkedin_url = CASE WHEN $6::text IS NOT NULL THEN $6 ELSE linkedin_url END
        WHERE id = $1 RETURNING *`,
-      [userId, data.displayName || null, data.bio || null, data.location || null, data.githubUrl || null, data.linkedinUrl || null]
+      [userId, data.displayName || null, data.bio ?? null, data.location ?? null, data.githubUrl ?? null, data.linkedinUrl ?? null]
     );
     return rows[0];
   },

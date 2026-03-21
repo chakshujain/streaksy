@@ -60,8 +60,13 @@ export function initSocketServer(httpServer: HttpServer): Server {
     // Join a room
     socket.on('room:join', async (roomId: string) => {
       try {
-        socket.join(roomId);
         const participants = await roomRepository.getParticipants(roomId);
+        const isMember = participants.some(p => p.user_id === userId);
+        if (!isMember) {
+          socket.emit('room:error', { message: 'You are not a participant of this room' });
+          return;
+        }
+        socket.join(roomId);
         io.to(roomId).emit('room:participants', participants);
         logger.info({ userId, roomId }, 'User joined room socket');
       } catch (err) {
@@ -142,7 +147,10 @@ export function initSocketServer(httpServer: HttpServer): Server {
 
     socket.on('disconnect', () => {
       userSockets.get(userId)?.delete(socket.id);
-      if (userSockets.get(userId)?.size === 0) userSockets.delete(userId);
+      if (userSockets.get(userId)?.size === 0) {
+        userSockets.delete(userId);
+        chatRateLimit.delete(userId);
+      }
       logger.info({ userId }, 'Socket disconnected');
     });
   });

@@ -128,7 +128,7 @@ export default function ProblemsPage() {
               <SheetSelector
                 sheets={sheets}
                 selected={selectedSheet}
-                onSelect={setSelectedSheet}
+                onSelect={(s) => { setSelectedSheet(s); setPage(0); }}
               />
               <HelpTooltip id="sheets" text="Switch between curated problem sheets. Each sheet is a focused set of problems for interview prep." />
             </div>
@@ -151,9 +151,9 @@ export default function ProblemsPage() {
           <div className="animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
             <ProblemFilters
               difficulty={difficulty}
-              onDifficultyChange={setDifficulty}
+              onDifficultyChange={(d) => { setDifficulty(d); setPage(0); }}
               tag={tag}
-              onTagChange={setTag}
+              onTagChange={(t) => { setTag(t); setPage(0); }}
               availableTags={allTags}
             />
           </div>

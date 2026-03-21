@@ -61,9 +61,15 @@ export const syncService = {
     }
 
     // 5. Update streak if solved
-    let streak = null;
+    let streak: { currentStreak: number; longestStreak: number } | null = null;
     if (status === 'solved') {
       streak = await streakService.recordSolve(userId);
+      // Award points and check milestone powerups
+      const streakResult = streak;
+      import('../../powerup/service/powerup.service').then(async m => {
+        await m.powerupService.awardSolvePoints(userId);
+        if (streakResult) await m.powerupService.checkMilestoneRewards(userId, streakResult.currentStreak);
+      }).catch(err => logger.error({ err, userId }, 'Failed to award powerup points'));
       // Check badges async
       badgeService.checkAndAward(userId).catch(err => logger.error({ err, userId }, 'Failed to check and award badges'));
       // Progress recovery challenge if active
@@ -78,11 +84,10 @@ export const syncService = {
       }).catch(err => logger.error({ err, userId }, 'Failed to post solve event to feed'));
     }
 
-    // 6. Update leaderboards
-    const groups = await groupRepository.getUserGroups(userId);
-    await Promise.all(
-      groups.map((g) => leaderboardService.updateUserScore(userId, g.id))
-    );
+    // 6. Update leaderboards (non-blocking — don't let failures abort the sync response)
+    groupRepository.getUserGroups(userId).then(groups =>
+      Promise.all(groups.map((g) => leaderboardService.updateUserScore(userId, g.id)))
+    ).catch(err => logger.error({ err, userId }, 'Failed to update leaderboard scores'));
 
     // Invalidate user caches
     invalidate(`insights:overview:${userId}`).catch(err => logger.error({ err, userId }, 'Failed to invalidate insights cache'));

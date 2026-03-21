@@ -23,10 +23,12 @@ export function NoteEditor({
 }: NoteEditorProps) {
   const [content, setContent] = useState(existingNote?.content || '');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSave = async () => {
     if (!content.trim()) return;
     setSaving(true);
+    setError('');
     try {
       if (existingNote) {
         await notesApi.update(existingNote.id, content);
@@ -35,6 +37,8 @@ export function NoteEditor({
       }
       onSaved();
       if (!existingNote) setContent('');
+    } catch {
+      setError('Failed to save note. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -42,6 +46,9 @@ export function NoteEditor({
 
   return (
     <Card className="space-y-3">
+      {error && (
+        <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2 text-xs text-red-400">{error}</div>
+      )}
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}

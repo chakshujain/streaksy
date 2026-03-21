@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import path from 'path';
+import fs from 'fs';
 import { env } from '../../../config/env';
 import { AppError } from '../../../common/errors/AppError';
 import { authRepository } from '../repository/auth.repository';
@@ -39,6 +41,10 @@ export const authService = {
     const user = await authRepository.findByEmail(email);
     if (!user) {
       throw AppError.unauthorized('Invalid credentials');
+    }
+
+    if (!user.password_hash) {
+      throw AppError.badRequest('This account uses Google/GitHub login. Please sign in with your OAuth provider.');
     }
 
     const valid = await bcrypt.compare(password, user.password_hash);
@@ -155,6 +161,12 @@ export const authService = {
   },
 
   async uploadAvatar(userId: string, filename: string) {
+    // Delete old avatar file if it exists
+    const user = await authRepository.findById(userId);
+    if (user?.avatar_url?.startsWith('/uploads/avatars/')) {
+      const oldPath = path.join(__dirname, '..', '..', '..', '..', user.avatar_url);
+      fs.unlink(oldPath, () => {}); // Best-effort delete
+    }
     const avatarUrl = `/uploads/avatars/${filename}`;
     await authRepository.updateAvatar(userId, avatarUrl);
     return avatarUrl;

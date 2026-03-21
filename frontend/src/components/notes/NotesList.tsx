@@ -15,8 +15,13 @@ interface NotesListProps {
 
 export function NotesList({ notes, canDelete = false, onDeleted }: NotesListProps) {
   const handleDelete = async (id: string) => {
-    await notesApi.delete(id);
-    onDeleted();
+    if (!confirm('Delete this note?')) return;
+    try {
+      await notesApi.delete(id);
+      onDeleted();
+    } catch {
+      // Silently handle
+    }
   };
 
   if (notes.length === 0) {

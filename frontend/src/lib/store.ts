@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { User, Streak } from './types';
 import { authApi, streaksApi } from './api';
+import { disconnectSocket } from './socket';
 
 interface AuthState {
   user: User | null;
@@ -35,13 +36,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem('streaksy_token');
     localStorage.removeItem('streaksy_user');
+    disconnectSocket();
     set({ user: null, token: null });
   },
 
   hydrate: () => {
     const token = localStorage.getItem('streaksy_token');
     const userStr = localStorage.getItem('streaksy_user');
-    const user = userStr ? JSON.parse(userStr) : null;
+    let user = null;
+    if (userStr) {
+      try {
+        user = JSON.parse(userStr);
+      } catch {
+        localStorage.removeItem('streaksy_user');
+      }
+    }
     set({ user, token, loading: false });
   },
 

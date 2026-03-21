@@ -42,14 +42,15 @@ export function FeedCard({ event }: FeedCardProps) {
   const metadata = event.metadata || {};
 
   const handleLike = async () => {
-    const prev = liked;
-    setLiked(!liked);
-    setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+    const prevLiked = liked;
+    const prevCount = likeCount;
+    setLiked(!prevLiked);
+    setLikeCount(prevLiked ? prevCount - 1 : prevCount + 1);
     try {
       await feedApi.toggleLike(event.id);
     } catch {
-      setLiked(prev);
-      setLikeCount(liked ? likeCount : likeCount - 1);
+      setLiked(prevLiked);
+      setLikeCount(prevCount);
     }
   };
 

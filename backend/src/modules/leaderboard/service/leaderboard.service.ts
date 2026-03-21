@@ -103,20 +103,29 @@ export const leaderboardService = {
     if (cached.length === 0) return [];
 
     const userIds = cached.map((c) => c.value);
-    const users = await query<{ id: string; display_name: string }>(
-      `SELECT id, display_name FROM users WHERE id = ANY($1)`,
+    const users = await query<{ id: string; display_name: string; solved_count: string; current_streak: string }>(
+      `SELECT u.id, u.display_name,
+              COUNT(ups.problem_id) FILTER (WHERE ups.status = 'solved') as solved_count,
+              COALESCE(us.current_streak, 0) as current_streak
+       FROM users u
+       LEFT JOIN user_problem_status ups ON ups.user_id = u.id
+       LEFT JOIN user_streaks us ON us.user_id = u.id
+       WHERE u.id = ANY($1)
+       GROUP BY u.id, u.display_name, us.current_streak`,
       [userIds]
     );
-    const userMap = new Map(users.map((u) => [u.id, u.display_name]));
+    const userMap = new Map(users.map((u) => [u.id, u]));
 
     return cached.map((c) => {
-      const streakStr = 0; // Approximate; full data from score decomposition isn't exact
+      const userData = userMap.get(c.value);
+      const solvedCount = parseInt(userData?.solved_count || '0', 10);
+      const currentStreak = parseInt(userData?.current_streak || '0', 10);
       return {
         userId: c.value,
-        displayName: userMap.get(c.value) || 'Unknown',
-        solvedCount: Math.floor(c.score / 10), // Approximate
-        currentStreak: streakStr,
-        score: c.score,
+        displayName: userData?.display_name || 'Unknown',
+        solvedCount,
+        currentStreak,
+        score: this.calculateScore(solvedCount, currentStreak),
       };
     });
   },

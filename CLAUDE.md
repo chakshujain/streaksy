@@ -60,7 +60,8 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 
 ### Modules
 - **Core**: auth, problem, group, progress, sync, streak, leaderboard, notes, insights, sheets, preferences
-- **New**: notification, discussion, activity, revision, contest, badge
+- **Features**: notification, discussion, activity, revision, contest, badge, room, poke, feed, daily
+- **New**: rating (community difficulty ratings + company tags), powerup (streak freeze, double XP, shield, points), digest (morning/evening/weekly email digests)
 
 ### Infrastructure
 - **Logging**: Pino structured logging (`backend/src/config/logger.ts`), JSON in prod, pretty in dev
@@ -103,6 +104,9 @@ PostgreSQL database name: `streaksy`. Extensions: uuid-ossp, pgcrypto. All PKs a
 - **Engagement**: contests + contest_problems + contest_submissions (011), badges + user_badges (012)
 - **Search**: search_vector tsvector column + GIN index on problems (013)
 - **Profile**: avatar_url, bio, location, github_url, linkedin_url columns on users (009)
+- **Ratings**: problem_ratings, company_tags, problem_company_tags (022)
+- **Powerups**: user_powerups, powerup_log, points/freeze columns on user_streaks (023)
+- **Digest**: digest preferences columns on user_preferences, digest_log (024)
 
 ## Frontend Pages
 
@@ -119,6 +123,18 @@ PostgreSQL database name: `streaksy`. Extensions: uuid-ossp, pgcrypto. All PKs a
 - `/profile` — Avatar upload, bio, social links, badges
 - `/settings` — User preferences
 
+## Security
+
+- **CORS**: Restricted to `frontendUrl` + localhost (not wide open)
+- **Rate Limiting**: Applied globally including sync endpoints; only `/health` is skipped
+- **Sync Endpoint**: Uses `req.user.userId` from JWT (never body userId) — prevents auth bypass
+- **Digest Triggers**: Admin-only via `X-Admin-Secret` header (set `ADMIN_SECRET` env var)
+- **Email Templates**: All user-controlled strings are HTML-escaped via `escapeHtml()` / `esc()`
+- **OAuth Callback**: Only exposes user `id` and `displayName` in redirect URL (no email)
+- **Socket Auth**: `room:join` verifies the user is a participant before joining
+- **Group Endpoints**: Activity, sheets, progress, and contest endpoints enforce group membership
+- **Contest Creation**: Requires group admin role + validates `startsAt < endsAt`
+
 ## Conventions
 
 - Async route handlers wrapped with `asyncHandler`
@@ -127,6 +143,10 @@ PostgreSQL database name: `streaksy`. Extensions: uuid-ossp, pgcrypto. All PKs a
 - Validation via Zod schemas + `validate` middleware
 - Logging via Pino (`logger` from config, `req.log` child logger per request)
 - Caching via `cached(key, ttl, fn)` utility with Redis
+- Discussion routes split into `problemDiscussionRouter` (at `/api/problems`) and `commentRouter` (at `/api/comments`)
 - Frontend uses `cn()` utility (clsx + tailwind-merge) for conditional classes
 - State management via Zustand stores in `lib/store.ts`
 - Data fetching via `useAsync` hook in `hooks/useAsync.ts`
+- Logout disconnects WebSocket and clears localStorage
+- All delete operations require user confirmation (`confirm()`)
+- Room page does NOT call `disconnectSocket()` on cleanup — only removes its own listeners
