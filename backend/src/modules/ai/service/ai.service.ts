@@ -17,7 +17,7 @@ export async function generateRevisionNotes(
   language: string,
   tags: string[]
 ): Promise<RevisionNotes | null> {
-  if (!env.nvidia.apiKey) {
+  if (!env.ai.apiKey) {
     logger.warn('NVIDIA_API_KEY not configured — skipping AI generation');
     return null;
   }
@@ -48,26 +48,26 @@ Guidelines:
 - Be concise and specific to THIS solution, not generic advice`;
 
   try {
-    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    const response = await fetch(`${env.ai.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${env.nvidia.apiKey}`,
+        'Authorization': `Bearer ${env.ai.apiKey}`,
       },
       body: JSON.stringify({
-        model: env.nvidia.model,
+        model: env.ai.model,
         messages: [
-          { role: 'system', content: 'You are a concise coding interview coach. Always respond with valid JSON only.' },
+          { role: 'system', content: 'You are a concise coding interview coach. Always respond with valid JSON only. No markdown fences.' },
           { role: 'user', content: prompt },
         ],
         temperature: 0.3,
-        max_tokens: 1024,
+        max_tokens: 2048,
       }),
     });
 
     if (!response.ok) {
       const text = await response.text();
-      logger.error({ status: response.status, body: text }, 'NVIDIA API request failed');
+      logger.error({ status: response.status, body: text }, 'AI API request failed');
       return null;
     }
 
@@ -75,23 +75,34 @@ Guidelines:
       choices?: { message?: { content?: string } }[];
     };
 
-    const content = data.choices?.[0]?.message?.content;
+    let content = data.choices?.[0]?.message?.content;
     if (!content) {
-      logger.error({ data }, 'NVIDIA API returned empty content');
+      logger.error({ data }, 'AI API returned empty content');
       return null;
     }
 
+    // DeepSeek R1 and similar models may wrap output in <think>...</think> tags
+    // Strip the thinking section and only use the final answer
+    content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
     // Strip potential markdown code fences
-    const cleaned = content
+    content = content
       .replace(/^```(?:json)?\s*/i, '')
       .replace(/\s*```$/i, '')
       .trim();
 
-    const parsed = JSON.parse(cleaned) as RevisionNotes;
+    // Try to extract JSON from the response if there's extra text around it
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      logger.error({ content }, 'AI API response contains no JSON object');
+      return null;
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]) as RevisionNotes;
 
     // Validate required fields
     if (!parsed.keyTakeaway || !parsed.approach || !parsed.intuition || !Array.isArray(parsed.pointsToRemember)) {
-      logger.error({ parsed }, 'NVIDIA API returned incomplete data');
+      logger.error({ parsed }, 'AI API returned incomplete data');
       return null;
     }
 

@@ -23,7 +23,7 @@ export const revisionService = {
 
   async generateAI(userId: string, problemId: string) {
     // Check if NVIDIA API key is configured
-    if (!env.nvidia.apiKey) {
+    if (!env.ai.apiKey) {
       throw new AppError(503, 'AI generation is not available. NVIDIA_API_KEY is not configured.');
     }
 
