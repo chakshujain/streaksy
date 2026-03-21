@@ -42,4 +42,12 @@ export const env = {
   },
   logLevel: process.env.LOG_LEVEL || 'info',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+  // Multiple allowed origins for CORS (comma-separated)
+  // Supports web frontend, mobile apps, dev servers
+  allowedOrigins: (process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:3000')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
+  // Mobile deep link callback for OAuth
+  mobileCallbackUrl: process.env.MOBILE_CALLBACK_URL || '',
 } as const;

@@ -29,7 +29,7 @@ function isRateLimited(userId: string): boolean {
 export function initSocketServer(httpServer: HttpServer): Server {
   io = new Server(httpServer, {
     cors: {
-      origin: [env.frontendUrl, 'http://localhost:3000'],
+      origin: [...env.allowedOrigins, 'http://localhost:3000'],
       methods: ['GET', 'POST'],
     },
   });

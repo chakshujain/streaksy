@@ -35,27 +35,44 @@ router.post('/avatar', authenticate, avatarUpload.single('avatar'), asyncHandler
 router.get('/export', authenticate, asyncHandler(authController.exportData));
 router.get('/user/:userId', authenticate, asyncHandler(authController.getPublicProfile));
 
+// Determine OAuth callback URL — supports web and mobile deep links
+function getOAuthCallbackUrl(req: any): string {
+  // If request came from mobile (indicated by ?platform=mobile query param on initial OAuth),
+  // redirect to mobile deep link scheme
+  const platform = req.query?.state || '';
+  if (platform === 'mobile' && env.mobileCallbackUrl) return env.mobileCallbackUrl;
+  return `${env.frontendUrl}/auth/callback`;
+}
+
 // Google OAuth
-router.get('/google', passport.authenticate('google', { session: false, scope: ['profile', 'email'] }));
+router.get('/google', (req, res, next) => {
+  const platform = req.query.platform || 'web';
+  passport.authenticate('google', { session: false, scope: ['profile', 'email'], state: platform as string })(req, res, next);
+});
 
 router.get('/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: `${env.frontendUrl}/auth/login?error=google_failed` }),
   (req, res) => {
     const user = req.user as any;
     const token = authService.generateToken(user.id, user.email);
-    res.redirect(`${env.frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: user.id, displayName: user.display_name }))}`);
+    const callbackUrl = getOAuthCallbackUrl(req);
+    res.redirect(`${callbackUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: user.id, displayName: user.display_name }))}`);
   }
 );
 
 // GitHub OAuth
-router.get('/github', passport.authenticate('github', { session: false, scope: ['user:email'] }));
+router.get('/github', (req, res, next) => {
+  const platform = req.query.platform || 'web';
+  passport.authenticate('github', { session: false, scope: ['user:email'], state: platform as string })(req, res, next);
+});
 
 router.get('/github/callback',
   passport.authenticate('github', { session: false, failureRedirect: `${env.frontendUrl}/auth/login?error=github_failed` }),
   (req, res) => {
     const user = req.user as any;
     const token = authService.generateToken(user.id, user.email);
-    res.redirect(`${env.frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: user.id, displayName: user.display_name }))}`);
+    const callbackUrl = getOAuthCallbackUrl(req);
+    res.redirect(`${callbackUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: user.id, displayName: user.display_name }))}`);
   }
 );
 

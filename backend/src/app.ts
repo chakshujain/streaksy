@@ -54,7 +54,13 @@ app.use(helmet({
   hsts: false,
 }));
 app.use(cors({
-  origin: [env.frontendUrl, 'http://localhost:3000'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    const allowed = [...env.allowedOrigins, 'http://localhost:3000'];
+    if (allowed.includes(origin)) return callback(null, true);
+    callback(null, false);
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '1mb' }));
@@ -95,37 +101,60 @@ app.get('/health', async (_req, res) => {
   });
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/problems', problemRoutes);
-app.use('/api/groups', groupRoutes);
-app.use('/api/progress', progressRoutes);
-app.use('/api/sync', syncRoutes);
-app.use('/api/streaks', streakRoutes);
-app.use('/api/leaderboard', leaderboardRoutes);
-app.use('/api/notes', notesRoutes);
-app.use('/api/insights', insightsRoutes);
-app.use('/api/sheets', sheetsRoutes);
-app.use('/api/preferences', preferencesRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/problems', discussionRoutes);
-app.use('/api/comments', commentRouter);
-app.use('/api/groups', activityRoutes);
-app.use('/api/revisions', revisionRoutes);
-app.use('/api/groups', contestRoutes);
-app.use('/api/contests', contestRoutes);
-app.use('/api/badges', badgeRoutes);
-app.use('/api/rooms', roomRoutes);
-app.use('/api/pokes', pokeRoutes);
-app.use('/api/feed', feedRoutes);
-app.use('/api/daily', dailyRoutes);
-app.use('/api/ratings', ratingRoutes);
-app.use('/api/powerups', powerupRoutes);
-app.use('/api/digest', digestRoutes);
-app.use('/api/invite', inviteRoutes);
-app.use('/api/prep', prepRoutes);
-app.use('/api/roadmaps', roadmapRoutes);
-app.use('/api/friends', friendsRoutes);
+// ── API Routes ──
+// Mount under both /api/ (backward compat) and /api/v1/ (versioned for mobile)
+import { Router } from 'express';
+const apiRouter = Router();
+
+apiRouter.use('/auth', authRoutes);
+apiRouter.use('/problems', problemRoutes);
+apiRouter.use('/groups', groupRoutes);
+apiRouter.use('/progress', progressRoutes);
+apiRouter.use('/sync', syncRoutes);
+apiRouter.use('/streaks', streakRoutes);
+apiRouter.use('/leaderboard', leaderboardRoutes);
+apiRouter.use('/notes', notesRoutes);
+apiRouter.use('/insights', insightsRoutes);
+apiRouter.use('/sheets', sheetsRoutes);
+apiRouter.use('/preferences', preferencesRoutes);
+apiRouter.use('/notifications', notificationRoutes);
+apiRouter.use('/problems', discussionRoutes);
+apiRouter.use('/comments', commentRouter);
+apiRouter.use('/groups', activityRoutes);
+apiRouter.use('/revisions', revisionRoutes);
+apiRouter.use('/groups', contestRoutes);
+apiRouter.use('/contests', contestRoutes);
+apiRouter.use('/badges', badgeRoutes);
+apiRouter.use('/rooms', roomRoutes);
+apiRouter.use('/pokes', pokeRoutes);
+apiRouter.use('/feed', feedRoutes);
+apiRouter.use('/daily', dailyRoutes);
+apiRouter.use('/ratings', ratingRoutes);
+apiRouter.use('/powerups', powerupRoutes);
+apiRouter.use('/digest', digestRoutes);
+apiRouter.use('/invite', inviteRoutes);
+apiRouter.use('/prep', prepRoutes);
+apiRouter.use('/roadmaps', roadmapRoutes);
+apiRouter.use('/friends', friendsRoutes);
+
+// Mount on both /api and /api/v1 (v1 for mobile, /api for backward compat)
+app.use('/api/v1', apiRouter);
+app.use('/api', apiRouter);
+
+// API info endpoint — mobile apps use this to check compatibility
+app.get('/api/info', (_req, res) => {
+  res.json({
+    name: 'Streaksy API',
+    version: '1.0.0',
+    apiVersion: 'v1',
+    minClientVersion: '1.0.0',
+    endpoints: {
+      rest: '/api/v1',
+      websocket: '/',
+      health: '/health',
+    },
+  });
+});
 
 // Error handler (must be last)
 app.use(errorHandler);
