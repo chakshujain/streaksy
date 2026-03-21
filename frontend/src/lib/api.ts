@@ -366,4 +366,18 @@ export const inviteApi = {
   joinRoom: (code: string) => api.post(`/invite/room/${code}/join`),
 };
 
+// ── Prep ──
+export const prepApi = {
+  createRoadmap: (data: { answers: Record<string, unknown>; days: Record<string, unknown>[]; totalDays: number; groupId?: string }) =>
+    api.post('/prep', data),
+  getActive: () => api.get('/prep/active'),
+  get: (id: string) => api.get(`/prep/${id}`),
+  getByShareCode: (code: string) => api.get(`/prep/share/${code}`),
+  updateProgress: (id: string, day: number, completed: boolean) =>
+    api.put(`/prep/${id}/progress`, { day, completed }),
+  getProgress: (id: string) => api.get(`/prep/${id}/progress`),
+  linkGroup: (id: string, groupId: string) => api.post(`/prep/${id}/link-group`, { groupId }),
+  getLeaderboard: (id: string) => api.get(`/prep/${id}/leaderboard`),
+};
+
 export default api;

@@ -9,11 +9,14 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
 import { groupsApi, leaderboardApi, problemsApi, activityApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
-import { Copy, Check, Target, FileText, Calendar, Plus, X, BookOpen, LogOut, Trash2, Activity, BarChart3, UserPlus, Share2 } from 'lucide-react';
-import { useState } from 'react';
+import { Copy, Check, Target, FileText, Calendar, Plus, X, BookOpen, LogOut, Trash2, Activity, BarChart3, UserPlus, Share2, GraduationCap, ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import type { Group, LeaderboardEntry, GroupSheet, Sheet } from '@/lib/types';
+import type { Roadmap } from '@/lib/interview-planner';
+import { loadRoadmap, loadProgress, roleOptions } from '@/lib/interview-planner';
+import Link from 'next/link';
 
 type SheetMemberProgress = { user_id: string; display_name: string; solved: number; total: number };
 
@@ -36,6 +39,20 @@ export default function GroupDetailPage() {
   // Sheet assignment state
   const [showSheetSelector, setShowSheetSelector] = useState(false);
   const [assigningSheet, setAssigningSheet] = useState(false);
+
+  // Study plan state (from localStorage)
+  const [studyRoadmap, setStudyRoadmap] = useState<Roadmap | null>(null);
+  const [studyProgress, setStudyProgress] = useState<Record<number, boolean>>({});
+
+  useEffect(() => {
+    const rm = loadRoadmap();
+    const pr = loadProgress();
+    // Only show if the roadmap's study mode is group (or always show for now)
+    if (rm) {
+      setStudyRoadmap(rm);
+      setStudyProgress(pr);
+    }
+  }, []);
 
   // Sheet progress state
   const [sheetProgressMap, setSheetProgressMap] = useState<Record<string, SheetMemberProgress[]>>({});
@@ -412,6 +429,63 @@ export default function GroupDetailPage() {
                   <p className="text-sm text-zinc-400 whitespace-pre-wrap">{group.plan}</p>
                 </div>
               )}
+            </div>
+          )}
+        </Card>
+
+        {/* Study Plan */}
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-emerald-400" />
+              Study Plan
+            </h2>
+          </div>
+          {studyRoadmap ? (() => {
+            const completedCount = Object.values(studyProgress).filter(Boolean).length;
+            const total = studyRoadmap.totalDays;
+            const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+            const roleMeta = roleOptions.find((r) => r.value === studyRoadmap.answers.role);
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-zinc-300">
+                    {total}-day plan{roleMeta ? ` for ${roleMeta.label}` : ''}
+                  </p>
+                  <span className="text-xs font-semibold text-emerald-400">{pct}% complete</span>
+                </div>
+                {/* Progress bar */}
+                <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-700"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                {/* Your progress */}
+                <div className="rounded-lg bg-zinc-800/50 px-4 py-3">
+                  <p className="text-xs text-zinc-500 mb-1">Your Progress</p>
+                  <p className="text-sm text-zinc-200">
+                    {completedCount} of {total} days completed
+                  </p>
+                </div>
+                <Link
+                  href="/prepare/roadmap"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition-colors"
+                >
+                  View Full Roadmap <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            );
+          })() : (
+            <div className="text-center py-6">
+              <GraduationCap className="h-8 w-8 text-zinc-700 mx-auto mb-2" />
+              <p className="text-sm text-zinc-500 mb-3">No study plan for this group yet</p>
+              <Link
+                href="/prepare"
+                className="inline-flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                Start a Study Plan <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
             </div>
           )}
         </Card>

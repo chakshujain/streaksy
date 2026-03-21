@@ -37,6 +37,7 @@ import ratingRoutes from './modules/rating/routes/rating.routes';
 import powerupRoutes from './modules/powerup/routes/powerup.routes';
 import digestRoutes from './modules/digest/routes/digest.routes';
 import inviteRoutes from './modules/invite/routes/invite.routes';
+import prepRoutes from './modules/prep/routes/prep.routes';
 
 const app = express();
 
@@ -120,6 +121,7 @@ app.use('/api/ratings', ratingRoutes);
 app.use('/api/powerups', powerupRoutes);
 app.use('/api/digest', digestRoutes);
 app.use('/api/invite', inviteRoutes);
+app.use('/api/prep', prepRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);
