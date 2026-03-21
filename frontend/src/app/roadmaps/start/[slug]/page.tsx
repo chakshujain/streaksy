@@ -21,11 +21,18 @@ import {
   BarChart3,
   Bell,
   CalendarDays,
+  Sparkles,
+  Wand2,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import Link from 'next/link';
 
 import { templatesBySlug } from '@/lib/roadmap-templates';
 import { roadmapsApi, groupsApi } from '@/lib/api';
+import { topics as learnTopics } from '@/lib/learn-data';
+import { patterns as dsaPatterns } from '@/lib/patterns-data';
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -38,12 +45,67 @@ const difficultyColors: Record<string, string> = {
 
 const HOURS_OPTIONS = [1, 2, 3, 4];
 
+/* ── Content-aware topic map ── */
+/* Maps template slugs to rich topic objects with actual content from the library */
+interface TopicContent {
+  name: string;
+  icon: string;
+  lessonCount: number;
+  lessons: { slug: string; title: string; duration: string; difficulty: string }[];
+  topicSlug?: string; // links to /learn/[topicSlug]
+}
+
+function buildTopicContent(topicSlug: string): TopicContent | null {
+  const topic = learnTopics.find((t) => t.slug === topicSlug);
+  if (!topic) return null;
+  return {
+    name: topic.name,
+    icon: topic.icon,
+    lessonCount: topic.lessons.length,
+    lessons: topic.lessons.map((l) => ({ slug: l.slug, title: l.title, duration: l.duration, difficulty: l.difficulty })),
+    topicSlug: topic.slug,
+  };
+}
+
+const DSA_PATTERNS_CONTENT: TopicContent = {
+  name: 'DSA Patterns',
+  icon: '🧩',
+  lessonCount: dsaPatterns?.length || 19,
+  lessons: (dsaPatterns || []).map((p) => ({ slug: p.slug, title: p.name, duration: '30 min', difficulty: 'intermediate' })),
+  topicSlug: 'dsa-patterns',
+};
+
+/* Rich content map — each template maps to content library items */
+const CONTENT_TOPIC_MAP: Record<string, TopicContent[]> = {
+  'crack-the-job-together': [
+    DSA_PATTERNS_CONTENT,
+    buildTopicContent('system-design'),
+    buildTopicContent('databases'),
+    buildTopicContent('oops'),
+    buildTopicContent('multithreading'),
+    buildTopicContent('design-patterns'),
+    { name: 'Behavioral', icon: '🎯', lessonCount: 0, lessons: [], topicSlug: undefined },
+  ].filter(Boolean) as TopicContent[],
+  'dsa-patterns-30': [DSA_PATTERNS_CONTENT],
+  'learn-system-design': [buildTopicContent('system-design')].filter(Boolean) as TopicContent[],
+  'learn-databases': [buildTopicContent('databases')].filter(Boolean) as TopicContent[],
+  'learn-oops': [buildTopicContent('oops')].filter(Boolean) as TopicContent[],
+  'learn-multithreading': [buildTopicContent('multithreading')].filter(Boolean) as TopicContent[],
+  'learn-frontend': [buildTopicContent('frontend-dev')].filter(Boolean) as TopicContent[],
+  'learn-backend': [buildTopicContent('backend-dev')].filter(Boolean) as TopicContent[],
+  'learn-design-patterns': [buildTopicContent('design-patterns')].filter(Boolean) as TopicContent[],
+};
+
+/* Sheet-based roadmaps — show problem sheets */
+const SHEET_TEMPLATES = new Set(['solve-striver-sheet', 'solve-love-babbar-sheet', 'leetcode-top-150']);
+
+/* Fallback simple topic list for templates without content mapping */
 const TOPIC_MAP: Record<string, string[]> = {
-  'crack-the-job-together': ['DSA Patterns', 'System Design', 'Databases', 'OOP', 'Multithreading', 'Behavioral'],
+  'crack-the-job-together': ['DSA Patterns', 'System Design', 'Databases', 'OOP', 'Multithreading', 'Design Patterns', 'Behavioral'],
   'solve-striver-sheet': ['Easy', 'Medium', 'Hard'],
   'solve-love-babbar-sheet': ['Easy', 'Medium', 'Hard'],
   'leetcode-top-150': ['Easy', 'Medium', 'Hard'],
-  'dsa-patterns-30': ['Arrays', 'Trees', 'Graphs', 'Dynamic Programming', 'Linked Lists', 'Stacks & Queues', 'Backtracking', 'Greedy', 'Binary Search', 'Sliding Window', 'Two Pointers', 'Heaps'],
+  'dsa-patterns-30': ['Two Pointers', 'Sliding Window', 'Binary Search', 'DFS', 'BFS', 'Backtracking', 'Dynamic Programming', 'Graphs', 'Trees', 'Stack & Queue', 'Greedy', 'Trie'],
 };
 
 const DEFAULT_CODING_TOPICS = ['Arrays', 'Trees', 'Graphs', 'Dynamic Programming', 'Strings', 'Sorting', 'Recursion', 'Bit Manipulation'];
@@ -75,10 +137,19 @@ export default function RoadmapStartPage() {
   const template = templatesBySlug[slug];
 
   const isCodingRoadmap = template?.category === 'Coding & Tech';
+  const isSheetRoadmap = SHEET_TEMPLATES.has(slug);
+  const hasContentMap = !!(slug && CONTENT_TOPIC_MAP[slug]);
   const totalSteps = isCodingRoadmap ? 4 : 1;
 
   // Wizard step
   const [step, setStep] = useState(1);
+
+  // Customization mode: 'ai' (auto-create) or 'manual' (select yourself)
+  const [customizeMode, setCustomizeMode] = useState<'ai' | 'manual'>('ai');
+
+  // For content-aware templates: which specific lessons/patterns are selected
+  const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
+  const [expandedContentTopic, setExpandedContentTopic] = useState<string | null>(null);
 
   // Step 1: Overview
   const [startDate, setStartDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -89,8 +160,31 @@ export default function RoadmapStartPage() {
     if (!template) return DEFAULT_CODING_TOPICS;
     return TOPIC_MAP[template.slug] || DEFAULT_CODING_TOPICS;
   }, [template]);
+
+  // Rich content topics from the learning library
+  const contentTopics = useMemo(() => {
+    if (!slug) return [];
+    return CONTENT_TOPIC_MAP[slug] || [];
+  }, [slug]);
+
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [topicAllocation, setTopicAllocation] = useState<Record<string, number>>({});
+
+  // Auto-select all content when AI mode or on initial load
+  useEffect(() => {
+    if (contentTopics.length > 0 && customizeMode === 'ai') {
+      const allLessons = new Set<string>();
+      contentTopics.forEach((ct) => ct.lessons.forEach((l) => allLessons.add(`${ct.topicSlug || ct.name}:${l.slug}`)));
+      setSelectedLessons(allLessons);
+      // Also auto-select all topics
+      const topicNames = contentTopics.map((ct) => ct.name);
+      setSelectedTopics(topicNames);
+      const pct = Math.floor(100 / topicNames.length);
+      const alloc: Record<string, number> = {};
+      topicNames.forEach((t, i) => { alloc[t] = i === topicNames.length - 1 ? 100 - pct * (topicNames.length - 1) : pct; });
+      setTopicAllocation(alloc);
+    }
+  }, [contentTopics, customizeMode]);
 
   // Step 3: Study mode
   const [mode, setMode] = useState<'solo' | 'friends'>('solo');
@@ -513,34 +607,219 @@ export default function RoadmapStartPage() {
                 </div>
               </div>
 
-              {/* Topic selection */}
-              <div className="mb-8">
-                <label className="flex items-center gap-2 text-sm font-medium text-zinc-300 mb-3">
-                  <BarChart3 className="h-4 w-4 text-zinc-400" />
-                  Which topics do you want to focus on?
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {availableTopics.map((topic) => (
+              {/* ── Customization Mode Toggle ── */}
+              {(hasContentMap || isSheetRoadmap) && (
+                <div className="mb-6">
+                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-300 mb-3">
+                    <Wand2 className="h-4 w-4 text-zinc-400" />
+                    How do you want to build your plan?
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
                     <button
-                      key={topic}
-                      onClick={() => toggleTopic(topic)}
-                      className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all ${
-                        selectedTopics.includes(topic)
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40'
-                          : 'bg-zinc-800/50 text-zinc-400 border border-zinc-700 hover:border-zinc-500'
+                      onClick={() => setCustomizeMode('ai')}
+                      className={`flex items-center gap-3 rounded-xl border p-4 transition-all ${
+                        customizeMode === 'ai'
+                          ? 'border-purple-500/40 bg-purple-500/5 text-purple-400'
+                          : 'border-zinc-700 bg-zinc-800/30 text-zinc-400 hover:border-zinc-600'
                       }`}
                     >
-                      {selectedTopics.includes(topic) && <Check className="h-3 w-3 inline mr-1.5 -mt-0.5" />}
-                      {topic}
+                      <Sparkles className="h-5 w-5" />
+                      <div className="text-left">
+                        <p className="text-sm font-medium">AI Auto-Create</p>
+                        <p className="text-[11px] text-zinc-500">Optimized schedule</p>
+                      </div>
                     </button>
-                  ))}
+                    <button
+                      onClick={() => setCustomizeMode('manual')}
+                      className={`flex items-center gap-3 rounded-xl border p-4 transition-all ${
+                        customizeMode === 'manual'
+                          ? 'border-emerald-500/40 bg-emerald-500/5 text-emerald-400'
+                          : 'border-zinc-700 bg-zinc-800/30 text-zinc-400 hover:border-zinc-600'
+                      }`}
+                    >
+                      <Target className="h-5 w-5" />
+                      <div className="text-left">
+                        <p className="text-sm font-medium">Select Yourself</p>
+                        <p className="text-[11px] text-zinc-500">Pick topics &amp; lessons</p>
+                      </div>
+                    </button>
+                  </div>
                 </div>
-                {selectedTopics.length === 0 && (
-                  <p className="text-xs text-amber-400/80 mt-2">Select at least one topic to continue</p>
-                )}
-              </div>
+              )}
 
-              {/* Time allocation */}
+              {/* ── AI Mode Summary ── */}
+              {customizeMode === 'ai' && contentTopics.length > 0 && (
+                <div className="mb-6 rounded-xl border border-purple-500/20 bg-purple-500/5 p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="h-4 w-4 text-purple-400" />
+                    <span className="text-sm font-medium text-purple-300">AI-optimized plan includes:</span>
+                  </div>
+                  <div className="space-y-2">
+                    {contentTopics.map((ct) => (
+                      <div key={ct.name} className="flex items-center gap-2">
+                        <span className="text-lg">{ct.icon}</span>
+                        <span className="text-sm text-zinc-300">{ct.name}</span>
+                        <span className="text-[10px] text-zinc-500 ml-auto">{ct.lessonCount} {ct.lessonCount === 1 ? 'item' : 'items'}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-zinc-500 mt-3">All {contentTopics.reduce((s, ct) => s + ct.lessonCount, 0)} items will be scheduled across {template?.duration || 30} days with balanced pacing.</p>
+                </div>
+              )}
+
+              {/* ── Manual Mode: Content-aware topic + lesson selection ── */}
+              {customizeMode === 'manual' && contentTopics.length > 0 && (
+                <div className="mb-6">
+                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-300 mb-3">
+                    <BookOpen className="h-4 w-4 text-zinc-400" />
+                    Select topics and lessons from the content library
+                  </label>
+                  <div className="space-y-2">
+                    {contentTopics.map((ct) => {
+                      const topicKey = ct.topicSlug || ct.name;
+                      const topicLessons = ct.lessons.map((l) => `${topicKey}:${l.slug}`);
+                      const selectedCount = topicLessons.filter((k) => selectedLessons.has(k)).length;
+                      const allSelected = selectedCount === ct.lessons.length && ct.lessons.length > 0;
+                      const isExpanded = expandedContentTopic === ct.name;
+                      const isTopicSelected = selectedTopics.includes(ct.name);
+
+                      return (
+                        <div key={ct.name} className="rounded-xl border border-zinc-800 overflow-hidden">
+                          {/* Topic header */}
+                          <button
+                            className="w-full flex items-center gap-3 p-3 hover:bg-zinc-800/30 transition-colors"
+                            onClick={() => setExpandedContentTopic(isExpanded ? null : ct.name)}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isTopicSelected}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                toggleTopic(ct.name);
+                                // Select/deselect all lessons in topic
+                                setSelectedLessons((prev) => {
+                                  const next = new Set(prev);
+                                  if (isTopicSelected) {
+                                    topicLessons.forEach((k) => next.delete(k));
+                                  } else {
+                                    topicLessons.forEach((k) => next.add(k));
+                                  }
+                                  return next;
+                                });
+                              }}
+                              className="rounded border-zinc-600 bg-zinc-800 text-emerald-500 focus:ring-emerald-500 h-4 w-4"
+                            />
+                            <span className="text-lg">{ct.icon}</span>
+                            <span className="text-sm font-medium text-zinc-200">{ct.name}</span>
+                            <span className="text-[10px] text-zinc-500 ml-1">
+                              {selectedCount}/{ct.lessons.length} selected
+                            </span>
+                            <div className="ml-auto flex items-center gap-2">
+                              {allSelected && <span className="text-[10px] text-emerald-400">All</span>}
+                              {isExpanded ? <ChevronUp className="h-4 w-4 text-zinc-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
+                            </div>
+                          </button>
+
+                          {/* Expanded lesson list */}
+                          {isExpanded && ct.lessons.length > 0 && (
+                            <div className="border-t border-zinc-800/50 bg-zinc-900/30 max-h-60 overflow-y-auto">
+                              {ct.lessons.map((lesson, li) => {
+                                const lessonKey = `${topicKey}:${lesson.slug}`;
+                                const isSelected = selectedLessons.has(lessonKey);
+                                return (
+                                  <label
+                                    key={lesson.slug}
+                                    className="flex items-center gap-3 px-4 py-2 hover:bg-zinc-800/20 cursor-pointer transition-colors"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => {
+                                        setSelectedLessons((prev) => {
+                                          const next = new Set(prev);
+                                          if (isSelected) next.delete(lessonKey);
+                                          else next.add(lessonKey);
+                                          return next;
+                                        });
+                                        // Auto-select the parent topic if not already
+                                        if (!isTopicSelected && !isSelected) toggleTopic(ct.name);
+                                      }}
+                                      className="rounded border-zinc-600 bg-zinc-800 text-emerald-500 focus:ring-emerald-500 h-3.5 w-3.5"
+                                    />
+                                    <span className="text-xs text-zinc-400 w-5 text-right">{li + 1}.</span>
+                                    <span className="text-sm text-zinc-300 flex-1 truncate">{lesson.title}</span>
+                                    <span className="text-[10px] text-zinc-600">{lesson.duration}</span>
+                                    <span className={`text-[10px] rounded-full px-1.5 py-0.5 ${
+                                      lesson.difficulty === 'beginner' ? 'text-emerald-400 bg-emerald-500/10'
+                                        : lesson.difficulty === 'advanced' ? 'text-red-400 bg-red-500/10'
+                                        : 'text-amber-400 bg-amber-500/10'
+                                    }`}>{lesson.difficulty}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {isExpanded && ct.lessons.length === 0 && (
+                            <div className="border-t border-zinc-800/50 bg-zinc-900/30 px-4 py-3">
+                              <p className="text-xs text-zinc-500">No structured lessons — this topic uses custom daily tasks</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-zinc-500 mt-2">
+                    {selectedLessons.size} items selected across {selectedTopics.length} topics
+                  </p>
+                </div>
+              )}
+
+              {/* ── Fallback: Simple topic selection for templates without content map ── */}
+              {customizeMode === 'manual' && contentTopics.length === 0 && (
+                <div className="mb-8">
+                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-300 mb-3">
+                    <BarChart3 className="h-4 w-4 text-zinc-400" />
+                    Which topics do you want to focus on?
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {availableTopics.map((topic) => (
+                      <button
+                        key={topic}
+                        onClick={() => toggleTopic(topic)}
+                        className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all ${
+                          selectedTopics.includes(topic)
+                            ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40'
+                            : 'bg-zinc-800/50 text-zinc-400 border border-zinc-700 hover:border-zinc-500'
+                        }`}
+                      >
+                        {selectedTopics.includes(topic) && <Check className="h-3 w-3 inline mr-1.5 -mt-0.5" />}
+                        {topic}
+                      </button>
+                    ))}
+                  </div>
+                  {selectedTopics.length === 0 && (
+                    <p className="text-xs text-amber-400/80 mt-2">Select at least one topic to continue</p>
+                  )}
+                </div>
+              )}
+
+              {/* ── Sheet auto-selection notice ── */}
+              {isSheetRoadmap && (
+                <div className="mb-6 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BookOpen className="h-4 w-4 text-cyan-400" />
+                    <span className="text-sm font-medium text-cyan-300">
+                      {template?.name} auto-selected
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-400">
+                    Problems from this sheet will be automatically scheduled into your daily tasks.
+                    {template?.tracked === 'auto' && ' Your progress will sync automatically via the Chrome extension.'}
+                  </p>
+                </div>
+              )}
+
+              {/* Time allocation (shown for both modes when topics selected) */}
               {selectedTopics.length > 0 && (
                 <div className="mb-6">
                   <label className="flex items-center gap-2 text-sm font-medium text-zinc-300 mb-4">
