@@ -30,7 +30,7 @@ import {
   LogOut,
   AlertTriangle,
 } from 'lucide-react';
-import { roadmapsApi, pokesApi, roomsApi, streaksApi } from '@/lib/api';
+import { roadmapsApi, pokesApi, roomsApi, streaksApi, problemsApi } from '@/lib/api';
 import { templatesBySlug } from '@/lib/roadmap-templates';
 import { templateContentMap } from '@/lib/roadmap-content-map';
 import type { UserRoadmap } from '@/lib/types';
@@ -285,6 +285,14 @@ export default function RoadmapDetailPage() {
   } | null>(null);
 
   const [allActiveRoadmaps, setAllActiveRoadmaps] = useState<UserRoadmap[]>([]);
+  const [sheetProblems, setSheetProblems] = useState<DayTask[]>([]);
+
+  // Sheet template slug → database sheet slug mapping
+  const SHEET_MAP: Record<string, string> = {
+    'solve-striver-sheet': 'striver-sde',
+    'solve-love-babbar-sheet': 'love-babbar-450',
+    'leetcode-top-150': 'leetcode-top-150',
+  };
 
   // Load roadmap from localStorage
   useEffect(() => {
@@ -300,6 +308,28 @@ export default function RoadmapDetailPage() {
       }
     } catch { /* empty */ }
   }, [id]);
+
+  // Fetch sheet problems for sheet-based roadmaps
+  useEffect(() => {
+    if (!roadmap?.templateSlug) return;
+    const sheetSlug = SHEET_MAP[roadmap.templateSlug];
+    if (!sheetSlug) return;
+
+    problemsApi.getSheetProblems(sheetSlug)
+      .then(({ data }) => {
+        const problems = data.problems || data || [];
+        const tasks: DayTask[] = problems.map((p: { title: string; slug: string; difficulty?: string }, i: number) => ({
+          day: i + 1,
+          title: p.title,
+          link: `/problems/${p.slug}`,
+          topic: p.difficulty || 'medium',
+          type: 'problem' as const,
+        }));
+        setSheetProblems(tasks);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roadmap?.templateSlug]);
 
   const groupsUsingTemplate = useMemo(() => {
     if (!roadmap?.templateSlug) return [];
@@ -532,7 +562,8 @@ export default function RoadmapDetailPage() {
   const completed = completedDays.size;
   const pct = totalDays > 0 ? Math.round((completed / totalDays) * 100) : 0;
   const currentDay = completed + 1;
-  const dayTasks = generateDayTasks(roadmap);
+  // Use fetched sheet problems if available, otherwise generate from content map
+  const dayTasks = sheetProblems.length > 0 ? sheetProblems : generateDayTasks(roadmap);
   const todayTask = currentDay <= dayTasks.length ? dayTasks[currentDay - 1] : null;
   const isCoding = roadmap?.category === 'Coding & Tech';
   const template = roadmap?.templateSlug ? templatesBySlug[roadmap.templateSlug] : null;
