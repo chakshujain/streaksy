@@ -56,6 +56,8 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 - **AI**: ai service — shared NVIDIA NIM API caller with revision notes, hints, explanations, code review
 - **Prep**: prep module (legacy interview planner, being replaced by roadmaps)
 - **Engagement**: rating, powerup, digest
+- **Invite**: invite module — group and room invite code generation and joining
+- **Learn**: learn module (skeleton — content is frontend data-driven via `frontend/src/data/*.ts`)
 
 ### Key Database Tables
 - **Core**: users, problems, tags, sheets, groups, group_members, user_problem_status, user_streaks, notes
@@ -97,6 +99,9 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 - `/settings` — User preferences
 - `/prepare` — Legacy interview prep wizard (still functional)
 
+### User
+- `/user/[id]` — Public user profile: stats, badges, activity feed, social links
+
 ### Invite Pages (public, no auth required)
 - `/invite/group/[code]` — Auto-joins logged-in users, redirects to group
 - `/invite/room/[code]` — Room invite
@@ -135,6 +140,10 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 - `git-content.ts` (5 lessons)
 Total: 77 lessons + 19 DSA patterns = 96 learning units
 
+### Background Jobs
+- **Scheduled Room Auto-Start**: Checks every 30s to auto-start scheduled war rooms
+- **Digest Scheduler**: Morning digest (8:00 UTC), evening reminder (21:00 UTC), weekly report (Monday 9:00 UTC)
+
 ### Lesson Visual Components
 Each LessonStep supports: `bullets`, `comparison` (side-by-side table), `flow` (step diagram), `table`, `cards` (info grid), `diagram` (ASCII art), `analogy` (callout), `keyTakeaway`, `code` (multi-language tabs)
 
@@ -159,6 +168,11 @@ Dashboard, Feed, Roadmaps, Learn, Problems, Groups, War Rooms, Leaderboard, Insi
 - `frontend/src/lib/learn-data.ts` — Topic/Lesson definitions + content file imports
 - `frontend/src/lib/patterns-data.ts` — 19 DSA patterns with simulation data
 - `frontend/src/lib/interview-planner.ts` — Legacy prep roadmap generator
+
+## Testing
+
+- **Backend**: Jest with TypeScript (ts-jest), 29 test files in `backend/src/__tests__/` (unit + integration)
+- **TestSprite MCP**: Configured as MCP server for autonomous AI-powered testing (UI, API, accessibility, security). Run via Claude Code from this directory.
 
 ## Domain & Server
 
