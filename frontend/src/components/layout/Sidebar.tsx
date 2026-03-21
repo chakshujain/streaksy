@@ -15,17 +15,21 @@ import {
   GraduationCap,
   Map,
   Trophy,
+  Rss,
+  BarChart3,
 } from 'lucide-react';
 import { useAuthStore, useDashboardStore } from '@/lib/store';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/feed', label: 'Feed', icon: Rss },
   { href: '/roadmaps', label: 'Roadmaps', icon: Map },
   { href: '/learn', label: 'Learn', icon: GraduationCap },
   { href: '/problems', label: 'Problems', icon: BookOpen },
   { href: '/groups', label: 'Groups', icon: Users },
   { href: '/rooms', label: 'Solve Rooms', icon: Swords },
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { href: '/insights', label: 'Insights', icon: BarChart3 },
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
