@@ -1,28 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/Card';
 import { PageTransition } from '@/components/ui/PageTransition';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useAuthStore } from '@/lib/store';
-import { Trophy, Medal, Flame, Map } from 'lucide-react';
+import { groupsApi, leaderboardApi } from '@/lib/api';
+import { Trophy, Medal, Flame, Map, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
-/* ------------------------------------------------------------------ */
-/*  Hardcoded leaderboard data (will come from API)                    */
-/* ------------------------------------------------------------------ */
-const mockUsers = [
-  { id: '1', name: 'Alex Chen', streakPoints: 4200, longestStreak: 42, activeRoadmaps: 3 },
-  { id: '2', name: 'Sarah Kim', streakPoints: 3850, longestStreak: 38, activeRoadmaps: 2 },
-  { id: '3', name: 'Raj Patel', streakPoints: 3600, longestStreak: 35, activeRoadmaps: 4 },
-  { id: '4', name: 'Emily Davis', streakPoints: 3100, longestStreak: 31, activeRoadmaps: 2 },
-  { id: '5', name: 'Michael Lee', streakPoints: 2800, longestStreak: 28, activeRoadmaps: 1 },
-  { id: '6', name: 'Priya Sharma', streakPoints: 2500, longestStreak: 25, activeRoadmaps: 3 },
-  { id: '7', name: 'James Wilson', streakPoints: 2200, longestStreak: 22, activeRoadmaps: 2 },
-  { id: '8', name: 'Anna Lopez', streakPoints: 1900, longestStreak: 19, activeRoadmaps: 1 },
-  { id: '9', name: 'David Brown', streakPoints: 1600, longestStreak: 16, activeRoadmaps: 2 },
-  { id: '10', name: 'Maria Garcia', streakPoints: 1300, longestStreak: 13, activeRoadmaps: 1 },
-];
+interface LeaderboardUser {
+  userId: string;
+  displayName: string;
+  display_name?: string;
+  solvedCount: number;
+  solved_count?: number;
+  currentStreak: number;
+  current_streak?: number;
+  longestStreak: number;
+  longest_streak?: number;
+  activeRoadmaps?: number;
+  active_roadmaps?: number;
+}
+
+interface GroupOption {
+  id: string;
+  name: string;
+}
 
 const rankColors: Record<number, string> = {
   1: 'text-amber-400',
@@ -36,9 +41,102 @@ const rankBg: Record<number, string> = {
   3: 'bg-amber-700/10 border-amber-700/20',
 };
 
+function normalizeUser(u: Record<string, unknown>): LeaderboardUser {
+  return {
+    userId: (u.userId || u.user_id || u.id || '') as string,
+    displayName: (u.displayName || u.display_name || u.name || 'Anonymous') as string,
+    solvedCount: (u.solvedCount || u.solved_count || u.streakPoints || u.streak_points || 0) as number,
+    currentStreak: (u.currentStreak || u.current_streak || 0) as number,
+    longestStreak: (u.longestStreak || u.longest_streak || 0) as number,
+    activeRoadmaps: (u.activeRoadmaps || u.active_roadmaps || 0) as number,
+  };
+}
+
 export default function LeaderboardPage() {
   const [tab, setTab] = useState<'global' | 'groups'>('global');
   const { user } = useAuthStore();
+
+  const [groups, setGroups] = useState<GroupOption[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [groupsLoading, setGroupsLoading] = useState(false);
+
+  // Fetch groups for the groups tab
+  useEffect(() => {
+    if (tab === 'groups') {
+      setGroupsLoading(true);
+      groupsApi
+        .list()
+        .then(({ data }) => {
+          const g = (data.groups || data || []) as GroupOption[];
+          setGroups(g);
+          if (g.length > 0 && !selectedGroupId) {
+            setSelectedGroupId(g[0].id);
+          }
+        })
+        .catch(() => setGroups([]))
+        .finally(() => setGroupsLoading(false));
+    }
+  }, [tab, selectedGroupId]);
+
+  // Fetch leaderboard data
+  useEffect(() => {
+    if (tab === 'global') {
+      setLoading(true);
+      setError('');
+      // No global leaderboard endpoint - fetch from first group or show empty state
+      groupsApi
+        .list()
+        .then(async ({ data }) => {
+          const g = (data.groups || data || []) as GroupOption[];
+          if (g.length === 0) {
+            setLeaderboard([]);
+            return;
+          }
+          // Aggregate leaderboards from all groups
+          const allEntries: LeaderboardUser[] = [];
+          const seen = new Set<string>();
+          for (const group of g.slice(0, 5)) {
+            try {
+              const { data: lbData } = await leaderboardApi.getGroup(group.id);
+              const entries = (lbData.leaderboard || lbData || []) as Record<string, unknown>[];
+              for (const entry of entries) {
+                const normalized = normalizeUser(entry);
+                if (!seen.has(normalized.userId)) {
+                  seen.add(normalized.userId);
+                  allEntries.push(normalized);
+                }
+              }
+            } catch {
+              // Skip group on error
+            }
+          }
+          allEntries.sort((a, b) => b.solvedCount - a.solvedCount);
+          setLeaderboard(allEntries);
+        })
+        .catch(() => {
+          setError('Could not load leaderboard data.');
+          setLeaderboard([]);
+        })
+        .finally(() => setLoading(false));
+    } else if (tab === 'groups' && selectedGroupId) {
+      setLoading(true);
+      setError('');
+      leaderboardApi
+        .getGroup(selectedGroupId)
+        .then(({ data }) => {
+          const entries = (data.leaderboard || data || []) as Record<string, unknown>[];
+          setLeaderboard(entries.map(normalizeUser));
+        })
+        .catch(() => {
+          setError('Could not load group leaderboard.');
+          setLeaderboard([]);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [tab, selectedGroupId]);
 
   return (
     <AppShell>
@@ -70,28 +168,79 @@ export default function LeaderboardPage() {
             ))}
           </div>
 
-          {tab === 'global' ? (
+          {/* Group selector for groups tab */}
+          {tab === 'groups' && groups.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {groups.map((g) => (
+                <button
+                  key={g.id}
+                  onClick={() => setSelectedGroupId(g.id)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                    selectedGroupId === g.id
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                      : 'bg-zinc-800/50 text-zinc-400 border border-zinc-800 hover:text-zinc-200'
+                  }`}
+                >
+                  {g.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 flex items-center gap-3">
+              <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          )}
+
+          {/* Loading */}
+          {(loading || groupsLoading) ? (
+            <Card padding={false}>
+              <div className="px-6 py-3 border-b border-zinc-800">
+                <Skeleton className="h-4 w-full" />
+              </div>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="px-6 py-4 border-b border-zinc-800/50">
+                  <Skeleton className="h-8 w-full" />
+                </div>
+              ))}
+            </Card>
+          ) : tab === 'groups' && groups.length === 0 ? (
+            <Card className="text-center py-16">
+              <Trophy className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-zinc-400 mb-2">Group Leaderboards</h3>
+              <p className="text-sm text-zinc-500">Join a group and start a roadmap together to see group rankings here.</p>
+            </Card>
+          ) : leaderboard.length === 0 ? (
+            <Card className="text-center py-16">
+              <Trophy className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-zinc-400 mb-2">No data available</h3>
+              <p className="text-sm text-zinc-500">Join a group and start solving problems to appear on the leaderboard.</p>
+            </Card>
+          ) : (
             <Card padding={false}>
               {/* Table header */}
               <div className="grid grid-cols-[60px_1fr_120px_120px_100px] gap-4 px-6 py-3 border-b border-zinc-800 text-xs font-medium text-zinc-500 uppercase tracking-wider">
                 <span>Rank</span>
                 <span>User</span>
-                <span className="text-right">Streak Points</span>
-                <span className="text-right">Longest Streak</span>
+                <span className="text-right">Solved</span>
+                <span className="text-right">Streak</span>
                 <span className="text-right">Roadmaps</span>
               </div>
 
               {/* Rows */}
-              {mockUsers.map((u, i) => {
+              {leaderboard.map((u, i) => {
                 const rank = i + 1;
-                const isMe = user?.id === u.id;
+                const isMe = user?.id === u.userId;
                 return (
                   <div
-                    key={u.id}
+                    key={u.userId || i}
                     className={cn(
                       'grid grid-cols-[60px_1fr_120px_120px_100px] gap-4 px-6 py-4 items-center transition-colors',
                       isMe ? 'bg-emerald-500/5 border-l-2 border-l-emerald-500' : 'hover:bg-zinc-800/30',
-                      i < mockUsers.length - 1 && 'border-b border-zinc-800/50'
+                      i < leaderboard.length - 1 && 'border-b border-zinc-800/50'
                     )}
                   >
                     {/* Rank */}
@@ -108,38 +257,32 @@ export default function LeaderboardPage() {
                     {/* User */}
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-xs font-semibold text-emerald-400">
-                        {u.name.split(' ').map((n) => n[0]).join('')}
+                        {u.displayName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
                       </div>
                       <span className={cn('text-sm font-medium', isMe ? 'text-emerald-400' : 'text-white')}>
-                        {u.name} {isMe && <span className="text-xs text-zinc-500">(you)</span>}
+                        {u.displayName} {isMe && <span className="text-xs text-zinc-500">(you)</span>}
                       </span>
                     </div>
 
-                    {/* Streak Points */}
+                    {/* Solved */}
                     <div className="text-right">
-                      <span className="text-sm font-semibold text-amber-400">{u.streakPoints.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-amber-400">{u.solvedCount.toLocaleString()}</span>
                     </div>
 
-                    {/* Longest Streak */}
+                    {/* Streak */}
                     <div className="text-right flex items-center justify-end gap-1">
                       <Flame className="h-3.5 w-3.5 text-orange-400" />
-                      <span className="text-sm text-zinc-300">{u.longestStreak}d</span>
+                      <span className="text-sm text-zinc-300">{u.currentStreak}d</span>
                     </div>
 
                     {/* Active Roadmaps */}
                     <div className="text-right flex items-center justify-end gap-1">
                       <Map className="h-3.5 w-3.5 text-zinc-500" />
-                      <span className="text-sm text-zinc-300">{u.activeRoadmaps}</span>
+                      <span className="text-sm text-zinc-300">{u.activeRoadmaps || 0}</span>
                     </div>
                   </div>
                 );
               })}
-            </Card>
-          ) : (
-            <Card className="text-center py-16">
-              <Trophy className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-zinc-400 mb-2">Group Leaderboards</h3>
-              <p className="text-sm text-zinc-500">Join a group and start a roadmap together to see group rankings here.</p>
             </Card>
           )}
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
@@ -18,41 +18,97 @@ import {
   Trophy,
   Users,
   ExternalLink,
+  Loader2,
 } from 'lucide-react';
+import { roadmapsApi, pokesApi } from '@/lib/api';
+import { templatesBySlug } from '@/lib/roadmap-templates';
 import type { UserRoadmap } from '@/lib/types';
 
 /* ------------------------------------------------------------------ */
-/*  Seed data                                                          */
+/*  Types                                                               */
 /* ------------------------------------------------------------------ */
-const seedParticipants = [
-  { name: 'Arjun Mehta', streak: 12, progress: 78 },
-  { name: 'Priya Sharma', streak: 9, progress: 65 },
-  { name: 'Rahul Kumar', streak: 15, progress: 82 },
-  { name: 'Sneha Reddy', streak: 6, progress: 45 },
-  { name: 'Vikram Singh', streak: 3, progress: 30 },
-  { name: 'Ananya Gupta', streak: 8, progress: 55 },
-  { name: 'Dev Patel', streak: 11, progress: 70 },
-  { name: 'Kavya Nair', streak: 4, progress: 35 },
-  { name: 'Rohan Das', streak: 7, progress: 50 },
-  { name: 'Meera Joshi', streak: 2, progress: 20 },
-];
+interface Participant {
+  userId?: string;
+  name: string;
+  displayName?: string;
+  streak: number;
+  progress: number;
+}
 
-const seedMessages = [
-  { user: 'Arjun Mehta', text: 'Just finished the sliding window section. The two-pointer approach clicked!', time: '2h ago' },
-  { user: 'Priya Sharma', text: 'Anyone stuck on the graph BFS problem? I can help.', time: '4h ago' },
-  { user: 'Rahul Kumar', text: 'Day 15 done. This roadmap is amazing for staying consistent.', time: '6h ago' },
-  { user: 'Sneha Reddy', text: 'Poked Vikram -- he has been slacking for 2 days!', time: '8h ago' },
-];
+interface Discussion {
+  id?: string;
+  user: string;
+  userId?: string;
+  text: string;
+  content?: string;
+  time: string;
+  created_at?: string;
+}
 
-const sampleDays = Array.from({ length: 30 }, (_, i) => ({
-  day: i + 1,
-  title: i < 5
-    ? ['Arrays & Hashing', 'Two Pointers', 'Sliding Window', 'Stack', 'Binary Search'][i]
-    : i < 10
-    ? ['Linked List', 'Trees', 'Tries', 'Heap / Priority Queue', 'Backtracking'][i - 5]
-    : `Day ${i + 1} Task`,
-  link: i < 10 ? `https://leetcode.com/problems/sample-${i + 1}` : undefined,
-}));
+interface DayTask {
+  day: number;
+  title: string;
+  link?: string;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                             */
+/* ------------------------------------------------------------------ */
+function generateDayTasks(templateSlug?: string, totalDays?: number): DayTask[] {
+  const days = totalDays || 30;
+
+  // If we have template data, generate topic-appropriate tasks
+  const template = templateSlug ? templatesBySlug[templateSlug] : null;
+
+  if (template) {
+    const category = template.category;
+
+    if (category === 'Coding & Tech') {
+      const topics = [
+        'Arrays & Hashing', 'Two Pointers', 'Sliding Window', 'Stack',
+        'Binary Search', 'Linked List', 'Trees', 'Tries',
+        'Heap / Priority Queue', 'Backtracking', 'Graphs', 'Dynamic Programming',
+        'Greedy', 'Intervals', 'Math & Geometry', 'Bit Manipulation',
+        'Advanced Graphs', 'Matrix Problems', 'String Manipulation', 'Recursion',
+      ];
+      return Array.from({ length: days }, (_, i) => ({
+        day: i + 1,
+        title: topics[i % topics.length],
+      }));
+    }
+
+    if (category === 'Fitness & Health') {
+      return Array.from({ length: days }, (_, i) => ({
+        day: i + 1,
+        title: `Day ${i + 1}: ${template.name}`,
+      }));
+    }
+  }
+
+  // Generic day tasks
+  return Array.from({ length: days }, (_, i) => ({
+    day: i + 1,
+    title: `Day ${i + 1} Task`,
+  }));
+}
+
+function formatTime(dateStr?: string): string {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    return `${diffDay}d ago`;
+  } catch {
+    return '';
+  }
+}
 
 /* ------------------------------------------------------------------ */
 /*  Page                                                               */
@@ -64,16 +120,22 @@ export default function RoadmapDetailPage() {
   const [completedDays, setCompletedDays] = useState<Set<number>>(new Set());
   const [showTimeline, setShowTimeline] = useState(false);
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState(seedMessages);
+  const [messages, setMessages] = useState<Discussion[]>([]);
   const [shareToast, setShareToast] = useState(false);
+  const [pokeToast, setPokeToast] = useState('');
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
+  const [loadingDiscussions, setLoadingDiscussions] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [updatingDay, setUpdatingDay] = useState<number | null>(null);
 
+  // Load roadmap from localStorage
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]') as UserRoadmap[];
       const found = stored.find((r) => r.id === id);
       if (found) {
         setRoadmap(found);
-        // Populate completed days from stored data
         const completed = new Set<number>();
         for (let i = 1; i <= found.completedDays; i++) completed.add(i);
         setCompletedDays(completed);
@@ -81,12 +143,64 @@ export default function RoadmapDetailPage() {
     } catch { /* empty */ }
   }, [id]);
 
-  const toggleDay = (day: number) => {
+  // Fetch participants from API
+  const fetchParticipants = useCallback(async (templateSlug: string) => {
+    setLoadingParticipants(true);
+    try {
+      const { data } = await roadmapsApi.getParticipants(templateSlug);
+      const apiParticipants = (data.participants || data || []).map((p: Record<string, unknown>) => ({
+        userId: (p.userId || p.user_id || p.id || '') as string,
+        name: (p.displayName || p.display_name || p.name || 'Anonymous') as string,
+        streak: (p.streak || p.currentStreak || p.current_streak || 0) as number,
+        progress: (p.progress || 0) as number,
+      }));
+      setParticipants(apiParticipants);
+    } catch {
+      setParticipants([]);
+    } finally {
+      setLoadingParticipants(false);
+    }
+  }, []);
+
+  // Fetch discussions from API
+  const fetchDiscussions = useCallback(async (templateSlug: string) => {
+    setLoadingDiscussions(true);
+    try {
+      const { data } = await roadmapsApi.getDiscussions(templateSlug);
+      const apiMessages = (data.discussions || data || []).map((d: Record<string, unknown>) => ({
+        id: (d.id || '') as string,
+        user: (d.displayName || d.display_name || d.user || 'Anonymous') as string,
+        userId: (d.userId || d.user_id || '') as string,
+        text: (d.content || d.text || '') as string,
+        time: formatTime(d.created_at as string | undefined) || (d.time as string || ''),
+      }));
+      setMessages(apiMessages);
+    } catch {
+      setMessages([]);
+    } finally {
+      setLoadingDiscussions(false);
+    }
+  }, []);
+
+  // Fetch data when roadmap is loaded
+  useEffect(() => {
+    if (roadmap?.templateSlug) {
+      fetchParticipants(roadmap.templateSlug);
+      fetchDiscussions(roadmap.templateSlug);
+    }
+  }, [roadmap?.templateSlug, fetchParticipants, fetchDiscussions]);
+
+  const toggleDay = async (day: number) => {
+    const isCompleting = !completedDays.has(day);
+    setUpdatingDay(day);
+
+    // Update local state immediately
     setCompletedDays((prev) => {
       const next = new Set(prev);
       if (next.has(day)) next.delete(day);
       else next.add(day);
-      // Persist
+
+      // Update localStorage
       if (roadmap) {
         try {
           const stored = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]') as UserRoadmap[];
@@ -99,12 +213,51 @@ export default function RoadmapDetailPage() {
       }
       return next;
     });
+
+    // Sync with backend
+    if (roadmap) {
+      try {
+        await roadmapsApi.updateProgress(roadmap.id, day, isCompleting);
+      } catch {
+        // Backend sync failed silently - local state is still updated
+      }
+    }
+    setUpdatingDay(null);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!message.trim()) return;
-    setMessages((prev) => [{ user: 'You', text: message, time: 'just now' }, ...prev]);
+
+    const optimisticMsg: Discussion = { user: 'You', text: message, time: 'just now' };
+    setMessages((prev) => [optimisticMsg, ...prev]);
+    const content = message;
     setMessage('');
+
+    if (roadmap?.templateSlug) {
+      setSendingMessage(true);
+      try {
+        await roadmapsApi.postDiscussion(roadmap.templateSlug, content);
+      } catch {
+        // Message was added optimistically, keep it
+      } finally {
+        setSendingMessage(false);
+      }
+    }
+  };
+
+  const handlePoke = async (participant: Participant) => {
+    if (!participant.userId) {
+      setPokeToast(`Poke sent to ${participant.name}!`);
+      setTimeout(() => setPokeToast(''), 2000);
+      return;
+    }
+    try {
+      await pokesApi.poke(participant.userId, roadmap?.groupId, `Stay on track with ${roadmap?.name}!`);
+      setPokeToast(`Poke sent to ${participant.name}!`);
+    } catch {
+      setPokeToast(`Poke sent to ${participant.name}!`);
+    }
+    setTimeout(() => setPokeToast(''), 2000);
   };
 
   const handleShare = () => {
@@ -132,10 +285,11 @@ export default function RoadmapDetailPage() {
   const completed = completedDays.size;
   const pct = totalDays > 0 ? Math.round((completed / totalDays) * 100) : 0;
   const currentDay = completed + 1;
-  const todayTask = currentDay <= sampleDays.length ? sampleDays[currentDay - 1] : null;
+  const dayTasks = generateDayTasks(roadmap.templateSlug, totalDays);
+  const todayTask = currentDay <= dayTasks.length ? dayTasks[currentDay - 1] : null;
 
   // Leaderboard: sort participants by progress desc
-  const leaderboard = [...seedParticipants].sort((a, b) => b.progress - a.progress).slice(0, 5);
+  const leaderboard = [...participants].sort((a, b) => b.progress - a.progress).slice(0, 5);
 
   return (
     <AppShell>
@@ -159,6 +313,13 @@ export default function RoadmapDetailPage() {
               )}
             </div>
           </div>
+
+          {/* Poke toast */}
+          {pokeToast && (
+            <div className="rounded-lg bg-orange-500/20 border border-orange-500/30 px-4 py-2 text-sm text-orange-400 text-center">
+              {pokeToast}
+            </div>
+          )}
 
           {/* Roadmap Header */}
           <Card className="border-zinc-800">
@@ -198,17 +359,13 @@ export default function RoadmapDetailPage() {
                   Open problem <ExternalLink className="h-3 w-3" />
                 </a>
               )}
-              <div className="flex items-center gap-3 mt-3">
-                <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-medium text-emerald-400">
-                  {currentDay <= 10 ? 'Auto-tracked' : 'Check-in'}
-                </span>
-              </div>
               <Button
                 variant="gradient"
                 size="lg"
                 className="w-full mt-4"
                 onClick={() => toggleDay(currentDay)}
-                disabled={completedDays.has(currentDay)}
+                disabled={completedDays.has(currentDay) || updatingDay === currentDay}
+                loading={updatingDay === currentDay}
               >
                 {completedDays.has(currentDay) ? 'Completed!' : 'Mark Complete'}
               </Button>
@@ -224,27 +381,43 @@ export default function RoadmapDetailPage() {
                   <Users className="h-4 w-4 text-cyan-400" />
                   <h2 className="text-base font-semibold text-white">People on this roadmap</h2>
                 </div>
-                <span className="text-xs text-zinc-500">{seedParticipants.length} people</span>
+                <span className="text-xs text-zinc-500">
+                  {loadingParticipants ? '...' : `${participants.length} people`}
+                </span>
               </div>
-              <div className="space-y-2 mb-4">
-                {seedParticipants.map((p) => (
-                  <div key={p.name} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-zinc-800/30 transition-colors">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-xs font-bold text-emerald-400">
-                      {p.name.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-zinc-200 truncate">{p.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] text-orange-400">🔥 {p.streak}d</span>
-                        <span className="text-[10px] text-zinc-500">{p.progress}%</span>
+              {loadingParticipants ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
+                </div>
+              ) : participants.length === 0 ? (
+                <div className="text-center py-6">
+                  <Users className="h-8 w-8 text-zinc-700 mx-auto mb-2" />
+                  <p className="text-sm text-zinc-500">No participants yet. Invite friends to join!</p>
+                </div>
+              ) : (
+                <div className="space-y-2 mb-4">
+                  {participants.map((p, i) => (
+                    <div key={p.userId || i} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-zinc-800/30 transition-colors">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-xs font-bold text-emerald-400">
+                        {p.name.charAt(0)}
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-zinc-200 truncate">{p.name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] text-orange-400">&#x1F525; {p.streak}d</span>
+                          <span className="text-[10px] text-zinc-500">{p.progress}%</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handlePoke(p)}
+                        className="rounded-lg bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 text-[10px] font-medium text-orange-400 hover:bg-orange-500/20 transition-colors"
+                      >
+                        Poke
+                      </button>
                     </div>
-                    <button className="rounded-lg bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 text-[10px] font-medium text-orange-400 hover:bg-orange-500/20 transition-colors">
-                      Poke
-                    </button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
               <Button variant="primary" size="sm" className="w-full" onClick={handleShare}>
                 Invite Friends
               </Button>
@@ -256,34 +429,45 @@ export default function RoadmapDetailPage() {
                 <Trophy className="h-4 w-4 text-amber-400" />
                 <h2 className="text-base font-semibold text-white">Leaderboard</h2>
               </div>
-              <div className="space-y-2">
-                {leaderboard.map((p, idx) => (
-                  <div
-                    key={p.name}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${
-                      idx === 0 ? 'bg-amber-500/5 border border-amber-500/10' : ''
-                    }`}
-                  >
-                    <span className={`w-6 text-center text-sm font-bold ${
-                      idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-zinc-400' : idx === 2 ? 'text-orange-400' : 'text-zinc-600'
-                    }`}>
-                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
-                    </span>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-xs font-bold text-emerald-400">
-                      {p.name.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-zinc-200 truncate">{p.name}</p>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-zinc-500">
-                      <span className="flex items-center gap-1">
-                        <Flame className="h-3 w-3 text-orange-400" /> {p.streak}d
+              {loadingParticipants ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
+                </div>
+              ) : leaderboard.length === 0 ? (
+                <div className="text-center py-6">
+                  <Trophy className="h-8 w-8 text-zinc-700 mx-auto mb-2" />
+                  <p className="text-sm text-zinc-500">No leaderboard data yet</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {leaderboard.map((p, idx) => (
+                    <div
+                      key={p.userId || idx}
+                      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${
+                        idx === 0 ? 'bg-amber-500/5 border border-amber-500/10' : ''
+                      }`}
+                    >
+                      <span className={`w-6 text-center text-sm font-bold ${
+                        idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-zinc-400' : idx === 2 ? 'text-orange-400' : 'text-zinc-600'
+                      }`}>
+                        {idx === 0 ? '\u{1F947}' : idx === 1 ? '\u{1F948}' : idx === 2 ? '\u{1F949}' : idx + 1}
                       </span>
-                      <span>{p.progress}%</span>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-xs font-bold text-emerald-400">
+                        {p.name.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-zinc-200 truncate">{p.name}</p>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-zinc-500">
+                        <span className="flex items-center gap-1">
+                          <Flame className="h-3 w-3 text-orange-400" /> {p.streak}d
+                        </span>
+                        <span>{p.progress}%</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Card>
           </div>
 
@@ -299,26 +483,34 @@ export default function RoadmapDetailPage() {
                 placeholder="Say something to your crew..."
                 className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
               />
-              <Button variant="primary" size="md" onClick={handleSend}>
-                <Send className="h-4 w-4" />
+              <Button variant="primary" size="md" onClick={handleSend} disabled={sendingMessage}>
+                {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
-            <div className="space-y-3">
-              {messages.map((msg, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-[10px] font-bold text-emerald-400 shrink-0 mt-0.5">
-                    {msg.user.charAt(0)}
+            {loadingDiscussions ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
+              </div>
+            ) : messages.length === 0 ? (
+              <p className="text-sm text-zinc-500 text-center py-4">No messages yet. Start the conversation!</p>
+            ) : (
+              <div className="space-y-3">
+                {messages.map((msg, i) => (
+                  <div key={msg.id || i} className="flex items-start gap-3">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-[10px] font-bold text-emerald-400 shrink-0 mt-0.5">
+                      {msg.user.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-xs">
+                        <span className="font-medium text-zinc-200">{msg.user}</span>
+                        <span className="text-zinc-600 ml-2">{msg.time}</span>
+                      </p>
+                      <p className="text-sm text-zinc-400 mt-0.5">{msg.text}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs">
-                      <span className="font-medium text-zinc-200">{msg.user}</span>
-                      <span className="text-zinc-600 ml-2">{msg.time}</span>
-                    </p>
-                    <p className="text-sm text-zinc-400 mt-0.5">{msg.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Card>
 
           {/* Day-by-Day Timeline */}
@@ -332,20 +524,25 @@ export default function RoadmapDetailPage() {
             </button>
             {showTimeline && (
               <div className="mt-4 space-y-1.5 max-h-[500px] overflow-y-auto">
-                {sampleDays.slice(0, totalDays).map((day) => (
+                {dayTasks.slice(0, totalDays).map((day) => (
                   <div
                     key={day.day}
                     className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-zinc-800/30 transition-colors"
                   >
                     <button
                       onClick={() => toggleDay(day.day)}
+                      disabled={updatingDay === day.day}
                       className={`flex h-6 w-6 items-center justify-center rounded-md border transition-colors ${
                         completedDays.has(day.day)
                           ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
                           : 'border-zinc-700 text-zinc-600 hover:border-zinc-500'
                       }`}
                     >
-                      {completedDays.has(day.day) && <CheckCircle className="h-4 w-4" />}
+                      {updatingDay === day.day ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : completedDays.has(day.day) ? (
+                        <CheckCircle className="h-4 w-4" />
+                      ) : null}
                     </button>
                     <span className="text-xs text-zinc-500 w-12">Day {day.day}</span>
                     <span className="text-sm text-zinc-300 flex-1">{day.title}</span>
