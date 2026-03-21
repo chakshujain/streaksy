@@ -48,6 +48,11 @@ export const feedRepository = {
          JOIN group_members gm2 ON gm2.group_id = gm.group_id
          WHERE gm.user_id = $1
        ) OR fe.user_id = $1
+       OR fe.user_id IN (
+         SELECT CASE WHEN requester_id = $1 THEN addressee_id ELSE requester_id END
+         FROM friendships
+         WHERE (requester_id = $1 OR addressee_id = $1) AND status = 'accepted'
+       )
        ORDER BY fe.created_at DESC
        LIMIT $2 OFFSET $3`,
       [currentUserId, limit, offset]

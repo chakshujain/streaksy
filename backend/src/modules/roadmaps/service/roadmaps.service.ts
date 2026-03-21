@@ -124,6 +124,11 @@ export const roadmapsService = {
       if (completedCount >= roadmap.duration_days) {
         await roadmapsRepository.updateRoadmap(roadmapId, { status: 'completed' });
 
+        // Post feed event for roadmap completion
+        import('../../feed/service/feed.service').then(m => {
+          m.feedService.postEvent(userId, 'roadmap_complete', `Completed "${roadmap.name}"!`, undefined, { roadmapId });
+        }).catch(() => {});
+
         // Award completion bonus
         const { bonus } = streaksEngine.calculateCompletionBonus(
           completedCount,

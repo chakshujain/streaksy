@@ -73,6 +73,11 @@ export const badgeService = {
         if (earned) {
           await badgeRepository.award(userId, badge.id);
           awarded.push(badge.name);
+
+          // Post feed event for badge earned
+          import('../../feed/service/feed.service').then(m => {
+            m.feedService.postEvent(userId, 'badge_earned', `Earned the "${badge.name}" badge`, undefined, { badgeId: badge.id, badgeName: badge.name });
+          }).catch(() => {});
         }
       }
     } catch (err) {

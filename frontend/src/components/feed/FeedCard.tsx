@@ -9,7 +9,7 @@ import { useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/cn';
 import {
   ThumbsUp, MessageCircle, ChevronDown, ChevronUp, Send, Trash2,
-  Flame, Trophy, Code2, Zap, Target,
+  Flame, Trophy, Code2, Zap, Target, BookOpen, Map, UserPlus,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { FeedEvent, FeedComment } from '@/lib/types';
@@ -24,6 +24,10 @@ const eventIcons: Record<string, { icon: typeof Code2; color: string }> = {
   streak_milestone: { icon: Flame, color: 'text-orange-400' },
   badge_earned: { icon: Trophy, color: 'text-amber-400' },
   challenge_complete: { icon: Target, color: 'text-cyan-400' },
+  lesson_complete: { icon: BookOpen, color: 'text-blue-400' },
+  roadmap_complete: { icon: Map, color: 'text-purple-400' },
+  daily_complete: { icon: Zap, color: 'text-orange-400' },
+  friend_joined: { icon: UserPlus, color: 'text-cyan-400' },
 };
 
 export function FeedCard({ event }: FeedCardProps) {

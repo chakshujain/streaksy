@@ -16,7 +16,7 @@ import { SharePost } from '@/components/feed/SharePost';
 import Link from 'next/link';
 import type { FeedEvent } from '@/lib/types';
 
-type FilterTab = 'all' | 'solves' | 'streaks';
+type FilterTab = 'all' | 'problems' | 'roadmaps' | 'learning' | 'social';
 
 export default function FeedPage() {
   const [allEvents, setAllEvents] = useState<FeedEvent[]>([]);
@@ -45,8 +45,11 @@ export default function FeedPage() {
 
   const filteredEvents = useMemo(() => {
     if (filter === 'all') return allEvents;
-    if (filter === 'solves') return allEvents.filter(e => e.event_type === 'solve' || e.event_type === 'submission');
-    return allEvents.filter(e => e.event_type === 'streak' || e.event_type === 'streak_milestone');
+    if (filter === 'problems') return allEvents.filter(e => ['solve', 'submission', 'challenge_complete'].includes(e.event_type));
+    if (filter === 'roadmaps') return allEvents.filter(e => ['roadmap_complete', 'daily_complete'].includes(e.event_type));
+    if (filter === 'learning') return allEvents.filter(e => ['lesson_complete', 'streak_milestone'].includes(e.event_type));
+    // social
+    return allEvents.filter(e => ['badge_earned', 'friend_joined', 'post'].includes(e.event_type));
   }, [allEvents, filter]);
 
   return (
@@ -88,7 +91,7 @@ export default function FeedPage() {
           {/* Filter tabs + placeholder input */}
           <div className="flex items-center justify-between gap-3 animate-slide-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
             <div className="flex gap-2">
-              {(['all', 'solves', 'streaks'] as const).map(tab => (
+              {(['all', 'problems', 'roadmaps', 'learning', 'social'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setFilter(tab)}
@@ -99,7 +102,7 @@ export default function FeedPage() {
                       : 'text-zinc-500 hover:text-zinc-300'
                   )}
                 >
-                  {tab === 'all' ? 'All' : tab === 'solves' ? 'Solves' : 'Streaks'}
+                  {tab}
                 </button>
               ))}
             </div>
