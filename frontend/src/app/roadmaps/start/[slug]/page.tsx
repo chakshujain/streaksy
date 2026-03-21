@@ -30,7 +30,7 @@ import {
 import Link from 'next/link';
 
 import { templatesBySlug } from '@/lib/roadmap-templates';
-import { roadmapsApi, groupsApi } from '@/lib/api';
+import { roadmapsApi, groupsApi, roomsApi } from '@/lib/api';
 import { topics as learnTopics } from '@/lib/learn-data';
 import { patterns as dsaPatterns } from '@/lib/patterns-data';
 
@@ -387,6 +387,35 @@ export default function RoadmapStartPage() {
         existing.push(roadmap);
         localStorage.setItem('streaksy_active_roadmaps', JSON.stringify(existing));
       } catch { /* localStorage not available */ }
+
+      // Auto-create weekly war room if scheduled
+      if (scheduleWeeklyRoom && weeklyRoomDay && weeklyRoomTime) {
+        try {
+          // Calculate the first scheduled date
+          const dayMap: Record<string, number> = {
+            monday: 1, tuesday: 2, wednesday: 3, thursday: 4,
+            friday: 5, saturday: 6, sunday: 0,
+          };
+          const targetDay = dayMap[weeklyRoomDay.toLowerCase()] ?? 6;
+          const now = new Date();
+          const currentDay = now.getDay();
+          let daysUntil = targetDay - currentDay;
+          if (daysUntil <= 0) daysUntil += 7;
+
+          const scheduledDate = new Date(now);
+          scheduledDate.setDate(now.getDate() + daysUntil);
+          const [h, m] = weeklyRoomTime.split(':').map(Number);
+          scheduledDate.setHours(h, m, 0, 0);
+
+          await roomsApi.create({
+            name: `${template.name} — Weekly Solve Room`,
+            scheduledAt: scheduledDate.toISOString(),
+            recurrence: 'weekly',
+            timeLimitMinutes: 60,
+            mode: 'collaborative',
+          });
+        } catch { /* Room creation failed — non-critical, continue */ }
+      }
 
       router.push(`/roadmaps/${roadmapId}`);
     } catch (err: unknown) {
