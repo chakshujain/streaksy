@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
@@ -616,10 +617,10 @@ export default function RoadmapDetailPage() {
             </div>
           </div>
 
-          {/* Leave confirmation modal */}
-          {showLeaveConfirm && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl mx-4">
+          {/* Leave confirmation modal — rendered via portal to avoid z-index/overflow issues */}
+          {showLeaveConfirm && typeof document !== 'undefined' && createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70" onClick={() => setShowLeaveConfirm(false)}>
+              <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 border border-red-500/20">
                     <AlertTriangle className="h-5 w-5 text-red-400" />
@@ -647,7 +648,8 @@ export default function RoadmapDetailPage() {
                   </Button>
                 </div>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
 
           {/* Toasts */}
