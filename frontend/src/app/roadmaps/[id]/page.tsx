@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { roadmapsApi, pokesApi, roomsApi, streaksApi } from '@/lib/api';
 import { templatesBySlug } from '@/lib/roadmap-templates';
+import { templateContentMap } from '@/lib/roadmap-content-map';
 import type { UserRoadmap } from '@/lib/types';
 
 /* ------------------------------------------------------------------ */
@@ -104,6 +105,29 @@ const FALLBACK_COLORS = [
 function generateDayTasks(templateSlug?: string, totalDays?: number): DayTask[] {
   const days = totalDays || 30;
   const template = templateSlug ? templatesBySlug[templateSlug] : null;
+
+  // Use content map if available — provides real links to lessons/patterns
+  if (templateSlug && templateContentMap[templateSlug]) {
+    const contentItems = templateContentMap[templateSlug];
+    return Array.from({ length: days }, (_, i) => {
+      const item = i < contentItems.length ? contentItems[i] : null;
+      if (item) {
+        return {
+          day: i + 1,
+          title: item.title,
+          link: item.link,
+          topic: item.topicSlug || item.title,
+          type: item.type === 'pattern' ? ('problem' as const) : (item.type as 'lesson' | 'problem'),
+        };
+      }
+      // Days beyond the content map (e.g. template has more days than content)
+      return {
+        day: i + 1,
+        title: `Day ${i + 1}: Review & Practice`,
+        type: 'generic' as const,
+      };
+    });
+  }
 
   if (template) {
     const category = template.category;
@@ -744,7 +768,15 @@ export default function RoadmapDetailPage() {
               <div className="flex flex-wrap gap-3 mb-4">
                 {todayTask.type === 'problem' && (
                   <>
-                    {todayTask.link ? (
+                    {todayTask.link && todayTask.link.startsWith('/') ? (
+                      <Link
+                        href={todayTask.link}
+                        className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 text-sm font-medium text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                      >
+                        <BookOpen className="h-4 w-4" />
+                        Go to Pattern
+                      </Link>
+                    ) : todayTask.link ? (
                       <a
                         href={todayTask.link}
                         target="_blank"
@@ -773,9 +805,9 @@ export default function RoadmapDetailPage() {
                     </button>
                   </>
                 )}
-                {todayTask.type === 'lesson' && template && (
+                {todayTask.type === 'lesson' && (
                   <Link
-                    href={`/learn/${template.slug}`}
+                    href={todayTask.link || `/learn/${template?.slug || ''}`}
                     className="inline-flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/30 px-4 py-2 text-sm font-medium text-blue-400 hover:bg-blue-500/20 transition-colors"
                   >
                     <Play className="h-4 w-4" />
@@ -1099,7 +1131,17 @@ export default function RoadmapDetailPage() {
 
                               <span className="text-xs text-zinc-500 w-12 shrink-0">Day {day.day}</span>
                               <span className={`text-sm flex-1 ${isCompleted ? 'text-zinc-500 line-through' : isToday ? 'text-emerald-300 font-medium' : 'text-zinc-300'}`}>
-                                {day.title}
+                                {day.link ? (
+                                  <Link
+                                    href={day.link}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="hover:underline hover:text-emerald-400 transition-colors"
+                                  >
+                                    {day.title}
+                                  </Link>
+                                ) : (
+                                  day.title
+                                )}
                               </span>
 
                               {isToday && (
@@ -1122,7 +1164,15 @@ export default function RoadmapDetailPage() {
                                   </div>
                                 )}
                                 <div className="flex gap-2">
-                                  {day.link && (
+                                  {day.link && day.link.startsWith('/') ? (
+                                    <Link
+                                      href={day.link}
+                                      className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/10 border border-blue-500/30 px-3 py-1.5 text-xs font-medium text-blue-400 hover:bg-blue-500/20 transition-colors"
+                                    >
+                                      <BookOpen className="h-3 w-3" />
+                                      {day.type === 'lesson' ? 'Go to Lesson' : day.type === 'problem' ? 'Go to Pattern' : 'Open Content'}
+                                    </Link>
+                                  ) : day.link ? (
                                     <a
                                       href={day.link}
                                       target="_blank"
@@ -1132,7 +1182,7 @@ export default function RoadmapDetailPage() {
                                       <ExternalLink className="h-3 w-3" />
                                       Open Problem
                                     </a>
-                                  )}
+                                  ) : null}
                                   {isCoding && !day.link && (
                                     <Link
                                       href={`/patterns/${day.topic?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'arrays'}`}
