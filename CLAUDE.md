@@ -171,7 +171,7 @@ Dashboard, Feed, Roadmaps, Learn, Problems, Groups, War Rooms, Leaderboard, Insi
 
 ## Testing
 
-- **Backend**: Jest with TypeScript (ts-jest), 29 test files in `backend/src/__tests__/` (unit + integration)
+- **Backend**: Jest with TypeScript (ts-jest), 61 test files in `backend/src/__tests__/` (30 unit, 26 integration, 5 e2e journey tests)
 - **TestSprite MCP**: Configured as MCP server for autonomous AI-powered testing (UI, API, accessibility, security). Run via Claude Code from this directory.
 
 ## Domain & Server

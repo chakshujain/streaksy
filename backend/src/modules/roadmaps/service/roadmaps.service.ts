@@ -59,6 +59,24 @@ export const roadmapsService = {
       }).catch(() => {});
     }).catch(() => {});
 
+    // Auto-create weekly war room (non-blocking)
+    import('../../room/service/room.service').then(m => {
+      // Schedule for next Saturday at 10:00 AM
+      const now = new Date();
+      const curDay = now.getDay();
+      let daysUntilSat = 6 - curDay;
+      if (daysUntilSat <= 0) daysUntilSat += 7;
+      const scheduledDate = new Date(now);
+      scheduledDate.setDate(now.getDate() + daysUntilSat);
+      scheduledDate.setHours(10, 0, 0, 0);
+
+      m.roomService.createRoom(userId, `${data.name} — Weekly Solve Room`, null, 60, {
+        scheduledAt: scheduledDate.toISOString(),
+        recurrence: 'weekly',
+        mode: 'multi',
+      }).catch(() => {});
+    }).catch(() => {});
+
     return roadmap;
   },
 
