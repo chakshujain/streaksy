@@ -56,4 +56,7 @@ export const testGroup = {
   invite_code: 'abc123def456',
   created_by: 'test-user-id',
   created_at: new Date('2024-01-01'),
+  plan: null,
+  objective: null,
+  target_date: null,
 };

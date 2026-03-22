@@ -57,8 +57,8 @@ describe('E2E Journey: Roadmap Lifecycle', () => {
     it('should view roadmap details with empty progress', async () => {
       mockedRoadmapsRepo.getRoadmapById.mockResolvedValue(mockRoadmap);
       mockedRoadmapsRepo.getTemplateTasks.mockResolvedValue([
-        { id: 'task-1', day_number: 1, title: 'Warm-up day', description: 'Start easy', task_type: 'exercise', link: null },
-        { id: 'task-2', day_number: 2, title: 'Cardio focus', description: 'Run 2km', task_type: 'exercise', link: null },
+        { id: 'task-1', template_id: 'tmpl-gym', day_number: 1, title: 'Warm-up day', description: 'Start easy', task_type: 'exercise', link: null, metadata: {}, position: 0 },
+        { id: 'task-2', template_id: 'tmpl-gym', day_number: 2, title: 'Cardio focus', description: 'Run 2km', task_type: 'exercise', link: null, metadata: {}, position: 0 },
       ]);
       mockedRoadmapsRepo.getDayProgress.mockResolvedValue([]);
       mockedRoadmapsRepo.getStreak.mockResolvedValue(null);

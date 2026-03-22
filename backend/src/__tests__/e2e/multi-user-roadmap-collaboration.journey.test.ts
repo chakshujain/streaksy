@@ -53,6 +53,8 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
 
   describe('Step 1: Create a group roadmap', () => {
     it('should create a roadmap linked to a group', async () => {
+      // createUserRoadmap checks group membership via raw queryOne
+      mockedQueryOne.mockResolvedValue({ user_id: userA.id });
       mockedRoadmapsRepo.createUserRoadmap.mockResolvedValue(mockRoadmap);
       mockedRoadmapsRepo.addParticipant.mockResolvedValue();
 
@@ -74,10 +76,7 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
 
   describe('Step 2: Share roadmap via share code', () => {
     it('should resolve roadmap by share code', async () => {
-      mockedRoadmapsRepo.getByShareCode.mockResolvedValue({
-        ...mockRoadmap,
-        creator_name: userA.name,
-      });
+      mockedRoadmapsRepo.getByShareCode.mockResolvedValue(mockRoadmap);
 
       const res = await request(app)
         .get('/api/roadmaps/share/COLLAB-100')
@@ -100,10 +99,19 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
 
   describe('Step 3: View template participants', () => {
     it('should list participants for a roadmap template', async () => {
+      mockedRoadmapsRepo.getTemplateBySlug.mockResolvedValue({
+        id: 'tmpl-100days', category_id: 'cat-coding', name: '100 Days of Code',
+        slug: '100-days-of-code', description: 'Code every day for 100 days',
+        icon: 'Code', color: '#4F46E5', duration_days: 100,
+        difficulty: 'beginner', is_featured: true, participant_count: 200,
+        created_at: new Date(), task_count: 100,
+        category_slug: 'coding-tech', category_name: 'Coding & Tech',
+        tasks: [],
+      });
       mockedRoadmapsRepo.getParticipants.mockResolvedValue([
-        { user_id: userA.id, display_name: userA.name, avatar_url: null, current_streak: 10, completed_days: 22 },
-        { user_id: userB.id, display_name: userB.name, avatar_url: null, current_streak: 5, completed_days: 15 },
-        { user_id: userC.id, display_name: userC.name, avatar_url: null, current_streak: 3, completed_days: 8 },
+        { user_id: userA.id, display_name: userA.name, avatar_url: null, joined_at: new Date(), current_streak: 10, completed_days: 22 },
+        { user_id: userB.id, display_name: userB.name, avatar_url: null, joined_at: new Date(), current_streak: 5, completed_days: 15 },
+        { user_id: userC.id, display_name: userC.name, avatar_url: null, joined_at: new Date(), current_streak: 3, completed_days: 8 },
       ]);
 
       const res = await request(app)
@@ -184,9 +192,9 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
     it('should show leaderboard with Alice leading', async () => {
       mockedRoadmapsRepo.getRoadmapById.mockResolvedValue(mockRoadmap);
       mockedRoadmapsRepo.getLeaderboard.mockResolvedValue([
-        { user_id: userA.id, display_name: userA.name, completed_days: 22, current_streak: 22, total_points: 330 },
-        { user_id: userB.id, display_name: userB.name, completed_days: 15, current_streak: 15, total_points: 225 },
-        { user_id: userC.id, display_name: userC.name, completed_days: 8, current_streak: 8, total_points: 120 },
+        { user_id: userA.id, display_name: userA.name, avatar_url: null, completed_count: 22, current_streak: 22 },
+        { user_id: userB.id, display_name: userB.name, avatar_url: null, completed_count: 15, current_streak: 15 },
+        { user_id: userC.id, display_name: userC.name, avatar_url: null, completed_count: 8, current_streak: 8 },
       ]);
 
       const res = await request(app)
@@ -196,7 +204,7 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
       expect(res.status).toBe(200);
       expect(res.body.leaderboard).toHaveLength(3);
       expect(res.body.leaderboard[0].display_name).toBe(userA.name);
-      expect(res.body.leaderboard[0].completed_days).toBe(22);
+      expect(res.body.leaderboard[0].completed_count).toBe(22);
     });
   });
 
@@ -215,7 +223,6 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
         id: 'disc-1', template_id: 'tmpl-100days', user_id: userA.id,
         content: 'Day 22 was tough! Anyone else struggling with linked lists?',
         parent_id: null, created_at: new Date(),
-        display_name: userA.name,
       });
 
       const res = await request(app)
@@ -239,14 +246,14 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
       });
       mockedRoadmapsRepo.getDiscussions.mockResolvedValue([
         {
-          id: 'disc-1', template_id: 'tmpl-100days', user_id: userA.id,
+          id: 'disc-1', user_id: userA.id,
           content: 'Day 22 was tough!', parent_id: null,
-          created_at: new Date(), display_name: userA.name,
+          created_at: new Date(), display_name: userA.name, avatar_url: null,
         },
         {
-          id: 'disc-2', template_id: 'tmpl-100days', user_id: userB.id,
+          id: 'disc-2', user_id: userB.id,
           content: 'Same here! I found it helpful to draw diagrams first.',
-          parent_id: 'disc-1', created_at: new Date(), display_name: userB.name,
+          parent_id: 'disc-1', created_at: new Date(), display_name: userB.name, avatar_url: null,
         },
       ]);
 
@@ -264,7 +271,8 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
       mockedRoadmapsRepo.getRoadmapById.mockResolvedValue({
         ...mockRoadmap, group_id: null,
       });
-      mockedGroupRepo.isMember.mockResolvedValue(true);
+      // linkGroup checks group membership via raw queryOne
+      mockedQueryOne.mockResolvedValue({ user_id: userA.id });
       mockedRoadmapsRepo.linkGroup.mockResolvedValue();
 
       const res = await request(app)
@@ -279,9 +287,9 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
   describe('Step 8: Global leaderboard', () => {
     it('should show global leaderboard across all roadmaps', async () => {
       mockedRoadmapsRepo.getGlobalLeaderboard.mockResolvedValue([
-        { user_id: userA.id, display_name: userA.name, total_points: 2500, current_streak: 30, roadmaps_completed: 3 },
-        { user_id: userB.id, display_name: userB.name, total_points: 1800, current_streak: 15, roadmaps_completed: 2 },
-        { user_id: userC.id, display_name: userC.name, total_points: 900, current_streak: 8, roadmaps_completed: 1 },
+        { user_id: userA.id, display_name: userA.name, avatar_url: null, total_points: 2500, current_streak: 30, longest_streak: 30 },
+        { user_id: userB.id, display_name: userB.name, avatar_url: null, total_points: 1800, current_streak: 15, longest_streak: 15 },
+        { user_id: userC.id, display_name: userC.name, avatar_url: null, total_points: 900, current_streak: 8, longest_streak: 8 },
       ]);
 
       const res = await request(app)

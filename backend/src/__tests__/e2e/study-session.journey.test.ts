@@ -13,6 +13,21 @@ jest.mock('../../modules/notes/repository/notes.repository');
 jest.mock('../../modules/revision/repository/revision.repository');
 jest.mock('../../modules/insights/repository/insights.repository');
 jest.mock('../../modules/progress/repository/progress.repository');
+jest.mock('../../modules/notification/service/notification-hub', () => ({
+  notificationHub: {
+    send: jest.fn().mockResolvedValue(undefined),
+    sendToMany: jest.fn().mockResolvedValue(undefined),
+  },
+}));
+jest.mock('../../config/redis', () => ({
+  redis: {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue('OK'),
+    del: jest.fn().mockResolvedValue(1),
+    incr: jest.fn().mockResolvedValue(1),
+    expire: jest.fn().mockResolvedValue(1),
+  },
+}));
 jest.mock('../../modules/ai/service/ai.service', () => ({
   aiService: {
     getHint: jest.fn().mockResolvedValue({ hint: 'Try using a hash map for O(n) lookup.' }),
@@ -45,7 +60,7 @@ describe('E2E Journey: Study Session', () => {
     id: 'room-study-1',
     name: 'Two Sum Sprint',
     code: 'STUDY123',
-    problem_id: 'prob-twosum',
+    problem_id: '10000000-0000-4000-a000-000000000001',
     host_id: hostUser.id,
     status: 'waiting' as string,
     time_limit_minutes: 30,
@@ -180,7 +195,7 @@ describe('E2E Journey: Study Session', () => {
   describe('Step 4: Mark problem progress outside the room', () => {
     it('should toggle problem status to solved', async () => {
       mockedProgressRepo.upsert.mockResolvedValue({
-        user_id: joinUser.id, problem_id: 'prob-twosum',
+        user_id: joinUser.id, problem_id: '10000000-0000-4000-a000-000000000001',
         status: 'solved', solved_at: new Date(), updated_at: new Date(),
       });
       mockedProgressRepo.getSolvedCountToday.mockResolvedValue(1);
@@ -188,9 +203,9 @@ describe('E2E Journey: Study Session', () => {
       mockedQueryOne.mockResolvedValue({ current_streak: 1, longest_streak: 1, last_solve_date: '2026-03-22' });
 
       const res = await request(app)
-        .put('/api/progress/prob-twosum')
+        .put('/api/progress/status')
         .set('Authorization', `Bearer ${joinToken}`)
-        .send({ status: 'solved' });
+        .send({ problemId: '10000000-0000-4000-a000-000000000001', status: 'solved' });
 
       expect(res.status).toBe(200);
     });
@@ -199,7 +214,7 @@ describe('E2E Journey: Study Session', () => {
   describe('Step 5: Add notes to the problem', () => {
     it('should create a personal note for the problem', async () => {
       mockedNotesRepo.create.mockResolvedValue({
-        id: 'note-1', user_id: joinUser.id, problem_id: 'prob-twosum',
+        id: 'note-1', user_id: joinUser.id, problem_id: '10000000-0000-4000-a000-000000000001',
         group_id: null, content: 'Key insight: use complement = target - nums[i]',
         visibility: 'personal', created_at: new Date(), updated_at: new Date(),
       });
@@ -208,7 +223,7 @@ describe('E2E Journey: Study Session', () => {
         .post('/api/notes')
         .set('Authorization', `Bearer ${joinToken}`)
         .send({
-          problemId: 'prob-twosum',
+          problemId: '10000000-0000-4000-a000-000000000001',
           content: 'Key insight: use complement = target - nums[i]',
           visibility: 'personal',
         });
@@ -219,13 +234,13 @@ describe('E2E Journey: Study Session', () => {
 
     it('should retrieve personal notes for the problem', async () => {
       mockedNotesRepo.getPersonalNotes.mockResolvedValue([{
-        id: 'note-1', user_id: joinUser.id, problem_id: 'prob-twosum',
+        id: 'note-1', user_id: joinUser.id, problem_id: '10000000-0000-4000-a000-000000000001',
         group_id: null, content: 'Key insight: use complement = target - nums[i]',
         visibility: 'personal', created_at: new Date(), updated_at: new Date(),
       }]);
 
       const res = await request(app)
-        .get('/api/notes/prob-twosum')
+        .get('/api/notes/personal/10000000-0000-4000-a000-000000000001')
         .set('Authorization', `Bearer ${joinToken}`);
 
       expect(res.status).toBe(200);
@@ -236,7 +251,7 @@ describe('E2E Journey: Study Session', () => {
   describe('Step 6: Generate revision notes', () => {
     it('should save revision notes for the problem', async () => {
       mockedRevisionRepo.createOrUpdate.mockResolvedValue({
-        id: 'rev-1', user_id: joinUser.id, problem_id: 'prob-twosum',
+        id: 'rev-1', user_id: joinUser.id, problem_id: '10000000-0000-4000-a000-000000000001',
         key_takeaway: 'Use hash map for complement lookup',
         approach: 'Single pass hash map', time_complexity: 'O(n)',
         space_complexity: 'O(n)', tags: ['hash-map', 'array'],
@@ -250,7 +265,7 @@ describe('E2E Journey: Study Session', () => {
         .post('/api/revisions')
         .set('Authorization', `Bearer ${joinToken}`)
         .send({
-          problemId: 'prob-twosum',
+          problemId: '10000000-0000-4000-a000-000000000001',
           keyTakeaway: 'Use hash map for complement lookup',
           approach: 'Single pass hash map',
           timeComplexity: 'O(n)',
@@ -259,12 +274,12 @@ describe('E2E Journey: Study Session', () => {
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.revision.key_takeaway).toContain('hash map');
+      expect(res.body.note.key_takeaway).toContain('hash map');
     });
 
     it('should retrieve revision notes', async () => {
       mockedRevisionRepo.getForUser.mockResolvedValue([{
-        id: 'rev-1', user_id: joinUser.id, problem_id: 'prob-twosum',
+        id: 'rev-1', user_id: joinUser.id, problem_id: '10000000-0000-4000-a000-000000000001',
         key_takeaway: 'Use hash map for complement lookup',
         approach: 'Single pass hash map', time_complexity: 'O(n)',
         space_complexity: 'O(n)', tags: ['hash-map', 'array'],
@@ -280,13 +295,13 @@ describe('E2E Journey: Study Session', () => {
         .set('Authorization', `Bearer ${joinToken}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.revisions).toHaveLength(1);
-      expect(res.body.revisions[0].problem_title).toBe('Two Sum');
+      expect(res.body.notes).toHaveLength(1);
+      expect(res.body.notes[0].problem_title).toBe('Two Sum');
     });
   });
 
   describe('Step 7: Check insights after study session', () => {
-    it('should show updated problem-solving stats', async () => {
+    it('should show updated problem-solving stats via overview endpoint', async () => {
       mockedInsightsRepo.getOverview.mockResolvedValue({
         total_solved: 1, easy_count: 1, medium_count: 0, hard_count: 0,
       });
@@ -294,26 +309,27 @@ describe('E2E Journey: Study Session', () => {
         current_streak: 1, longest_streak: 1,
       });
       mockedInsightsRepo.getActiveDays.mockResolvedValue(1);
-      mockedInsightsRepo.getWeekly.mockResolvedValue([
-        { week_start: '2026-03-16', count: 1 },
-      ]);
+
+      const res = await request(app)
+        .get('/api/insights/overview')
+        .set('Authorization', `Bearer ${joinToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.totalSolved).toBe(1);
+    });
+
+    it('should show tag stats', async () => {
       mockedInsightsRepo.getTagStats.mockResolvedValue([
         { tag_name: 'Array', solved_count: 1, total_count: 15 },
         { tag_name: 'Hash Table', solved_count: 1, total_count: 12 },
       ]);
-      mockedInsightsRepo.getDifficultyTrend.mockResolvedValue([
-        { month: '2026-03', easy: 1, medium: 0, hard: 0 },
-      ]);
 
       const res = await request(app)
-        .get('/api/insights')
+        .get('/api/insights/tags')
         .set('Authorization', `Bearer ${joinToken}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.overview.total_solved).toBe(1);
-      expect(res.body.streak.current_streak).toBe(1);
-      expect(res.body.activeDays).toBe(1);
-      expect(res.body.tagStats).toHaveLength(2);
+      expect(res.body.tags).toHaveLength(2);
     });
   });
 

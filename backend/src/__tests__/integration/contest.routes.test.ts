@@ -18,6 +18,8 @@ describe('Contest Routes', () => {
     starts_at: new Date('2025-01-15T10:00:00Z'),
     ends_at: new Date('2025-01-15T12:00:00Z'),
     created_at: new Date(),
+    problems: [] as { problem_id: string; title: string; slug: string; difficulty: string; position: number }[],
+    standings: [] as { user_id: string; display_name: string; solved_count: number; last_submission: Date }[],
   };
 
   const mockSubmission = {

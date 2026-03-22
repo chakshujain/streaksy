@@ -60,12 +60,12 @@ describe('E2E Journey: Group Management & Sheets', () => {
 
     it('should update group plan and objective', async () => {
       mockedGroupRepo.findById.mockResolvedValue(mockGroup);
-      mockedGroupRepo.isMember.mockResolvedValue(true);
+      mockedGroupRepo.getMember.mockResolvedValue({ group_id: 'group-mgmt', user_id: admin.id, role: 'admin' });
       mockedGroupRepo.updateGroupPlan.mockResolvedValue({
         ...mockGroup,
         plan: 'Solve 150 problems in 3 months',
         objective: 'Everyone gets a FAANG offer',
-        target_date: '2026-06-22',
+        target_date: new Date('2026-06-22'),
       });
 
       const res = await request(app)
@@ -107,13 +107,13 @@ describe('E2E Journey: Group Management & Sheets', () => {
   describe('Step 3: Assign sheets to the group', () => {
     it('should assign a sheet to the group', async () => {
       mockedGroupRepo.findById.mockResolvedValue(mockGroup);
-      mockedGroupRepo.isMember.mockResolvedValue(true);
+      mockedGroupRepo.getMember.mockResolvedValue({ group_id: 'group-mgmt', user_id: admin.id, role: 'admin' });
       mockedGroupRepo.assignSheet.mockResolvedValue();
 
       const res = await request(app)
         .post('/api/groups/group-mgmt/sheets')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ sheetId: 'sheet-blind-75' });
+        .send({ sheetId: '10000000-0000-4000-a000-000000000075' });
 
       expect(res.status).toBe(200);
     });
@@ -122,7 +122,7 @@ describe('E2E Journey: Group Management & Sheets', () => {
       mockedGroupRepo.findById.mockResolvedValue(mockGroup);
       mockedGroupRepo.isMember.mockResolvedValue(true);
       mockedGroupRepo.getGroupSheets.mockResolvedValue([
-        { sheet_id: 'sheet-blind-75', name: 'Blind 75', slug: 'blind-75', description: 'Must-do 75 problems', assigned_at: new Date() },
+        { sheet_id: '10000000-0000-4000-a000-000000000075', name: 'Blind 75', slug: 'blind-75', description: 'Must-do 75 problems', assigned_at: new Date() },
       ]);
 
       const res = await request(app)
@@ -145,12 +145,12 @@ describe('E2E Journey: Group Management & Sheets', () => {
       ]);
 
       const res = await request(app)
-        .get('/api/groups/group-mgmt/sheets/sheet-blind-75/progress')
+        .get('/api/groups/group-mgmt/sheets/10000000-0000-4000-a000-000000000075/progress')
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.progress).toHaveLength(2);
-      expect(res.body.progress[0].solved_count).toBe(25);
+      expect(res.body.progress[0].solved).toBe(25);
     });
   });
 
@@ -193,11 +193,11 @@ describe('E2E Journey: Group Management & Sheets', () => {
   describe('Step 6: Remove a sheet from the group', () => {
     it('should remove an assigned sheet', async () => {
       mockedGroupRepo.findById.mockResolvedValue(mockGroup);
-      mockedGroupRepo.isMember.mockResolvedValue(true);
+      mockedGroupRepo.getMember.mockResolvedValue({ group_id: 'group-mgmt', user_id: admin.id, role: 'admin' });
       mockedGroupRepo.removeSheet.mockResolvedValue();
 
       const res = await request(app)
-        .delete('/api/groups/group-mgmt/sheets/sheet-blind-75')
+        .delete('/api/groups/group-mgmt/sheets/10000000-0000-4000-a000-000000000075')
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
@@ -210,6 +210,7 @@ describe('E2E Journey: Group Management & Sheets', () => {
         {
           id: 'group-mgmt', name: 'Coding Warriors', description: 'Master DSA together',
           invite_code: 'COD-WAR-99', created_by: admin.id, created_at: new Date(),
+          plan: null, objective: null, target_date: null,
         },
       ]);
 
@@ -226,7 +227,7 @@ describe('E2E Journey: Group Management & Sheets', () => {
   describe('Step 8: Member leaves the group', () => {
     it('should allow a member to leave the group', async () => {
       mockedGroupRepo.findById.mockResolvedValue(mockGroup);
-      mockedGroupRepo.isMember.mockResolvedValue(true);
+      mockedGroupRepo.getMember.mockResolvedValue({ group_id: 'group-mgmt', user_id: member.id, role: 'member' });
       mockedGroupRepo.removeMember.mockResolvedValue();
 
       const res = await request(app)
@@ -240,7 +241,7 @@ describe('E2E Journey: Group Management & Sheets', () => {
   describe('Step 9: Admin deletes the group', () => {
     it('should allow admin to delete the group', async () => {
       mockedGroupRepo.findById.mockResolvedValue(mockGroup);
-      mockedGroupRepo.isMember.mockResolvedValue(true);
+      mockedGroupRepo.getMember.mockResolvedValue({ group_id: 'group-mgmt', user_id: admin.id, role: 'admin' });
       mockedGroupRepo.deleteGroup.mockResolvedValue();
 
       const res = await request(app)

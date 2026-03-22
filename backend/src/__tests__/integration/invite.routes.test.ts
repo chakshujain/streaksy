@@ -10,22 +10,23 @@ describe('Invite Routes', () => {
   const token = generateTestToken('user-1', 'user@test.com');
 
   const mockGroupPreview = {
+    type: 'group' as const,
     id: 'group-1',
     name: 'DSA Study Group',
     description: 'A study group',
-    member_count: 5,
-    created_by: 'user-2',
-    creator_name: 'Creator User',
+    memberCount: 5,
   };
 
   const mockRoomPreview = {
+    type: 'room' as const,
     id: 'room-1',
     name: 'Live Sprint',
-    code: 'ABCD1234',
-    host_id: 'user-2',
-    host_name: 'Host User',
+    problemTitle: null,
+    problemDifficulty: null,
     status: 'waiting',
-    participant_count: 3,
+    participantCount: 3,
+    timeLimitMinutes: 60,
+    mode: 'collaborative',
   };
 
   const mockGroup = {

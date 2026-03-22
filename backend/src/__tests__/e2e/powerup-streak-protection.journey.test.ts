@@ -12,6 +12,14 @@ jest.mock('../../modules/streak/service/streaks-engine', () => ({
     calculatePoints: jest.fn().mockResolvedValue({ totalPoints: 15, basePoints: 10, streakBonus: 5, multipliers: [] }),
     calculateCompletionBonus: jest.fn().mockReturnValue({ bonus: 100 }),
     cacheMultiplierPreview: jest.fn().mockResolvedValue(undefined),
+    getMultiplierPreview: jest.fn().mockResolvedValue({
+      currentStreak: 10,
+      multipliers: [
+        { name: 'Streak', value: 2, label: 'Weekly Warrior' },
+      ],
+      totalMultiplier: 2,
+      nextMilestone: { streak: 14, multiplier: 3, label: 'Fortnight Fury' },
+    }),
   },
 }));
 

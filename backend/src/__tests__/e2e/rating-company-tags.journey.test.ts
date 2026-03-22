@@ -14,7 +14,7 @@ describe('E2E Journey: Rating & Company Tags', () => {
   const userId = 'user-rating';
   const email = 'rating@test.com';
   const token = generateTestToken(userId, email);
-  const problemId = '00000000-0000-0000-0000-000000000001';
+  const problemId = '10000000-0000-4000-a000-000000000001';
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -153,10 +153,10 @@ describe('E2E Journey: Rating & Company Tags', () => {
       const res = await request(app)
         .post(`/api/ratings/${problemId}/companies`)
         .set('Authorization', `Bearer ${token}`)
-        .send({ companyTagId: '00000000-0000-0000-0000-000000000003' });
+        .send({ companyTagId: '10000000-0000-4000-a000-000000000003' });
 
       expect(res.status).toBe(201);
-      expect(mockedRatingRepo.reportCompanyTag).toHaveBeenCalledWith(problemId, '00000000-0000-0000-0000-000000000003', userId);
+      expect(mockedRatingRepo.reportCompanyTag).toHaveBeenCalledWith(problemId, '10000000-0000-4000-a000-000000000003', userId);
     });
   });
 });

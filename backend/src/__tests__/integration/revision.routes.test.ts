@@ -19,18 +19,35 @@ describe('Revision Routes', () => {
     space_complexity: 'O(n)',
     tags: ['hash-map', 'array'],
     difficulty_rating: 'easy',
-    last_revised: new Date(),
+    intuition: 'Hash map allows constant-time lookups for complement values',
+    points_to_remember: ['Check for duplicate indices', 'Handle negative numbers'],
+    ai_generated: false,
+    last_revised_at: null as Date | null,
+    revision_count: 0,
     created_at: new Date(),
+    updated_at: new Date(),
     problem_title: 'Two Sum',
     problem_slug: 'two-sum',
   };
 
   const mockQuizCard = {
     id: 'note-1',
-    problem_title: 'Two Sum',
+    user_id: 'user-1',
+    problem_id: 'prob-1',
     key_takeaway: 'Use hash map',
-    difficulty_rating: 'easy',
+    approach: null as string | null,
+    time_complexity: null as string | null,
+    space_complexity: null as string | null,
     tags: ['hash-map'],
+    difficulty_rating: 'easy',
+    intuition: null as string | null,
+    points_to_remember: null as string[] | null,
+    ai_generated: false,
+    last_revised_at: null as Date | null,
+    revision_count: 0,
+    created_at: new Date(),
+    updated_at: new Date(),
+    problem_title: 'Two Sum',
   };
 
   const validUUID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
@@ -211,7 +228,14 @@ describe('Revision Routes', () => {
 
   describe('POST /api/revisions/generate', () => {
     it('should generate AI revision notes', async () => {
-      mockedService.generateAI.mockResolvedValue({ key_takeaway: 'AI generated' });
+      mockedService.generateAI.mockResolvedValue({
+        keyTakeaway: 'AI generated',
+        approach: 'Hash Map',
+        intuition: 'Use a hash map for O(1) lookups',
+        pointsToRemember: ['Handle edge cases'],
+        timeComplexity: 'O(n)',
+        spaceComplexity: 'O(n)',
+      });
 
       const res = await request(app)
         .post('/api/revisions/generate')
@@ -251,7 +275,10 @@ describe('Revision Routes', () => {
 
   describe('POST /api/revisions/hints', () => {
     it('should return hints for a problem', async () => {
-      mockedService.getHints.mockResolvedValue(['Hint 1', 'Hint 2']);
+      mockedService.getHints.mockResolvedValue([
+        { level: 1, hint: 'Hint 1' },
+        { level: 2, hint: 'Hint 2' },
+      ]);
 
       const res = await request(app)
         .post('/api/revisions/hints')
@@ -282,7 +309,20 @@ describe('Revision Routes', () => {
 
   describe('POST /api/revisions/explain', () => {
     it('should return explanation for a problem', async () => {
-      mockedService.getExplanation.mockResolvedValue('Explanation text');
+      mockedService.getExplanation.mockResolvedValue({
+        overview: 'Explanation text',
+        approaches: [{
+          name: 'Hash Map',
+          description: 'Use a hash map for complement lookups',
+          timeComplexity: 'O(n)',
+          spaceComplexity: 'O(n)',
+          pros: ['Fast'],
+          cons: ['Extra space'],
+        }],
+        bestApproach: 'Hash Map',
+        commonMistakes: ['Using same element twice'],
+        relatedPatterns: ['Two Pointers'],
+      });
 
       const res = await request(app)
         .post('/api/revisions/explain')
@@ -313,7 +353,14 @@ describe('Revision Routes', () => {
 
   describe('POST /api/revisions/review', () => {
     it('should return code review for a problem', async () => {
-      mockedService.getCodeReview.mockResolvedValue('Review text');
+      mockedService.getCodeReview.mockResolvedValue({
+        rating: 8,
+        summary: 'Review text',
+        strengths: ['Clean code'],
+        issues: [],
+        timeComplexity: 'O(n)',
+        spaceComplexity: 'O(n)',
+      });
 
       const res = await request(app)
         .post('/api/revisions/review')

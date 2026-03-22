@@ -16,31 +16,38 @@ describe('Poke Routes', () => {
     id: 'poke-1',
     from_user_id: 'user-2',
     to_user_id: 'user-1',
-    group_id: 'group-1',
+    group_id: 'group-1' as string | null,
     message: 'Keep going!',
+    poke_type: 'manual',
+    escalation_level: 3,
     created_at: new Date(),
     from_display_name: 'User Two',
-    from_avatar_url: null,
   };
 
   const mockInactiveMember = {
     user_id: 'user-3',
     display_name: 'Inactive User',
-    avatar_url: null,
-    last_active: new Date('2025-01-01'),
+    days_inactive: 5,
+    last_solve_date: '2025-01-01' as string | null,
+    current_streak: 0,
   };
 
   const mockRisk = {
-    atRisk: true,
+    atRisk: true as const,
     currentStreak: 5,
-    lastActivity: new Date('2025-01-14'),
+    hoursLeft: 8,
+    message: 'Your 5-day streak is at risk! You have 8 hours left.',
   };
 
   const mockChallenge = {
     id: 'challenge-1',
-    challenger_id: 'user-2',
-    problem_id: 'prob-1',
-    status: 'pending',
+    user_id: 'user-1',
+    challenge_type: 'streak_recovery',
+    target_count: 3,
+    completed_count: 0,
+    status: 'active',
+    expires_at: new Date(),
+    created_at: new Date(),
   };
 
   beforeEach(() => {
