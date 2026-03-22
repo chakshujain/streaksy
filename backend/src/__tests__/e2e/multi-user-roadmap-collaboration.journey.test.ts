@@ -74,10 +74,7 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
 
   describe('Step 2: Share roadmap via share code', () => {
     it('should resolve roadmap by share code', async () => {
-      mockedRoadmapsRepo.getByShareCode.mockResolvedValue({
-        ...mockRoadmap,
-        creator_name: userA.name,
-      });
+      mockedRoadmapsRepo.getByShareCode.mockResolvedValue(mockRoadmap);
 
       const res = await request(app)
         .get('/api/roadmaps/share/COLLAB-100')
@@ -184,9 +181,9 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
     it('should show leaderboard with Alice leading', async () => {
       mockedRoadmapsRepo.getRoadmapById.mockResolvedValue(mockRoadmap);
       mockedRoadmapsRepo.getLeaderboard.mockResolvedValue([
-        { user_id: userA.id, display_name: userA.name, completed_days: 22, current_streak: 22, total_points: 330 },
-        { user_id: userB.id, display_name: userB.name, completed_days: 15, current_streak: 15, total_points: 225 },
-        { user_id: userC.id, display_name: userC.name, completed_days: 8, current_streak: 8, total_points: 120 },
+        { user_id: userA.id, display_name: userA.name, avatar_url: null, completed_count: 22, current_streak: 22 },
+        { user_id: userB.id, display_name: userB.name, avatar_url: null, completed_count: 15, current_streak: 15 },
+        { user_id: userC.id, display_name: userC.name, avatar_url: null, completed_count: 8, current_streak: 8 },
       ]);
 
       const res = await request(app)

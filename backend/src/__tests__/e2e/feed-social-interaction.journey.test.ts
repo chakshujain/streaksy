@@ -157,7 +157,7 @@ describe('E2E Journey: Feed & Social Interaction', () => {
     });
 
     it('should list comments on a post', async () => {
-      mockedFeedRepo.getCommentss.mockResolvedValue([
+      mockedFeedRepo.getComments.mockResolvedValue([
         {
           id: 'fc-1', feed_event_id: 'post-1', user_id: userB.id,
           content: 'Congrats! Keep it up!', created_at: new Date(),
