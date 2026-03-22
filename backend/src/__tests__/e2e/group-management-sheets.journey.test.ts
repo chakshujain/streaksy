@@ -65,7 +65,7 @@ describe('E2E Journey: Group Management & Sheets', () => {
         ...mockGroup,
         plan: 'Solve 150 problems in 3 months',
         objective: 'Everyone gets a FAANG offer',
-        target_date: '2026-06-22',
+        target_date: new Date('2026-06-22'),
       });
 
       const res = await request(app)
@@ -210,6 +210,7 @@ describe('E2E Journey: Group Management & Sheets', () => {
         {
           id: 'group-mgmt', name: 'Coding Warriors', description: 'Master DSA together',
           invite_code: 'COD-WAR-99', created_by: admin.id, created_at: new Date(),
+          plan: null, objective: null, target_date: null,
         },
       ]);
 

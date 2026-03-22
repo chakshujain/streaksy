@@ -179,11 +179,9 @@ describe('sheetsService', () => {
     });
 
     it('should generate correct slug from sheet name', async () => {
-      (mockedXLSX.utils as any) = {
-        sheet_to_json: jest.fn().mockReturnValue([
-          { title: 'Two Sum', slug: 'two-sum', difficulty: 'Easy' },
-        ]),
-      };
+      mockSheetToJson.mockReturnValue([
+        { title: 'Two Sum', slug: 'two-sum', difficulty: 'Easy' },
+      ]);
 
       const mockClient = {
         query: jest.fn()
