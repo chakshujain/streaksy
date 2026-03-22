@@ -155,9 +155,13 @@ describe('E2E Journey: Profile & Account Management', () => {
     });
 
     it('should reset password with valid token', async () => {
-      mockedAuthRepo.findValidResetToken.mockResolvedValue(
-        mockUserRow({ id: userId, email })
-      );
+      mockedAuthRepo.findValidResetToken.mockResolvedValue({
+        id: 'reset-token-1',
+        user_id: userId,
+        token_hash: 'hashed-valid-reset-token',
+        expires_at: new Date(Date.now() + 3600000),
+        used_at: null,
+      });
       mockedAuthRepo.updatePassword.mockResolvedValue();
       mockedAuthRepo.markResetTokenUsed.mockResolvedValue();
 

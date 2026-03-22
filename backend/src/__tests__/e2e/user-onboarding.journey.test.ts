@@ -240,7 +240,7 @@ describe('E2E Journey: User Onboarding', () => {
         created_at: new Date(), task_count: 90,
         category_slug: 'coding-tech', category_name: 'Coding & Tech',
         tasks: [
-          { id: 'task-1', day_number: 1, title: 'Arrays & Hashing', description: 'Learn basics', task_type: 'study', link: null },
+          { id: 'task-1', template_id: 'tmpl-1', day_number: 1, title: 'Arrays & Hashing', description: 'Learn basics', task_type: 'study', link: null, metadata: {}, position: 0 },
         ],
       });
 

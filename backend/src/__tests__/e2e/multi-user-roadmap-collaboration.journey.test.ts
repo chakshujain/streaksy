@@ -101,9 +101,9 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
   describe('Step 3: View template participants', () => {
     it('should list participants for a roadmap template', async () => {
       mockedRoadmapsRepo.getParticipants.mockResolvedValue([
-        { user_id: userA.id, display_name: userA.name, avatar_url: null, current_streak: 10, completed_days: 22 },
-        { user_id: userB.id, display_name: userB.name, avatar_url: null, current_streak: 5, completed_days: 15 },
-        { user_id: userC.id, display_name: userC.name, avatar_url: null, current_streak: 3, completed_days: 8 },
+        { user_id: userA.id, display_name: userA.name, avatar_url: null, joined_at: new Date(), current_streak: 10, completed_days: 22 },
+        { user_id: userB.id, display_name: userB.name, avatar_url: null, joined_at: new Date(), current_streak: 5, completed_days: 15 },
+        { user_id: userC.id, display_name: userC.name, avatar_url: null, joined_at: new Date(), current_streak: 3, completed_days: 8 },
       ]);
 
       const res = await request(app)

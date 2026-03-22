@@ -299,14 +299,14 @@ describe('E2E Journey: Social Collaboration', () => {
           id: 'event-1', user_id: userA.id, event_type: 'roadmap_started',
           title: 'Alice started DSA Warriors Roadmap',
           description: null, metadata: { roadmap_id: 'roadmap-alice' },
-          created_at: new Date(), display_name: userA.name, avatar_url: null,
+          created_at: new Date(), display_name: userA.name, avatar_url: undefined,
           like_count: 2, comment_count: 0, liked_by_me: false,
         },
         {
           id: 'event-2', user_id: userB.id, event_type: 'roadmap_started',
           title: 'Bob started DSA Warriors Roadmap',
           description: null, metadata: { roadmap_id: 'roadmap-bob' },
-          created_at: new Date(), display_name: userB.name, avatar_url: null,
+          created_at: new Date(), display_name: userB.name, avatar_url: undefined,
           like_count: 1, comment_count: 0, liked_by_me: false,
         },
       ]);

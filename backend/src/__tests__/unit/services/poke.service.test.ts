@@ -139,8 +139,12 @@ describe('pokeService', () => {
     it('should throw notFound when target user not found', async () => {
       mockedPokeRepo.recentPokeBetween.mockResolvedValue(false);
       mockedPokeRepo.pokessentToday.mockResolvedValue(0);
-      mockedAuthRepo.findById.mockResolvedValueOnce({ ...mockUser, id: 'user-1' } as any);
-      mockedAuthRepo.findById.mockResolvedValueOnce(null);
+      mockedAuthRepo.findById
+        .mockResolvedValueOnce({ ...mockUser, id: 'user-1' } as any)
+        .mockResolvedValueOnce(null)
+        // second call to pokeFriend needs the same mock sequence
+        .mockResolvedValueOnce({ ...mockUser, id: 'user-1' } as any)
+        .mockResolvedValueOnce(null);
 
       await expect(pokeService.pokeFriend('user-1', 'user-2')).rejects.toThrow(
         'User not found'
