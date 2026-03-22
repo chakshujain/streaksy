@@ -50,8 +50,10 @@ describe('Sheets Routes', () => {
 
     it('should upload a CSV file with valid admin secret', async () => {
       mockedService.processUpload.mockResolvedValue({
-        sheet: { id: 'sheet-1', name: 'Test Sheet' },
-        problemsCreated: 5,
+        sheet: { id: 'sheet-1', name: 'Test Sheet', slug: 'test-sheet' },
+        problemCount: 5,
+        newProblems: 5,
+        existingProblems: 0,
       });
 
       const res = await request(app)

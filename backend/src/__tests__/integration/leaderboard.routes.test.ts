@@ -13,12 +13,11 @@ describe('Leaderboard Routes', () => {
   const token = generateTestToken('user-1', 'user@test.com');
 
   const mockLeaderboardEntry = {
-    user_id: 'user-1',
-    display_name: 'User One',
-    avatar_url: null,
-    total_points: 500,
-    current_streak: 10,
-    rank: 1,
+    userId: 'user-1',
+    displayName: 'User One',
+    solvedCount: 50,
+    currentStreak: 10,
+    score: 500,
   };
 
   const mockGlobalEntry = {
@@ -27,7 +26,7 @@ describe('Leaderboard Routes', () => {
     avatar_url: null,
     total_points: 300,
     current_streak: 5,
-    rank: 2,
+    longest_streak: 12,
   };
 
   beforeEach(() => {
@@ -74,7 +73,7 @@ describe('Leaderboard Routes', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.leaderboard).toHaveLength(1);
-      expect(res.body.leaderboard[0].total_points).toBe(500);
+      expect(res.body.leaderboard[0].score).toBe(500);
     });
 
     it('should return empty group leaderboard', async () => {
