@@ -193,7 +193,7 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
       expect(res.status).toBe(200);
       expect(res.body.leaderboard).toHaveLength(3);
       expect(res.body.leaderboard[0].display_name).toBe(userA.name);
-      expect(res.body.leaderboard[0].completed_days).toBe(22);
+      expect(res.body.leaderboard[0].completed_count).toBe(22);
     });
   });
 
@@ -212,7 +212,6 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
         id: 'disc-1', template_id: 'tmpl-100days', user_id: userA.id,
         content: 'Day 22 was tough! Anyone else struggling with linked lists?',
         parent_id: null, created_at: new Date(),
-        display_name: userA.name,
       });
 
       const res = await request(app)
@@ -236,14 +235,14 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
       });
       mockedRoadmapsRepo.getDiscussions.mockResolvedValue([
         {
-          id: 'disc-1', template_id: 'tmpl-100days', user_id: userA.id,
+          id: 'disc-1', user_id: userA.id,
           content: 'Day 22 was tough!', parent_id: null,
-          created_at: new Date(), display_name: userA.name,
+          created_at: new Date(), display_name: userA.name, avatar_url: null,
         },
         {
-          id: 'disc-2', template_id: 'tmpl-100days', user_id: userB.id,
+          id: 'disc-2', user_id: userB.id,
           content: 'Same here! I found it helpful to draw diagrams first.',
-          parent_id: 'disc-1', created_at: new Date(), display_name: userB.name,
+          parent_id: 'disc-1', created_at: new Date(), display_name: userB.name, avatar_url: null,
         },
       ]);
 
@@ -276,9 +275,9 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
   describe('Step 8: Global leaderboard', () => {
     it('should show global leaderboard across all roadmaps', async () => {
       mockedRoadmapsRepo.getGlobalLeaderboard.mockResolvedValue([
-        { user_id: userA.id, display_name: userA.name, total_points: 2500, current_streak: 30, roadmaps_completed: 3 },
-        { user_id: userB.id, display_name: userB.name, total_points: 1800, current_streak: 15, roadmaps_completed: 2 },
-        { user_id: userC.id, display_name: userC.name, total_points: 900, current_streak: 8, roadmaps_completed: 1 },
+        { user_id: userA.id, display_name: userA.name, avatar_url: null, total_points: 2500, current_streak: 30, longest_streak: 30 },
+        { user_id: userB.id, display_name: userB.name, avatar_url: null, total_points: 1800, current_streak: 15, longest_streak: 15 },
+        { user_id: userC.id, display_name: userC.name, avatar_url: null, total_points: 900, current_streak: 8, longest_streak: 8 },
       ]);
 
       const res = await request(app)
