@@ -18,7 +18,7 @@ echo "=== Streaksy Server Setup (Amazon Linux 2023) ==="
 # ── 1. System packages ──────────────────────────────────────────────
 echo "[1/7] Updating system packages..."
 dnf update -y
-dnf install -y curl git gcc-c++ make nginx
+dnf install -y git gcc-c++ make nginx
 
 # ── 2. Node.js (via NodeSource) ─────────────────────────────────────
 echo "[2/7] Installing Node.js ${NODE_VERSION}..."
