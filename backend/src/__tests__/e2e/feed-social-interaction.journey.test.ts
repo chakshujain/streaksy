@@ -77,16 +77,16 @@ describe('E2E Journey: Feed & Social Interaction', () => {
       mockedFeedRepo.getFeed.mockResolvedValue([
         {
           id: 'post-1', user_id: userA.id, event_type: 'post',
-          title: null, description: null,
+          title: '', description: null,
           metadata: { content: 'Just completed my 30-day coding streak!' },
-          created_at: new Date(), display_name: userA.name, avatar_url: null,
+          created_at: new Date(), display_name: userA.name, avatar_url: undefined,
           like_count: 5, comment_count: 2, liked_by_me: false,
         },
         {
           id: 'event-streak', user_id: userB.id, event_type: 'streak_milestone',
           title: 'Bob reached a 7-day streak!', description: null,
           metadata: { streak: 7 },
-          created_at: new Date(), display_name: userB.name, avatar_url: null,
+          created_at: new Date(), display_name: userB.name, avatar_url: undefined,
           like_count: 3, comment_count: 0, liked_by_me: true,
         },
       ]);
@@ -194,9 +194,9 @@ describe('E2E Journey: Feed & Social Interaction', () => {
       mockedFeedRepo.getUserFeed.mockResolvedValue([
         {
           id: 'post-1', user_id: userA.id, event_type: 'post',
-          title: null, description: null,
+          title: '', description: null,
           metadata: { content: '30-day streak!' },
-          created_at: new Date(), display_name: userA.name, avatar_url: null,
+          created_at: new Date(), display_name: userA.name, avatar_url: undefined,
           like_count: 5, comment_count: 2, liked_by_me: false,
         },
       ]);

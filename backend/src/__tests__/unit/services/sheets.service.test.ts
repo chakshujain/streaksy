@@ -9,8 +9,15 @@ jest.mock('../../../config/database', () => ({
   queryOne: jest.fn(),
   transaction: jest.fn(),
 }));
-jest.mock('xlsx');
 jest.mock('fs');
+
+const mockSheetToJson = jest.fn();
+jest.mock('xlsx', () => ({
+  readFile: jest.fn(),
+  utils: {
+    sheet_to_json: (...args: any[]) => mockSheetToJson(...args),
+  },
+}));
 
 const mockedTransaction = transaction as jest.MockedFunction<typeof transaction>;
 const mockedXLSX = XLSX as jest.Mocked<typeof XLSX>;
@@ -31,9 +38,7 @@ describe('sheetsService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (mockedXLSX.readFile as jest.Mock).mockReturnValue(mockWorkbook);
-    (mockedXLSX.utils as any) = {
-      sheet_to_json: jest.fn().mockReturnValue(mockRows),
-    };
+    mockSheetToJson.mockReturnValue(mockRows);
     (mockedFs.existsSync as jest.Mock).mockReturnValue(true);
     (mockedFs.unlinkSync as jest.Mock).mockImplementation(() => {});
   });
@@ -83,9 +88,7 @@ describe('sheetsService', () => {
     });
 
     it('should throw badRequest when file contains no rows', async () => {
-      (mockedXLSX.utils as any) = {
-        sheet_to_json: jest.fn().mockReturnValue([]),
-      };
+      mockSheetToJson.mockReturnValue([]);
 
       await expect(
         sheetsService.processUpload('Empty Sheet', '/tmp/empty.xlsx')
@@ -96,11 +99,9 @@ describe('sheetsService', () => {
     });
 
     it('should throw badRequest when row is missing title', async () => {
-      (mockedXLSX.utils as any) = {
-        sheet_to_json: jest.fn().mockReturnValue([
-          { slug: 'two-sum', difficulty: 'Easy' },
-        ]),
-      };
+      mockSheetToJson.mockReturnValue([
+        { slug: 'two-sum', difficulty: 'Easy' },
+      ]);
 
       await expect(
         sheetsService.processUpload('Bad Sheet', '/tmp/bad.xlsx')
@@ -108,11 +109,9 @@ describe('sheetsService', () => {
     });
 
     it('should throw badRequest when row is missing slug', async () => {
-      (mockedXLSX.utils as any) = {
-        sheet_to_json: jest.fn().mockReturnValue([
-          { title: 'Two Sum', difficulty: 'Easy' },
-        ]),
-      };
+      mockSheetToJson.mockReturnValue([
+        { title: 'Two Sum', difficulty: 'Easy' },
+      ]);
 
       await expect(
         sheetsService.processUpload('Bad Sheet', '/tmp/bad.xlsx')
@@ -120,11 +119,9 @@ describe('sheetsService', () => {
     });
 
     it('should throw badRequest when row is missing difficulty', async () => {
-      (mockedXLSX.utils as any) = {
-        sheet_to_json: jest.fn().mockReturnValue([
-          { title: 'Two Sum', slug: 'two-sum' },
-        ]),
-      };
+      mockSheetToJson.mockReturnValue([
+        { title: 'Two Sum', slug: 'two-sum' },
+      ]);
 
       await expect(
         sheetsService.processUpload('Bad Sheet', '/tmp/bad.xlsx')
@@ -132,11 +129,9 @@ describe('sheetsService', () => {
     });
 
     it('should throw badRequest for invalid difficulty values', async () => {
-      (mockedXLSX.utils as any) = {
-        sheet_to_json: jest.fn().mockReturnValue([
-          { title: 'Two Sum', slug: 'two-sum', difficulty: 'extreme' },
-        ]),
-      };
+      mockSheetToJson.mockReturnValue([
+        { title: 'Two Sum', slug: 'two-sum', difficulty: 'extreme' },
+      ]);
 
       await expect(
         sheetsService.processUpload('Bad Sheet', '/tmp/bad.xlsx')
@@ -144,11 +139,9 @@ describe('sheetsService', () => {
     });
 
     it('should accept case-insensitive difficulty values', async () => {
-      (mockedXLSX.utils as any) = {
-        sheet_to_json: jest.fn().mockReturnValue([
-          { title: 'Two Sum', slug: 'two-sum', difficulty: 'EASY' },
-        ]),
-      };
+      mockSheetToJson.mockReturnValue([
+        { title: 'Two Sum', slug: 'two-sum', difficulty: 'EASY' },
+      ]);
 
       const mockClient = {
         query: jest.fn()
@@ -164,9 +157,7 @@ describe('sheetsService', () => {
     });
 
     it('should clean up temp file even when processing fails', async () => {
-      (mockedXLSX.utils as any) = {
-        sheet_to_json: jest.fn().mockReturnValue([]),
-      };
+      mockSheetToJson.mockReturnValue([]);
 
       await expect(
         sheetsService.processUpload('Bad', '/tmp/bad.xlsx')
@@ -178,9 +169,7 @@ describe('sheetsService', () => {
 
     it('should not throw if temp file does not exist during cleanup', async () => {
       (mockedFs.existsSync as jest.Mock).mockReturnValue(false);
-      (mockedXLSX.utils as any) = {
-        sheet_to_json: jest.fn().mockReturnValue([]),
-      };
+      mockSheetToJson.mockReturnValue([]);
 
       await expect(
         sheetsService.processUpload('Bad', '/tmp/missing.xlsx')

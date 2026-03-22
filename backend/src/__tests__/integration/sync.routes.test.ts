@@ -16,26 +16,51 @@ describe('Sync Routes', () => {
   const token = generateTestToken('user-1', 'user@test.com');
 
   const mockSyncResult = {
-    status: 'synced',
-    problem: { id: 'prob-1', title: 'Two Sum', slug: 'two-sum' },
+    progress: {
+      problemId: 'prob-1',
+      problemSlug: 'two-sum',
+      status: 'solved' as const,
+      solvedAt: new Date(),
+    },
+    submission: {
+      id: 'sub-1',
+      language: 'javascript',
+      runtimeMs: 50,
+      memoryKb: 40000,
+    },
+    streak: {
+      currentStreak: 5,
+      longestStreak: 10,
+    },
   };
 
   const mockSubmission = {
     id: 'sub-1',
     user_id: 'user-1',
     problem_id: 'prob-1',
+    status: 'Accepted',
     language: 'javascript',
-    code: 'function twoSum() {}',
-    runtime_ms: 50,
-    memory_kb: 40000,
+    code: 'function twoSum() {}' as string | null,
+    runtime_ms: 50 as number | null,
+    runtime_percentile: 85.5 as number | null,
+    memory_kb: 40000 as number | null,
+    memory_percentile: 70.2 as number | null,
+    time_spent_seconds: 300 as number | null,
+    leetcode_submission_id: null as string | null,
     submitted_at: new Date(),
+    created_at: new Date(),
   };
 
   const mockStats = {
-    total: 50,
-    solved: 30,
-    attempted: 20,
-    languages: { javascript: 20, python: 10 },
+    totalSubmissions: 50,
+    acceptedSubmissions: 30,
+    avgRuntime: 45 as number | null,
+    avgMemory: 38000 as number | null,
+    avgTimeSpent: 250 as number | null,
+    languages: [
+      { language: 'javascript', count: 20 },
+      { language: 'python', count: 10 },
+    ],
   };
 
   const mockPeerSolution = {
@@ -66,7 +91,7 @@ describe('Sync Routes', () => {
         .send(validBody);
 
       expect(res.status).toBe(200);
-      expect(res.body.status).toBe('synced');
+      expect(res.body.progress).toBeDefined();
     });
 
     it('should sync with optional fields', async () => {
@@ -182,7 +207,7 @@ describe('Sync Routes', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.stats.total).toBe(50);
+      expect(res.body.stats.totalSubmissions).toBe(50);
     });
 
     it('should return 401 without token', async () => {
@@ -222,7 +247,17 @@ describe('Sync Routes', () => {
 
   describe('GET /api/sync/peer-solutions/:problemId', () => {
     it('should return peer solutions', async () => {
-      mockedGroupRepo.getUserGroups.mockResolvedValue([{ id: 'group-1' }]);
+      mockedGroupRepo.getUserGroups.mockResolvedValue([{
+        id: 'group-1',
+        name: 'Test Group',
+        description: null,
+        invite_code: 'abc123',
+        created_by: 'user-1',
+        created_at: new Date(),
+        plan: null,
+        objective: null,
+        target_date: null,
+      }]);
       mockedSubRepo.getPeerSolutions.mockResolvedValue([mockPeerSolution]);
 
       const res = await request(app)
@@ -234,7 +269,7 @@ describe('Sync Routes', () => {
     });
 
     it('should return empty list when no peer solutions', async () => {
-      mockedGroupRepo.getUserGroups.mockResolvedValue([]);
+      mockedGroupRepo.getUserGroups.mockResolvedValue([] as any[]);
       mockedSubRepo.getPeerSolutions.mockResolvedValue([]);
 
       const res = await request(app)
@@ -247,8 +282,8 @@ describe('Sync Routes', () => {
 
     it('should pass user group IDs to repository', async () => {
       mockedGroupRepo.getUserGroups.mockResolvedValue([
-        { id: 'group-1' },
-        { id: 'group-2' },
+        { id: 'group-1', name: 'Group 1', description: null, invite_code: 'abc', created_by: 'user-1', created_at: new Date(), plan: null, objective: null, target_date: null },
+        { id: 'group-2', name: 'Group 2', description: null, invite_code: 'def', created_by: 'user-1', created_at: new Date(), plan: null, objective: null, target_date: null },
       ]);
       mockedSubRepo.getPeerSolutions.mockResolvedValue([]);
 
