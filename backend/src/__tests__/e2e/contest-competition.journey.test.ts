@@ -29,17 +29,17 @@ describe('E2E Journey: Contest & Competition', () => {
   const contestId = 'contest-1';
 
   // Use valid UUIDs for problem IDs (required by validation schema)
-  const prob1 = '00000000-0000-0000-0000-000000000001';
-  const prob2 = '00000000-0000-0000-0000-000000000002';
-  const prob3 = '00000000-0000-0000-0000-000000000003';
+  const prob1 = '10000000-0000-4000-a000-000000000001';
+  const prob2 = '10000000-0000-4000-a000-000000000002';
+  const prob3 = '10000000-0000-4000-a000-000000000003';
 
   const mockContest = {
     id: contestId,
     group_id: groupId,
     title: 'Weekly DSA Challenge',
     description: 'Solve 3 problems in 2 hours',
-    starts_at: new Date('2026-03-22T14:00:00Z'),
-    ends_at: new Date('2026-03-22T16:00:00Z'),
+    starts_at: new Date('2026-03-20T14:00:00Z'),
+    ends_at: new Date('2026-03-25T16:00:00Z'),
     created_by: userA.id,
     created_at: new Date(),
   };
@@ -50,10 +50,9 @@ describe('E2E Journey: Contest & Competition', () => {
 
   describe('Step 1: Create a contest within a group', () => {
     it('should create a new contest', async () => {
-      // contestService.create uses getMember not isMember
       mockedGroupRepo.getMember.mockResolvedValue({
         group_id: groupId, user_id: userA.id, role: 'admin',
-      });
+      } as any);
       mockedContestRepo.create.mockResolvedValue(mockContest);
       mockedContestRepo.addProblem.mockResolvedValue();
 

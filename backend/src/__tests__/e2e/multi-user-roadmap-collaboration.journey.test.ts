@@ -53,6 +53,8 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
 
   describe('Step 1: Create a group roadmap', () => {
     it('should create a roadmap linked to a group', async () => {
+      // createUserRoadmap checks group membership via raw queryOne
+      mockedQueryOne.mockResolvedValue({ user_id: userA.id });
       mockedRoadmapsRepo.createUserRoadmap.mockResolvedValue(mockRoadmap);
       mockedRoadmapsRepo.addParticipant.mockResolvedValue();
 
@@ -97,6 +99,15 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
 
   describe('Step 3: View template participants', () => {
     it('should list participants for a roadmap template', async () => {
+      mockedRoadmapsRepo.getTemplateBySlug.mockResolvedValue({
+        id: 'tmpl-100days', category_id: 'cat-coding', name: '100 Days of Code',
+        slug: '100-days-of-code', description: 'Code every day for 100 days',
+        icon: 'Code', color: '#4F46E5', duration_days: 100,
+        difficulty: 'beginner', is_featured: true, participant_count: 200,
+        created_at: new Date(), task_count: 100,
+        category_slug: 'coding-tech', category_name: 'Coding & Tech',
+        tasks: [],
+      });
       mockedRoadmapsRepo.getParticipants.mockResolvedValue([
         { user_id: userA.id, display_name: userA.name, avatar_url: null, joined_at: new Date(), current_streak: 10, completed_days: 22 },
         { user_id: userB.id, display_name: userB.name, avatar_url: null, joined_at: new Date(), current_streak: 5, completed_days: 15 },
@@ -260,7 +271,8 @@ describe('E2E Journey: Multi-User Roadmap Collaboration', () => {
       mockedRoadmapsRepo.getRoadmapById.mockResolvedValue({
         ...mockRoadmap, group_id: null,
       });
-      mockedGroupRepo.isMember.mockResolvedValue(true);
+      // linkGroup checks group membership via raw queryOne
+      mockedQueryOne.mockResolvedValue({ user_id: userA.id });
       mockedRoadmapsRepo.linkGroup.mockResolvedValue();
 
       const res = await request(app)

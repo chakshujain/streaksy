@@ -6,6 +6,7 @@ import { friendsRepository } from '../../modules/friends/repository/friends.repo
 import { roadmapsRepository } from '../../modules/roadmaps/repository/roadmaps.repository';
 import { pokeRepository } from '../../modules/poke/repository/poke.repository';
 import { feedRepository } from '../../modules/feed/repository/feed.repository';
+import { authRepository } from '../../modules/auth/repository/auth.repository';
 import { query, queryOne } from '../../config/database';
 
 jest.mock('../../modules/group/repository/group.repository');
@@ -13,6 +14,7 @@ jest.mock('../../modules/friends/repository/friends.repository');
 jest.mock('../../modules/roadmaps/repository/roadmaps.repository');
 jest.mock('../../modules/poke/repository/poke.repository');
 jest.mock('../../modules/feed/repository/feed.repository');
+jest.mock('../../modules/auth/repository/auth.repository');
 jest.mock('../../modules/notification/service/notification-hub', () => ({
   notificationHub: {
     send: jest.fn().mockResolvedValue(undefined),
@@ -26,18 +28,30 @@ jest.mock('../../modules/streak/service/streaks-engine', () => ({
     cacheMultiplierPreview: jest.fn().mockResolvedValue(undefined),
   },
 }));
+jest.mock('../../config/redis', () => ({
+  redis: {
+    incr: jest.fn().mockResolvedValue(1),
+    expire: jest.fn().mockResolvedValue(1),
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue('OK'),
+    del: jest.fn().mockResolvedValue(1),
+    zRangeWithScores: jest.fn().mockResolvedValue([]),
+    zAdd: jest.fn().mockResolvedValue(1),
+  },
+}));
 
 const mockedGroupRepo = groupRepository as jest.Mocked<typeof groupRepository>;
 const mockedFriendsRepo = friendsRepository as jest.Mocked<typeof friendsRepository>;
 const mockedRoadmapsRepo = roadmapsRepository as jest.Mocked<typeof roadmapsRepository>;
 const mockedPokeRepo = pokeRepository as jest.Mocked<typeof pokeRepository>;
 const mockedFeedRepo = feedRepository as jest.Mocked<typeof feedRepository>;
+const mockedAuthRepo = authRepository as jest.Mocked<typeof authRepository>;
 const mockedQuery = query as jest.MockedFunction<typeof query>;
 const mockedQueryOne = queryOne as jest.MockedFunction<typeof queryOne>;
 
 describe('E2E Journey: Social Collaboration', () => {
-  const userA = { id: 'user-alice', email: 'alice@test.com', name: 'Alice' };
-  const userB = { id: 'user-bob', email: 'bob@test.com', name: 'Bob' };
+  const userA = { id: '10000000-0000-4000-a000-00000000bb01', email: 'alice@test.com', name: 'Alice' };
+  const userB = { id: '10000000-0000-4000-a000-00000000bb02', email: 'bob@test.com', name: 'Bob' };
   const tokenA = generateTestToken(userA.id, userA.email);
   const tokenB = generateTestToken(userB.id, userB.email);
 
@@ -208,6 +222,8 @@ describe('E2E Journey: Social Collaboration', () => {
         category_slug: 'coding-tech', category_icon: 'Code',
       };
 
+      // createUserRoadmap checks group membership via raw queryOne
+      mockedQueryOne.mockResolvedValue({ user_id: userA.id });
       mockedRoadmapsRepo.createUserRoadmap.mockResolvedValue(aliceRoadmap);
       mockedRoadmapsRepo.addParticipant.mockResolvedValue();
 
@@ -231,6 +247,7 @@ describe('E2E Journey: Social Collaboration', () => {
         category_slug: 'coding-tech', category_icon: 'Code',
       };
 
+      mockedQueryOne.mockResolvedValue({ user_id: userB.id });
       mockedRoadmapsRepo.createUserRoadmap.mockResolvedValue(bobRoadmap);
       mockedRoadmapsRepo.addParticipant.mockResolvedValue();
 
@@ -245,8 +262,9 @@ describe('E2E Journey: Social Collaboration', () => {
 
   describe('Step 5: Alice pokes Bob to stay motivated', () => {
     it('should send a poke to Bob', async () => {
-      mockedPokeRepo.pokessentToday.mockResolvedValue(0);
       mockedPokeRepo.recentPokeBetween.mockResolvedValue(false);
+      mockedPokeRepo.pokessentToday.mockResolvedValue(0);
+      mockedPokeRepo.getEscalationLevel.mockResolvedValue(0);
       mockedPokeRepo.create.mockResolvedValue({
         id: 'poke-1',
         from_user_id: userA.id,
@@ -257,8 +275,9 @@ describe('E2E Journey: Social Collaboration', () => {
         escalation_level: 1,
         created_at: new Date(),
       });
-      // Mock the user lookup for display name
-      mockedQueryOne.mockResolvedValue({ display_name: userA.name });
+      mockedAuthRepo.findById
+        .mockResolvedValueOnce({ id: userA.id, display_name: userA.name } as any)
+        .mockResolvedValueOnce({ id: userB.id, display_name: userB.name } as any);
 
       const res = await request(app)
         .post('/api/pokes')

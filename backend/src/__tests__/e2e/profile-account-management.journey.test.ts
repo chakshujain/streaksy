@@ -1,4 +1,5 @@
 import request from 'supertest';
+import bcrypt from 'bcryptjs';
 import app from '../../app';
 import { generateTestToken, mockUserRow } from '../helpers';
 import { authRepository } from '../../modules/auth/repository/auth.repository';
@@ -6,7 +7,10 @@ import { preferencesRepository } from '../../modules/preferences/repository/pref
 import { streakRepository } from '../../modules/streak/repository/streak.repository';
 import { progressRepository } from '../../modules/progress/repository/progress.repository';
 import { revisionRepository } from '../../modules/revision/repository/revision.repository';
+import { badgeRepository } from '../../modules/badge/repository/badge.repository';
 import { query, queryOne } from '../../config/database';
+
+jest.mock('../../modules/badge/repository/badge.repository');
 
 jest.mock('../../modules/auth/repository/auth.repository');
 jest.mock('../../modules/preferences/repository/preferences.repository');
@@ -22,6 +26,7 @@ const mockedPrefsRepo = preferencesRepository as jest.Mocked<typeof preferencesR
 const mockedStreakRepo = streakRepository as jest.Mocked<typeof streakRepository>;
 const mockedProgressRepo = progressRepository as jest.Mocked<typeof progressRepository>;
 const mockedRevisionRepo = revisionRepository as jest.Mocked<typeof revisionRepository>;
+const mockedBadgeRepo = badgeRepository as jest.Mocked<typeof badgeRepository>;
 const mockedQuery = query as jest.MockedFunction<typeof query>;
 const mockedQueryOne = queryOne as jest.MockedFunction<typeof queryOne>;
 
@@ -54,12 +59,11 @@ describe('E2E Journey: Profile & Account Management', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.user.email).toBe(email);
-      expect(res.body.user.displayName).toBe('Profile User');
+      expect(res.body.profile.email).toBe(email);
+      expect(res.body.profile.displayName).toBe('Profile User');
     });
 
     it('should update profile with bio, location, and social links', async () => {
-      mockedAuthRepo.findById.mockResolvedValue(mockUserRow({ id: userId, email }));
       mockedAuthRepo.updateProfile.mockResolvedValue(
         mockUserRow({
           id: userId,
@@ -84,8 +88,8 @@ describe('E2E Journey: Profile & Account Management', () => {
         });
 
       expect(res.status).toBe(200);
-      expect(res.body.user.displayName).toBe('Updated Name');
-      expect(res.body.user.bio).toBe('Full-stack dev who loves DSA');
+      expect(res.body.profile.displayName).toBe('Updated Name');
+      expect(res.body.profile.bio).toBe('Full-stack dev who loves DSA');
     });
 
     it('should reject profile update with invalid data', async () => {
@@ -116,8 +120,9 @@ describe('E2E Journey: Profile & Account Management', () => {
 
   describe('Step 3: Change password', () => {
     it('should change the password successfully', async () => {
+      const oldPasswordHash = bcrypt.hashSync('OldPass123!', 12);
       mockedAuthRepo.findById.mockResolvedValue(
-        mockUserRow({ id: userId, email, email_verified: true })
+        mockUserRow({ id: userId, email, email_verified: true, password_hash: oldPasswordHash })
       );
       mockedAuthRepo.updatePassword.mockResolvedValue();
 
@@ -195,14 +200,20 @@ describe('E2E Journey: Profile & Account Management', () => {
           avatar_url: 'https://example.com/avatar.jpg',
         })
       );
-      mockedQuery.mockResolvedValue([]); // badges, activity, etc.
+      // getPublicProfile calls streak service, progress repo, badge repo
+      mockedStreakRepo.get.mockResolvedValue({
+        user_id: otherUserId, current_streak: 5, longest_streak: 10,
+        last_solve_date: '2026-03-22',
+      });
+      mockedProgressRepo.getTotalSolvedCount.mockResolvedValue(42);
+      mockedBadgeRepo.getUserBadges.mockResolvedValue([]);
 
       const res = await request(app)
         .get(`/api/auth/user/${otherUserId}`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.user.displayName).toBe('Other User');
+      expect(res.body.profile.displayName).toBe('Other User');
     });
   });
 
@@ -226,8 +237,8 @@ describe('E2E Journey: Profile & Account Management', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.preferences.theme).toBe('dark');
-      expect(res.body.preferences.accent_color).toBe('#8b5cf6');
-      expect(res.body.preferences.weekly_goal).toBe(7);
+      expect(res.body.preferences.accentColor).toBe('#8b5cf6');
+      expect(res.body.preferences.weeklyGoal).toBe(7);
     });
 
     it('should reject invalid accent color format', async () => {
@@ -257,8 +268,8 @@ describe('E2E Journey: Profile & Account Management', () => {
         .send({ show_streak_animation: false, show_heatmap: false });
 
       expect(res.status).toBe(200);
-      expect(res.body.preferences.show_streak_animation).toBe(false);
-      expect(res.body.preferences.show_heatmap).toBe(false);
+      expect(res.body.preferences.showStreakAnimation).toBe(false);
+      expect(res.body.preferences.showHeatmap).toBe(false);
     });
   });
 

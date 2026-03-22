@@ -5,12 +5,25 @@ import { authRepository } from '../../modules/auth/repository/auth.repository';
 import { submissionRepository } from '../../modules/sync/repository/submission.repository';
 import { problemRepository } from '../../modules/problem/repository/problem.repository';
 import { progressRepository } from '../../modules/progress/repository/progress.repository';
+import { groupRepository } from '../../modules/group/repository/group.repository';
+import { streakRepository } from '../../modules/streak/repository/streak.repository';
 import { query, queryOne } from '../../config/database';
 
 jest.mock('../../modules/auth/repository/auth.repository');
 jest.mock('../../modules/sync/repository/submission.repository');
 jest.mock('../../modules/problem/repository/problem.repository');
 jest.mock('../../modules/progress/repository/progress.repository');
+jest.mock('../../modules/group/repository/group.repository');
+jest.mock('../../modules/streak/repository/streak.repository');
+jest.mock('../../config/redis', () => ({
+  redis: {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue('OK'),
+    del: jest.fn().mockResolvedValue(1),
+    incr: jest.fn().mockResolvedValue(1),
+    expire: jest.fn().mockResolvedValue(1),
+  },
+}));
 jest.mock('../../modules/streak/service/streaks-engine', () => ({
   streaksEngine: {
     calculatePoints: jest.fn().mockResolvedValue({ totalPoints: 15, basePoints: 10, streakBonus: 5, multipliers: [] }),
@@ -23,6 +36,8 @@ const mockedAuthRepo = authRepository as jest.Mocked<typeof authRepository>;
 const mockedSubmissionRepo = submissionRepository as jest.Mocked<typeof submissionRepository>;
 const mockedProblemRepo = problemRepository as jest.Mocked<typeof problemRepository>;
 const mockedProgressRepo = progressRepository as jest.Mocked<typeof progressRepository>;
+const mockedGroupRepo = groupRepository as jest.Mocked<typeof groupRepository>;
+const mockedStreakRepo = streakRepository as jest.Mocked<typeof streakRepository>;
 const mockedQuery = query as jest.MockedFunction<typeof query>;
 const mockedQueryOne = queryOne as jest.MockedFunction<typeof queryOne>;
 
@@ -33,6 +48,12 @@ describe('E2E Journey: LeetCode Sync & Submissions', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default mocks for sync service side effects
+    mockedGroupRepo.getUserGroups.mockResolvedValue([]);
+    mockedStreakRepo.get.mockResolvedValue(null);
+    mockedStreakRepo.upsert.mockResolvedValue();
+    // query is used by smart-notifications and other side-effect services
+    mockedQuery.mockResolvedValue([]);
   });
 
   describe('Step 1: Connect LeetCode account', () => {
@@ -51,6 +72,8 @@ describe('E2E Journey: LeetCode Sync & Submissions', () => {
 
   describe('Step 2: Sync a solved problem from LeetCode', () => {
     it('should sync a solved problem with submission details', async () => {
+      // syncService calls authRepository.findById first
+      mockedAuthRepo.findById.mockResolvedValue(mockUserRow({ id: userId, email }));
       mockedProblemRepo.findBySlug.mockResolvedValue({
         id: 'prob-twosum', title: 'Two Sum', slug: 'two-sum',
         difficulty: 'easy', url: 'https://leetcode.com/problems/two-sum/',
@@ -92,6 +115,7 @@ describe('E2E Journey: LeetCode Sync & Submissions', () => {
     });
 
     it('should handle duplicate submission gracefully', async () => {
+      mockedAuthRepo.findById.mockResolvedValue(mockUserRow({ id: userId, email }));
       mockedProblemRepo.findBySlug.mockResolvedValue({
         id: 'prob-twosum', title: 'Two Sum', slug: 'two-sum',
         difficulty: 'easy', url: 'https://leetcode.com/problems/two-sum/',
@@ -119,6 +143,7 @@ describe('E2E Journey: LeetCode Sync & Submissions', () => {
     });
 
     it('should sync an attempted problem', async () => {
+      mockedAuthRepo.findById.mockResolvedValue(mockUserRow({ id: userId, email }));
       mockedProblemRepo.findBySlug.mockResolvedValue({
         id: 'prob-3sum', title: '3Sum', slug: '3sum',
         difficulty: 'medium', url: 'https://leetcode.com/problems/3sum/',
@@ -225,6 +250,7 @@ describe('E2E Journey: LeetCode Sync & Submissions', () => {
 
   describe('Step 5: View peer solutions', () => {
     it('should get peer solutions from group members', async () => {
+      mockedGroupRepo.getUserGroups.mockResolvedValue([]);
       mockedSubmissionRepo.getPeerSolutions.mockResolvedValue([
         {
           user_id: 'peer-user-1', display_name: 'Peer One',

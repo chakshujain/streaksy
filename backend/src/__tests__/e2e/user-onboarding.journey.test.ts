@@ -1,4 +1,5 @@
 import request from 'supertest';
+import bcrypt from 'bcryptjs';
 import app from '../../app';
 import { generateTestToken, mockUserRow } from '../helpers';
 import { authRepository } from '../../modules/auth/repository/auth.repository';
@@ -107,11 +108,13 @@ describe('E2E Journey: User Onboarding', () => {
 
   describe('Step 3: Login with verified account', () => {
     it('should login and return user data with token', async () => {
+      const passwordHash = bcrypt.hashSync(password, 12);
       const verifiedUser = mockUserRow({
         id: userId,
         email,
         display_name: displayName,
         email_verified: true,
+        password_hash: passwordHash,
       });
 
       mockedAuthRepo.findByEmail.mockResolvedValue(verifiedUser);
@@ -162,7 +165,7 @@ describe('E2E Journey: User Onboarding', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.preferences.theme).toBe('dark');
-      expect(res.body.preferences.weekly_goal).toBe(5);
+      expect(res.body.preferences.weeklyGoal).toBe(5);
     });
 
     it('should retrieve saved preferences', async () => {

@@ -13,6 +13,15 @@ jest.mock('../../modules/progress/repository/progress.repository');
 jest.mock('../../modules/notes/repository/notes.repository');
 jest.mock('../../modules/discussion/repository/discussion.repository');
 jest.mock('../../modules/revision/repository/revision.repository');
+jest.mock('../../config/redis', () => ({
+  redis: {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue('OK'),
+    del: jest.fn().mockResolvedValue(1),
+    incr: jest.fn().mockResolvedValue(1),
+    expire: jest.fn().mockResolvedValue(1),
+  },
+}));
 
 const mockedProblemRepo = problemRepository as jest.Mocked<typeof problemRepository>;
 const mockedProgressRepo = progressRepository as jest.Mocked<typeof progressRepository>;
@@ -27,20 +36,24 @@ describe('E2E Journey: Content Engagement', () => {
   const email = 'engaged@test.com';
   const token = generateTestToken(userId, email);
 
+  const prob1Id = '10000000-0000-4000-a000-000000000001';
+  const prob2Id = '10000000-0000-4000-a000-000000000002';
+  const prob3Id = '10000000-0000-4000-a000-000000000003';
+
   const mockProblem = {
-    id: 'prob-1', title: 'Two Sum', slug: 'two-sum',
+    id: prob1Id, title: 'Two Sum', slug: 'two-sum',
     difficulty: 'easy', url: 'https://leetcode.com/problems/two-sum/',
     youtube_url: null, video_title: null, created_at: new Date(),
   };
 
   const mockProblem2 = {
-    id: 'prob-2', title: 'Valid Parentheses', slug: 'valid-parentheses',
+    id: prob2Id, title: 'Valid Parentheses', slug: 'valid-parentheses',
     difficulty: 'easy', url: 'https://leetcode.com/problems/valid-parentheses/',
     youtube_url: null, video_title: null, created_at: new Date(),
   };
 
   const mockProblem3 = {
-    id: 'prob-3', title: 'Merge Two Sorted Lists', slug: 'merge-two-sorted-lists',
+    id: prob3Id, title: 'Merge Two Sorted Lists', slug: 'merge-two-sorted-lists',
     difficulty: 'easy', url: 'https://leetcode.com/problems/merge-two-sorted-lists/',
     youtube_url: null, video_title: null, created_at: new Date(),
   };
@@ -96,7 +109,7 @@ describe('E2E Journey: Content Engagement', () => {
       ]);
 
       const res = await request(app)
-        .get('/api/sheets')
+        .get('/api/problems/sheets')
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
@@ -107,7 +120,7 @@ describe('E2E Journey: Content Engagement', () => {
       mockedProblemRepo.getSheetProblems.mockResolvedValue([mockProblem, mockProblem2]);
 
       const res = await request(app)
-        .get('/api/sheets/blind-75/problems')
+        .get('/api/problems/sheets/blind-75')
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
@@ -118,39 +131,39 @@ describe('E2E Journey: Content Engagement', () => {
   describe('Step 3: Toggle problem status', () => {
     it('should mark a problem as solved', async () => {
       mockedProgressRepo.upsert.mockResolvedValue({
-        user_id: userId, problem_id: 'prob-1',
+        user_id: userId, problem_id: prob1Id,
         status: 'solved', solved_at: new Date(), updated_at: new Date(),
       });
       mockedProgressRepo.getSolvedCountToday.mockResolvedValue(1);
       mockedQueryOne.mockResolvedValue({ current_streak: 1, longest_streak: 1, last_solve_date: '2026-03-22' });
 
       const res = await request(app)
-        .put('/api/progress/prob-1')
+        .put('/api/progress/status')
         .set('Authorization', `Bearer ${token}`)
-        .send({ status: 'solved' });
+        .send({ problemId: prob1Id, status: 'solved' });
 
       expect(res.status).toBe(200);
     });
 
     it('should mark another problem as attempted', async () => {
       mockedProgressRepo.upsert.mockResolvedValue({
-        user_id: userId, problem_id: 'prob-2',
+        user_id: userId, problem_id: prob2Id,
         status: 'attempted', solved_at: null, updated_at: new Date(),
       });
       mockedProgressRepo.getSolvedCountToday.mockResolvedValue(1);
 
       const res = await request(app)
-        .put('/api/progress/prob-2')
+        .put('/api/progress/status')
         .set('Authorization', `Bearer ${token}`)
-        .send({ status: 'attempted' });
+        .send({ problemId: prob2Id, status: 'attempted' });
 
       expect(res.status).toBe(200);
     });
 
     it('should show user progress for problems', async () => {
       mockedProgressRepo.getUserProgress.mockResolvedValue([
-        { user_id: userId, problem_id: 'prob-1', status: 'solved', solved_at: new Date(), updated_at: new Date() },
-        { user_id: userId, problem_id: 'prob-2', status: 'attempted', solved_at: null, updated_at: new Date() },
+        { user_id: userId, problem_id: prob1Id, status: 'solved', solved_at: new Date(), updated_at: new Date() },
+        { user_id: userId, problem_id: prob2Id, status: 'attempted', solved_at: null, updated_at: new Date() },
       ]);
 
       const res = await request(app)
@@ -165,7 +178,7 @@ describe('E2E Journey: Content Engagement', () => {
   describe('Step 4: Add notes to a problem', () => {
     it('should add a personal note', async () => {
       mockedNotesRepo.create.mockResolvedValue({
-        id: 'note-1', user_id: userId, problem_id: 'prob-1',
+        id: 'note-1', user_id: userId, problem_id: prob1Id,
         group_id: null, content: 'HashMap approach: store complement and check on each iteration.',
         visibility: 'personal', created_at: new Date(), updated_at: new Date(),
       });
@@ -174,7 +187,7 @@ describe('E2E Journey: Content Engagement', () => {
         .post('/api/notes')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          problemId: 'prob-1',
+          problemId: prob1Id,
           content: 'HashMap approach: store complement and check on each iteration.',
           visibility: 'personal',
         });
@@ -185,7 +198,7 @@ describe('E2E Journey: Content Engagement', () => {
 
     it('should update an existing note', async () => {
       mockedNotesRepo.update.mockResolvedValue({
-        id: 'note-1', user_id: userId, problem_id: 'prob-1',
+        id: 'note-1', user_id: userId, problem_id: prob1Id,
         group_id: null, content: 'Updated: Use enumerate() in Python for cleaner code.',
         visibility: 'personal', created_at: new Date(), updated_at: new Date(),
       });
@@ -202,15 +215,15 @@ describe('E2E Journey: Content Engagement', () => {
 
   describe('Step 5: Start a discussion on a problem', () => {
     it('should create a discussion comment', async () => {
-      mockedDiscussionRepo.getProblemIdFromSlug.mockResolvedValue('prob-1');
+      mockedDiscussionRepo.getProblemIdFromSlug.mockResolvedValue(prob1Id);
       mockedDiscussionRepo.create.mockResolvedValue({
-        id: 'comment-1', problem_id: 'prob-1', user_id: userId,
+        id: 'comment-1', problem_id: prob1Id, user_id: userId,
         parent_id: null, content: 'Is it possible to solve this without extra space?',
         created_at: new Date(), updated_at: new Date(),
       });
 
       const res = await request(app)
-        .post('/api/discussions/two-sum')
+        .post('/api/problems/two-sum/comments')
         .set('Authorization', `Bearer ${token}`)
         .send({ content: 'Is it possible to solve this without extra space?' });
 
@@ -219,37 +232,38 @@ describe('E2E Journey: Content Engagement', () => {
     });
 
     it('should reply to a discussion comment', async () => {
-      mockedDiscussionRepo.getProblemIdFromSlug.mockResolvedValue('prob-1');
+      const parentCommentId = '10000000-0000-4000-a000-0000000c0001';
+      mockedDiscussionRepo.getProblemIdFromSlug.mockResolvedValue(prob1Id);
       mockedDiscussionRepo.findById.mockResolvedValue({
-        id: 'comment-1', problem_id: 'prob-1', user_id: userId,
+        id: parentCommentId, problem_id: prob1Id, user_id: userId,
         parent_id: null, content: 'Is it possible to solve this without extra space?',
         created_at: new Date(), updated_at: new Date(),
       });
       mockedDiscussionRepo.create.mockResolvedValue({
-        id: 'comment-2', problem_id: 'prob-1', user_id: 'other-user',
-        parent_id: 'comment-1', content: 'Yes, sort the array first and use two pointers!',
+        id: '10000000-0000-4000-a000-0000000c0002', problem_id: prob1Id, user_id: 'other-user',
+        parent_id: parentCommentId, content: 'Yes, sort the array first and use two pointers!',
         created_at: new Date(), updated_at: new Date(),
       });
 
       const otherToken = generateTestToken('other-user', 'other@test.com');
 
       const res = await request(app)
-        .post('/api/discussions/two-sum')
+        .post('/api/problems/two-sum/comments')
         .set('Authorization', `Bearer ${otherToken}`)
         .send({
           content: 'Yes, sort the array first and use two pointers!',
-          parentId: 'comment-1',
+          parentId: parentCommentId,
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.comment.parent_id).toBe('comment-1');
+      expect(res.body.comment.parent_id).toBe('10000000-0000-4000-a000-0000000c0001');
     });
 
     it('should list discussion comments for a problem', async () => {
-      mockedDiscussionRepo.getProblemIdFromSlug.mockResolvedValue('prob-1');
+      mockedDiscussionRepo.getProblemIdFromSlug.mockResolvedValue(prob1Id);
       mockedDiscussionRepo.getForProblem.mockResolvedValue([
         {
-          id: 'comment-1', problem_id: 'prob-1', user_id: userId,
+          id: 'comment-1', problem_id: prob1Id, user_id: userId,
           parent_id: null, content: 'Is it possible to solve this without extra space?',
           created_at: new Date(), updated_at: new Date(),
           display_name: 'Engaged User',
@@ -257,7 +271,7 @@ describe('E2E Journey: Content Engagement', () => {
       ]);
 
       const res = await request(app)
-        .get('/api/discussions/two-sum')
+        .get('/api/problems/two-sum/comments')
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
@@ -286,7 +300,7 @@ describe('E2E Journey: Content Engagement', () => {
     it('should get random problems for revision', async () => {
       mockedRevisionRepo.getRandomForRevision.mockResolvedValue([
         {
-          id: 'rev-1', user_id: userId, problem_id: 'prob-1',
+          id: 'rev-1', user_id: userId, problem_id: prob1Id,
           key_takeaway: 'Use hash map for complement lookup',
           approach: 'Single pass hash map', time_complexity: 'O(n)',
           space_complexity: 'O(n)', tags: ['hash-map', 'array'],
@@ -303,13 +317,13 @@ describe('E2E Journey: Content Engagement', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.revisions).toHaveLength(1);
-      expect(res.body.revisions[0].problem_title).toBe('Two Sum');
+      expect(res.body.cards).toHaveLength(1);
+      expect(res.body.cards[0].problem_title).toBe('Two Sum');
     });
 
     it('should mark a revision as completed', async () => {
       mockedRevisionRepo.findById.mockResolvedValue({
-        id: 'rev-1', user_id: userId, problem_id: 'prob-1',
+        id: 'rev-1', user_id: userId, problem_id: prob1Id,
         key_takeaway: 'Use hash map', approach: null,
         time_complexity: null, space_complexity: null,
         tags: [], difficulty_rating: null, intuition: null,
@@ -320,7 +334,7 @@ describe('E2E Journey: Content Engagement', () => {
       mockedRevisionRepo.markRevised.mockResolvedValue();
 
       const res = await request(app)
-        .patch('/api/revisions/rev-1/revise')
+        .patch('/api/revisions/rev-1/revised')
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);

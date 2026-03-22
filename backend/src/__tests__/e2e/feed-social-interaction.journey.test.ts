@@ -4,11 +4,15 @@ import { generateTestToken } from '../helpers';
 import { feedRepository } from '../../modules/feed/repository/feed.repository';
 import { friendsRepository } from '../../modules/friends/repository/friends.repository';
 import { pokeRepository } from '../../modules/poke/repository/poke.repository';
+import { authRepository } from '../../modules/auth/repository/auth.repository';
+import { groupRepository } from '../../modules/group/repository/group.repository';
 import { query, queryOne } from '../../config/database';
 
 jest.mock('../../modules/feed/repository/feed.repository');
 jest.mock('../../modules/friends/repository/friends.repository');
 jest.mock('../../modules/poke/repository/poke.repository');
+jest.mock('../../modules/auth/repository/auth.repository');
+jest.mock('../../modules/group/repository/group.repository');
 jest.mock('../../modules/notification/service/notification-hub', () => ({
   notificationHub: {
     send: jest.fn().mockResolvedValue(undefined),
@@ -19,13 +23,15 @@ jest.mock('../../modules/notification/service/notification-hub', () => ({
 const mockedFeedRepo = feedRepository as jest.Mocked<typeof feedRepository>;
 const mockedFriendsRepo = friendsRepository as jest.Mocked<typeof friendsRepository>;
 const mockedPokeRepo = pokeRepository as jest.Mocked<typeof pokeRepository>;
+const mockedAuthRepo = authRepository as jest.Mocked<typeof authRepository>;
+const mockedGroupRepo = groupRepository as jest.Mocked<typeof groupRepository>;
 const mockedQuery = query as jest.MockedFunction<typeof query>;
 const mockedQueryOne = queryOne as jest.MockedFunction<typeof queryOne>;
 
 describe('E2E Journey: Feed & Social Interaction', () => {
-  const userA = { id: 'user-feed-a', email: 'feeda@test.com', name: 'FeedAlice' };
-  const userB = { id: 'user-feed-b', email: 'feedb@test.com', name: 'FeedBob' };
-  const userC = { id: 'user-feed-c', email: 'feedc@test.com', name: 'FeedCharlie' };
+  const userA = { id: '10000000-0000-4000-a000-00000000aa01', email: 'feeda@test.com', name: 'FeedAlice' };
+  const userB = { id: '10000000-0000-4000-a000-00000000aa02', email: 'feedb@test.com', name: 'FeedBob' };
+  const userC = { id: '10000000-0000-4000-a000-00000000aa03', email: 'feedc@test.com', name: 'FeedCharlie' };
   const tokenA = generateTestToken(userA.id, userA.email);
   const tokenB = generateTestToken(userB.id, userB.email);
   const tokenC = generateTestToken(userC.id, userC.email);
@@ -38,8 +44,8 @@ describe('E2E Journey: Feed & Social Interaction', () => {
     it('should create a new feed post', async () => {
       mockedFeedRepo.createEvent.mockResolvedValue({
         id: 'post-1', user_id: userA.id, event_type: 'post',
-        title: 'Just completed my 30-day coding streak!',
-        description: null, metadata: {},
+        title: 'Just completed my 30-day coding streak! 🔥',
+        description: null, metadata: { type: 'user_post' },
         created_at: new Date(), display_name: userA.name,
         like_count: 0, comment_count: 0, liked_by_me: false,
       } as any);
@@ -50,7 +56,7 @@ describe('E2E Journey: Feed & Social Interaction', () => {
         .send({ content: 'Just completed my 30-day coding streak! 🔥' });
 
       expect(res.status).toBe(201);
-      expect(res.body.post.content).toContain('30-day');
+      expect(res.body.event.title).toContain('30-day');
     });
 
     it('should reject empty post content', async () => {
@@ -244,7 +250,7 @@ describe('E2E Journey: Feed & Social Interaction', () => {
     });
 
     it('should remove a friend', async () => {
-      (mockedFriendsRepo as any).removeFriend = jest.fn().mockResolvedValue(undefined);
+      mockedFriendsRepo.removeByFriendshipId.mockResolvedValue(true as any);
 
       const res = await request(app)
         .delete('/api/friends/f-1')
@@ -256,14 +262,17 @@ describe('E2E Journey: Feed & Social Interaction', () => {
 
   describe('Step 7: Poke system for motivation', () => {
     it('should poke a friend with a message', async () => {
-      mockedPokeRepo.pokessentToday.mockResolvedValue(0);
       mockedPokeRepo.recentPokeBetween.mockResolvedValue(false);
+      mockedPokeRepo.pokessentToday.mockResolvedValue(0);
+      mockedPokeRepo.getEscalationLevel.mockResolvedValue(0);
       mockedPokeRepo.create.mockResolvedValue({
         id: 'poke-1', from_user_id: userA.id, to_user_id: userB.id,
         group_id: null, message: 'Time to code!', poke_type: 'manual',
         escalation_level: 1, created_at: new Date(),
       });
-      mockedQueryOne.mockResolvedValue({ display_name: userA.name });
+      mockedAuthRepo.findById
+        .mockResolvedValueOnce({ id: userA.id, display_name: userA.name } as any)
+        .mockResolvedValueOnce({ id: userB.id, display_name: userB.name } as any);
 
       const res = await request(app)
         .post('/api/pokes')
@@ -275,6 +284,7 @@ describe('E2E Journey: Feed & Social Interaction', () => {
     });
 
     it('should check streak risk', async () => {
+      mockedAuthRepo.findById.mockResolvedValue({ id: userA.id, display_name: userA.name } as any);
       mockedPokeRepo.getStreakAtRiskUsers.mockResolvedValue([
         { user_id: userA.id, email: userA.email, display_name: 'FeedAlice', current_streak: 14 },
       ]);
@@ -287,6 +297,7 @@ describe('E2E Journey: Feed & Social Interaction', () => {
     });
 
     it('should get inactive group members', async () => {
+      mockedGroupRepo.isMember.mockResolvedValue(true);
       mockedPokeRepo.getInactiveGroupMembers.mockResolvedValue([
         { user_id: userC.id, display_name: userC.name, days_inactive: 3, last_solve_date: '2026-03-19', current_streak: 0 },
       ] as any);
