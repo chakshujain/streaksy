@@ -34,12 +34,15 @@ git reset --hard "origin/$BRANCH"
 echo ""
 echo "[2/6] Installing backend dependencies..."
 cd "$APP_DIR/backend"
-npm ci --omit=dev
+npm ci
 
 # ── 3. Backend build ────────────────────────────────────────────────
 echo ""
 echo "[3/6] Building backend..."
 npx tsc
+
+# Remove devDependencies after build
+npm prune --omit=dev
 
 # ── 4. Frontend dependencies + build ────────────────────────────────
 echo ""

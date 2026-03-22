@@ -181,6 +181,25 @@ Dashboard, Feed, Roadmaps, Learn, Problems, Groups, War Rooms, Leaderboard, Insi
 - **Frontend**: `http://streaksy.in:3000`
 - **Backend API**: `http://streaksy.in:3001`
 
+## Deployment
+
+- **Platform**: Amazon Linux 2023 on EC2
+- **Process Manager**: PM2 (`ecosystem.config.js`) — `streaksy-backend` (port 3001), `streaksy-frontend` (port 3000)
+- **Database**: PostgreSQL 16 local, user `postgres`, database `streaksy` (`DATABASE_URL` in `backend/.env`)
+- **Deploy Script**: `bash deploy/deploy.sh` — pulls latest, installs deps, builds backend (tsc) + frontend (next build), runs migrations, reloads PM2
+- **Health Check**: `curl http://localhost:3001/health` (returns DB + Redis status)
+
+```bash
+# Manual deploy
+bash deploy/deploy.sh
+
+# PM2 commands
+pm2 ls                          # List processes
+pm2 logs                        # Tail logs
+pm2 reload ecosystem.config.js  # Zero-downtime reload
+pm2 restart ecosystem.config.js # Hard restart
+```
+
 ## Conventions
 
 - Async route handlers wrapped with `asyncHandler`
