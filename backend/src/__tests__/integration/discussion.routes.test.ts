@@ -11,6 +11,7 @@ describe('Discussion Routes', () => {
 
   const mockComment = {
     id: 'comment-1',
+    problem_id: 'prob-1',
     problem_slug: 'two-sum',
     user_id: 'user-1',
     content: 'Great problem!',
@@ -24,6 +25,7 @@ describe('Discussion Routes', () => {
 
   const mockReply = {
     id: 'reply-1',
+    problem_id: 'prob-1',
     problem_slug: 'two-sum',
     user_id: 'user-2',
     content: 'I agree!',
