@@ -103,6 +103,17 @@ export const problemRepository = {
     );
   },
 
+  async create(data: { title: string; slug: string; difficulty: string; url?: string }): Promise<ProblemRow> {
+    const rows = await query<ProblemRow>(
+      `INSERT INTO problems (title, slug, difficulty, url)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (slug) DO UPDATE SET title = EXCLUDED.title
+       RETURNING *`,
+      [data.title, data.slug, data.difficulty, data.url ?? null]
+    );
+    return rows[0];
+  },
+
   async search(q: string, limit = 20): Promise<ProblemRow[]> {
     return query<ProblemRow>(
       `SELECT *, ts_rank(search_vector, plainto_tsquery('english', $1)) as rank
