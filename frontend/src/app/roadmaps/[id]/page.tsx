@@ -292,6 +292,7 @@ export default function RoadmapDetailPage() {
   } | null>(null);
 
   const [sheetProblems, setSheetProblems] = useState<DayTask[]>([]);
+  const [backendTasks, setBackendTasks] = useState<DayTask[]>([]);
 
   // Sheet template slug → database sheet slug mapping
   const SHEET_MAP: Record<string, string> = {
@@ -330,6 +331,19 @@ export default function RoadmapDetailPage() {
         const maxDay = Math.min(mapped.completedDays || 0, mapped.durationDays || 0);
         for (let i = 1; i <= maxDay; i++) completed.add(i);
         setCompletedDays(completed);
+
+        // Extract backend tasks (from template_tasks) if available
+        const apiTasks = data.tasks || [];
+        if (apiTasks.length > 0) {
+          const mapped2: DayTask[] = apiTasks.map((t: { day_number: number; title: string; link?: string; task_type?: string; metadata?: Record<string, unknown> }) => ({
+            day: t.day_number,
+            title: t.title,
+            link: t.metadata?.problem_slug ? `/problems/${t.metadata.problem_slug}` : t.link || undefined,
+            topic: t.task_type || 'problem',
+            type: (t.task_type === 'lesson' ? 'lesson' : 'problem') as 'lesson' | 'problem',
+          }));
+          setBackendTasks(mapped2);
+        }
       } catch { /* API fetch failed */ }
     }
     loadRoadmap();
@@ -583,8 +597,11 @@ export default function RoadmapDetailPage() {
   const completed = completedDays.size;
   const pct = totalDays > 0 ? Math.round((completed / totalDays) * 100) : 0;
   const currentDay = completed + 1;
-  // Build day tasks: merge content-map lessons + fetched sheet problems
+  // Build day tasks: prefer backend tasks, then sheet problems, then generated content
   const dayTasks = useMemo(() => {
+    // Backend tasks (from template_tasks) are the most accurate source
+    if (backendTasks.length > 0) return backendTasks;
+
     const contentTasks = generateDayTasks(roadmap);
     if (sheetProblems.length === 0) return contentTasks;
 
@@ -597,7 +614,7 @@ export default function RoadmapDetailPage() {
     const nonGenericTasks = contentTasks.filter(t => t.type !== 'generic');
     const merged = [...nonGenericTasks, ...sheetProblems];
     return merged.map((t, i) => ({ ...t, day: i + 1 }));
-  }, [sheetProblems, roadmap]);
+  }, [backendTasks, sheetProblems, roadmap]);
   const todayTask = currentDay <= dayTasks.length ? dayTasks[currentDay - 1] : null;
   const isCoding = roadmap?.category === 'Coding & Tech';
   const template = roadmap?.templateSlug ? templatesBySlug[roadmap.templateSlug] : null;
