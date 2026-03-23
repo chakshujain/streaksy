@@ -99,9 +99,7 @@ export const friendsService = {
   },
 
   async searchUsers(q: string, userId: string) {
-    if (!q || q.trim().length < 2) {
-      throw AppError.badRequest('Search query must be at least 2 characters');
-    }
-    return friendsRepository.searchUsers(q.trim(), userId);
+    // Empty query returns suggested users (all users)
+    return friendsRepository.searchUsers((q || '').trim(), userId);
   },
 };
