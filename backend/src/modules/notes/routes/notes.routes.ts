@@ -14,5 +14,6 @@ router.put('/:id', validate(updateNoteSchema), asyncHandler(notesController.upda
 router.delete('/:id', asyncHandler(notesController.delete as any));
 router.get('/personal/:problemId', asyncHandler(notesController.getPersonalNotes as any));
 router.get('/group/:groupId/:problemId', asyncHandler(notesController.getGroupNotes as any));
+router.post('/:id/enhance', asyncHandler(notesController.enhanceWithAI as any));
 
 export default router;

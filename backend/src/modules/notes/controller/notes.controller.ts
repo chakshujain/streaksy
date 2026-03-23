@@ -33,4 +33,9 @@ export const notesController = {
     );
     res.json({ notes });
   },
+
+  async enhanceWithAI(req: AuthRequest, res: Response) {
+    const enhanced = await notesService.enhanceWithAI(req.user!.userId, param(req, 'id'));
+    res.json({ enhanced });
+  },
 };

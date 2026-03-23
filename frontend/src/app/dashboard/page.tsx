@@ -25,6 +25,7 @@ import { cn } from '@/lib/cn';
 import { useLearnProgress } from '@/hooks/useLearnProgress';
 import { useBookmarks, type Bookmark } from '@/hooks/useBookmarks';
 import { topics } from '@/lib/learn-data';
+import { AICoachWidget } from '@/components/ai/AICoachWidget';
 import {
   Flame,
   CheckCircle,
@@ -1055,6 +1056,11 @@ export default function DashboardPage() {
           {/* ═══ Section 1c: Daily Challenge ═══ */}
           <div className="animate-slide-up" style={{ animationDelay: '80ms', animationFillMode: 'both' }}>
             <DailyChallengeCard dailyProblem={dailyData ?? null} dailyLoading={dailyLoading} />
+          </div>
+
+          {/* ═══ AI Coach ═══ */}
+          <div className="animate-slide-up" style={{ animationDelay: '60ms', animationFillMode: 'both' }}>
+            <AICoachWidget />
           </div>
 
           {/* ═══ Section 2: Today's Tasks ═══ */}

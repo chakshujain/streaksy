@@ -34,6 +34,7 @@ import { roadmapsApi, pokesApi, roomsApi, streaksApi, problemsApi } from '@/lib/
 import { templatesBySlug } from '@/lib/roadmap-templates';
 import { templateContentMap } from '@/lib/roadmap-content-map';
 import type { UserRoadmap } from '@/lib/types';
+import { AIRoadmapCoach } from '@/components/ai/AIRoadmapCoach';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -845,6 +846,11 @@ export default function RoadmapDetailPage() {
               </div>
             </div>
           )}
+
+          {/* ============================================================ */}
+          {/*  AI Guidance                                                    */}
+          {/* ============================================================ */}
+          <AIRoadmapCoach roadmapId={id} />
 
           {/* ============================================================ */}
           {/*  Today's Task — Prominent & Actionable                        */}

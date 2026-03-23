@@ -19,6 +19,8 @@ import { RatingSection } from '@/components/problems/RatingSection';
 import { AIHintsPanel } from '@/components/ai/AIHintsPanel';
 import { AIExplanationPanel } from '@/components/ai/AIExplanationPanel';
 import { AICodeReviewPanel } from '@/components/ai/AICodeReviewPanel';
+import { AIDiscussionSummary } from '@/components/ai/AIDiscussionSummary';
+import { AINoteEnhancer } from '@/components/ai/AINoteEnhancer';
 import { ExternalLink, RotateCcw, X, Sparkles, Loader2, CheckCircle2, Circle, Clock, ArrowRight, Brain, BookOpen, Lightbulb } from 'lucide-react';
 import Link from 'next/link';
 import type { Problem, Note, RevisionNote, ProblemProgress } from '@/lib/types';
@@ -395,11 +397,23 @@ export default function ProblemDetailPage() {
               {notesLoading ? (
                 <Skeleton className="h-24" />
               ) : (
-                <NotesList
-                  notes={personalNotes || []}
-                  canDelete
-                  onDeleted={refetchNotes}
-                />
+                <>
+                  <NotesList
+                    notes={personalNotes || []}
+                    canDelete
+                    onDeleted={refetchNotes}
+                  />
+                  {personalNotes && personalNotes.length > 0 && (
+                    <div className="mt-2">
+                      <AINoteEnhancer
+                        noteId={personalNotes[0].id}
+                        onApply={(content) => {
+                          notesApi.update(personalNotes[0].id, content).then(() => refetchNotes());
+                        }}
+                      />
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
@@ -417,7 +431,10 @@ export default function ProblemDetailPage() {
         {problem && <RatingSection problemId={problem.id} />}
 
         {/* Discussion Section */}
-        <CommentThread problemSlug={slug} />
+        <div className="space-y-3">
+          <AIDiscussionSummary problemSlug={slug} />
+          <CommentThread problemSlug={slug} />
+        </div>
 
         {/* Peer Solutions */}
         {problem && (

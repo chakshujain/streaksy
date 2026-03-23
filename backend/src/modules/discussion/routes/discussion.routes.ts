@@ -10,6 +10,7 @@ const problemDiscussionRouter = Router();
 problemDiscussionRouter.use(authenticate);
 problemDiscussionRouter.get('/:slug/comments', asyncHandler(discussionController.getComments));
 problemDiscussionRouter.post('/:slug/comments', validate(createCommentSchema), asyncHandler(discussionController.createComment));
+problemDiscussionRouter.post('/:slug/ai-summary', asyncHandler(discussionController.getAISummary));
 
 // Comment-scoped routes (mounted at /api/comments)
 const commentRouter = Router();

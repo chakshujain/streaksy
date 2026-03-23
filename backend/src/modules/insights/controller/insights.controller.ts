@@ -22,4 +22,9 @@ export const insightsController = {
     const trend = await insightsService.getDifficultyTrend(req.user!.userId);
     res.json({ trend });
   },
+
+  async getAICoach(req: AuthRequest, res: Response) {
+    const tip = await insightsService.getAICoachTip(req.user!.userId);
+    res.json({ tip });
+  },
 };

@@ -72,6 +72,348 @@ function extractJSON(content: string): Record<string, unknown> | null {
   }
 }
 
+// ── Dashboard Coach ──
+
+export interface DashboardCoachTip {
+  tip: string;
+  focusArea: string;
+  encouragement: string;
+}
+
+export async function generateDashboardInsight(stats: {
+  totalSolved: number;
+  easy: number;
+  medium: number;
+  hard: number;
+  currentStreak: number;
+  weakTags: string[];
+  activeRoadmaps: number;
+}): Promise<DashboardCoachTip | null> {
+  const prompt = `User stats:
+- Total problems solved: ${stats.totalSolved} (Easy: ${stats.easy}, Medium: ${stats.medium}, Hard: ${stats.hard})
+- Current streak: ${stats.currentStreak} days
+- Weak areas: ${stats.weakTags.length > 0 ? stats.weakTags.join(', ') : 'None identified yet'}
+- Active roadmaps: ${stats.activeRoadmaps}
+
+Based on these stats, provide a personalized study tip. Respond with ONLY valid JSON:
+{
+  "tip": "<1-2 sentence actionable study tip based on their weak areas or progress>",
+  "focusArea": "<the single most important topic/area they should focus on today>",
+  "encouragement": "<1 sentence motivational message based on their streak/progress>"
+}`;
+
+  try {
+    const content = await callAI({
+      system: 'You are a friendly coding coach. Give personalized, actionable advice. Always respond with valid JSON only.',
+      prompt,
+      maxTokens: 512,
+    });
+    if (!content) return null;
+
+    const parsed = extractJSON(content) as unknown as DashboardCoachTip;
+    if (!parsed?.tip || !parsed?.focusArea || !parsed?.encouragement) {
+      logger.error({ content }, 'AI dashboard insight: incomplete data');
+      return null;
+    }
+
+    return {
+      tip: String(parsed.tip),
+      focusArea: String(parsed.focusArea),
+      encouragement: String(parsed.encouragement),
+    };
+  } catch (err) {
+    logger.error({ err }, 'Failed to generate dashboard insight via AI');
+    return null;
+  }
+}
+
+// ── Roadmap Guidance ──
+
+export interface RoadmapGuidance {
+  todayTip: string;
+  approachSuggestion: string;
+  timeEstimate: string;
+  motivationalNote: string;
+}
+
+export async function generateRoadmapGuidance(context: {
+  roadmapName: string;
+  category: string;
+  currentDay: number;
+  totalDays: number;
+  todayTask: string;
+  completedDays: number;
+}): Promise<RoadmapGuidance | null> {
+  const prompt = `Roadmap: "${context.roadmapName}" (${context.category})
+Day ${context.currentDay} of ${context.totalDays} (${context.completedDays} days completed)
+Today's task: "${context.todayTask}"
+
+Provide guidance for today's task. Respond with ONLY valid JSON:
+{
+  "todayTip": "<1-2 sentence specific tip for approaching today's task>",
+  "approachSuggestion": "<how to break down and tackle this task effectively>",
+  "timeEstimate": "<estimated time to complete, e.g. '45 minutes to 1 hour'>",
+  "motivationalNote": "<1 sentence encouragement based on their progress>"
+}`;
+
+  try {
+    const content = await callAI({
+      system: 'You are a study coach helping someone follow a learning roadmap. Give practical, specific advice. Always respond with valid JSON only.',
+      prompt,
+      maxTokens: 512,
+    });
+    if (!content) return null;
+
+    const parsed = extractJSON(content) as unknown as RoadmapGuidance;
+    if (!parsed?.todayTip || !parsed?.approachSuggestion) {
+      logger.error({ content }, 'AI roadmap guidance: incomplete data');
+      return null;
+    }
+
+    return {
+      todayTip: String(parsed.todayTip),
+      approachSuggestion: String(parsed.approachSuggestion),
+      timeEstimate: String(parsed.timeEstimate || 'Varies'),
+      motivationalNote: String(parsed.motivationalNote || ''),
+    };
+  } catch (err) {
+    logger.error({ err }, 'Failed to generate roadmap guidance via AI');
+    return null;
+  }
+}
+
+// ── Lesson Q&A ──
+
+export interface LessonAnswer {
+  answer: string;
+  codeExample: string | null;
+  relatedConcepts: string[];
+}
+
+export async function answerLessonQuestion(
+  topic: string,
+  lesson: string,
+  question: string
+): Promise<LessonAnswer | null> {
+  const prompt = `Topic: ${topic}
+Lesson: ${lesson}
+Student question: "${question}"
+
+Answer the question in context of this lesson. Respond with ONLY valid JSON:
+{
+  "answer": "<clear, educational answer in 2-4 sentences>",
+  "codeExample": "<short code snippet if relevant, or null>",
+  "relatedConcepts": ["<related concept 1>", "<related concept 2>"]
+}
+
+Guidelines:
+- Keep the answer focused on the lesson topic
+- Use simple language suitable for learners
+- Code examples should be concise (under 10 lines)
+- List 1-3 related concepts they should explore`;
+
+  try {
+    const content = await callAI({
+      system: 'You are a patient tech educator. Explain concepts clearly with examples. Always respond with valid JSON only.',
+      prompt,
+      maxTokens: 1024,
+    });
+    if (!content) return null;
+
+    const parsed = extractJSON(content) as unknown as LessonAnswer;
+    if (!parsed?.answer) {
+      logger.error({ content }, 'AI lesson answer: incomplete data');
+      return null;
+    }
+
+    return {
+      answer: String(parsed.answer),
+      codeExample: parsed.codeExample ? String(parsed.codeExample) : null,
+      relatedConcepts: Array.isArray(parsed.relatedConcepts) ? parsed.relatedConcepts.map(String).slice(0, 5) : [],
+    };
+  } catch (err) {
+    logger.error({ err }, 'Failed to answer lesson question via AI');
+    return null;
+  }
+}
+
+// ── Discussion Summary ──
+
+export interface DiscussionSummary {
+  summary: string;
+  approaches: string[];
+  consensus: string;
+  keyInsight: string;
+}
+
+export async function summarizeDiscussion(
+  problemTitle: string,
+  comments: string[]
+): Promise<DiscussionSummary | null> {
+  const truncatedComments = comments.slice(0, 20).map((c, i) => `Comment ${i + 1}: ${c.slice(0, 300)}`).join('\n');
+
+  const prompt = `Problem: "${problemTitle}"
+
+Discussion thread (${comments.length} comments):
+${truncatedComments}
+
+Summarize this discussion thread. Respond with ONLY valid JSON:
+{
+  "summary": "<2-3 sentence summary of the discussion>",
+  "approaches": ["<approach 1 mentioned>", "<approach 2 mentioned>"],
+  "consensus": "<what most commenters agree on, or 'No clear consensus'>",
+  "keyInsight": "<the single most valuable insight from the discussion>"
+}`;
+
+  try {
+    const content = await callAI({
+      system: 'You are a discussion moderator. Summarize coding discussions concisely, highlighting key approaches and insights. Always respond with valid JSON only.',
+      prompt,
+      maxTokens: 768,
+    });
+    if (!content) return null;
+
+    const parsed = extractJSON(content) as unknown as DiscussionSummary;
+    if (!parsed?.summary || !parsed?.keyInsight) {
+      logger.error({ content }, 'AI discussion summary: incomplete data');
+      return null;
+    }
+
+    return {
+      summary: String(parsed.summary),
+      approaches: Array.isArray(parsed.approaches) ? parsed.approaches.map(String).slice(0, 5) : [],
+      consensus: String(parsed.consensus || 'No clear consensus'),
+      keyInsight: String(parsed.keyInsight),
+    };
+  } catch (err) {
+    logger.error({ err }, 'Failed to summarize discussion via AI');
+    return null;
+  }
+}
+
+// ── Notes Enhancement ──
+
+export interface EnhancedNote {
+  enhancedContent: string;
+  addedPoints: string[];
+  suggestion: string;
+}
+
+export async function enhanceNotes(
+  problemTitle: string,
+  difficulty: string,
+  tags: string[],
+  userNotes: string
+): Promise<EnhancedNote | null> {
+  const prompt = `Problem: "${problemTitle}" (${difficulty})
+Tags: ${tags.length > 0 ? tags.join(', ') : 'N/A'}
+
+User's current notes:
+"""
+${userNotes.slice(0, 1000)}
+"""
+
+Enhance these notes by keeping the original content and adding missing key points. Respond with ONLY valid JSON:
+{
+  "enhancedContent": "<the improved version of the notes, keeping original content and adding new insights>",
+  "addedPoints": ["<new point 1 you added>", "<new point 2 you added>"],
+  "suggestion": "<1 sentence suggesting what else they could add>"
+}
+
+Guidelines:
+- Preserve the user's original writing style and content
+- Add 2-4 key points they may have missed (edge cases, complexity analysis, alternative approaches)
+- Keep total length reasonable (not more than 2x the original)`;
+
+  try {
+    const content = await callAI({
+      system: 'You are a study assistant. Enhance notes while preserving the original content and style. Always respond with valid JSON only.',
+      prompt,
+      maxTokens: 1024,
+    });
+    if (!content) return null;
+
+    const parsed = extractJSON(content) as unknown as EnhancedNote;
+    if (!parsed?.enhancedContent || !Array.isArray(parsed.addedPoints)) {
+      logger.error({ content }, 'AI note enhancement: incomplete data');
+      return null;
+    }
+
+    return {
+      enhancedContent: String(parsed.enhancedContent),
+      addedPoints: parsed.addedPoints.map(String).slice(0, 5),
+      suggestion: String(parsed.suggestion || ''),
+    };
+  } catch (err) {
+    logger.error({ err }, 'Failed to enhance notes via AI');
+    return null;
+  }
+}
+
+// ── Daily Brief ──
+
+export interface DailyBrief {
+  briefs: {
+    problemTitle: string;
+    pattern: string;
+    whySelected: string;
+    estimatedMinutes: number;
+    warmupTip: string;
+  }[];
+}
+
+export async function generateDailyBrief(
+  problems: { title: string; difficulty: string; tags: string[] }[]
+): Promise<DailyBrief | null> {
+  const problemList = problems.map((p, i) =>
+    `${i + 1}. "${p.title}" (${p.difficulty}) — Tags: ${p.tags.length > 0 ? p.tags.join(', ') : 'N/A'}`
+  ).join('\n');
+
+  const prompt = `Today's daily problems:
+${problemList}
+
+For each problem, provide a brief. Respond with ONLY valid JSON:
+{
+  "briefs": [
+    {
+      "problemTitle": "<problem title>",
+      "pattern": "<the DSA pattern this problem tests, e.g. Two Pointers, BFS, DP>",
+      "whySelected": "<1 sentence on why this problem is good practice>",
+      "estimatedMinutes": <estimated minutes to solve as integer>,
+      "warmupTip": "<1 sentence tip to think about before starting>"
+    }
+  ]
+}`;
+
+  try {
+    const content = await callAI({
+      system: 'You are a coding interview prep coach. Provide concise problem briefs. Always respond with valid JSON only.',
+      prompt,
+      maxTokens: 1024,
+    });
+    if (!content) return null;
+
+    const parsed = extractJSON(content) as unknown as DailyBrief;
+    if (!parsed?.briefs || !Array.isArray(parsed.briefs) || parsed.briefs.length === 0) {
+      logger.error({ content }, 'AI daily brief: incomplete data');
+      return null;
+    }
+
+    return {
+      briefs: parsed.briefs.slice(0, problems.length).map(b => ({
+        problemTitle: String(b.problemTitle),
+        pattern: String(b.pattern || 'General'),
+        whySelected: String(b.whySelected),
+        estimatedMinutes: Math.max(5, Math.min(120, Math.round(Number(b.estimatedMinutes) || 30))),
+        warmupTip: String(b.warmupTip),
+      })),
+    };
+  } catch (err) {
+    logger.error({ err }, 'Failed to generate daily brief via AI');
+    return null;
+  }
+}
+
 // ── Revision Notes ──
 
 export interface RevisionNotes {

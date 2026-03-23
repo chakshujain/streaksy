@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useLearnProgress } from '@/hooks/useLearnProgress';
 import { BookmarkButton } from '@/components/ui/BookmarkButton';
+import { AILessonQA } from '@/components/ai/AILessonQA';
 
 const difficultyColors: Record<string, { bg: string; text: string }> = {
   beginner: { bg: 'bg-green-500/15', text: 'text-green-400' },
@@ -489,6 +490,9 @@ export default function LessonPage() {
             </div>
           </>
         )}
+
+        {/* AI Q&A */}
+        <AILessonQA topic={topic.name} lesson={lesson.title} />
 
         {/* Prev / Next */}
         <div className="flex items-center justify-between pt-4">

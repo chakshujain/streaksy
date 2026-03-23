@@ -1,6 +1,7 @@
 import { revisionService } from '../../../modules/revision/service/revision.service';
 import { revisionRepository } from '../../../modules/revision/repository/revision.repository';
 import { submissionRepository } from '../../../modules/sync/repository/submission.repository';
+import { checkAIRateLimit } from '../../../common/utils/aiRateLimit';
 import { query, queryOne } from '../../../config/database';
 import { redis } from '../../../config/redis';
 
@@ -182,7 +183,7 @@ describe('revisionService', () => {
     });
 
     it('should throw 429 when rate limit is exceeded', async () => {
-      (mockedRedis.incr as jest.Mock).mockResolvedValue(21);
+      (mockedRedis.incr as jest.Mock).mockResolvedValue(31);
 
       await expect(revisionService.generateAI('user-1', 'prob-1')).rejects.toThrow(
         'AI generation limit reached'
@@ -434,11 +435,11 @@ describe('revisionService', () => {
     });
   });
 
-  describe('_checkRateLimit', () => {
+  describe('checkAIRateLimit (shared utility)', () => {
     it('should set expiry on first request of the day', async () => {
       (mockedRedis.incr as jest.Mock).mockResolvedValue(1);
 
-      await revisionService._checkRateLimit('user-1');
+      await checkAIRateLimit('user-1');
 
       expect(mockedRedis.expire).toHaveBeenCalled();
     });
@@ -446,23 +447,23 @@ describe('revisionService', () => {
     it('should not set expiry on subsequent requests', async () => {
       (mockedRedis.incr as jest.Mock).mockResolvedValue(5);
 
-      await revisionService._checkRateLimit('user-1');
+      await checkAIRateLimit('user-1');
 
       expect(mockedRedis.expire).not.toHaveBeenCalled();
     });
 
-    it('should throw 429 when limit exceeded (> 20)', async () => {
-      (mockedRedis.incr as jest.Mock).mockResolvedValue(21);
+    it('should throw 429 when limit exceeded (> 30)', async () => {
+      (mockedRedis.incr as jest.Mock).mockResolvedValue(31);
 
-      await expect(revisionService._checkRateLimit('user-1')).rejects.toThrow(
+      await expect(checkAIRateLimit('user-1')).rejects.toThrow(
         'AI generation limit reached'
       );
     });
 
-    it('should allow exactly 20 requests', async () => {
-      (mockedRedis.incr as jest.Mock).mockResolvedValue(20);
+    it('should allow exactly 30 requests', async () => {
+      (mockedRedis.incr as jest.Mock).mockResolvedValue(30);
 
-      await expect(revisionService._checkRateLimit('user-1')).resolves.not.toThrow();
+      await expect(checkAIRateLimit('user-1')).resolves.not.toThrow();
     });
   });
 });

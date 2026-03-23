@@ -34,5 +34,6 @@ router.get('/:id/progress', asyncHandler(roadmapsController.getDayProgress));
 router.get('/:id/streak', asyncHandler(roadmapsController.getStreak));
 router.get('/:id/leaderboard', asyncHandler(roadmapsController.getLeaderboard));
 router.post('/:id/link-group', asyncHandler(roadmapsController.linkGroup));
+router.post('/:id/ai-guidance', asyncHandler(roadmapsController.getAIGuidance));
 
 export default router;

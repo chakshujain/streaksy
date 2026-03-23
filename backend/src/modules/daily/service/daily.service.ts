@@ -1,5 +1,9 @@
 import { query } from '../../../config/database';
 import crypto from 'crypto';
+import { generateDailyBrief } from '../../ai/service/ai.service';
+import { checkAIRateLimit } from '../../../common/utils/aiRateLimit';
+import { env } from '../../../config/env';
+import { AppError } from '../../../common/errors/AppError';
 
 interface DailyProblem {
   id: string;
@@ -86,5 +90,41 @@ export const dailyService = {
     }
 
     return picks.slice(0, count);
+  },
+
+  async getAIBrief(userId: string) {
+    if (!env.ai.apiKey) {
+      throw new AppError(503, 'AI generation is not available. NVIDIA_API_KEY is not configured.');
+    }
+
+    await checkAIRateLimit(userId);
+
+    const problems = await this.getDailyProblems(userId);
+    if (problems.length === 0) {
+      throw AppError.badRequest('No daily problems available.');
+    }
+
+    // Get tags for each problem
+    const problemsWithTags = await Promise.all(
+      problems.map(async (p) => {
+        const tags = await query<{ name: string }>(
+          'SELECT t.name FROM tags t JOIN problem_tags pt ON pt.tag_id = t.id WHERE pt.problem_id = $1',
+          [p.id]
+        );
+        return {
+          title: p.title,
+          difficulty: p.difficulty,
+          tags: tags.map(t => t.name),
+        };
+      })
+    );
+
+    const brief = await generateDailyBrief(problemsWithTags);
+
+    if (!brief) {
+      throw new AppError(502, 'AI service failed to generate daily brief. Please try again later.');
+    }
+
+    return brief;
   },
 };

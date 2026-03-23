@@ -40,4 +40,11 @@ export const discussionController = {
     await discussionService.deleteComment(id, user!.userId);
     res.json({ message: 'Comment deleted' });
   },
+
+  async getAISummary(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const slug = param(req, 'slug');
+    const summary = await discussionService.getAISummary(user!.userId, slug);
+    res.json({ summary });
+  },
 };
