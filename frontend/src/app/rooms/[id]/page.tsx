@@ -12,7 +12,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { roomsApi } from '@/lib/api';
 import { InviteFriendsModal } from '@/components/friends/InviteFriendsModal';
 import { getSocket } from '@/lib/socket';
-import { useAuthStore } from '@/lib/store';
+import { useAuthStore, useFriendsStore } from '@/lib/store';
 import { cn } from '@/lib/cn';
 import {
   Play, Square, Copy, CheckCircle, Clock, MessageSquare, Send, ExternalLink,
@@ -159,6 +159,7 @@ export default function RoomDetailPage() {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
+  const { friendIds } = useFriendsStore();
   const isHost = user?.id === room?.host_id;
   const mySolve = participants.find(p => p.user_id === user?.id);
 
@@ -268,6 +269,12 @@ export default function RoomDetailPage() {
                   <Repeat className="h-3 w-3 mr-1 inline" />
                   {room.recurrence}
                 </Badge>
+              )}
+              {room.group_id && room.group_name && (
+                <Link href={`/groups/${room.group_id}`}
+                  className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 border border-purple-500/20 px-2.5 py-1 text-xs text-purple-400 hover:bg-purple-500/20 transition-colors">
+                  <Users className="h-3 w-3" /> {room.group_name}
+                </Link>
               )}
             </div>
             <div className="flex items-center gap-4 mt-2">
@@ -476,6 +483,9 @@ export default function RoomDetailPage() {
                     <div className="flex items-center gap-1.5">
                       <Link href={`/user/${p.user_id}`} className="text-sm font-medium text-zinc-200 truncate hover:text-emerald-400 transition-colors">{p.display_name}</Link>
                       {p.user_id === room.host_id && <Crown className="h-3 w-3 text-amber-400" />}
+                      {friendIds.includes(p.user_id) && (
+                        <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">Friend</span>
+                      )}
                     </div>
                     {p.solved_at && (
                       <div className="flex items-center gap-2 mt-0.5">

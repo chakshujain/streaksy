@@ -7,9 +7,9 @@ import { MemberList } from '@/components/groups/MemberList';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
-import { groupsApi, leaderboardApi, activityApi } from '@/lib/api';
+import { groupsApi, leaderboardApi, activityApi, roomsApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
-import { Copy, Check, Target, FileText, Calendar, LogOut, Trash2, Activity, UserPlus, Share2, GraduationCap, ArrowRight, Users } from 'lucide-react';
+import { Copy, Check, Target, FileText, Calendar, LogOut, Trash2, Activity, UserPlus, Share2, GraduationCap, ArrowRight, Users, Swords } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -59,6 +59,11 @@ export default function GroupDetailPage() {
 
   const { data: activity } = useAsync<{ id: string; user_display_name: string; action: string; detail: string; created_at: string }[]>(
     () => group ? activityApi.getGroupActivity(group.id).then(r => r.data.activity ?? []) : Promise.resolve([]),
+    [group?.id]
+  );
+
+  const { data: groupWarRooms, loading: roomsLoading } = useAsync<{ id: string; name: string; status: string; host_name?: string }[]>(
+    () => group ? roomsApi.getByGroup(groupId).then(r => r.data.rooms || []) : Promise.resolve([]),
     [group?.id]
   );
 
@@ -468,6 +473,59 @@ export default function GroupDetailPage() {
             </div>
           ) : (
             <p className="text-sm text-zinc-600">No recent activity in this group.</p>
+          )}
+        </Card>
+
+        {/* War Rooms */}
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Swords className="h-4 w-4 text-purple-400" />
+              <h3 className="text-sm font-semibold text-zinc-300">War Rooms</h3>
+            </div>
+            <Link href="/rooms" className="text-xs text-zinc-500 hover:text-zinc-300 flex items-center gap-1">
+              All Rooms <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          {roomsLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 rounded-xl" />
+              ))}
+            </div>
+          ) : !groupWarRooms || groupWarRooms.length === 0 ? (
+            <div className="text-center py-6">
+              <Swords className="h-6 w-6 text-zinc-700 mx-auto mb-2" />
+              <p className="text-xs text-zinc-500">No war rooms yet</p>
+              <Link href="/rooms" className="text-xs text-emerald-400 hover:text-emerald-300 mt-1 inline-block">
+                Create one
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {groupWarRooms.slice(0, 5).map((room) => (
+                <Link
+                  key={room.id}
+                  href={`/rooms/${room.id}`}
+                  className="flex items-center justify-between rounded-xl border border-zinc-800 px-4 py-3 hover:border-zinc-700 hover:bg-zinc-800/30 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`h-2 w-2 rounded-full ${
+                      room.status === 'active' ? 'bg-green-400 animate-pulse' :
+                      room.status === 'waiting' ? 'bg-amber-400' :
+                      room.status === 'scheduled' ? 'bg-blue-400' : 'bg-zinc-600'
+                    }`} />
+                    <div>
+                      <p className="text-sm font-medium text-zinc-200">{room.name}</p>
+                      <p className="text-[10px] text-zinc-500 capitalize">{room.status}{room.host_name ? ` · ${room.host_name}` : ''}</p>
+                    </div>
+                  </div>
+                  {(room.status === 'active' || room.status === 'waiting') && (
+                    <span className="text-xs font-medium text-emerald-400">Join</span>
+                  )}
+                </Link>
+              ))}
+            </div>
           )}
         </Card>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/Card';
@@ -12,8 +12,9 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { ProblemPicker } from '@/components/search/ProblemPicker';
 import { useAsync } from '@/hooks/useAsync';
-import { roomsApi, problemsApi } from '@/lib/api';
+import { roomsApi, problemsApi, friendsApi } from '@/lib/api';
 import { Swords, Plus, LogIn, Calendar, Trophy, Clock, Video, CalendarPlus, Shuffle, ListOrdered, Sparkles, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
 import { cn } from '@/lib/cn';
 import type { Room, Problem, Sheet, RoomLeaderboardEntry, SuggestedProblem } from '@/lib/types';
 import { useAuthStore } from '@/lib/store';
@@ -82,6 +83,28 @@ export default function RoomsPage() {
     () => problemsApi.getSheets().then(r => r.data.sheets),
     []
   );
+
+  const { data: enrichedFriends } = useAsync(
+    () => friendsApi.listEnriched().then(r => r.data.friends || []),
+    []
+  );
+
+  interface FriendRoom { room_id: string; name: string; code: string; status: string; friend_name: string; friend_avatar: string | null }
+  const friendsInRooms = useMemo<FriendRoom[]>(() => {
+    if (!enrichedFriends || !Array.isArray(enrichedFriends)) return [];
+    return enrichedFriends
+      .filter((f: Record<string, unknown>) => Array.isArray((f as Record<string, unknown>).active_rooms) && ((f as Record<string, unknown>).active_rooms as unknown[]).length > 0)
+      .flatMap((f: Record<string, unknown>) =>
+        ((f as Record<string, unknown>).active_rooms as Record<string, unknown>[]).map((r) => ({
+          room_id: r.room_id as string || r.id as string || '',
+          name: r.name as string || r.room_name as string || '',
+          code: r.code as string || '',
+          status: r.status as string || r.room_status as string || '',
+          friend_name: f.display_name as string || '',
+          friend_avatar: (f.avatar_url as string) || null,
+        }))
+      );
+  }, [enrichedFriends]);
 
   const handleCreate = async () => {
     const hasProblemSelection = selectedProblem || selectedSheet || suggestedProblems.length > 0;
@@ -446,6 +469,26 @@ export default function RoomsPage() {
               </div>
               <Button onClick={handleCreate} loading={createLoading} disabled={!roomName.trim() || (!selectedProblem && !selectedSheet && suggestedProblems.length === 0)}>Create Room</Button>
             </Card>
+          </div>
+        )}
+
+        {/* Friends in Rooms */}
+        {friendsInRooms.length > 0 && (
+          <div className="mb-6 animate-slide-up" style={{ animationDelay: '75ms', animationFillMode: 'both' }}>
+            <h3 className="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+              Friends in Rooms
+            </h3>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {friendsInRooms.map((r, i) => (
+                <Link key={`${r.room_id}-${i}`} href={`/rooms/${r.room_id}`}
+                  className="flex-shrink-0 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 hover:bg-emerald-500/10 transition-all min-w-[180px]">
+                  <p className="text-sm font-medium text-zinc-200">{r.name}</p>
+                  <p className="text-[10px] text-zinc-500">{r.friend_name} is here</p>
+                  <span className="text-xs text-emerald-400 font-medium mt-1 inline-block">Join &rarr;</span>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 

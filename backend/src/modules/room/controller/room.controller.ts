@@ -98,6 +98,12 @@ export const roomController = {
     res.json({ problems });
   },
 
+  async getRoomsByGroup(req: Request, res: Response) {
+    const groupId = param(req, 'groupId');
+    const rooms = await roomService.getRoomsByGroup(groupId);
+    res.json({ rooms });
+  },
+
   async inviteFriends(req: Request, res: Response) {
     const { user } = req as AuthRequest;
     const roomId = param(req, 'id');

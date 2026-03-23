@@ -97,6 +97,14 @@ export const friendsService = {
     return { incoming, outgoing };
   },
 
+  async getFriendsEnriched(userId: string) {
+    return friendsRepository.getFriendsWithContext(userId);
+  },
+
+  async getFriendIds(userId: string) {
+    return friendsRepository.getFriendIds(userId);
+  },
+
   async searchUsers(q: string, userId: string) {
     if (!q || q.trim().length < 2) {
       throw AppError.badRequest('Search query must be at least 2 characters');

@@ -16,6 +16,7 @@ router.get('/active', asyncHandler(roomController.activeRooms));
 router.get('/upcoming', asyncHandler(roomController.upcoming));
 router.get('/leaderboard', asyncHandler(roomController.leaderboard));
 router.get('/suggest', asyncHandler(roomController.suggestProblems));
+router.get('/group/:groupId', asyncHandler(roomController.getRoomsByGroup));
 router.get('/:id', asyncHandler(roomController.get));
 router.get('/:id/problems', asyncHandler(roomController.getProblems));
 router.post('/:id/start', asyncHandler(roomController.start));

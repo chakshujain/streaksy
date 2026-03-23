@@ -545,6 +545,8 @@ export default function RoadmapDetailPage() {
       const { data } = await roomsApi.create({
         name: `${roadmap.name} - Solve Together`,
         mode: 'practice',
+        groupId: roadmap.groupId || undefined,
+        roadmapId: roadmap.id || undefined,
       });
       const roomId = data.room?.id || data.id;
       if (roomId) router.push(`/rooms/${roomId}`);
@@ -803,6 +805,12 @@ export default function RoadmapDetailPage() {
                     <span className="inline-flex items-center gap-1 text-xs text-zinc-400 bg-zinc-800 rounded-full px-2.5 py-0.5">
                       <Clock className="h-3 w-3" /> {roadmap.hoursPerDay}h/day
                     </span>
+                  )}
+                  {roadmap.groupId && (
+                    <Link href={`/groups/${roadmap.groupId}`}
+                      className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 border border-purple-500/20 px-2.5 py-1 text-xs text-purple-400 hover:bg-purple-500/20 transition-colors">
+                      <Users className="h-3 w-3" /> View Group
+                    </Link>
                   )}
                 </div>
 

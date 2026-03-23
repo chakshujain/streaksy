@@ -12,6 +12,7 @@ router.use(authenticate);
 router.post('/', validate(createGroupSchema), asyncHandler(groupController.create as any));
 router.post('/join', validate(joinGroupSchema), asyncHandler(groupController.join as any));
 router.get('/', asyncHandler(groupController.getUserGroups as any));
+router.get('/:id/roadmaps', asyncHandler(groupController.getGroupRoadmaps as any));
 router.get('/:id', asyncHandler(groupController.getDetails as any));
 router.put('/:id/plan', validate(updatePlanSchema), asyncHandler(groupController.updatePlan as any));
 router.post('/:id/sheets', validate(assignSheetSchema), asyncHandler(groupController.assignSheet as any));

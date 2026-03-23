@@ -99,6 +99,12 @@ export const groupService = {
     await groupRepository.deleteGroup(groupId);
   },
 
+  async getGroupRoadmaps(groupId: string) {
+    const group = await groupRepository.findById(groupId);
+    if (!group) throw AppError.notFound('Group not found');
+    return groupRepository.getGroupRoadmaps(groupId);
+  },
+
   async inviteFriends(groupId: string, senderUserId: string, recipientUserIds: string[]) {
     const group = await groupRepository.findById(groupId);
     if (!group) throw AppError.notFound('Group not found');

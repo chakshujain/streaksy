@@ -8,7 +8,7 @@ export const roomService = {
     name: string,
     problemId: string | null,
     timeLimitMinutes: number,
-    opts?: { problemIds?: string[]; sheetId?: string; scheduledAt?: string; mode?: string; recurrence?: string; meetLink?: string }
+    opts?: { problemIds?: string[]; sheetId?: string; scheduledAt?: string; mode?: string; recurrence?: string; meetLink?: string; groupId?: string; roadmapId?: string }
   ) {
     const code = crypto.randomBytes(4).toString('hex').toUpperCase();
     const mode = opts?.mode || 'single';
@@ -18,6 +18,9 @@ export const roomService = {
     const recurrence = opts?.recurrence || null;
     const meetLink = opts?.meetLink || `https://meet.jit.si/streaksy-${code.toLowerCase()}`;
 
+    const groupId = opts?.groupId || null;
+    const roadmapId = opts?.roadmapId || null;
+
     const room = await roomRepository.create(name, code, problemId, hostId, timeLimitMinutes, {
       mode,
       scheduledAt,
@@ -25,6 +28,8 @@ export const roomService = {
       status,
       recurrence,
       meetLink,
+      groupId,
+      roadmapId,
     });
     await roomRepository.addParticipant(room.id, hostId);
 
@@ -270,6 +275,10 @@ export const roomService = {
 
   async getUpcoming() {
     return roomRepository.getUpcoming();
+  },
+
+  async getRoomsByGroup(groupId: string) {
+    return roomRepository.getRoomsByGroupId(groupId);
   },
 
   async getLeaderboard() {

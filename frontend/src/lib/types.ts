@@ -283,6 +283,9 @@ export interface Room {
   problem_title?: string;
   problem_slug?: string;
   problem_difficulty?: string;
+  group_id?: string;
+  group_name?: string;
+  roadmap_id?: string;
   participants?: RoomParticipant[];
   messages?: RoomMessage[];
 }

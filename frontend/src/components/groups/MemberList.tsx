@@ -3,7 +3,7 @@
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { PokeButton } from '@/components/poke/PokeButton';
-import { useAuthStore } from '@/lib/store';
+import { useAuthStore, useFriendsStore } from '@/lib/store';
 import type { GroupMember } from '@/lib/types';
 import Link from 'next/link';
 
@@ -14,6 +14,7 @@ interface MemberListProps {
 
 export function MemberList({ members, groupId }: MemberListProps) {
   const { user } = useAuthStore();
+  const { friendIds } = useFriendsStore();
   return (
     <Card padding={false}>
       <div className="border-b border-zinc-800 px-6 py-4">
@@ -29,7 +30,12 @@ export function MemberList({ members, groupId }: MemberListProps) {
                 {member.display_name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <Link href={`/user/${member.user_id}`} className="text-sm font-medium text-zinc-200 hover:text-emerald-400 transition-colors">{member.display_name}</Link>
+                <div className="flex items-center gap-1.5">
+                  <Link href={`/user/${member.user_id}`} className="text-sm font-medium text-zinc-200 hover:text-emerald-400 transition-colors">{member.display_name}</Link>
+                  {friendIds.includes(member.user_id) && (
+                    <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">Friend</span>
+                  )}
+                </div>
                 {member.role && <p className="text-xs text-zinc-500 capitalize">{member.role}</p>}
               </div>
             </div>

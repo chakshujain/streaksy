@@ -74,6 +74,12 @@ export const groupController = {
     res.json({ message: 'Group deleted' });
   },
 
+  async getGroupRoadmaps(req: Request, res: Response) {
+    const groupId = param(req, 'id');
+    const roadmaps = await groupService.getGroupRoadmaps(groupId);
+    res.json({ roadmaps });
+  },
+
   async inviteFriends(req: Request, res: Response) {
     const { user } = req as AuthRequest;
     const groupId = param(req, 'id');

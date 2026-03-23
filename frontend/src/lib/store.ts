@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { User, Streak } from './types';
-import { authApi, streaksApi } from './api';
+import { authApi, streaksApi, friendsApi } from './api';
 import { disconnectSocket } from './socket';
 
 interface AuthState {
@@ -91,6 +91,26 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       });
     } catch {
       set({ loading: false });
+    }
+  },
+}));
+
+// ── Friends IDs ──
+interface FriendsStore {
+  friendIds: string[];
+  loaded: boolean;
+  fetchFriendIds: () => Promise<void>;
+}
+
+export const useFriendsStore = create<FriendsStore>((set) => ({
+  friendIds: [],
+  loaded: false,
+  fetchFriendIds: async () => {
+    try {
+      const { data } = await friendsApi.getIds();
+      set({ friendIds: data.friendIds || [], loaded: true });
+    } catch {
+      set({ loaded: true });
     }
   },
 }));

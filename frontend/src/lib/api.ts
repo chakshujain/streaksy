@@ -111,6 +111,7 @@ export const groupsApi = {
   leave: (id: string) => api.post(`/groups/${id}/leave`),
   delete: (id: string) => api.delete(`/groups/${id}`),
   inviteFriends: (groupId: string, userIds: string[]) => api.post(`/groups/${groupId}/invite-friends`, { userIds }),
+  getRoadmaps: (groupId: string) => api.get(`/groups/${groupId}/roadmaps`),
 };
 
 // ── Progress ──
@@ -325,7 +326,7 @@ export const dailyApi = {
 
 // ── Rooms ──
 export const roomsApi = {
-  create: (data: { name: string; problemId?: string; problemIds?: string[]; sheetId?: string; scheduledAt?: string; mode?: string; timeLimitMinutes?: number; recurrence?: string; meetLink?: string }) =>
+  create: (data: { name: string; problemId?: string; problemIds?: string[]; sheetId?: string; scheduledAt?: string; mode?: string; timeLimitMinutes?: number; recurrence?: string; meetLink?: string; groupId?: string; roadmapId?: string }) =>
     api.post('/rooms', data),
   join: (code: string) =>
     api.post('/rooms/join', { code }),
@@ -350,6 +351,7 @@ export const roomsApi = {
   suggestProblems: (mode: string, count?: number, sheetId?: string) =>
     api.get('/rooms/suggest', { params: { mode, count, sheetId } }),
   inviteFriends: (roomId: string, userIds: string[]) => api.post(`/rooms/${roomId}/invite-friends`, { userIds }),
+  getByGroup: (groupId: string) => api.get(`/rooms/group/${groupId}`),
 };
 
 // ── Ratings ──
@@ -432,6 +434,8 @@ export const roadmapsApi = {
 // ── Friends ──
 export const friendsApi = {
   list: () => api.get('/friends'),
+  listEnriched: () => api.get('/friends/enriched'),
+  getIds: () => api.get('/friends/ids'),
   requests: () => api.get('/friends/requests'),
   search: (q: string) => api.get('/friends/search', { params: { q } }),
   sendRequest: (userId: string) => api.post('/friends/request', { userId }),

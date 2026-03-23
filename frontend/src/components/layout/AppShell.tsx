@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
-import { useAuthStore } from '@/lib/store';
+import { useAuthStore, useFriendsStore } from '@/lib/store';
 import { authApi, preferencesApi } from '@/lib/api';
 import { StreakRiskBanner } from '@/components/poke/StreakRiskBanner';
 import { TopLoader } from '@/components/ui/TopLoader';
@@ -15,12 +15,17 @@ import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading, hydrate } = useAuthStore();
+  const { loaded: friendsLoaded, fetchFriendIds } = useFriendsStore();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  useEffect(() => {
+    if (user && !friendsLoaded) fetchFriendIds();
+  }, [user, friendsLoaded, fetchFriendIds]);
 
   useEffect(() => {
     if (!loading && !user) {

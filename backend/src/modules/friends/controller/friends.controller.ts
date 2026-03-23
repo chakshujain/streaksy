@@ -1,9 +1,21 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { friendsService } from '../service/friends.service';
 import { AuthRequest } from '../../../common/types';
 import { param } from '../../../common/utils/params';
 
 export const friendsController = {
+  async getEnriched(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const friends = await friendsService.getFriendsEnriched(user!.userId);
+    res.json({ friends });
+  },
+
+  async getFriendIds(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const friendIds = await friendsService.getFriendIds(user!.userId);
+    res.json({ friendIds });
+  },
+
   async list(req: AuthRequest, res: Response) {
     const friends = await friendsService.getFriends(req.user!.userId);
     res.json({ friends });

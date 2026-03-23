@@ -17,6 +17,8 @@ export interface RoomRow {
   recurrence: string | null;
   meet_link: string | null;
   calendar_event_id: string | null;
+  group_id: string | null;
+  roadmap_id: string | null;
   problem_title?: string;
   problem_slug?: string;
   problem_difficulty?: string;
@@ -51,11 +53,11 @@ export const roomRepository = {
     problemId: string | null,
     hostId: string,
     timeLimitMinutes: number,
-    opts?: { mode?: string; scheduledAt?: string | null; sheetId?: string | null; status?: string; recurrence?: string | null; meetLink?: string | null; calendarEventId?: string | null }
+    opts?: { mode?: string; scheduledAt?: string | null; sheetId?: string | null; status?: string; recurrence?: string | null; meetLink?: string | null; calendarEventId?: string | null; groupId?: string | null; roadmapId?: string | null }
   ): Promise<RoomRow> {
     const rows = await query<RoomRow>(
-      `INSERT INTO rooms (name, code, problem_id, host_id, time_limit_minutes, mode, scheduled_at, sheet_id, status, recurrence, meet_link, calendar_event_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+      `INSERT INTO rooms (name, code, problem_id, host_id, time_limit_minutes, mode, scheduled_at, sheet_id, status, recurrence, meet_link, calendar_event_id, group_id, roadmap_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
       [
         name,
         code,
@@ -69,6 +71,8 @@ export const roomRepository = {
         opts?.recurrence || null,
         opts?.meetLink || null,
         opts?.calendarEventId || null,
+        opts?.groupId || null,
+        opts?.roadmapId || null,
       ]
     );
     return rows[0];
@@ -280,5 +284,17 @@ export const roomRepository = {
 
   async updateCalendarEventId(roomId: string, eventId: string): Promise<void> {
     await query('UPDATE rooms SET calendar_event_id = $1 WHERE id = $2', [eventId, roomId]);
+  },
+
+  async getRoomsByGroupId(groupId: string): Promise<RoomRow[]> {
+    return query<RoomRow>(
+      `SELECT r.*, u.display_name AS host_name
+       FROM rooms r
+       LEFT JOIN users u ON u.id = r.host_id
+       WHERE r.group_id = $1
+       ORDER BY r.created_at DESC
+       LIMIT 20`,
+      [groupId]
+    );
   },
 };

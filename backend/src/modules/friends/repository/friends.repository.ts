@@ -158,6 +158,81 @@ export const friendsRepository = {
     );
   },
 
+  async getFriendIds(userId: string): Promise<string[]> {
+    const rows = await query<{ friend_id: string }>(
+      `SELECT CASE WHEN requester_id = $1 THEN addressee_id ELSE requester_id END AS friend_id
+       FROM friendships WHERE (requester_id = $1 OR addressee_id = $1) AND status = 'accepted'`,
+      [userId]
+    );
+    return rows.map(r => r.friend_id);
+  },
+
+  async getFriendsWithContext(userId: string) {
+    // Step 1: get accepted friends with profile data
+    const friends = await query<{
+      friendship_id: string;
+      user_id: string;
+      display_name: string;
+      avatar_url: string | null;
+      bio: string | null;
+      current_streak: number;
+      total_points: number;
+      last_active: string | null;
+    }>(
+      `SELECT f.id AS friendship_id,
+              CASE WHEN f.requester_id = $1 THEN f.addressee_id ELSE f.requester_id END AS user_id,
+              u.display_name, u.avatar_url, u.bio,
+              COALESCE(us.current_streak, 0)::int AS current_streak,
+              COALESCE(us.total_points, 0)::int AS total_points,
+              u.last_active_at AS last_active
+       FROM friendships f
+       JOIN users u ON u.id = CASE WHEN f.requester_id = $1 THEN f.addressee_id ELSE f.requester_id END
+       LEFT JOIN user_streaks us ON us.user_id = u.id
+       WHERE (f.requester_id = $1 OR f.addressee_id = $1) AND f.status = 'accepted'`,
+      [userId]
+    );
+
+    if (friends.length === 0) return [];
+
+    const friendIds = friends.map(f => f.user_id);
+
+    // Step 2: shared groups (groups where both user and friend are members)
+    const sharedGroups = await query<{ friend_id: string; group_id: string; group_name: string }>(
+      `SELECT gm2.user_id AS friend_id, g.id AS group_id, g.name AS group_name
+       FROM group_members gm1
+       JOIN group_members gm2 ON gm2.group_id = gm1.group_id AND gm2.user_id = ANY($2::uuid[])
+       JOIN groups g ON g.id = gm1.group_id
+       WHERE gm1.user_id = $1`,
+      [userId, friendIds]
+    );
+
+    // Step 3: friends' active roadmaps
+    const activeRoadmaps = await query<{ user_id: string; roadmap_id: string; roadmap_name: string; template_slug: string | null }>(
+      `SELECT ur.user_id, ur.id AS roadmap_id, ur.name AS roadmap_name, rt.slug AS template_slug
+       FROM user_roadmaps ur
+       LEFT JOIN roadmap_templates rt ON rt.id = ur.template_id
+       WHERE ur.user_id = ANY($1::uuid[]) AND ur.status = 'active'`,
+      [friendIds]
+    );
+
+    // Step 4: friends in active rooms
+    const activeRooms = await query<{ user_id: string; room_id: string; room_name: string; room_code: string; room_status: string }>(
+      `SELECT rp.user_id, r.id AS room_id, r.name AS room_name, r.code AS room_code, r.status AS room_status
+       FROM room_participants rp
+       JOIN rooms r ON r.id = rp.room_id
+       WHERE rp.user_id = ANY($1::uuid[]) AND r.status IN ('waiting', 'active', 'scheduled')`,
+      [friendIds]
+    );
+
+    // Step 5: assemble
+    return friends.map(f => ({
+      ...f,
+      shared_groups: sharedGroups.filter(sg => sg.friend_id === f.user_id).map(sg => ({ id: sg.group_id, name: sg.group_name })),
+      active_roadmaps: activeRoadmaps.filter(ar => ar.user_id === f.user_id).map(ar => ({ id: ar.roadmap_id, name: ar.roadmap_name, template_slug: ar.template_slug })),
+      active_rooms: activeRooms.filter(ar => ar.user_id === f.user_id).map(ar => ({ id: ar.room_id, name: ar.room_name, code: ar.room_code, status: ar.room_status })),
+    }));
+  },
+
   async searchUsers(searchQuery: string, userId: string): Promise<UserSearchRow[]> {
     return query<UserSearchRow>(
       `SELECT

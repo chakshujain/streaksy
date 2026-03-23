@@ -154,6 +154,31 @@ export const groupRepository = {
     );
   },
 
+  async getGroupRoadmaps(groupId: string) {
+    return query<{
+      id: string;
+      name: string;
+      user_id: string;
+      display_name: string;
+      template_slug: string | null;
+      duration_days: number;
+      start_date: string;
+      status: string;
+      completed_days: number;
+    }>(`
+      SELECT ur.id, ur.name, ur.user_id, u.display_name,
+             rt.slug AS template_slug, ur.duration_days, ur.start_date, ur.status,
+             (SELECT COUNT(*)::int FROM roadmap_day_progress rdp
+              WHERE rdp.roadmap_id = ur.id AND rdp.user_id = ur.user_id AND rdp.completed) AS completed_days
+      FROM user_roadmaps ur
+      JOIN users u ON u.id = ur.user_id
+      LEFT JOIN roadmap_templates rt ON rt.id = ur.template_id
+      WHERE ur.group_id = $1
+      ORDER BY ur.status ASC, ur.created_at DESC
+      LIMIT 50
+    `, [groupId]);
+  },
+
   async joinByInviteCode(inviteCode: string, userId: string): Promise<void> {
     const group = await queryOne<GroupRow>('SELECT * FROM groups WHERE invite_code = $1', [inviteCode]);
     if (group) {

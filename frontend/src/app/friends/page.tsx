@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -20,6 +21,7 @@ import {
   Clock,
   Send,
   Inbox,
+  Map,
 } from 'lucide-react';
 
 type Tab = 'friends' | 'requests' | 'find';
@@ -33,6 +35,9 @@ interface Friend {
   current_streak: number;
   total_points: number;
   last_active: string | null;
+  shared_groups?: { id: string; name: string }[];
+  active_roadmaps?: { id: string; name: string; template_slug: string | null }[];
+  active_rooms?: { id: string; name: string; code: string; status: string }[];
 }
 
 interface SearchResult {
@@ -141,7 +146,7 @@ export default function FriendsPage() {
 
 function FriendsTab() {
   const { data: friends, loading, refetch } = useAsync<Friend[]>(
-    () => friendsApi.list().then((r) => r.data.friends),
+    () => friendsApi.listEnriched().then((r) => r.data.friends),
     []
   );
   const [removing, setRemoving] = useState<string | null>(null);
@@ -207,6 +212,29 @@ function FriendsTab() {
                 {friend.total_points} pts
               </span>
             </div>
+            {((friend.shared_groups?.length ?? 0) > 0 || (friend.active_roadmaps?.length ?? 0) > 0 || (friend.active_rooms?.length ?? 0) > 0) && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {friend.shared_groups?.map(g => (
+                  <Link key={g.id} href={`/groups/${g.id}`}
+                    className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 text-[10px] text-purple-400 hover:bg-purple-500/20 transition-colors">
+                    <Users className="h-2.5 w-2.5" /> {g.name}
+                  </Link>
+                ))}
+                {friend.active_roadmaps?.map(r => (
+                  <Link key={r.id} href={`/roadmaps/${r.id}`}
+                    className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] text-emerald-400 hover:bg-emerald-500/20 transition-colors">
+                    <Map className="h-2.5 w-2.5" /> {r.name}
+                  </Link>
+                ))}
+                {friend.active_rooms?.map(r => (
+                  <Link key={r.id} href={`/rooms/${r.id}`}
+                    className="inline-flex items-center gap-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 text-[10px] text-cyan-400 hover:bg-cyan-500/20 transition-colors">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                    {r.name} · Join
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
           <Button
             variant="ghost"
