@@ -3,7 +3,9 @@ INSERT INTO roadmap_categories (name, slug, icon, color, position) VALUES
   ('Coding & Tech', 'coding-tech', '🖥️', 'emerald', 1),
   ('Fitness & Health', 'fitness-health', '💪', 'blue', 2),
   ('Learning & Reading', 'learning-reading', '📚', 'amber', 3),
-  ('Custom', 'custom', '✨', 'purple', 4)
+  ('Custom', 'custom', '✨', 'purple', 4),
+  ('Languages', 'languages', '🌍', 'cyan', 5),
+  ('Personal Growth', 'personal-growth', '🌱', 'rose', 6)
 ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================
@@ -57,105 +59,105 @@ INSERT INTO roadmap_templates (category_id, name, slug, description, icon, color
 VALUES (
   (SELECT id FROM roadmap_categories WHERE slug = 'coding-tech'),
   'Learn Databases (14 Days)',
-  'learn-databases-14',
+  'learn-databases',
   'From SQL basics to sharding, replication, and CAP theorem. Master databases in two weeks.',
   '🗄️', 'cyan', 14, 'beginner', true
 );
 
 INSERT INTO template_tasks (template_id, day_number, title, description, task_type, link, position) VALUES
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 1, 'What is a Database?', 'Understand what databases are and why they matter', 'lesson', '/learn/databases/what-is-a-database', 1),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 2, 'SQL Basics — SELECT, WHERE, ORDER BY', 'Write your first SQL queries', 'lesson', '/learn/databases/sql-basics-select-where-order-by', 2),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 3, 'Joins — Connecting Tables', 'Learn INNER, LEFT, RIGHT, and FULL joins', 'lesson', '/learn/databases/joins-connecting-tables', 3),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 4, 'Indexing — Making Queries Fast', 'Understand how indexes speed up queries', 'lesson', '/learn/databases/indexing-making-queries-fast', 4),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 5, 'Normalization — Organizing Data', 'Learn 1NF, 2NF, 3NF and why they matter', 'lesson', '/learn/databases/normalization-organizing-data', 5),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 6, 'Transactions & ACID Properties', 'Understand atomicity, consistency, isolation, durability', 'lesson', '/learn/databases/transactions-acid-properties', 6),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 7, 'Isolation Levels', 'Learn read committed, repeatable read, serializable', 'lesson', '/learn/databases/isolation-levels', 7),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 8, 'Query Optimization', 'Optimize slow queries with EXPLAIN and best practices', 'lesson', '/learn/databases/query-optimization', 8),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 9, 'Sharding — Splitting Data Across Servers', 'Learn horizontal partitioning strategies', 'lesson', '/learn/databases/sharding-splitting-data-across-servers', 9),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 10, 'Replication — Copies for Safety', 'Understand master-slave and multi-master replication', 'lesson', '/learn/databases/replication-copies-for-safety', 10),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 11, 'CAP Theorem', 'Understand the tradeoffs between consistency, availability, and partition tolerance', 'lesson', '/learn/databases/cap-theorem', 11),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 12, 'SQL vs NoSQL', 'Compare relational and non-relational databases', 'lesson', '/learn/databases/sql-vs-nosql', 12),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 13, 'Database Design Patterns', 'Learn common patterns for database schema design', 'lesson', '/learn/databases/database-design-patterns', 13),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases-14'), 14, 'Final Review — Databases', 'Review all database concepts and test your knowledge', 'review', NULL, 14);
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 1, 'What is a Database?', 'Understand what databases are and why they matter', 'lesson', '/learn/databases/what-is-a-database', 1),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 2, 'SQL Basics — SELECT, WHERE, ORDER BY', 'Write your first SQL queries', 'lesson', '/learn/databases/sql-basics-select-where-order-by', 2),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 3, 'Joins — Connecting Tables', 'Learn INNER, LEFT, RIGHT, and FULL joins', 'lesson', '/learn/databases/joins-connecting-tables', 3),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 4, 'Indexing — Making Queries Fast', 'Understand how indexes speed up queries', 'lesson', '/learn/databases/indexing-making-queries-fast', 4),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 5, 'Normalization — Organizing Data', 'Learn 1NF, 2NF, 3NF and why they matter', 'lesson', '/learn/databases/normalization-organizing-data', 5),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 6, 'Transactions & ACID Properties', 'Understand atomicity, consistency, isolation, durability', 'lesson', '/learn/databases/transactions-acid-properties', 6),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 7, 'Isolation Levels', 'Learn read committed, repeatable read, serializable', 'lesson', '/learn/databases/isolation-levels', 7),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 8, 'Query Optimization', 'Optimize slow queries with EXPLAIN and best practices', 'lesson', '/learn/databases/query-optimization', 8),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 9, 'Sharding — Splitting Data Across Servers', 'Learn horizontal partitioning strategies', 'lesson', '/learn/databases/sharding-splitting-data-across-servers', 9),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 10, 'Replication — Copies for Safety', 'Understand master-slave and multi-master replication', 'lesson', '/learn/databases/replication-copies-for-safety', 10),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 11, 'CAP Theorem', 'Understand the tradeoffs between consistency, availability, and partition tolerance', 'lesson', '/learn/databases/cap-theorem', 11),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 12, 'SQL vs NoSQL', 'Compare relational and non-relational databases', 'lesson', '/learn/databases/sql-vs-nosql', 12),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 13, 'Database Design Patterns', 'Learn common patterns for database schema design', 'lesson', '/learn/databases/database-design-patterns', 13),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-databases'), 14, 'Final Review — Databases', 'Review all database concepts and test your knowledge', 'review', NULL, 14);
 
 -- Learn System Design (17 days)
 INSERT INTO roadmap_templates (category_id, name, slug, description, icon, color, duration_days, difficulty, is_featured)
 VALUES (
   (SELECT id FROM roadmap_categories WHERE slug = 'coding-tech'),
   'Learn System Design (17 Days)',
-  'learn-system-design-17',
+  'learn-system-design',
   'From client-server basics to designing Netflix. Cover load balancing, caching, microservices, and real system designs.',
   '🏗️', 'violet', 17, 'intermediate', true
 );
 
 INSERT INTO template_tasks (template_id, day_number, title, description, task_type, link, position) VALUES
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 1, 'What is System Design?', 'Introduction to system design interviews and thinking', 'lesson', '/learn/system-design/what-is-system-design', 1),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 2, 'Client-Server Architecture', 'Understand how clients and servers communicate', 'lesson', '/learn/system-design/client-server-architecture', 2),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 3, 'Load Balancing', 'Distribute traffic across multiple servers', 'lesson', '/learn/system-design/load-balancing', 3),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 4, 'Caching — Speed Up Everything', 'Use caching at every layer for performance', 'lesson', '/learn/system-design/caching-speed-up-everything', 4),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 5, 'CDN — Content Closer to Users', 'Deliver static content from edge locations', 'lesson', '/learn/system-design/cdn-content-closer-to-users', 5),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 6, 'Message Queues', 'Decouple services with asynchronous messaging', 'lesson', '/learn/system-design/message-queues', 6),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 7, 'Database Scaling', 'Scale databases with replication and sharding', 'lesson', '/learn/system-design/database-scaling', 7),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 8, 'API Design', 'Design clean, consistent REST and GraphQL APIs', 'lesson', '/learn/system-design/api-design', 8),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 9, 'Rate Limiting', 'Protect services from abuse with rate limiters', 'lesson', '/learn/system-design/rate-limiting', 9),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 10, 'Consistent Hashing', 'Distribute data evenly across nodes', 'lesson', '/learn/system-design/consistent-hashing', 10),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 11, 'Microservices vs Monolith', 'Choose the right architecture for your system', 'lesson', '/learn/system-design/microservices-vs-monolith', 11),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 12, 'Design: URL Shortener', 'Design a URL shortening service like bit.ly', 'lesson', '/learn/system-design/design-url-shortener', 12),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 13, 'Design: Chat Application', 'Design a real-time chat system like WhatsApp', 'lesson', '/learn/system-design/design-chat-application', 13),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 14, 'Design: Instagram', 'Design a photo-sharing social network', 'lesson', '/learn/system-design/design-instagram', 14),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 15, 'Design: Twitter Feed', 'Design a news feed system with fan-out', 'lesson', '/learn/system-design/design-twitter-feed', 15),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 16, 'Design: Uber', 'Design a ride-sharing platform', 'lesson', '/learn/system-design/design-uber', 16),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design-17'), 17, 'Design: Netflix Streaming', 'Design a video streaming service', 'lesson', '/learn/system-design/design-netflix-streaming', 17);
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 1, 'What is System Design?', 'Introduction to system design interviews and thinking', 'lesson', '/learn/system-design/what-is-system-design', 1),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 2, 'Client-Server Architecture', 'Understand how clients and servers communicate', 'lesson', '/learn/system-design/client-server-architecture', 2),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 3, 'Load Balancing', 'Distribute traffic across multiple servers', 'lesson', '/learn/system-design/load-balancing', 3),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 4, 'Caching — Speed Up Everything', 'Use caching at every layer for performance', 'lesson', '/learn/system-design/caching-speed-up-everything', 4),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 5, 'CDN — Content Closer to Users', 'Deliver static content from edge locations', 'lesson', '/learn/system-design/cdn-content-closer-to-users', 5),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 6, 'Message Queues', 'Decouple services with asynchronous messaging', 'lesson', '/learn/system-design/message-queues', 6),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 7, 'Database Scaling', 'Scale databases with replication and sharding', 'lesson', '/learn/system-design/database-scaling', 7),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 8, 'API Design', 'Design clean, consistent REST and GraphQL APIs', 'lesson', '/learn/system-design/api-design', 8),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 9, 'Rate Limiting', 'Protect services from abuse with rate limiters', 'lesson', '/learn/system-design/rate-limiting', 9),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 10, 'Consistent Hashing', 'Distribute data evenly across nodes', 'lesson', '/learn/system-design/consistent-hashing', 10),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 11, 'Microservices vs Monolith', 'Choose the right architecture for your system', 'lesson', '/learn/system-design/microservices-vs-monolith', 11),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 12, 'Design: URL Shortener', 'Design a URL shortening service like bit.ly', 'lesson', '/learn/system-design/design-url-shortener', 12),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 13, 'Design: Chat Application', 'Design a real-time chat system like WhatsApp', 'lesson', '/learn/system-design/design-chat-application', 13),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 14, 'Design: Instagram', 'Design a photo-sharing social network', 'lesson', '/learn/system-design/design-instagram', 14),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 15, 'Design: Twitter Feed', 'Design a news feed system with fan-out', 'lesson', '/learn/system-design/design-twitter-feed', 15),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 16, 'Design: Uber', 'Design a ride-sharing platform', 'lesson', '/learn/system-design/design-uber', 16),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-system-design'), 17, 'Design: Netflix Streaming', 'Design a video streaming service', 'lesson', '/learn/system-design/design-netflix-streaming', 17);
 
 -- Learn OOP (14 days)
 INSERT INTO roadmap_templates (category_id, name, slug, description, icon, color, duration_days, difficulty, is_featured)
 VALUES (
   (SELECT id FROM roadmap_categories WHERE slug = 'coding-tech'),
   'Learn OOP (14 Days)',
-  'learn-oop-14',
+  'learn-oops',
   'Object-Oriented Programming from basics to SOLID principles and design patterns. Includes real design exercises.',
   '🧱', 'orange', 14, 'beginner', false
 );
 
 INSERT INTO template_tasks (template_id, day_number, title, description, task_type, link, position) VALUES
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 1, 'What is OOP?', 'Understand the philosophy behind object-oriented programming', 'lesson', '/learn/oops/what-is-oop', 1),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 2, 'Classes and Objects', 'Learn to define classes and create objects', 'lesson', '/learn/oops/classes-and-objects', 2),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 3, 'Encapsulation', 'Hide internal state and expose clean interfaces', 'lesson', '/learn/oops/encapsulation', 3),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 4, 'Inheritance', 'Reuse code through parent-child relationships', 'lesson', '/learn/oops/inheritance', 4),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 5, 'Polymorphism', 'Write flexible code with method overriding and overloading', 'lesson', '/learn/oops/polymorphism', 5),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 6, 'Abstraction', 'Simplify complex systems by hiding details', 'lesson', '/learn/oops/abstraction', 6),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 7, 'Interfaces and Abstract Classes', 'Define contracts and partial implementations', 'lesson', '/learn/oops/interfaces-and-abstract-classes', 7),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 8, 'SOLID Principles', 'Master the five principles of clean OO design', 'lesson', '/learn/oops/solid-principles', 8),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 9, 'Design Pattern: Singleton & Factory', 'Create objects with creational patterns', 'lesson', '/learn/oops/design-pattern-singleton-factory', 9),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 10, 'Design Pattern: Observer & Strategy', 'Decouple behavior with behavioral patterns', 'lesson', '/learn/oops/design-pattern-observer-strategy', 10),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 11, 'Design Pattern: Builder & Adapter', 'Construct and adapt objects with structural patterns', 'lesson', '/learn/oops/design-pattern-builder-adapter', 11),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 12, 'Composition Over Inheritance', 'Prefer composition for flexible designs', 'lesson', '/learn/oops/composition-over-inheritance', 12),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 13, 'Design: Parking Lot System', 'Apply OOP to design a parking management system', 'lesson', '/learn/oops/design-parking-lot-system', 13),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oop-14'), 14, 'Design: ATM Machine', 'Apply OOP to design an ATM system', 'lesson', '/learn/oops/design-atm-machine', 14);
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 1, 'What is OOP?', 'Understand the philosophy behind object-oriented programming', 'lesson', '/learn/oops/what-is-oop', 1),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 2, 'Classes and Objects', 'Learn to define classes and create objects', 'lesson', '/learn/oops/classes-and-objects', 2),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 3, 'Encapsulation', 'Hide internal state and expose clean interfaces', 'lesson', '/learn/oops/encapsulation', 3),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 4, 'Inheritance', 'Reuse code through parent-child relationships', 'lesson', '/learn/oops/inheritance', 4),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 5, 'Polymorphism', 'Write flexible code with method overriding and overloading', 'lesson', '/learn/oops/polymorphism', 5),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 6, 'Abstraction', 'Simplify complex systems by hiding details', 'lesson', '/learn/oops/abstraction', 6),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 7, 'Interfaces and Abstract Classes', 'Define contracts and partial implementations', 'lesson', '/learn/oops/interfaces-and-abstract-classes', 7),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 8, 'SOLID Principles', 'Master the five principles of clean OO design', 'lesson', '/learn/oops/solid-principles', 8),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 9, 'Design Pattern: Singleton & Factory', 'Create objects with creational patterns', 'lesson', '/learn/oops/design-pattern-singleton-factory', 9),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 10, 'Design Pattern: Observer & Strategy', 'Decouple behavior with behavioral patterns', 'lesson', '/learn/oops/design-pattern-observer-strategy', 10),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 11, 'Design Pattern: Builder & Adapter', 'Construct and adapt objects with structural patterns', 'lesson', '/learn/oops/design-pattern-builder-adapter', 11),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 12, 'Composition Over Inheritance', 'Prefer composition for flexible designs', 'lesson', '/learn/oops/composition-over-inheritance', 12),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 13, 'Design: Parking Lot System', 'Apply OOP to design a parking management system', 'lesson', '/learn/oops/design-parking-lot-system', 13),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-oops'), 14, 'Design: ATM Machine', 'Apply OOP to design an ATM system', 'lesson', '/learn/oops/design-atm-machine', 14);
 
 -- Learn Multithreading (12 days)
 INSERT INTO roadmap_templates (category_id, name, slug, description, icon, color, duration_days, difficulty, is_featured)
 VALUES (
   (SELECT id FROM roadmap_categories WHERE slug = 'coding-tech'),
   'Learn Multithreading (12 Days)',
-  'learn-multithreading-12',
+  'learn-multithreading',
   'Threads, locks, deadlocks, and concurrent patterns. From basics to the Dining Philosophers problem.',
   '🔄', 'rose', 12, 'intermediate', false
 );
 
 INSERT INTO template_tasks (template_id, day_number, title, description, task_type, link, position) VALUES
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 1, 'What is a Thread?', 'Understand threads and why concurrency matters', 'lesson', '/learn/multithreading/what-is-a-thread', 1),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 2, 'Process vs Thread', 'Compare processes and threads, when to use each', 'lesson', '/learn/multithreading/process-vs-thread', 2),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 3, 'Creating Threads', 'Learn to create and manage threads in code', 'lesson', '/learn/multithreading/creating-threads', 3),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 4, 'Race Conditions', 'Identify and prevent race conditions', 'lesson', '/learn/multithreading/race-conditions', 4),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 5, 'Mutex and Locks', 'Protect shared resources with mutual exclusion', 'lesson', '/learn/multithreading/mutex-and-locks', 5),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 6, 'Deadlock', 'Understand, detect, and prevent deadlocks', 'lesson', '/learn/multithreading/deadlock', 6),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 7, 'Semaphores', 'Control access to resources with counting semaphores', 'lesson', '/learn/multithreading/semaphores', 7),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 8, 'Producer-Consumer Pattern', 'Implement the classic producer-consumer with queues', 'lesson', '/learn/multithreading/producer-consumer-pattern', 8),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 9, 'Thread Pools', 'Manage thread lifecycles efficiently with pools', 'lesson', '/learn/multithreading/thread-pools', 9),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 10, 'Concurrent Data Structures', 'Use thread-safe collections and atomic operations', 'lesson', '/learn/multithreading/concurrent-data-structures', 10),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 11, 'Async/Await and Futures', 'Write asynchronous code without callback hell', 'lesson', '/learn/multithreading/async-await-and-futures', 11),
-  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading-12'), 12, 'Classic: Dining Philosophers', 'Solve the classic concurrency problem', 'lesson', '/learn/multithreading/classic-dining-philosophers', 12);
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 1, 'What is a Thread?', 'Understand threads and why concurrency matters', 'lesson', '/learn/multithreading/what-is-a-thread', 1),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 2, 'Process vs Thread', 'Compare processes and threads, when to use each', 'lesson', '/learn/multithreading/process-vs-thread', 2),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 3, 'Creating Threads', 'Learn to create and manage threads in code', 'lesson', '/learn/multithreading/creating-threads', 3),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 4, 'Race Conditions', 'Identify and prevent race conditions', 'lesson', '/learn/multithreading/race-conditions', 4),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 5, 'Mutex and Locks', 'Protect shared resources with mutual exclusion', 'lesson', '/learn/multithreading/mutex-and-locks', 5),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 6, 'Deadlock', 'Understand, detect, and prevent deadlocks', 'lesson', '/learn/multithreading/deadlock', 6),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 7, 'Semaphores', 'Control access to resources with counting semaphores', 'lesson', '/learn/multithreading/semaphores', 7),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 8, 'Producer-Consumer Pattern', 'Implement the classic producer-consumer with queues', 'lesson', '/learn/multithreading/producer-consumer-pattern', 8),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 9, 'Thread Pools', 'Manage thread lifecycles efficiently with pools', 'lesson', '/learn/multithreading/thread-pools', 9),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 10, 'Concurrent Data Structures', 'Use thread-safe collections and atomic operations', 'lesson', '/learn/multithreading/concurrent-data-structures', 10),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 11, 'Async/Await and Futures', 'Write asynchronous code without callback hell', 'lesson', '/learn/multithreading/async-await-and-futures', 11),
+  ((SELECT id FROM roadmap_templates WHERE slug = 'learn-multithreading'), 12, 'Classic: Dining Philosophers', 'Solve the classic concurrency problem', 'lesson', '/learn/multithreading/classic-dining-philosophers', 12);
 
 -- ============================================================
 -- FITNESS & HEALTH TEMPLATES
@@ -166,14 +168,14 @@ INSERT INTO roadmap_templates (category_id, name, slug, description, icon, color
 VALUES (
   (SELECT id FROM roadmap_categories WHERE slug = 'fitness-health'),
   'Go to Gym (30 Days)',
-  'gym-30',
+  'gym-daily-30',
   'Build a consistent gym habit over 30 days. Just show up and complete your workout.',
   '🏋️', 'blue', 30, 'beginner', true
 );
 
 INSERT INTO template_tasks (template_id, day_number, title, description, task_type, link, position)
 SELECT
-  (SELECT id FROM roadmap_templates WHERE slug = 'gym-30'),
+  (SELECT id FROM roadmap_templates WHERE slug = 'gym-daily-30'),
   d.n,
   'Day ' || d.n || ' — Complete your workout',
   CASE
@@ -216,14 +218,14 @@ INSERT INTO roadmap_templates (category_id, name, slug, description, icon, color
 VALUES (
   (SELECT id FROM roadmap_categories WHERE slug = 'fitness-health'),
   'Quit Smoking (90 Days)',
-  'quit-smoking-90',
+  'quit-smoking',
   'A milestone-based 90-day plan to quit smoking. Track your smoke-free days and celebrate progress.',
   '🚭', 'red', 90, 'advanced', true
 );
 
 INSERT INTO template_tasks (template_id, day_number, title, description, task_type, link, position)
 SELECT
-  (SELECT id FROM roadmap_templates WHERE slug = 'quit-smoking-90'),
+  (SELECT id FROM roadmap_templates WHERE slug = 'quit-smoking'),
   d.n,
   CASE
     WHEN d.n = 1 THEN 'Day 1 — Your quit day'
@@ -291,14 +293,14 @@ INSERT INTO roadmap_templates (category_id, name, slug, description, icon, color
 VALUES (
   (SELECT id FROM roadmap_categories WHERE slug = 'learning-reading'),
   'Read 1 Book/Month (30 Days)',
-  'read-book-30',
+  'read-book-month',
   'Read at least 20 pages daily to finish one book per month. Track your reading habit.',
   '📖', 'amber', 30, 'beginner', true
 );
 
 INSERT INTO template_tasks (template_id, day_number, title, description, task_type, link, position)
 SELECT
-  (SELECT id FROM roadmap_templates WHERE slug = 'read-book-30'),
+  (SELECT id FROM roadmap_templates WHERE slug = 'read-book-month'),
   d.n,
   CASE
     WHEN d.n = 1 THEN 'Day 1 — Pick your book and read 20+ pages'

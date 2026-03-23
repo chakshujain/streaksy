@@ -224,7 +224,7 @@ INSERT INTO roadmap_templates (category_id, name, slug, description, icon, color
 VALUES (
   (SELECT id FROM roadmap_categories WHERE slug = 'coding-tech'),
   'LeetCode Top 150',
-  'solve-leetcode-top-150',
+  'leetcode-top-150',
   'Solve the LeetCode Top 150 interview questions together. 30 days, 5 problems per day.',
   '⭐', 'amber', 30, 'intermediate', true
 ) ON CONFLICT (slug) DO NOTHING;
@@ -242,5 +242,5 @@ FROM roadmap_templates t
 CROSS JOIN sheets s
 JOIN sheet_problems sp ON sp.sheet_id = s.id
 JOIN problems p ON p.id = sp.problem_id
-WHERE t.slug = 'solve-leetcode-top-150'
+WHERE t.slug = 'leetcode-top-150'
   AND s.slug = 'leetcode-top-150';
