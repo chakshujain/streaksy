@@ -133,7 +133,7 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 2. Customize — hours/day, topic selection, time allocation sliders
 3. Study Mode — solo/friends, group create/join, weekly war room scheduling, daily reminders
 4. Review — summary before starting
-- Auto-creates a weekly war room linked to the roadmap (and group if present) via `groupId`/`roadmapId`
+- Auto-creates weekly war rooms ("Week 1 Solve Room", "Week 2 Solve Room", etc.) for every Saturday across the full roadmap duration, linked via `groupId`/`roadmapId`
 
 ## Learning Content
 
