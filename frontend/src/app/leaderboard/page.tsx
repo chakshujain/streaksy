@@ -88,7 +88,7 @@ export default function LeaderboardPage() {
         .catch(() => setGroups([]))
         .finally(() => setGroupsLoading(false));
     }
-  }, [tab, selectedGroupId]);
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch leaderboard data
   useEffect(() => {

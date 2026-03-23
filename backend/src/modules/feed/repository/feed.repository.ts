@@ -38,11 +38,20 @@ export const feedRepository = {
     return query<FeedEventRow>(
       `SELECT fe.*,
               u.display_name, u.avatar_url,
-              (SELECT COUNT(*)::int FROM feed_likes fl WHERE fl.feed_event_id = fe.id) as like_count,
-              (SELECT COUNT(*)::int FROM feed_comments fc WHERE fc.feed_event_id = fe.id) as comment_count,
-              EXISTS(SELECT 1 FROM feed_likes fl WHERE fl.feed_event_id = fe.id AND fl.user_id = $1) as liked_by_me
+              COALESCE(fl_agg.like_count, 0)::int as like_count,
+              COALESCE(fc_agg.comment_count, 0)::int as comment_count,
+              COALESCE(my_like.liked, false) as liked_by_me
        FROM feed_events fe
        JOIN users u ON u.id = fe.user_id
+       LEFT JOIN (
+         SELECT feed_event_id, COUNT(*) as like_count FROM feed_likes GROUP BY feed_event_id
+       ) fl_agg ON fl_agg.feed_event_id = fe.id
+       LEFT JOIN (
+         SELECT feed_event_id, COUNT(*) as comment_count FROM feed_comments GROUP BY feed_event_id
+       ) fc_agg ON fc_agg.feed_event_id = fe.id
+       LEFT JOIN (
+         SELECT feed_event_id, true as liked FROM feed_likes WHERE user_id = $1
+       ) my_like ON my_like.feed_event_id = fe.id
        WHERE fe.user_id IN (
          SELECT gm2.user_id FROM group_members gm
          JOIN group_members gm2 ON gm2.group_id = gm.group_id
@@ -63,11 +72,20 @@ export const feedRepository = {
     return query<FeedEventRow>(
       `SELECT fe.*,
               u.display_name, u.avatar_url,
-              (SELECT COUNT(*)::int FROM feed_likes fl WHERE fl.feed_event_id = fe.id) as like_count,
-              (SELECT COUNT(*)::int FROM feed_comments fc WHERE fc.feed_event_id = fe.id) as comment_count,
-              EXISTS(SELECT 1 FROM feed_likes fl WHERE fl.feed_event_id = fe.id AND fl.user_id = $2) as liked_by_me
+              COALESCE(fl_agg.like_count, 0)::int as like_count,
+              COALESCE(fc_agg.comment_count, 0)::int as comment_count,
+              COALESCE(my_like.liked, false) as liked_by_me
        FROM feed_events fe
        JOIN users u ON u.id = fe.user_id
+       LEFT JOIN (
+         SELECT feed_event_id, COUNT(*) as like_count FROM feed_likes GROUP BY feed_event_id
+       ) fl_agg ON fl_agg.feed_event_id = fe.id
+       LEFT JOIN (
+         SELECT feed_event_id, COUNT(*) as comment_count FROM feed_comments GROUP BY feed_event_id
+       ) fc_agg ON fc_agg.feed_event_id = fe.id
+       LEFT JOIN (
+         SELECT feed_event_id, true as liked FROM feed_likes WHERE user_id = $2
+       ) my_like ON my_like.feed_event_id = fe.id
        WHERE fe.user_id = $1
        ORDER BY fe.created_at DESC
        LIMIT $3 OFFSET $4`,
