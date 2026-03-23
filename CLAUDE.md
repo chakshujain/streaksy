@@ -249,4 +249,6 @@ pm2 restart ecosystem.config.js # Hard restart
 - State management via Zustand stores in `lib/store.ts`
 - Data fetching via `useAsync` hook in `hooks/useAsync.ts`
 - Roadmap data stored in localStorage (`streaksy_active_roadmaps`) + backend API
-- All pages use AppShell wrapper (except landing page)
+- All pages use AppShell wrapper (except landing page, invite pages, roadmap join page)
+- Room creation mode must be `'single'` or `'multi'` (Zod enum — never use `'practice'`)
+- Rate limit: 500 requests per 15 minutes per IP (`RATE_LIMIT_MAX` in `.env`)
