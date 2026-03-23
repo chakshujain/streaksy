@@ -76,7 +76,7 @@ app.use(
     max: env.rateLimit.max,
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => req.path === '/health',
+    skip: (req) => req.path === '/health' || req.path.startsWith('/api/auth/google') || req.path.startsWith('/api/auth/github') || req.path.startsWith('/api/v1/auth/google') || req.path.startsWith('/api/v1/auth/github'),
   })
 );
 
