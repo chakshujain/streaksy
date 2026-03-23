@@ -51,8 +51,13 @@ export const pokeService = {
 
     const poke = await pokeRepository.create(fromUserId, toUserId, message, 'manual', 3, groupId);
 
+    // Build the custom poke email template
+    const pokeEmailOverride = this.buildPokeEmailTemplate(fromUser.display_name, message);
+
     // Send via notification hub (in-app + push + email based on preferences)
-    notificationHub.send(toUserId, 'poke', `${fromUser?.display_name} poked you! 👉`, message).catch(() => {});
+    notificationHub.send(toUserId, 'poke', `${fromUser?.display_name} poked you! 👉`, message, undefined, {
+      emailOverride: pokeEmailOverride,
+    }).catch(() => {});
 
     return poke;
   },
@@ -126,9 +131,13 @@ export const pokeService = {
     return pokeRepository.getActiveChallenge(userId);
   },
 
-  /** Send poke email with fun styling */
-  async sendPokeEmail(toEmail: string, toName: string, message: string, fromName: string) {
-    const html = `<!DOCTYPE html><html><head><style>
+  /** Build custom poke email template */
+  buildPokeEmailTemplate(fromName: string, message: string): { subject: string; html: string } {
+    const safeName = fromName.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const safeMessage = message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return {
+      subject: `👉 ${fromName} poked you on Streaksy!`,
+      html: `<!DOCTYPE html><html><head><style>
       body { margin: 0; padding: 0; background-color: #09090b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
       .container { max-width: 560px; margin: 0 auto; padding: 40px 24px; }
       .card { background-color: #18181b; border: 1px solid #27272a; border-radius: 16px; padding: 40px 32px; text-align: center; }
@@ -144,14 +153,19 @@ export const pokeService = {
     <div class="container"><div class="card">
       <div class="logo">🔥 <span>Streaksy</span></div>
       <div class="poke-emoji">👉</div>
-      <h1>${fromName.replace(/</g, '&lt;').replace(/>/g, '&gt;')} poked you!</h1>
-      <div class="message">"${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}"</div>
+      <h1>${safeName} poked you!</h1>
+      <div class="message">"${safeMessage}"</div>
       <p>Don't let your friends down. Solve a problem and show them what you've got!</p>
       <a href="${env.frontendUrl}/problems" class="btn">Solve a Problem Now</a>
     </div>
     <div class="footer">Streaksy — DSA Prep, Together<br/>Manage nudge settings in your preferences.</div>
-    </div></body></html>`;
+    </div></body></html>`,
+    };
+  },
 
-    return sendEmail(toEmail, `👉 ${fromName} poked you on Streaksy!`, html);
+  /** Send poke email with fun styling */
+  async sendPokeEmail(toEmail: string, toName: string, message: string, fromName: string) {
+    const email = this.buildPokeEmailTemplate(fromName, message);
+    return sendEmail(toEmail, email.subject, email.html);
   },
 };
