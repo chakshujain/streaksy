@@ -60,7 +60,9 @@ async function start() {
 
   // Digest scheduler — morning at 8am, evening at 9pm, weekly on Monday 9am
   const { digestService } = await import('./modules/digest/service/digest.service');
+  let digestRunning = false;
   setInterval(async () => {
+    if (digestRunning) return; // Prevent overlapping runs
     const now = new Date();
     const hour = now.getUTCHours();
     const minute = now.getUTCMinutes();
@@ -69,18 +71,23 @@ async function start() {
     try {
       // Morning digest at 8:00 UTC
       if (hour === 8 && minute < 5) {
+        digestRunning = true;
         await digestService.runMorningDigests();
       }
       // Evening reminder at 21:00 UTC
       if (hour === 21 && minute < 5) {
+        digestRunning = true;
         await digestService.runEveningReminders();
       }
       // Weekly report on Monday at 9:00 UTC
       if (day === 1 && hour === 9 && minute < 5) {
+        digestRunning = true;
         await digestService.runWeeklyReports();
       }
     } catch (err) {
       logger.error({ err }, 'Failed to run digest scheduler');
+    } finally {
+      digestRunning = false;
     }
   }, 5 * 60_000); // Check every 5 minutes
 

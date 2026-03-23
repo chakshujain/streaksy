@@ -109,6 +109,8 @@ export default function SettingsPage() {
     room_enabled: true,
     achievement_enabled: true,
     smart_enabled: true,
+    quiet_start: '22:00',
+    quiet_end: '07:00',
   });
   const [notifPrefsLoading, setNotifPrefsLoading] = useState(true);
 
@@ -503,6 +505,38 @@ export default function SettingsPage() {
                     notificationsApi.updateNotifPreferences({ smart_enabled: v }).catch(() => {});
                   }}
                 />
+
+                {/* Quiet Hours */}
+                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-4 mb-2">Quiet Hours</p>
+                <p className="text-xs text-zinc-500 mb-3">No push or email notifications during these hours (UTC)</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <label className="text-xs text-zinc-400 mb-1 block">From</label>
+                    <input
+                      type="time"
+                      value={notifPrefs.quiet_start}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setNotifPrefs(p => ({ ...p, quiet_start: v }));
+                        notificationsApi.updateNotifPreferences({ quiet_start: v }).catch(() => {});
+                      }}
+                      className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs text-zinc-400 mb-1 block">To</label>
+                    <input
+                      type="time"
+                      value={notifPrefs.quiet_end}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setNotifPrefs(p => ({ ...p, quiet_end: v }));
+                        notificationsApi.updateNotifPreferences({ quiet_end: v }).catch(() => {});
+                      }}
+                      className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </SectionCard>

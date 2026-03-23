@@ -123,7 +123,7 @@ function buildNotifEmail(type: string, title: string, body: string, data?: Recor
       <div class="logo">🔥 <span>Streaksy</span></div>
       <h2>${escHtml(title)}</h2>
       <p>${escHtml(body)}</p>
-      ${actionUrl ? `<div style="text-align:center;"><a href="${actionUrl}" class="btn">${actionText}</a></div>` : ''}
+      ${actionUrl ? `<div style="text-align:center;"><a href="${escHtml(actionUrl)}" class="btn">${escHtml(actionText)}</a></div>` : ''}
     </div>
     <div class="footer">Streaksy — Crush Your Goals With Friends<br/>
       <a href="${env.frontendUrl}/settings" style="color:#52525b;">Manage notifications</a>
