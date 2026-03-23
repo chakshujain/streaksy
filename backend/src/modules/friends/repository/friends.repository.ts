@@ -234,24 +234,36 @@ export const friendsRepository = {
   },
 
   async searchUsers(searchQuery: string, userId: string): Promise<UserSearchRow[]> {
+    if (searchQuery.trim().length > 0) {
+      return query<UserSearchRow>(
+        `SELECT
+           u.id, u.display_name, u.avatar_url, u.bio,
+           f.status AS friendship_status, f.id AS friendship_id
+         FROM users u
+         LEFT JOIN friendships f ON (
+           (f.requester_id = $2 AND f.addressee_id = u.id)
+           OR (f.requester_id = u.id AND f.addressee_id = $2)
+         )
+         WHERE u.id != $2 AND u.display_name ILIKE $1
+         ORDER BY u.display_name
+         LIMIT 30`,
+        [`%${searchQuery}%`, userId]
+      );
+    }
+    // No query — return all users (suggested)
     return query<UserSearchRow>(
       `SELECT
-         u.id,
-         u.display_name,
-         u.avatar_url,
-         u.bio,
-         f.status AS friendship_status,
-         f.id AS friendship_id
+         u.id, u.display_name, u.avatar_url, u.bio,
+         f.status AS friendship_status, f.id AS friendship_id
        FROM users u
        LEFT JOIN friendships f ON (
-         (f.requester_id = $2 AND f.addressee_id = u.id)
-         OR (f.requester_id = u.id AND f.addressee_id = $2)
+         (f.requester_id = $1 AND f.addressee_id = u.id)
+         OR (f.requester_id = u.id AND f.addressee_id = $1)
        )
-       WHERE u.id != $2
-         AND u.display_name ILIKE $1
-       ORDER BY u.display_name
-       LIMIT 20`,
-      [`%${searchQuery}%`, userId]
+       WHERE u.id != $1
+       ORDER BY f.status ASC NULLS LAST, u.display_name
+       LIMIT 30`,
+      [userId]
     );
   },
 };

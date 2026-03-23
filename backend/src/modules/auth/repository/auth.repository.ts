@@ -14,6 +14,10 @@ interface UserRow {
   location: string | null;
   github_url: string | null;
   linkedin_url: string | null;
+  oauth_provider: string | null;
+  oauth_id: string | null;
+  google_refresh_token: string | null;
+  google_calendar_connected: boolean;
   created_at: Date;
 }
 

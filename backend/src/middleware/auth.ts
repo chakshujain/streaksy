@@ -45,7 +45,7 @@ export async function blacklistToken(token: string): Promise<void> {
 
     const ttl = payload.exp - Math.floor(Date.now() / 1000);
     if (ttl > 0) {
-      await redis.set(`${TOKEN_BLACKLIST_PREFIX}${token}`, '1', 'EX', ttl);
+      await redis.set(`${TOKEN_BLACKLIST_PREFIX}${token}`, '1', { EX: ttl });
     }
   } catch {
     // Best effort — if Redis is down, token remains valid until expiry

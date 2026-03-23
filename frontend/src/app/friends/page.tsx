@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
@@ -406,13 +406,23 @@ function FindFriendsTab() {
   const [searching, setSearching] = useState(false);
   const [sending, setSending] = useState<string | null>(null);
   const [sent, setSent] = useState<Set<string>>(new Set());
+  const [initialLoaded, setInitialLoaded] = useState(false);
+
+  // Load suggested users on mount (show everyone)
+  useEffect(() => {
+    if (initialLoaded) return;
+    setSearching(true);
+    friendsApi.search('')
+      .then((res) => setResults(res.data.users || []))
+      .catch(() => {})
+      .finally(() => { setSearching(false); setInitialLoaded(true); });
+  }, [initialLoaded]);
 
   const handleSearch = useCallback(async () => {
-    if (query.trim().length < 2) return;
     setSearching(true);
     try {
       const res = await friendsApi.search(query.trim());
-      setResults(res.data.users);
+      setResults(res.data.users || []);
     } catch {
       // ignore
     } finally {
@@ -452,7 +462,7 @@ function FindFriendsTab() {
         <Button
           onClick={handleSearch}
           loading={searching}
-          disabled={query.trim().length < 2}
+          disabled={searching}
           className="gap-1.5 rounded-xl"
         >
           <Search className="h-4 w-4" />
