@@ -58,7 +58,7 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 - **Engagement**: rating, powerup, digest
 - **Invite**: invite module — group and room invite code generation and joining
 - **Friends**: friends module — friend requests, accept/reject, friend list, search, invite-friends to groups/roadmaps/rooms, invite-by-email for new users
-- **Learn**: learn module (skeleton — content is frontend data-driven via `frontend/src/data/*.ts`)
+- **Learn**: learn module — Ask AI endpoint (`/api/learn/ask-ai`) + frontend data-driven content (`frontend/src/data/*.ts`)
 
 ### Key Database Tables
 - **Core**: users, problems, tags, sheets, groups, group_members, user_problem_status, user_streaks, notes
@@ -163,7 +163,7 @@ SimulationPlayer with play/pause, speed control, audio narration (Web Speech API
 - **Model**: `meta/llama-3.3-70b-instruct`
 - **Config**: `AI_BASE_URL`, `NVIDIA_API_KEY`, `AI_MODEL` env vars
 - **AI Service**: `backend/src/modules/ai/service/ai.service.ts`
-- **Endpoints**: `/api/revisions/generate`, `/hints`, `/explain`, `/review`
+- **Endpoints**: `/api/revisions/generate`, `/hints`, `/explain`, `/review`, `/api/learn/ask-ai`
 - **Rate Limiting**: 20 AI generations per user per day (Redis)
 
 ## Sidebar Navigation
@@ -252,4 +252,6 @@ pm2 restart ecosystem.config.js # Hard restart
 - Roadmap data stored in localStorage (`streaksy_active_roadmaps`) + backend API
 - All pages use AppShell wrapper (except landing page, invite pages, roadmap join page)
 - Room creation mode must be `'single'` or `'multi'` (Zod enum — never use `'practice'`)
-- Rate limit: 500 requests per 15 minutes per IP (`RATE_LIMIT_MAX` in `.env`)
+- Rate limit: 500 requests per 15 minutes per IP (`RATE_LIMIT_MAX` in `.env`). OAuth routes (`/api/auth/google*`, `/api/auth/github*`) skip rate limiting.
+- Error handler returns both `error` and `message` fields in JSON responses for frontend compatibility
+- Poke messages use actual `days_inactive` from `user_streaks` table (not derived from escalation level)
