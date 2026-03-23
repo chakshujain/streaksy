@@ -204,8 +204,10 @@ Dashboard, Daily, Feed, Roadmaps, Learn, Problems, Groups, Friends, War Rooms, T
 - **Platform**: Amazon Linux 2023 on EC2
 - **Process Manager**: PM2 (`ecosystem.config.js`) — `streaksy-backend` (port 3001), `streaksy-frontend` (port 3000)
 - **Database**: PostgreSQL 16 local, user `postgres`, database `streaksy` (`DATABASE_URL` in `backend/.env`)
+- **Nginx**: Reverse proxy with cache headers — HTML pages: `no-cache`, static assets: `immutable`. Config at `/etc/nginx/conf.d/streaksy.conf`
 - **Deploy Script**: `bash deploy/deploy.sh` — pulls latest, installs deps, builds backend (tsc) + frontend (next build), runs migrations, reloads PM2
 - **Health Check**: `curl http://localhost:3001/health` (returns DB + Redis status)
+- **IMPORTANT**: After `next build`, always restart the frontend PM2 process. Nginx sends `no-cache` on HTML to prevent stale JS chunk references
 
 ```bash
 # Manual deploy
