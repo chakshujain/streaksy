@@ -212,6 +212,16 @@ export const databaseLessons: Record<
         ],
         analogy:
           'SELECT is like choosing which columns of a spreadsheet to display. You never need to print every column when you only care about names and salaries.',
+        diagram: `users table:
+┌────┬──────────┬─────────────────┬─────┐
+│ id │ name     │ email           │ age │
+├────┼──────────┼─────────────────┼─────┤
+│ 1  │ Alice    │ alice@mail.com  │ 25  │
+│ 2  │ Bob      │ bob@mail.com    │ 30  │
+│ 3  │ Charlie  │ charlie@mail.com│ 22  │
+└────┴──────────┴─────────────────┴─────┘
+  ▲       ▲
+  SELECT id, name → only these columns returned`,
         keyTakeaway:
           'SELECT * is fine for exploring, but in production code always list the specific columns you need.',
       },
@@ -253,6 +263,18 @@ export const databaseLessons: Record<
             code: `-- Sort by salary, highest first\nSELECT name, salary FROM employees\nORDER BY salary DESC;\n\n-- Sort by department alphabetically, then salary within each dept\nSELECT name, department, salary FROM employees\nORDER BY department ASC, salary DESC;\n\n-- Combine with WHERE\nSELECT name, salary FROM employees\nWHERE department = 'Engineering'\nORDER BY salary DESC;`,
           },
         ],
+        comparison: {
+          leftTitle: 'ASC (Default)',
+          rightTitle: 'DESC',
+          items: [
+            { left: 'Alice (22)', right: 'Charlie (35)' },
+            { left: 'Bob (25)', right: 'Bob (25)' },
+            { left: 'Charlie (35)', right: 'Alice (22)' },
+            { left: 'Smallest → Largest', right: 'Largest → Smallest' },
+            { left: 'A → Z for text', right: 'Z → A for text' },
+            { left: 'Oldest → Newest for dates', right: 'Newest → Oldest for dates' },
+          ],
+        },
         keyTakeaway:
           'ORDER BY goes after WHERE. Use ASC (default) or DESC, and chain multiple columns for tie-breaking.',
       },
@@ -282,6 +304,13 @@ export const databaseLessons: Record<
             label: 'Aggregation examples',
             code: `-- How many employees total?\nSELECT COUNT(*) FROM employees;\n\n-- Average salary\nSELECT AVG(salary) AS avg_salary FROM employees;\n\n-- Average salary PER department\nSELECT department, AVG(salary) AS avg_salary, COUNT(*) AS headcount\nFROM employees\nGROUP BY department;\n\n-- Only departments with avg salary > 80k\nSELECT department, AVG(salary) AS avg_salary\nFROM employees\nGROUP BY department\nHAVING AVG(salary) > 80000;`,
           },
+        ],
+        cards: [
+          { title: 'COUNT', description: 'Counts the number of rows. COUNT(*) includes NULLs, COUNT(col) skips NULLs.', icon: '#️⃣', color: 'blue' },
+          { title: 'SUM', description: 'Adds up all values in a numeric column. Returns NULL if all values are NULL.', icon: '➕', color: 'emerald' },
+          { title: 'AVG', description: 'Calculates the arithmetic mean. Ignores NULL values in the calculation.', icon: '📊', color: 'purple' },
+          { title: 'MIN', description: 'Returns the smallest value. Works on numbers, strings, and dates.', icon: '⬇️', color: 'amber' },
+          { title: 'MAX', description: 'Returns the largest value. Works on numbers, strings, and dates.', icon: '⬆️', color: 'red' },
         ],
         analogy:
           'COUNT is like counting heads in a room. AVG is the average test score. GROUP BY is splitting the room by team first, then counting each team separately.',
@@ -374,6 +403,18 @@ export const databaseLessons: Record<
             code: `CREATE TABLE customers (\n  id      SERIAL PRIMARY KEY,\n  name    VARCHAR(100),\n  city    VARCHAR(50)\n);\n\nCREATE TABLE orders (\n  id          SERIAL PRIMARY KEY,\n  customer_id INT REFERENCES customers(id),\n  product     VARCHAR(100),\n  amount      NUMERIC(10, 2),\n  order_date  DATE\n);\n\nINSERT INTO customers (id, name, city) VALUES\n  (1, 'Alice', 'New York'),\n  (2, 'Bob',   'Chicago'),\n  (3, 'Charlie', 'Seattle'),\n  (4, 'Diana', 'Austin');    -- Diana has no orders\n\nINSERT INTO orders (id, customer_id, product, amount, order_date) VALUES\n  (101, 1, 'Laptop',    999.99, '2024-01-15'),\n  (102, 1, 'Mouse',      29.99, '2024-01-15'),\n  (103, 2, 'Keyboard',   79.99, '2024-02-03'),\n  (104, 3, 'Monitor',   349.99, '2024-02-20'),\n  (105, NULL, 'USB Cable', 9.99, '2024-03-01');  -- orphan order`,
           },
         ],
+        diagram: `customers                          orders
+┌────┬─────────┬──────────┐        ┌─────┬─────────────┬──────────┬────────┐
+│ id │ name    │ city     │        │ id  │ customer_id │ product  │ amount │
+├────┼─────────┼──────────┤        ├─────┼─────────────┼──────────┼────────┤
+│ 1  │ Alice   │ New York │◄───────│ 101 │ 1           │ Laptop   │ 999.99 │
+│    │         │          │◄───────│ 102 │ 1           │ Mouse    │  29.99 │
+│ 2  │ Bob     │ Chicago  │◄───────│ 103 │ 2           │ Keyboard │  79.99 │
+│ 3  │ Charlie │ Seattle  │◄───────│ 104 │ 3           │ Monitor  │ 349.99 │
+│ 4  │ Diana   │ Austin   │  ╳    │ 105 │ NULL        │ USB Cable│   9.99 │
+└────┴─────────┴──────────┘        └─────┴─────────────┴──────────┴────────┘
+         ▲                                    │
+         └────── Foreign Key (customer_id) ───┘`,
         keyTakeaway:
           'Notice Diana (customer 4) has no orders, and order 105 has no customer. These edge cases make JOINs interesting.',
       },
@@ -405,6 +446,19 @@ export const databaseLessons: Record<
             code: `SELECT c.name, o.product, o.amount\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id;\n\n-- Result includes Diana with NULLs:\n-- Diana   | NULL     | NULL\n\n-- Find customers with NO orders:\nSELECT c.name\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id\nWHERE o.id IS NULL;\n-- Result: Diana`,
           },
         ],
+        diagram: `  ┌─────────────────────────────────┐
+  │  LEFT JOIN                      │
+  │  ┌───────────┐   ┌───────────┐  │
+  │  │███████████│   │           │  │
+  │  │███████████│   │           │  │
+  │  │███ALL█████├───┤ matching  │  │
+  │  │███LEFT████│   │  right    │  │
+  │  │███████████│   │           │  │
+  │  │███████████│   │           │  │
+  │  └───────────┘   └───────────┘  │
+  │  All left rows kept             │
+  │  NULLs where no right match     │
+  └─────────────────────────────────┘`,
         analogy:
           'LEFT JOIN is like a class roster matched against submitted homework. Every student appears — those who did not submit get a blank next to their name.',
         keyTakeaway:
@@ -481,6 +535,12 @@ export const databaseLessons: Record<
           '**Be careful with FULL OUTER JOINs.** Harder for the optimizer than INNER/LEFT.',
           '**Watch for accidental CROSS JOINs.** Missing ON clause = millions of rows.',
           '**Use EXPLAIN** to see the query plan and verify indexes are used.',
+        ],
+        cards: [
+          { title: 'Index Foreign Keys', description: 'Always create indexes on FK columns used in JOIN conditions. Without them, the DB does a full table scan for every match.', icon: '🔑', color: 'emerald' },
+          { title: 'Avoid SELECT *', description: 'Select only the columns you need. Fewer columns = less I/O, smaller result sets, and potential index-only scans.', icon: '🎯', color: 'blue' },
+          { title: 'Use EXPLAIN', description: 'Run EXPLAIN ANALYZE before your query to see the execution plan. Look for Seq Scans on large tables — they signal missing indexes.', icon: '📋', color: 'purple' },
+          { title: 'Limit JOINs', description: 'Each JOIN multiplies complexity. If you are joining 5+ tables, consider denormalizing or breaking into separate queries.', icon: '⚠️', color: 'amber' },
         ],
         keyTakeaway:
           'Index your JOIN columns, select only needed columns, and use EXPLAIN to verify the database is not doing unnecessary work.',
@@ -695,6 +755,19 @@ export const databaseLessons: Record<
             code: `-- VIOLATION: comma-separated list in a column\n-- | student_id | name  | courses              |\n-- | 1          | Alice | CS101, MATH201       |\n\n-- FIX: one row per student-course pair\nCREATE TABLE student_courses (\n  student_id   INT,\n  student_name VARCHAR(100),\n  course_code  VARCHAR(20),\n  PRIMARY KEY (student_id, course_code)\n);`,
           },
         ],
+        comparison: {
+          leftTitle: 'Before 1NF',
+          rightTitle: 'After 1NF',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'courses = "CS101, MATH201"', right: 'One row: student_id=1, course=CS101' },
+            { left: 'Multiple values in one cell', right: 'One value per cell' },
+            { left: 'Cannot query individual courses', right: 'Easy to filter by course_code' },
+            { left: 'Cannot count courses per student', right: 'COUNT(course_code) works perfectly' },
+            { left: 'Adding a course means string manipulation', right: 'Adding a course = INSERT a new row' },
+          ],
+        },
         analogy:
           '1NF says: don\'t stuff a list into a single cell. Every box in the filing cabinet should hold exactly one document.',
         keyTakeaway:
@@ -710,6 +783,12 @@ export const databaseLessons: Record<
             label: 'Decomposing to 2NF',
             code: `-- Before: student_name depends only on student_id\n-- (partial dependency on composite PK)\n\n-- After (2NF):\nCREATE TABLE students (\n  student_id   INT PRIMARY KEY,\n  student_name VARCHAR(100)\n);\n\nCREATE TABLE enrollments (\n  student_id  INT REFERENCES students(student_id),\n  course_code VARCHAR(20),\n  grade       CHAR(2),\n  PRIMARY KEY (student_id, course_code)\n);`,
           },
+        ],
+        flow: [
+          { label: 'Identify PKs', description: 'Find all columns in the composite primary key', icon: '🔑' },
+          { label: 'Find Partial Dependencies', description: 'Check if any non-key column depends on only part of the PK', icon: '🔍' },
+          { label: 'Extract to New Table', description: 'Move partially-dependent columns into their own table', icon: '✂️' },
+          { label: 'Link with FK', description: 'Connect the new table back using a foreign key relationship', icon: '🔗' },
         ],
         keyTakeaway:
           '2NF: every non-key column must depend on the WHOLE primary key. Split out columns that depend on only part of the key.',
@@ -841,6 +920,23 @@ export const databaseLessons: Record<
             code: `BEGIN;\n\n-- Step 1: Debit checking\nUPDATE accounts SET balance = balance - 500\nWHERE id = 1 AND account_type = 'checking';\n\n-- Step 2: Credit savings\nUPDATE accounts SET balance = balance + 500\nWHERE id = 1 AND account_type = 'savings';\n\nCOMMIT;   -- both succeed\n-- or ROLLBACK;  -- both undone`,
           },
         ],
+        diagram: `Transaction: Transfer $500
+┌──────────────────────────────────────────────┐
+│  BEGIN                                       │
+│    │                                         │
+│    ▼                                         │
+│  Debit checking  (-$500)                     │
+│    │                                         │
+│    ▼                                         │
+│  Credit savings  (+$500)                     │
+│    │                                         │
+│    ├── Success ──► COMMIT   ✅               │
+│    │               Both changes saved        │
+│    │                                         │
+│    └── Failure ──► ROLLBACK ❌               │
+│                    Both changes undone        │
+│                    DB unchanged               │
+└──────────────────────────────────────────────┘`,
         analogy:
           'Atomicity is like an elevator — it takes you all the way to your floor or brings you back to where you started. Never stuck between floors.',
         keyTakeaway:
@@ -1012,6 +1108,18 @@ export const databaseLessons: Record<
             code: `-- Session A:\nBEGIN;\nSET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\nSELECT balance FROM accounts WHERE id = 1;  -- $1000\n\n-- Session B (NOT committed):\nBEGIN;\nUPDATE accounts SET balance = 500 WHERE id = 1;\n\n-- Session A sees $500 (DIRTY READ!)\nSELECT balance FROM accounts WHERE id = 1;  -- $500\n\n-- Session B rolls back:\nROLLBACK;  -- real balance is still $1000`,
           },
         ],
+        diagram: `Dirty Read Scenario:
+┌─ Transaction A ─────────┐  ┌─ Transaction B ─────────┐
+│                          │  │                          │
+│  BEGIN                   │  │  BEGIN                   │
+│  READ balance → $1000    │  │                          │
+│                          │  │  UPDATE balance = $500   │
+│  READ balance → $500 ⚠️  │  │  (not committed yet!)    │
+│  (dirty read!)           │  │                          │
+│                          │  │  ROLLBACK ❌              │
+│  Acted on $500...        │  │  balance is still $1000  │
+│  but real balance=$1000! │  │                          │
+└──────────────────────────┘  └──────────────────────────┘`,
         keyTakeaway:
           'Read Uncommitted allows dirty reads — avoid in almost all cases.',
       },
@@ -1026,6 +1134,18 @@ export const databaseLessons: Record<
             code: `-- Session A:\nBEGIN;\nSELECT balance FROM accounts WHERE id = 1;  -- $1000\n\n-- Session B commits a change:\nUPDATE accounts SET balance = 800 WHERE id = 1;\nCOMMIT;\n\n-- Session A reads again:\nSELECT balance FROM accounts WHERE id = 1;  -- $800!\n-- Different value in same transaction`,
           },
         ],
+        comparison: {
+          leftTitle: 'Read Uncommitted',
+          rightTitle: 'Read Committed',
+          items: [
+            { left: 'Sees uncommitted changes', right: 'Only sees committed data' },
+            { left: 'Dirty reads possible', right: 'No dirty reads' },
+            { left: 'Fastest but dangerous', right: 'Safe default for most apps' },
+            { left: 'Almost never used', right: 'Default in PostgreSQL and Oracle' },
+            { left: 'May act on data that rolls back', right: 'Data is guaranteed to persist' },
+            { left: 'Non-repeatable reads possible', right: 'Non-repeatable reads still possible' },
+          ],
+        },
         analogy:
           'Read Committed is like checking a stock price. Each check shows the latest price, but it may have changed since you last looked.',
         keyTakeaway:
@@ -1063,6 +1183,15 @@ export const databaseLessons: Record<
             code: `import psycopg2\n\ndef run_serializable(conn, operation):\n    for attempt in range(3):\n        try:\n            with conn.cursor() as cur:\n                cur.execute("BEGIN ISOLATION LEVEL SERIALIZABLE")\n                operation(cur)\n                conn.commit()\n                return\n        except psycopg2.errors.SerializationFailure:\n            conn.rollback()\n            if attempt == 2:\n                raise`,
           },
         ],
+        table: {
+          headers: ['Level', 'Dirty Read', 'Non-Repeatable', 'Phantom', 'Performance'],
+          rows: [
+            ['Read Uncommitted', 'Possible', 'Possible', 'Possible', '★★★★★ Fastest'],
+            ['Read Committed', 'Prevented', 'Possible', 'Possible', '★★★★☆ Fast'],
+            ['Repeatable Read', 'Prevented', 'Prevented', 'Possible*', '★★★☆☆ Moderate'],
+            ['Serializable', 'Prevented', 'Prevented', 'Prevented', '★★☆☆☆ Slowest'],
+          ],
+        },
         keyTakeaway:
           'Serializable prevents all anomalies but can cause transaction aborts. Always implement retry logic.',
       },
@@ -1182,6 +1311,20 @@ export const databaseLessons: Record<
             code: `// BAD: N+1 queries (101 total!)\nconst orders = await db.query('SELECT * FROM orders LIMIT 100');\nfor (const order of orders) {\n  const customer = await db.query(\n    'SELECT name FROM customers WHERE id = $1',\n    [order.customer_id]\n  );\n}\n\n// GOOD: Single query with JOIN (1 total)\nconst results = await db.query(\`\n  SELECT o.*, c.name AS customer_name\n  FROM orders o\n  JOIN customers c ON o.customer_id = c.id\n  LIMIT 100\n\`);`,
           },
         ],
+        diagram: `N+1 Pattern (BAD):                Single JOIN (GOOD):
+┌──────────────────────┐            ┌──────────────────────┐
+│ Query 1: Get orders  │            │ Query 1:             │
+│ SELECT * FROM orders │            │ SELECT o.*, c.name   │
+│ → 100 rows           │            │ FROM orders o        │
+├──────────────────────┤            │ JOIN customers c     │
+│ Query 2: customer #1 │            │ ON o.customer_id=c.id│
+│ Query 3: customer #2 │            │ → 100 rows, done! ✅  │
+│ Query 4: customer #3 │            └──────────────────────┘
+│ ...                  │
+│ Query 101: cust #100 │            Total: 1 query
+├──────────────────────┤
+│ Total: 101 queries ❌ │
+└──────────────────────┘`,
         analogy:
           'N+1 is like calling a pizza shop 10 times to order 10 pizzas one at a time, instead of calling once and ordering all 10.',
         keyTakeaway:
@@ -1380,6 +1523,12 @@ export const databaseLessons: Record<
           '**Resharding** — Adding servers means redistributing data. Consistent hashing helps.',
           '**Operational overhead** — N databases to back up, monitor, upgrade, and debug.',
           '**No foreign keys** across shards. Referential integrity must be enforced in application code.',
+        ],
+        cards: [
+          { title: 'Cross-Shard Queries', description: 'Queries spanning multiple shards must fan out to every shard and merge results. Much slower than single-shard queries.', icon: '🔀', color: 'red' },
+          { title: 'Hotspots', description: 'Uneven data distribution causes some shards to be overloaded while others sit idle. Poor shard key choice is the usual cause.', icon: '🔥', color: 'amber' },
+          { title: 'Rebalancing', description: 'Adding or removing shards requires redistributing data. Consistent hashing helps but migration is still disruptive.', icon: '⚖️', color: 'purple' },
+          { title: 'Referential Integrity', description: 'Foreign keys cannot span shards. Your application code must enforce data integrity across shard boundaries.', icon: '🔗', color: 'blue' },
         ],
         analogy:
           'Sharding is like splitting a puzzle across multiple tables. Each table works fast, but seeing the full picture requires walking to every table.',

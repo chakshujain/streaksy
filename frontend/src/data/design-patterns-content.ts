@@ -16,6 +16,12 @@ export const designPatternsLessons: Record<string, {
           'Every experienced developer eventually faces the same recurring problems — how to create objects flexibly, how to structure communication between components, how to add behavior without modifying existing code. **Design patterns** are proven, reusable solutions to these common problems.',
         analogy:
           'Think of design patterns like architectural blueprints for houses. You would not reinvent plumbing from scratch every time you build a house — you use proven designs. Similarly, design patterns are battle-tested solutions that thousands of developers have refined over decades.',
+        cards: [
+          { title: 'Reusability', description: 'Apply proven solutions instead of reinventing the wheel for every new project.', icon: '♻️', color: 'emerald' },
+          { title: 'Communication', description: 'Shared vocabulary lets developers discuss designs quickly and precisely.', icon: '💬', color: 'blue' },
+          { title: 'Best Practices', description: 'Patterns encode decades of collective experience from expert developers.', icon: '✅', color: 'amber' },
+          { title: 'Maintainability', description: 'Well-structured code is easier to read, extend, and debug over time.', icon: '🔧', color: 'purple' },
+        ],
         keyTakeaway:
           'Design patterns are reusable solutions to recurring software design problems.',
       },
@@ -214,6 +220,15 @@ db2 = DatabaseConnection()  # returns same instance
 print(db1 is db2)  # True — same object`,
           },
         ],
+        diagram: `┌─────────────────────────┐
+│     Singleton           │
+├─────────────────────────┤
+│ - instance: Singleton   │
+├─────────────────────────┤
+│ - constructor()         │
+│ + getInstance(): Self   │
+│ + doWork(): void        │
+└─────────────────────────┘`,
         keyTakeaway:
           'The constructor is private (or overridden). A static method creates the instance on first call and returns it on subsequent calls.',
       },
@@ -437,6 +452,17 @@ service: NotificationService = EmailService()
 service.notify("Your order shipped!")  # Email: Your order shipped!`,
           },
         ],
+        diagram: `┌───────────────┐       ┌───────────────┐
+│   Creator     │       │   Product     │
+│  (abstract)   │       │  (interface)  │
+├───────────────┤       ├───────────────┤
+│ + create()    │──────►│ + use()       │
+└───────┬───────┘       └───────┬───────┘
+        │                       │
+   ┌────┴────┐             ┌────┴────┐
+   │ CreatorA │             │ProductA │
+   │ CreatorB │             │ProductB │
+   └─────────┘             └─────────┘`,
         keyTakeaway:
           'The client works with the Creator interface. Swapping implementations requires zero changes to client code.',
       },
@@ -450,6 +476,15 @@ service.notify("Your order shipped!")  # Email: Your order shipped!`,
           'You want to reuse existing objects instead of rebuilding them each time',
           'Your code should work with any class that implements a common interface',
         ],
+        table: {
+          headers: ['Scenario', 'Use Factory?', 'Why'],
+          rows: [
+            ['Unknown concrete type at compile time', 'Yes', 'Factory lets subclasses decide the type at runtime'],
+            ['Library or framework extensibility', 'Yes', 'Users can extend by subclassing the creator'],
+            ['Only one product type, never changes', 'No', 'Simple constructor is sufficient — no need for abstraction'],
+            ['Object reuse (pooling, caching)', 'Yes', 'Factory can return cached instances instead of always creating new ones'],
+          ],
+        },
         keyTakeaway:
           'Use Factory Method when the exact type to create is determined at runtime or by subclasses.',
       },
@@ -616,6 +651,22 @@ def build_ui(factory: UIFactory):
 build_ui(MacFactory())  # [Mac Button] [Mac Checkbox]`,
           },
         ],
+        diagram: `┌──────────────────────┐
+│   AbstractFactory    │
+│──────────────────────│
+│ + createButton()     │
+│ + createCheckbox()   │
+└──────┬───────────┬───┘
+       │           │
+       ▼           ▼
+┌────────────┐ ┌────────────┐
+│ WinFactory │ │ MacFactory │
+└──────┬─────┘ └──────┬─────┘
+       │               │
+       ▼               ▼
+  WinButton        MacButton
+  WinCheckbox      MacCheckbox
+  (Family A)       (Family B)`,
         keyTakeaway:
           'The client code works exclusively with abstract interfaces. Swapping the factory switches the entire product family.',
       },
@@ -669,6 +720,18 @@ build_ui(MacFactory())  # [Mac Button] [Mac Checkbox]`,
           'Some objects have many optional parameters. A constructor with 10 parameters is unreadable, and telescoping constructors (multiple overloads) are unwieldy. The Builder pattern lets you construct complex objects step by step.',
         analogy:
           'Think about ordering a custom pizza. You do not yell all 15 toppings at once. Instead, you say: "start with thin crust, add mozzarella, add pepperoni, add mushrooms, done." The Builder pattern works the same way — one step at a time.',
+        comparison: {
+          leftTitle: 'Constructor',
+          rightTitle: 'Builder Pattern',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'All parameters in one call', right: 'Set properties one at a time' },
+            { left: 'Hard to read with many args', right: 'Each method has a descriptive name' },
+            { left: 'Must pass null/undefined for optional params', right: 'Only set what you need' },
+            { left: 'Order of parameters matters', right: 'Order of method calls does not matter' },
+          ],
+        },
         keyTakeaway:
           'Builder separates the construction of a complex object from its representation, allowing step-by-step assembly.',
       },
@@ -775,6 +838,13 @@ user = (UserBuilder()
     .set_theme("dark")
     .build())`,
           },
+        ],
+        flow: [
+          { label: 'Director', description: 'Orchestrates the build sequence (optional)', icon: '🎯' },
+          { label: 'Builder', description: 'Creates the builder instance with defaults', icon: '🏗️' },
+          { label: 'Set Part A', description: 'Calls setter methods to configure properties', icon: '🔧' },
+          { label: 'Set Part B', description: 'Chains additional configuration methods', icon: '🔧' },
+          { label: 'Get Result', description: 'Calls build() to produce the final object', icon: '✅' },
         ],
         keyTakeaway:
           'Builder uses method chaining to construct objects step by step with a readable, flexible API.',
@@ -937,6 +1007,21 @@ emitter.subscribe("user:signup", Analytics())
 emitter.notify("user:signup", {"email": "alice@example.com"})`,
           },
         ],
+        diagram: `┌──────────────────┐
+│    Subject       │
+│──────────────────│
+│ observers: []    │
+│ subscribe(obs)   │
+│ unsubscribe(obs) │
+│ notify()  ───────┼──┐
+└──────────────────┘  │
+                      │ calls update() on each
+         ┌────────────┼────────────┐
+         ▼            ▼            ▼
+    ┌──────────┐ ┌──────────┐ ┌──────────┐
+    │ObserverA │ │ObserverB │ │ObserverC │
+    │update()  │ │update()  │ │update()  │
+    └──────────┘ └──────────┘ └──────────┘`,
         keyTakeaway:
           'Observers register with the subject. When state changes, the subject iterates over all observers and calls update().',
       },
@@ -951,6 +1036,12 @@ emitter.notify("user:signup", {"email": "alice@example.com"})`,
           'Webhooks: HTTP callbacks that notify external systems',
           'Message queues: Kafka, RabbitMQ consumers',
           'Real-time apps: WebSocket event handling',
+        ],
+        cards: [
+          { title: 'Event Listeners', description: 'DOM addEventListener/removeEventListener follow the observer pattern exactly.', icon: '🖱️', color: 'blue' },
+          { title: 'Pub/Sub Systems', description: 'Kafka, RabbitMQ, and Redis Pub/Sub decouple publishers from subscribers.', icon: '📡', color: 'emerald' },
+          { title: 'React State', description: 'Zustand, Redux, and MobX notify subscribed components when state changes.', icon: '⚛️', color: 'purple' },
+          { title: 'WebSocket Events', description: 'Socket.io emits events to connected clients who have subscribed to channels.', icon: '🔌', color: 'amber' },
         ],
         keyTakeaway:
           'Event listeners, pub/sub systems, webhooks, and reactive state management are all Observer pattern implementations.',

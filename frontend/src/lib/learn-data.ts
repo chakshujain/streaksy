@@ -57,6 +57,8 @@ export interface Lesson {
   duration: string;
   icon: string;
   steps: LessonStep[];
+  videoUrl?: string;
+  videoTitle?: string;
   commonMistakes?: { mistake: string; explanation: string }[];
   practiceQuestions?: string[];
 }
@@ -96,6 +98,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '10 min',
         icon: '📦',
+        videoUrl: 'https://www.youtube.com/watch?v=j09EQ-xlh88',
+        videoTitle: 'What is a Database? (Fireship)',
         steps: [],
       },
       {
@@ -106,6 +110,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '🔍',
+        videoUrl: 'https://www.youtube.com/watch?v=27axs9dO7AE',
+        videoTitle: 'Learn Basic SQL in 15 Minutes (Adam Finer)',
         steps: [],
       },
       {
@@ -116,6 +122,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '20 min',
         icon: '🔗',
+        videoUrl: 'https://www.youtube.com/watch?v=9yeOJ0ZMUYw',
+        videoTitle: 'SQL Joins Explained (Joey Blue)',
         steps: [],
       },
       {
@@ -126,6 +134,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '⚡',
+        videoUrl: 'https://www.youtube.com/watch?v=-qNSXPIi4D4',
+        videoTitle: 'Database Indexing Explained (Hussein Nasser)',
         steps: [],
       },
       {
@@ -136,6 +146,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '20 min',
         icon: '🗂️',
+        videoUrl: 'https://www.youtube.com/watch?v=GFQaEYEc8_8',
+        videoTitle: 'Database Normalization Explained (Decomplexify)',
         steps: [],
       },
       {
@@ -146,6 +158,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🔒',
+        videoUrl: 'https://www.youtube.com/watch?v=pomxJOFVcQs',
+        videoTitle: 'ACID Properties in Databases (Hussein Nasser)',
         steps: [],
       },
       {
@@ -156,6 +170,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🛡️',
+        videoUrl: 'https://www.youtube.com/watch?v=4EajrPgJAk0',
+        videoTitle: 'Transaction Isolation Levels Explained (Hussein Nasser)',
         steps: [],
       },
       {
@@ -166,6 +182,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '🚀',
+        videoUrl: 'https://www.youtube.com/watch?v=BHwzDmr6d7s',
+        videoTitle: 'SQL Query Optimization Tips (ByteByteGo)',
         steps: [],
       },
       {
@@ -176,6 +194,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '15 min',
         icon: '🧩',
+        videoUrl: 'https://www.youtube.com/watch?v=hdxdhCpgYo8',
+        videoTitle: 'Database Sharding Explained (ByteByteGo)',
         steps: [],
       },
       {
@@ -186,6 +206,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '15 min',
         icon: '📋',
+        videoUrl: 'https://www.youtube.com/watch?v=bI8Ry6GhMSE',
+        videoTitle: 'Database Replication Explained (ByteByteGo)',
         steps: [],
       },
       {
@@ -196,6 +218,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '10 min',
         icon: '⚖️',
+        videoUrl: 'https://www.youtube.com/watch?v=BHqjEjzAicA',
+        videoTitle: 'CAP Theorem Simplified (ByteByteGo)',
         steps: [],
       },
       {
@@ -206,6 +230,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🤔',
+        videoUrl: 'https://www.youtube.com/watch?v=W2Z7fbCLSTw',
+        videoTitle: 'SQL vs NoSQL Explained (Fireship)',
         steps: [],
       },
       {
@@ -216,6 +242,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '25 min',
         icon: '🏛️',
+        videoUrl: 'https://www.youtube.com/watch?v=cODCpXtPHbQ',
+        videoTitle: 'Top Database Design Patterns (ByteByteGo)',
         steps: [],
       },
     ],
@@ -236,6 +264,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '10 min',
         icon: '🌐',
+        videoUrl: 'https://www.youtube.com/watch?v=MbjObHmDbZo',
+        videoTitle: 'System Design for Beginners (NeetCode)',
         steps: [],
       },
       {
@@ -246,6 +276,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '💻',
+        videoUrl: 'https://www.youtube.com/watch?v=L5BlpPU_muY',
+        videoTitle: 'Client Server Architecture Explained (ByteByteGo)',
         steps: [],
       },
       {
@@ -256,6 +288,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '⚖️',
+        videoUrl: 'https://www.youtube.com/watch?v=K0Ta65OqQkY',
+        videoTitle: 'Load Balancing Explained (Gaurav Sen)',
         steps: [],
       },
       {
@@ -266,6 +300,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '💨',
+        videoUrl: 'https://www.youtube.com/watch?v=dGAgxozNWFE',
+        videoTitle: 'Caching — System Design Fundamentals (ByteByteGo)',
         steps: [],
       },
       {
@@ -276,6 +312,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '10 min',
         icon: '🌍',
+        videoUrl: 'https://www.youtube.com/watch?v=RI9np1LWzqw',
+        videoTitle: 'What is a CDN? (Fireship)',
         steps: [],
       },
       {
@@ -286,6 +324,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '📬',
+        videoUrl: 'https://www.youtube.com/watch?v=xErwDaOc-Gs',
+        videoTitle: 'Message Queues Explained (ByteByteGo)',
         steps: [],
       },
       {
@@ -296,6 +336,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '20 min',
         icon: '📈',
+        videoUrl: 'https://www.youtube.com/watch?v=kZvQoAq3gMY',
+        videoTitle: 'Scaling Databases (Gaurav Sen)',
         steps: [],
       },
       {
@@ -306,6 +348,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🔌',
+        videoUrl: 'https://www.youtube.com/watch?v=_gQaygjm_hg',
+        videoTitle: 'RESTful API Design Best Practices (ByteByteGo)',
         steps: [],
       },
       {
@@ -316,6 +360,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '10 min',
         icon: '🚦',
+        videoUrl: 'https://www.youtube.com/watch?v=FU4WlwfS3G0',
+        videoTitle: 'Rate Limiting Algorithms Explained (ByteByteGo)',
         steps: [],
       },
       {
@@ -326,6 +372,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '15 min',
         icon: '🔄',
+        videoUrl: 'https://www.youtube.com/watch?v=UF9Ez83xV2g',
+        videoTitle: 'Consistent Hashing Explained (Gaurav Sen)',
         steps: [],
       },
       {
@@ -336,6 +384,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '🏢',
+        videoUrl: 'https://www.youtube.com/watch?v=y8OnoxKotPQ',
+        videoTitle: 'Microservices vs Monolith (Fireship)',
         steps: [],
       },
       {
@@ -346,6 +396,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '25 min',
         icon: '🔗',
+        videoUrl: 'https://www.youtube.com/watch?v=fMZMm_0ZhK4',
+        videoTitle: 'Design a URL Shortener (NeetCode)',
         steps: [],
       },
       {
@@ -356,6 +408,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '30 min',
         icon: '💬',
+        videoUrl: 'https://www.youtube.com/watch?v=vvhC64hQZMk',
+        videoTitle: 'Design a Chat System (Gaurav Sen)',
         steps: [],
       },
       {
@@ -366,6 +420,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '30 min',
         icon: '📸',
+        videoUrl: 'https://www.youtube.com/watch?v=VJpfO6KdyWE',
+        videoTitle: 'Design Instagram (Gaurav Sen)',
         steps: [],
       },
       {
@@ -376,6 +432,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '30 min',
         icon: '🐦',
+        videoUrl: 'https://www.youtube.com/watch?v=wYk0xPP_P_8',
+        videoTitle: 'Design Twitter/X Timeline (NeetCode)',
         steps: [],
       },
       {
@@ -386,6 +444,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '35 min',
         icon: '🚗',
+        videoUrl: 'https://www.youtube.com/watch?v=umWABit-wbk',
+        videoTitle: 'Design Uber (Gaurav Sen)',
         steps: [],
       },
       {
@@ -396,6 +456,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '35 min',
         icon: '🎬',
+        videoUrl: 'https://www.youtube.com/watch?v=psQzyFfsUGU',
+        videoTitle: 'Design Netflix (NeetCode)',
         steps: [],
       },
     ],
@@ -416,6 +478,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '10 min',
         icon: '🧠',
+        videoUrl: 'https://www.youtube.com/watch?v=pTB0EiLXUC8',
+        videoTitle: 'OOP in 7 Minutes (Mosh Hamedani)',
         steps: [],
       },
       {
@@ -426,6 +490,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '🏭',
+        videoUrl: 'https://www.youtube.com/watch?v=K8eOkzQ_o9w',
+        videoTitle: 'Classes and Objects Explained (Caleb Curry)',
         steps: [],
       },
       {
@@ -436,6 +502,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '📦',
+        videoUrl: 'https://www.youtube.com/watch?v=sNKKxc4QHqA',
+        videoTitle: 'Encapsulation Explained Simply (Programming with Mosh)',
         steps: [],
       },
       {
@@ -446,6 +514,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '🌳',
+        videoUrl: 'https://www.youtube.com/watch?v=9JpNY-XAseg',
+        videoTitle: 'Inheritance in OOP Explained (Alex Lee)',
         steps: [],
       },
       {
@@ -456,6 +526,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🎭',
+        videoUrl: 'https://www.youtube.com/watch?v=jhDUxynEQRI',
+        videoTitle: 'Polymorphism in Programming (WilliamFiset)',
         steps: [],
       },
       {
@@ -466,6 +538,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🎨',
+        videoUrl: 'https://www.youtube.com/watch?v=HaA3YOzjt0c',
+        videoTitle: 'Abstraction in OOP (Simplilearn)',
         steps: [],
       },
       {
@@ -476,6 +550,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '📜',
+        videoUrl: 'https://www.youtube.com/watch?v=Cd-x5pRaFJ8',
+        videoTitle: 'Abstract Classes vs Interfaces (Alex Lee)',
         steps: [],
       },
       {
@@ -486,6 +562,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '25 min',
         icon: '🏗️',
+        videoUrl: 'https://www.youtube.com/watch?v=_jDNAf3CzeY',
+        videoTitle: 'SOLID Principles in 8 Minutes (NeetCode)',
         steps: [],
       },
       {
@@ -496,6 +574,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '🏭',
+        videoUrl: 'https://www.youtube.com/watch?v=hUE_j6q0LTQ',
+        videoTitle: 'Singleton & Factory Patterns (Fireship)',
         steps: [],
       },
       {
@@ -506,6 +586,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '👀',
+        videoUrl: 'https://www.youtube.com/watch?v=_BpmfnqjgzQ',
+        videoTitle: 'Observer Pattern Explained (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -516,6 +598,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '🔧',
+        videoUrl: 'https://www.youtube.com/watch?v=D55XRGBt_UY',
+        videoTitle: 'Builder & Adapter Patterns (Derek Banas)',
         steps: [],
       },
       {
@@ -526,6 +610,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '15 min',
         icon: '🧩',
+        videoUrl: 'https://www.youtube.com/watch?v=wfMtDGfHWpA',
+        videoTitle: 'Composition vs Inheritance (Fireship)',
         steps: [],
       },
       {
@@ -536,6 +622,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '25 min',
         icon: '🅿️',
+        videoUrl: 'https://www.youtube.com/watch?v=tVRyb4HaHgw',
+        videoTitle: 'Design Parking Lot (Think Software)',
         steps: [],
       },
       {
@@ -546,6 +634,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '25 min',
         icon: '🏧',
+        videoUrl: 'https://www.youtube.com/watch?v=4P-bWjzFSAo',
+        videoTitle: 'Design ATM System (Concept && Coding)',
         steps: [],
       },
     ],
@@ -566,6 +656,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '🦴',
+        videoUrl: 'https://www.youtube.com/watch?v=kUMe1FH4CHE',
+        videoTitle: 'Learn HTML in 1 Hour (Programming with Mosh)',
         steps: [],
       },
       {
@@ -576,6 +668,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '20 min',
         icon: '🎨',
+        videoUrl: 'https://www.youtube.com/watch?v=1PnVor36_40',
+        videoTitle: 'Learn CSS in 20 Minutes (Web Dev Simplified)',
         steps: [],
       },
       {
@@ -586,6 +680,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '20 min',
         icon: '⚡',
+        videoUrl: 'https://www.youtube.com/watch?v=W6NZfCO5SIk',
+        videoTitle: 'JavaScript Tutorial for Beginners (Programming with Mosh)',
         steps: [],
       },
       {
@@ -596,6 +692,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '📱',
+        videoUrl: 'https://www.youtube.com/watch?v=srvUrASNj0s',
+        videoTitle: 'Responsive Web Design Tutorial (freeCodeCamp)',
         steps: [],
       },
       {
@@ -606,6 +704,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '20 min',
         icon: '⚛️',
+        videoUrl: 'https://www.youtube.com/watch?v=Tn6-PIqc4UM',
+        videoTitle: 'React in 100 Seconds (Fireship)',
         steps: [],
       },
       {
@@ -616,6 +716,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '20 min',
         icon: '🔄',
+        videoUrl: 'https://www.youtube.com/watch?v=O6P86uwfdR0',
+        videoTitle: 'useState & useEffect Explained (Web Dev Simplified)',
         steps: [],
       },
       {
@@ -626,6 +728,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🔌',
+        videoUrl: 'https://www.youtube.com/watch?v=cuEtnrL9-H0',
+        videoTitle: 'Fetch API in JavaScript (Traversy Media)',
         steps: [],
       },
       {
@@ -636,6 +740,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '15 min',
         icon: '🚀',
+        videoUrl: 'https://www.youtube.com/watch?v=sUKptmUVIBM',
+        videoTitle: 'Deploy React Apps to Vercel (James Q Quick)',
         steps: [],
       },
     ],
@@ -656,6 +762,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '🖥️',
+        videoUrl: 'https://www.youtube.com/watch?v=9J1nJOivdyw',
+        videoTitle: 'What is a Web Server? (Fireship)',
         steps: [],
       },
       {
@@ -666,6 +774,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '20 min',
         icon: '🟢',
+        videoUrl: 'https://www.youtube.com/watch?v=Oe421EPjeBE',
+        videoTitle: 'Node.js and Express in 100 Seconds (Fireship)',
         steps: [],
       },
       {
@@ -676,6 +786,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '📐',
+        videoUrl: 'https://www.youtube.com/watch?v=-MTSQjw5DrM',
+        videoTitle: 'RESTful APIs Explained (Traversy Media)',
         steps: [],
       },
       {
@@ -686,6 +798,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '20 min',
         icon: '🗄️',
+        videoUrl: 'https://www.youtube.com/watch?v=Cz3WcZLRaWc',
+        videoTitle: 'PostgreSQL with Node.js (Traversy Media)',
         steps: [],
       },
       {
@@ -696,6 +810,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '20 min',
         icon: '🔐',
+        videoUrl: 'https://www.youtube.com/watch?v=7Q17ubqLfaM',
+        videoTitle: 'JWT Authentication Explained (Web Dev Simplified)',
         steps: [],
       },
       {
@@ -706,6 +822,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🛡️',
+        videoUrl: 'https://www.youtube.com/watch?v=L6BE-U3oy80',
+        videoTitle: 'Zod Validation Tutorial (Matt Pocock)',
         steps: [],
       },
       {
@@ -716,6 +834,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '15 min',
         icon: '📁',
+        videoUrl: 'https://www.youtube.com/watch?v=eQAIojcArRY',
+        videoTitle: 'File Uploads with Multer (Traversy Media)',
         steps: [],
       },
       {
@@ -726,6 +846,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '🚀',
+        videoUrl: 'https://www.youtube.com/watch?v=gchR5WkByxI',
+        videoTitle: 'Docker in 100 Seconds (Fireship)',
         steps: [],
       },
     ],
@@ -746,6 +868,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '📝',
+        videoUrl: 'https://www.youtube.com/watch?v=HkdAHXoRtos',
+        videoTitle: 'Git Explained in 100 Seconds (Fireship)',
         steps: [],
       },
       {
@@ -756,6 +880,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '🌿',
+        videoUrl: 'https://www.youtube.com/watch?v=Q1kHG842HoI',
+        videoTitle: 'Git Branching and Merging (Corey Schafer)',
         steps: [],
       },
       {
@@ -766,6 +892,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🐙',
+        videoUrl: 'https://www.youtube.com/watch?v=8lGpZkjnkt4',
+        videoTitle: 'GitHub Pull Requests in 100 Seconds (Fireship)',
         steps: [],
       },
       {
@@ -776,6 +904,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '🧙',
+        videoUrl: 'https://www.youtube.com/watch?v=0chZFIZLR_0',
+        videoTitle: 'Git Rebase vs Merge (Fireship)',
         steps: [],
       },
       {
@@ -786,6 +916,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '👥',
+        videoUrl: 'https://www.youtube.com/watch?v=Uszj_k0DGsg',
+        videoTitle: 'Git for Professionals (freeCodeCamp)',
         steps: [],
       },
     ],
@@ -806,6 +938,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '📖',
+        videoUrl: 'https://www.youtube.com/watch?v=tv-_1er1mWI',
+        videoTitle: '10 Design Patterns Explained in 10 Minutes (Fireship)',
         steps: [],
       },
       {
@@ -816,6 +950,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '1️⃣',
+        videoUrl: 'https://www.youtube.com/watch?v=sJ-c3BA-Ypo',
+        videoTitle: 'Singleton Pattern Explained (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -826,6 +962,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🏭',
+        videoUrl: 'https://www.youtube.com/watch?v=EcFVTgRHJLM',
+        videoTitle: 'Factory Method Pattern (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -836,6 +974,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '20 min',
         icon: '🏗️',
+        videoUrl: 'https://www.youtube.com/watch?v=v-GiuMmsXj4',
+        videoTitle: 'Abstract Factory Pattern (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -846,6 +986,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🔧',
+        videoUrl: 'https://www.youtube.com/watch?v=M7Xi1yO_s8E',
+        videoTitle: 'Builder Pattern Explained (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -856,6 +998,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '20 min',
         icon: '👀',
+        videoUrl: 'https://www.youtube.com/watch?v=_BpmfnqjgzQ',
+        videoTitle: 'Observer Pattern Explained (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -866,6 +1010,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '♟️',
+        videoUrl: 'https://www.youtube.com/watch?v=v9ejT8FO-7I',
+        videoTitle: 'Strategy Pattern Explained (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -876,6 +1022,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '20 min',
         icon: '🎀',
+        videoUrl: 'https://www.youtube.com/watch?v=GCraGHx6gso',
+        videoTitle: 'Decorator Pattern Explained (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -886,6 +1034,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🔌',
+        videoUrl: 'https://www.youtube.com/watch?v=2PKQtcJjYvc',
+        videoTitle: 'Adapter Pattern Explained (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -896,6 +1046,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '📜',
+        videoUrl: 'https://www.youtube.com/watch?v=9qA5kw8dcSU',
+        videoTitle: 'Command Pattern Explained (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -906,6 +1058,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '15 min',
         icon: '📋',
+        videoUrl: 'https://www.youtube.com/watch?v=7ocpwK9uesE',
+        videoTitle: 'Template Method Pattern (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -916,6 +1070,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '🔀',
+        videoUrl: 'https://www.youtube.com/watch?v=N12L5D78MAA',
+        videoTitle: 'State Pattern Explained (Christopher Okhravi)',
         steps: [],
       },
       {
@@ -926,6 +1082,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🏛️',
+        videoUrl: 'https://www.youtube.com/watch?v=K4FkHVO5iac',
+        videoTitle: 'Facade Pattern Explained (Christopher Okhravi)',
         steps: [],
       },
     ],
@@ -946,6 +1104,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '10 min',
         icon: '🧵',
+        videoUrl: 'https://www.youtube.com/watch?v=r2__Rw8vu1M',
+        videoTitle: 'What are Threads? (Jacob Sorber)',
         steps: [],
       },
       {
@@ -956,6 +1116,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '10 min',
         icon: '⚙️',
+        videoUrl: 'https://www.youtube.com/watch?v=4rLW7zg21gI',
+        videoTitle: 'Process vs Thread (ByteByteGo)',
         steps: [],
       },
       {
@@ -966,6 +1128,8 @@ export const topics: Topic[] = [
         difficulty: 'beginner',
         duration: '15 min',
         icon: '🚀',
+        videoUrl: 'https://www.youtube.com/watch?v=IEEhzQoKtQU',
+        videoTitle: 'Multithreading in Java Explained (Coding with John)',
         steps: [],
       },
       {
@@ -976,6 +1140,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🏎️',
+        videoUrl: 'https://www.youtube.com/watch?v=FY9livorrJI',
+        videoTitle: 'Race Conditions Explained (Jacob Sorber)',
         steps: [],
       },
       {
@@ -986,6 +1152,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🔐',
+        videoUrl: 'https://www.youtube.com/watch?v=oq29KUy29iQ',
+        videoTitle: 'Mutex in 100 Seconds (Fireship)',
         steps: [],
       },
       {
@@ -996,6 +1164,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🔄',
+        videoUrl: 'https://www.youtube.com/watch?v=UVo9Yb_ONPo',
+        videoTitle: 'What is a Deadlock? (Jacob Sorber)',
         steps: [],
       },
       {
@@ -1006,6 +1176,8 @@ export const topics: Topic[] = [
         difficulty: 'intermediate',
         duration: '15 min',
         icon: '🚦',
+        videoUrl: 'https://www.youtube.com/watch?v=ukM_zzrIeXs',
+        videoTitle: 'Semaphores Explained (Jacob Sorber)',
         steps: [],
       },
       {
@@ -1016,6 +1188,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '📦',
+        videoUrl: 'https://www.youtube.com/watch?v=Qx3P2wazwI0',
+        videoTitle: 'Producer Consumer Problem (Neso Academy)',
         steps: [],
       },
       {
@@ -1026,6 +1200,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '15 min',
         icon: '🏊',
+        videoUrl: 'https://www.youtube.com/watch?v=ZcKt5FYd3bU',
+        videoTitle: 'Thread Pool Pattern (Jakob Jenkov)',
         steps: [],
       },
       {
@@ -1036,6 +1212,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '🗃️',
+        videoUrl: 'https://www.youtube.com/watch?v=LPPXBKBn1-I',
+        videoTitle: 'Concurrent Data Structures in Java (Defog Tech)',
         steps: [],
       },
       {
@@ -1046,6 +1224,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '15 min',
         icon: '⏳',
+        videoUrl: 'https://www.youtube.com/watch?v=vn3tm0quoqE',
+        videoTitle: 'Async/Await in 100 Seconds (Fireship)',
         steps: [],
       },
       {
@@ -1056,6 +1236,8 @@ export const topics: Topic[] = [
         difficulty: 'advanced',
         duration: '20 min',
         icon: '🍝',
+        videoUrl: 'https://www.youtube.com/watch?v=FYUi-u7UWgw',
+        videoTitle: 'Dining Philosophers Problem (Neso Academy)',
         steps: [],
       },
     ],
