@@ -133,16 +133,21 @@ export const pokeRepository = {
 
   /** Determine current escalation level for a user based on inactivity */
   async getEscalationLevel(userId: string): Promise<number> {
-    const row = await queryOne<{ days_inactive: number }>(
-      `SELECT COALESCE(CURRENT_DATE - us.last_solve_date::date, 999) as days_inactive
-       FROM user_streaks us WHERE us.user_id = $1`,
-      [userId]
-    );
-    const days = Number(row?.days_inactive || 999);
+    const days = await this.getDaysInactive(userId);
     if (days <= 1) return 0; // active, no nudge
     if (days <= 2) return 1; // gentle
     if (days <= 4) return 2; // humor
     if (days <= 7) return 3; // friend poke territory
     return 4; // group notification
+  },
+
+  /** Get actual days inactive for a user */
+  async getDaysInactive(userId: string): Promise<number> {
+    const row = await queryOne<{ days_inactive: number }>(
+      `SELECT COALESCE(CURRENT_DATE - us.last_solve_date::date, 999) as days_inactive
+       FROM user_streaks us WHERE us.user_id = $1`,
+      [userId]
+    );
+    return Number(row?.days_inactive || 0);
   },
 };

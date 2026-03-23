@@ -38,9 +38,8 @@ export const pokeService = {
     const toUser = await authRepository.findById(toUserId);
     if (!toUser) throw AppError.notFound('User not found');
 
-    // Get escalation level for the target
-    const level = await pokeRepository.getEscalationLevel(toUserId);
-    const daysInactive = level === 0 ? 0 : level + 1;
+    // Get actual days inactive for the target
+    const daysInactive = await pokeRepository.getDaysInactive(toUserId);
 
     // Generate message
     const message = customMessage || humorEngine.friendPoke(
