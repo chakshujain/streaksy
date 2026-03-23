@@ -132,6 +132,13 @@ const TOPIC_COLORS = [
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'];
+const RECURRENCE_OPTIONS = [
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekdays', label: 'Weekdays only' },
+  { value: 'weekends', label: 'Weekends only' },
+  { value: 'monthly', label: 'Monthly' },
+];
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -215,6 +222,7 @@ export default function RoadmapStartPage() {
   const [scheduleWeeklyRoom, setScheduleWeeklyRoom] = useState(false);
   const [weeklyRoomDay, setWeeklyRoomDay] = useState('Saturday');
   const [weeklyRoomTime, setWeeklyRoomTime] = useState('10:00');
+  const [roomRecurrence, setRoomRecurrence] = useState('weekly');
   const [dailyReminder, setDailyReminder] = useState(false);
 
   // General
@@ -358,7 +366,7 @@ export default function RoadmapStartPage() {
         }
       }
 
-      const createPayload = {
+      const createPayload: Record<string, unknown> = {
         templateSlug: template.slug,
         name: template.name,
         category: template.category,
@@ -367,6 +375,14 @@ export default function RoadmapStartPage() {
         startDate,
         groupId,
       };
+
+      if (scheduleWeeklyRoom) {
+        createPayload.warRoomSchedule = {
+          day: weeklyRoomDay,
+          time: weeklyRoomTime,
+          recurrence: roomRecurrence,
+        };
+      }
 
       let roadmapId: string;
 
@@ -384,34 +400,6 @@ export default function RoadmapStartPage() {
       // After group creation, invite friends to the group
       if (groupId && selectedFriendIds.length > 0) {
         await groupsApi.inviteFriends(groupId, selectedFriendIds).catch(() => {});
-      }
-
-      // Auto-create weekly war room if scheduled
-      if (scheduleWeeklyRoom && weeklyRoomDay && weeklyRoomTime) {
-        try {
-          const dayMap: Record<string, number> = {
-            monday: 1, tuesday: 2, wednesday: 3, thursday: 4,
-            friday: 5, saturday: 6, sunday: 0,
-          };
-          const targetDay = dayMap[weeklyRoomDay.toLowerCase()] ?? 6;
-          const now = new Date();
-          const curDay = now.getDay();
-          let daysUntil = targetDay - curDay;
-          if (daysUntil <= 0) daysUntil += 7;
-
-          const scheduledDate = new Date(now);
-          scheduledDate.setDate(now.getDate() + daysUntil);
-          const [h, m] = weeklyRoomTime.split(':').map(Number);
-          scheduledDate.setHours(h, m, 0, 0);
-
-          await roomsApi.create({
-            name: `${template.name} — Weekly Solve Room`,
-            scheduledAt: scheduledDate.toISOString(),
-            recurrence: 'weekly',
-            timeLimitMinutes: 60,
-            mode: 'multi',
-          });
-        } catch { /* Room creation failed — non-critical */ }
       }
 
       // Invite selected friends to the roadmap
@@ -1041,12 +1029,12 @@ export default function RoadmapStartPage() {
                     </div>
                   )}
 
-                  {/* Weekly room scheduling */}
+                  {/* War room scheduling */}
                   <div className="mb-4 mt-4 rounded-xl border border-zinc-800 bg-zinc-900/30 p-4 space-y-4">
                     <div className="flex items-center justify-between">
                       <label className="flex items-center gap-2 text-sm font-medium text-zinc-300">
                         <CalendarDays className="h-4 w-4 text-zinc-400" />
-                        Schedule weekly solve rooms?
+                        Schedule solve rooms?
                       </label>
                       <button
                         onClick={() => setScheduleWeeklyRoom(!scheduleWeeklyRoom)}
@@ -1057,30 +1045,46 @@ export default function RoadmapStartPage() {
                     </div>
 
                     {scheduleWeeklyRoom && (
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-3">
                         <div>
-                          <label className="block text-xs text-zinc-500 mb-1">Day</label>
+                          <label className="block text-xs text-zinc-500 mb-1">Frequency</label>
                           <select
-                            value={weeklyRoomDay}
-                            onChange={(e) => setWeeklyRoomDay(e.target.value)}
+                            value={roomRecurrence}
+                            onChange={(e) => setRoomRecurrence(e.target.value)}
                             className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
                           >
-                            {DAYS_OF_WEEK.map((d) => (
-                              <option key={d} value={d}>{d}</option>
+                            {RECURRENCE_OPTIONS.map((o) => (
+                              <option key={o.value} value={o.value}>{o.label}</option>
                             ))}
                           </select>
                         </div>
-                        <div>
-                          <label className="block text-xs text-zinc-500 mb-1">Time</label>
-                          <select
-                            value={weeklyRoomTime}
-                            onChange={(e) => setWeeklyRoomTime(e.target.value)}
-                            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
-                          >
-                            {TIME_SLOTS.map((t) => (
-                              <option key={t} value={t}>{(() => { const hr = parseInt(t) || 0; const displayH = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr; return `${displayH}:${(t.split(':')[1] || '00')} ${hr >= 12 ? 'PM' : 'AM'}`; })()}</option>
-                            ))}
-                          </select>
+                        <div className="grid grid-cols-2 gap-3">
+                          {(roomRecurrence === 'weekly' || roomRecurrence === 'monthly') && (
+                            <div>
+                              <label className="block text-xs text-zinc-500 mb-1">Day</label>
+                              <select
+                                value={weeklyRoomDay}
+                                onChange={(e) => setWeeklyRoomDay(e.target.value)}
+                                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                              >
+                                {DAYS_OF_WEEK.map((d) => (
+                                  <option key={d} value={d}>{d}</option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                          <div>
+                            <label className="block text-xs text-zinc-500 mb-1">Time</label>
+                            <select
+                              value={weeklyRoomTime}
+                              onChange={(e) => setWeeklyRoomTime(e.target.value)}
+                              className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                            >
+                              {TIME_SLOTS.map((t) => (
+                                <option key={t} value={t}>{(() => { const hr = parseInt(t) || 0; const displayH = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr; return `${displayH}:${(t.split(':')[1] || '00')} ${hr >= 12 ? 'PM' : 'AM'}`; })()}</option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1135,7 +1139,7 @@ export default function RoadmapStartPage() {
                   <SummaryRow label="Group" value={`New: ${groupName}`} />
                 )}
                 {mode === 'friends' && scheduleWeeklyRoom && (
-                  <SummaryRow label="Weekly room" value={`${weeklyRoomDay}s at ${weeklyRoomTime}`} />
+                  <SummaryRow label="Solve rooms" value={`${RECURRENCE_OPTIONS.find(o => o.value === roomRecurrence)?.label || 'Weekly'}${roomRecurrence === 'weekly' || roomRecurrence === 'monthly' ? ` on ${weeklyRoomDay}s` : ''} at ${weeklyRoomTime}`} />
                 )}
                 {dailyReminder && <SummaryRow label="Daily reminders" value="Enabled" />}
 

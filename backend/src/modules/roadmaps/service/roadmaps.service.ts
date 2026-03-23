@@ -35,6 +35,7 @@ export const roadmapsService = {
       durationDays: number;
       startDate?: string;
       customTasks?: unknown;
+      warRoomSchedule?: { day?: string; time?: string; recurrence?: string };
     }
   ) {
     if (!data.name || data.name.trim().length === 0) {
@@ -68,35 +69,89 @@ export const roadmapsService = {
       }).catch(() => {});
     }).catch(() => {});
 
-    // Auto-create weekly war rooms for entire roadmap duration (non-blocking)
-    import('../../room/service/room.service').then(m => {
-      const start = data.startDate ? new Date(data.startDate) : new Date();
-      const endDate = new Date(start);
-      endDate.setDate(endDate.getDate() + data.durationDays);
+    // Auto-create war rooms for entire roadmap duration (non-blocking)
+    if (data.warRoomSchedule) {
+      import('../../room/service/room.service').then(m => {
+        const schedule = data.warRoomSchedule!;
+        const recurrence = schedule.recurrence || 'weekly';
+        const [hours, minutes] = (schedule.time || '10:00').split(':').map(Number);
+        const dayMap: Record<string, number> = {
+          sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
+          thursday: 4, friday: 5, saturday: 6,
+        };
+        const targetDay = dayMap[(schedule.day || 'saturday').toLowerCase()] ?? 6;
 
-      // Find first Saturday at 10:00 AM from start
-      const curDay = start.getDay();
-      let daysUntilSat = 6 - curDay;
-      if (daysUntilSat <= 0) daysUntilSat += 7;
-      const firstSaturday = new Date(start);
-      firstSaturday.setDate(start.getDate() + daysUntilSat);
-      firstSaturday.setHours(10, 0, 0, 0);
+        const start = data.startDate ? new Date(data.startDate) : new Date();
+        const endDate = new Date(start);
+        endDate.setDate(endDate.getDate() + data.durationDays);
 
-      // Create a room for every Saturday within the roadmap duration
-      const saturday = new Date(firstSaturday);
-      let weekNum = 1;
-      while (saturday <= endDate) {
-        const scheduledAt = new Date(saturday).toISOString();
-        m.roomService.createRoom(userId, `${data.name} — Week ${weekNum} Solve Room`, null, 60, {
-          scheduledAt,
-          mode: 'multi',
-          groupId: data.groupId || undefined,
-          roadmapId: roadmap.id || undefined,
-        }).catch(() => {});
-        saturday.setDate(saturday.getDate() + 7);
-        weekNum++;
-      }
-    }).catch(() => {});
+        // Generate all scheduled dates based on recurrence
+        const dates: Date[] = [];
+        const cursor = new Date(start);
+        cursor.setHours(hours, minutes, 0, 0);
+
+        if (recurrence === 'daily') {
+          // If start is already past today's time, begin tomorrow
+          if (cursor <= new Date()) cursor.setDate(cursor.getDate() + 1);
+          while (cursor <= endDate) {
+            dates.push(new Date(cursor));
+            cursor.setDate(cursor.getDate() + 1);
+          }
+        } else if (recurrence === 'weekdays') {
+          if (cursor <= new Date()) cursor.setDate(cursor.getDate() + 1);
+          while (cursor <= endDate) {
+            const dow = cursor.getDay();
+            if (dow >= 1 && dow <= 5) dates.push(new Date(cursor));
+            cursor.setDate(cursor.getDate() + 1);
+          }
+        } else if (recurrence === 'weekends') {
+          if (cursor <= new Date()) cursor.setDate(cursor.getDate() + 1);
+          while (cursor <= endDate) {
+            const dow = cursor.getDay();
+            if (dow === 0 || dow === 6) dates.push(new Date(cursor));
+            cursor.setDate(cursor.getDate() + 1);
+          }
+        } else if (recurrence === 'monthly') {
+          // Find first occurrence of the target day from start
+          let diff = targetDay - start.getDay();
+          if (diff <= 0) diff += 7;
+          cursor.setDate(start.getDate() + diff);
+          cursor.setHours(hours, minutes, 0, 0);
+          while (cursor <= endDate) {
+            dates.push(new Date(cursor));
+            // Jump roughly one month, then find the next target day
+            cursor.setMonth(cursor.getMonth() + 1);
+            // Snap back to the correct day of week
+            const dow = cursor.getDay();
+            let adj = targetDay - dow;
+            if (adj < 0) adj += 7;
+            cursor.setDate(cursor.getDate() + adj);
+            cursor.setHours(hours, minutes, 0, 0);
+          }
+        } else {
+          // weekly (default)
+          let diff = targetDay - start.getDay();
+          if (diff <= 0) diff += 7;
+          cursor.setDate(start.getDate() + diff);
+          cursor.setHours(hours, minutes, 0, 0);
+          while (cursor <= endDate) {
+            dates.push(new Date(cursor));
+            cursor.setDate(cursor.getDate() + 7);
+          }
+        }
+
+        // Create a room for each date
+        const recurrenceLabel = recurrence === 'daily' ? 'Day' : recurrence === 'weekdays' ? 'Day' : recurrence === 'weekends' ? 'Weekend' : recurrence === 'monthly' ? 'Month' : 'Week';
+        dates.forEach((d, i) => {
+          m.roomService.createRoom(userId, `${data.name} — ${recurrenceLabel} ${i + 1} Solve Room`, null, 60, {
+            scheduledAt: d.toISOString(),
+            mode: 'multi',
+            groupId: data.groupId || undefined,
+            roadmapId: roadmap.id || undefined,
+          }).catch(() => {});
+        });
+      }).catch(() => {});
+    }
 
     return roadmap;
   },

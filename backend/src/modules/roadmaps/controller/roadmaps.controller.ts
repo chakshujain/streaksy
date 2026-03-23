@@ -29,7 +29,7 @@ export const roadmapsController = {
   async createUserRoadmap(req: Request, res: Response) {
     const { user } = req as AuthRequest;
     let { templateId, groupId, name, categoryId, durationDays, startDate, customTasks } = req.body;
-    const { templateSlug, category } = req.body;
+    const { templateSlug, category, warRoomSchedule } = req.body;
 
     // Resolve templateSlug to templateId if needed
     if (!templateId && templateSlug) {
@@ -52,6 +52,7 @@ export const roadmapsController = {
       durationDays,
       startDate,
       customTasks,
+      warRoomSchedule,
     });
     res.status(201).json({ roadmap });
   },
