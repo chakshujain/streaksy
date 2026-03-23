@@ -83,6 +83,8 @@ export const roadmapsService = {
         scheduledAt: scheduledDate.toISOString(),
         recurrence: 'weekly',
         mode: 'multi',
+        groupId: data.groupId || undefined,
+        roadmapId: roadmap.id || undefined,
       }).catch(() => {});
     }).catch(() => {});
 
