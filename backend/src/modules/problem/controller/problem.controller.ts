@@ -4,14 +4,15 @@ import { param } from '../../../common/utils/params';
 
 export const problemController = {
   async list(req: Request, res: Response) {
-    const { difficulty, limit, offset } = req.query;
+    const { difficulty, limit, offset, tag } = req.query;
     const [problems, total] = await Promise.all([
       problemService.list(
         difficulty as string | undefined,
         limit ? Number(limit) : 50,
-        offset ? Number(offset) : 0
+        offset ? Number(offset) : 0,
+        tag as string | undefined
       ),
-      problemService.count(difficulty as string | undefined),
+      problemService.count(difficulty as string | undefined, tag as string | undefined),
     ]);
     res.json({ problems, total });
   },

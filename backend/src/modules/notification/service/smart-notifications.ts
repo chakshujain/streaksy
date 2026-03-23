@@ -82,8 +82,9 @@ export const smartNotifications = {
         FROM friend_week
         ORDER BY user_id, friend_solved DESC
       ) fw ON fw.user_id = u.id
-      JOIN notification_preferences np ON np.user_id = u.id AND np.smart_enabled = true
-      WHERE fw.friend_solved > COALESCE(uw.solved_count, 0) + 2
+      LEFT JOIN notification_preferences np ON np.user_id = u.id
+      WHERE COALESCE(np.smart_enabled, true) = true
+        AND fw.friend_solved > COALESCE(uw.solved_count, 0) + 2
         AND NOT EXISTS (
           SELECT 1 FROM notifications n
           WHERE n.user_id = u.id AND n.type = 'lagging_behind'

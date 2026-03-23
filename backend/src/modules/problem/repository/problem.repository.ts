@@ -27,24 +27,56 @@ export const problemRepository = {
     return queryOne<ProblemRow>('SELECT * FROM problems WHERE id = $1', [id]);
   },
 
-  async list(difficulty?: string, limit = 50, offset = 0): Promise<ProblemRow[]> {
+  async list(difficulty?: string, limit = 50, offset = 0, tag?: string): Promise<ProblemRow[]> {
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+    let i = 1;
+
     if (difficulty) {
-      return query<ProblemRow>(
-        'SELECT * FROM problems WHERE difficulty = $1 ORDER BY title LIMIT $2 OFFSET $3',
-        [difficulty, limit, offset]
-      );
+      conditions.push(`p.difficulty = $${i++}`);
+      params.push(difficulty);
     }
+    if (tag) {
+      conditions.push(`EXISTS (SELECT 1 FROM problem_tags pt JOIN tags t ON t.id = pt.tag_id WHERE pt.problem_id = p.id AND t.name = $${i++})`);
+      params.push(tag);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    params.push(limit, offset);
+
     return query<ProblemRow>(
-      'SELECT * FROM problems ORDER BY title LIMIT $1 OFFSET $2',
-      [limit, offset]
+      `SELECT p.* FROM problems p ${where} ORDER BY p.title LIMIT $${i++} OFFSET $${i++}`,
+      params
     );
   },
 
-  async count(difficulty?: string): Promise<number> {
-    const row = difficulty
-      ? await queryOne<{ count: string }>('SELECT COUNT(*) as count FROM problems WHERE difficulty = $1', [difficulty])
-      : await queryOne<{ count: string }>('SELECT COUNT(*) as count FROM problems');
+  async count(difficulty?: string, tag?: string): Promise<number> {
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+    let i = 1;
+
+    if (difficulty) {
+      conditions.push(`p.difficulty = $${i++}`);
+      params.push(difficulty);
+    }
+    if (tag) {
+      conditions.push(`EXISTS (SELECT 1 FROM problem_tags pt JOIN tags t ON t.id = pt.tag_id WHERE pt.problem_id = p.id AND t.name = $${i++})`);
+      params.push(tag);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const row = await queryOne<{ count: string }>(`SELECT COUNT(*) as count FROM problems p ${where}`, params);
     return Number(row?.count || 0);
+  },
+
+  async getAllTags(): Promise<{ name: string; count: number }[]> {
+    return query<{ name: string; count: number }>(
+      `SELECT t.name, COUNT(pt.problem_id)::int as count
+       FROM tags t
+       JOIN problem_tags pt ON pt.tag_id = t.id
+       GROUP BY t.name
+       ORDER BY t.name`
+    );
   },
 
   async getSheets(): Promise<SheetRow[]> {

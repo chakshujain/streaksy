@@ -34,6 +34,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
+    // Invalidate token on server (best-effort, don't block on failure)
+    authApi.logout().catch(() => {});
     localStorage.removeItem('streaksy_token');
     localStorage.removeItem('streaksy_user');
     disconnectSocket();

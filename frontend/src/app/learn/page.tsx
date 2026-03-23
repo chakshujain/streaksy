@@ -9,46 +9,53 @@ import { cn } from '@/lib/cn';
 import { ArrowRight, GraduationCap, BookOpen, CheckCircle } from 'lucide-react';
 import { useLearnProgress } from '@/hooks/useLearnProgress';
 
-const colorMap: Record<string, { bg: string; text: string; border: string; badge: string }> = {
+const colorMap: Record<string, { bg: string; text: string; hoverText: string; border: string; badge: string }> = {
   emerald: {
     bg: 'bg-emerald-500/10',
     text: 'text-emerald-400',
+    hoverText: 'group-hover:text-emerald-400',
     border: 'border-emerald-500/20',
     badge: 'bg-emerald-500/15 text-emerald-400',
   },
   blue: {
     bg: 'bg-blue-500/10',
     text: 'text-blue-400',
+    hoverText: 'group-hover:text-blue-400',
     border: 'border-blue-500/20',
     badge: 'bg-blue-500/15 text-blue-400',
   },
   purple: {
     bg: 'bg-purple-500/10',
     text: 'text-purple-400',
+    hoverText: 'group-hover:text-purple-400',
     border: 'border-purple-500/20',
     badge: 'bg-purple-500/15 text-purple-400',
   },
   amber: {
     bg: 'bg-amber-500/10',
     text: 'text-amber-400',
+    hoverText: 'group-hover:text-amber-400',
     border: 'border-amber-500/20',
     badge: 'bg-amber-500/15 text-amber-400',
   },
   red: {
     bg: 'bg-red-500/10',
     text: 'text-red-400',
+    hoverText: 'group-hover:text-red-400',
     border: 'border-red-500/20',
     badge: 'bg-red-500/15 text-red-400',
   },
   cyan: {
     bg: 'bg-cyan-500/10',
     text: 'text-cyan-400',
+    hoverText: 'group-hover:text-cyan-400',
     border: 'border-cyan-500/20',
     badge: 'bg-cyan-500/15 text-cyan-400',
   },
   zinc: {
     bg: 'bg-zinc-500/10',
     text: 'text-zinc-400',
+    hoverText: 'group-hover:text-zinc-400',
     border: 'border-zinc-500/20',
     badge: 'bg-zinc-500/15 text-zinc-400',
   },
@@ -155,7 +162,7 @@ export default function LearnPage() {
                         <h2
                           className={cn(
                             'text-lg font-semibold text-zinc-200 group-hover:transition-colors',
-                            `group-hover:${colors.text}`
+                            colors.hoverText
                           )}
                         >
                           {topic.name}

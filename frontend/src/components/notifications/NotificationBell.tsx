@@ -4,12 +4,46 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { notificationsApi } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
+import { useRouter } from 'next/navigation';
 import { Bell, Check, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/cn';
 import type { Notification } from '@/lib/types';
 
+function getNotificationLink(n: Notification): string | null {
+  const { type, data } = n;
+  switch (type) {
+    case 'poke':
+    case 'friend_request':
+    case 'friend_accepted':
+      return '/friends';
+    case 'group_join':
+    case 'group_activity':
+      return data?.groupId ? `/groups/${data.groupId}` : '/groups';
+    case 'room_join':
+    case 'room_start':
+    case 'room_end':
+    case 'room_solve':
+      return data?.roomId ? `/rooms/${data.roomId}` : '/rooms';
+    case 'badge_earned':
+    case 'streak_milestone':
+      return '/achievements';
+    case 'roadmap_complete':
+    case 'roadmap_started':
+    case 'roadmap_streak':
+    case 'roadmap_reminder':
+      return data?.roadmapId ? `/roadmaps/${data.roadmapId}` : '/roadmaps';
+    case 'lagging_behind':
+    case 'friend_solving':
+    case 'inactivity_warning':
+      return '/dashboard';
+    default:
+      return '/notifications';
+  }
+}
+
 export function NotificationBell() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -121,7 +155,14 @@ export function NotificationBell() {
               notifications.map((n) => (
                 <button
                   key={n.id}
-                  onClick={() => !n.read_at && markRead(n.id)}
+                  onClick={() => {
+                    if (!n.read_at) markRead(n.id);
+                    const link = getNotificationLink(n);
+                    if (link) {
+                      setOpen(false);
+                      router.push(link);
+                    }
+                  }}
                   className={cn(
                     'w-full px-4 py-3 text-left border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30',
                     !n.read_at && 'bg-emerald-500/5'

@@ -54,6 +54,7 @@ export const authApi = {
   exportData: () => api.get('/auth/export', { responseType: 'blob' }),
   getCalendarStatus: () => api.get('/auth/calendar/status'),
   getCalendarConnectUrl: () => api.get('/auth/google/calendar'),
+  logout: () => api.post('/auth/logout'),
   disconnectCalendar: () => api.post('/auth/calendar/disconnect'),
   uploadAvatar: (file: File) => {
     const formData = new FormData();
@@ -66,7 +67,7 @@ export const authApi = {
 
 // ── Problems ──
 export const problemsApi = {
-  list: (params?: { difficulty?: string; limit?: number; offset?: number }) =>
+  list: (params?: { difficulty?: string; tag?: string; limit?: number; offset?: number }) =>
     api.get('/problems', { params }),
   getBySlug: (slug: string) =>
     api.get(`/problems/${slug}`),

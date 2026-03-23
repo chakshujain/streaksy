@@ -21,6 +21,7 @@ router.post('/reset-password', validate(resetPasswordSchema), asyncHandler(authC
 router.post('/verify-email', validate(verifyEmailSchema), asyncHandler(authController.verifyEmail));
 
 // Authenticated routes
+router.post('/logout', authenticate, asyncHandler(authController.logout));
 router.post(
   '/connect-leetcode',
   authenticate,

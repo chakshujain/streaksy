@@ -30,14 +30,15 @@ export default function ProblemsPage() {
   );
 
   const difficultyFilter = difficulty !== 'all' ? difficulty : undefined;
+  const tagFilter = tag !== 'all' ? tag : undefined;
 
   const { data: problemsData, loading: problemsLoading } = useAsync<{ problems: Problem[]; total: number }>(
     () =>
       selectedSheet === 'all'
-        ? problemsApi.list({ difficulty: difficultyFilter, limit: LIMIT, offset: page * LIMIT })
+        ? problemsApi.list({ difficulty: difficultyFilter, tag: tagFilter, limit: LIMIT, offset: page * LIMIT })
             .then((r) => ({ problems: r.data.problems, total: r.data.total || r.data.problems?.length || 0 }))
         : problemsApi.getSheetProblems(selectedSheet).then((r) => ({ problems: r.data.problems, total: r.data.problems?.length || 0 })),
-    [selectedSheet, difficultyFilter, page]
+    [selectedSheet, difficultyFilter, tagFilter, page]
   );
 
   const problems = problemsData?.problems ?? null;
@@ -60,15 +61,8 @@ export default function ProblemsPage() {
   }, [problems]);
 
   const filtered = useMemo(() => {
-    let list = problems || [];
-    if (difficulty !== 'all') {
-      list = list.filter((p) => p.difficulty === difficulty);
-    }
-    if (tag !== 'all') {
-      list = list.filter((p) => p.tags?.some((t) => t.name === tag));
-    }
-    return list;
-  }, [problems, difficulty, tag]);
+    return problems || [];
+  }, [problems]);
 
   const filteredProblems = filtered;
 

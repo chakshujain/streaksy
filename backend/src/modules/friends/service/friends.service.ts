@@ -66,13 +66,6 @@ export const friendsService = {
     return friendship;
   },
 
-  async rejectOrCancel(friendshipId: string, userId: string) {
-    const removed = await friendsRepository.rejectRequest(friendshipId, userId);
-    if (!removed) {
-      throw AppError.notFound('Friend request not found');
-    }
-  },
-
   async removeFriend(userId: string, friendId: string) {
     const removed = await friendsRepository.removeFriend(userId, friendId);
     if (!removed) {
