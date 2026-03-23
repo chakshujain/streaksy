@@ -291,7 +291,6 @@ export default function RoadmapDetailPage() {
     potentialPoints: number;
   } | null>(null);
 
-  const [allActiveRoadmaps, setAllActiveRoadmaps] = useState<UserRoadmap[]>([]);
   const [sheetProblems, setSheetProblems] = useState<DayTask[]>([]);
 
   // Sheet template slug → database sheet slug mapping
@@ -301,21 +300,39 @@ export default function RoadmapDetailPage() {
     'leetcode-top-150': 'leetcode-top-150',
   };
 
-  // Load roadmap from localStorage
+  // Load roadmap from API
   useEffect(() => {
-    try {
-      const parsed = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]');
-      const stored = Array.isArray(parsed) ? parsed as UserRoadmap[] : [];
-      setAllActiveRoadmaps(stored);
-      const found = stored.find((r) => r.id === id);
-      if (found) {
-        setRoadmap(found);
+    async function loadRoadmap() {
+      try {
+        const { data } = await roadmapsApi.get(id);
+        const rm = data.roadmap || data;
+        const mapped: UserRoadmap = {
+          id: rm.id,
+          name: rm.name,
+          templateSlug: rm.template_slug || rm.templateSlug || '',
+          category: rm.category_slug || rm.category || '',
+          icon: rm.category_icon || rm.icon || '\uD83D\uDDFA\uFE0F',
+          durationDays: rm.duration_days || rm.durationDays || 0,
+          startDate: rm.start_date || rm.startDate || '',
+          status: (rm.status || 'active') as UserRoadmap['status'],
+          completedDays: rm.completed_days || rm.completedDays || 0,
+          currentStreak: 0,
+          shareCode: rm.share_code || rm.shareCode || '',
+          groupId: rm.group_id || rm.groupId || '',
+          selectedTopics: rm.selected_topics || rm.selectedTopics,
+          selectedLessons: rm.selected_lessons || rm.selectedLessons,
+          hoursPerDay: rm.hours_per_day || rm.hoursPerDay,
+          topicAllocation: rm.topic_allocation || rm.topicAllocation,
+          customizeMode: rm.customize_mode || rm.customizeMode,
+        };
+        setRoadmap(mapped);
         const completed = new Set<number>();
-        const maxDay = Math.min(found.completedDays || 0, found.durationDays || 0);
+        const maxDay = Math.min(mapped.completedDays || 0, mapped.durationDays || 0);
         for (let i = 1; i <= maxDay; i++) completed.add(i);
         setCompletedDays(completed);
-      }
-    } catch { /* empty */ }
+      } catch { /* API fetch failed */ }
+    }
+    loadRoadmap();
   }, [id]);
 
   // Fetch sheet problems for sheet-based roadmaps
@@ -363,16 +380,9 @@ export default function RoadmapDetailPage() {
 
   const groupsUsingTemplate = useMemo(() => {
     if (!roadmap?.templateSlug) return [];
-    const groupMap = new Map<string, string>();
-    for (const rm of allActiveRoadmaps) {
-      if (rm.templateSlug === roadmap.templateSlug && rm.groupId) {
-        if (!groupMap.has(rm.groupId)) {
-          groupMap.set(rm.groupId, rm.groupId);
-        }
-      }
-    }
-    return Array.from(groupMap.entries()).map(([gId, gName]) => ({ id: gId, name: gName }));
-  }, [roadmap?.templateSlug, allActiveRoadmaps]);
+    // Group info is now fetched from participants API rather than local data
+    return roadmap.groupId ? [{ id: roadmap.groupId, name: roadmap.groupId }] : [];
+  }, [roadmap?.templateSlug, roadmap?.groupId]);
 
   // Fetch participants
   const fetchParticipants = useCallback(async (templateSlug: string) => {
@@ -440,17 +450,6 @@ export default function RoadmapDetailPage() {
       const next = new Set(prev);
       if (next.has(day)) next.delete(day);
       else next.add(day);
-
-      if (roadmap) {
-        try {
-          const stored = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]') as UserRoadmap[];
-          const idx = stored.findIndex((r) => r.id === roadmap.id);
-          if (idx >= 0) {
-            stored[idx].completedDays = next.size;
-            localStorage.setItem('streaksy_active_roadmaps', JSON.stringify(stored));
-          }
-        } catch { /* empty */ }
-      }
       return next;
     });
 
@@ -466,25 +465,9 @@ export default function RoadmapDetailPage() {
     if (!roadmap) return;
     setLeaving(true);
 
-    // Do localStorage cleanup FIRST (always works, no auth needed)
     try {
-      const stored = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]') as UserRoadmap[];
-      const updated = stored.filter((r) => r.id !== roadmap.id);
-      localStorage.setItem('streaksy_active_roadmaps', JSON.stringify(updated));
-
-      // Save to history in localStorage
-      const history = JSON.parse(localStorage.getItem('streaksy_roadmap_history') || '[]');
-      history.unshift({
-        ...roadmap,
-        status: 'abandoned' as const,
-        completedDays: completedDays.size,
-        leftAt: new Date().toISOString(),
-      });
-      localStorage.setItem('streaksy_roadmap_history', JSON.stringify(history));
-    } catch { /* localStorage unavailable */ }
-
-    // Fire-and-forget backend sync (may fail if not logged in or roadmap not synced)
-    roadmapsApi.update(roadmap.id, { status: 'abandoned' }).catch(() => {});
+      await roadmapsApi.update(roadmap.id, { status: 'abandoned' });
+    } catch { /* API call failed */ }
 
     setLeaving(false);
     router.push('/roadmaps');

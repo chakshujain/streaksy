@@ -369,47 +369,13 @@ export default function RoadmapStartPage() {
       };
 
       let roadmapId: string;
-      let shareCode: string;
 
       try {
         const { data } = await roadmapsApi.create(createPayload);
         roadmapId = data.roadmap?.id || data.id || `rm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-        shareCode = data.roadmap?.shareCode || data.shareCode || Math.random().toString(36).slice(2, 8).toUpperCase();
       } catch {
         roadmapId = `rm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-        shareCode = Math.random().toString(36).slice(2, 8).toUpperCase();
       }
-
-      const roadmap = {
-        id: roadmapId,
-        name: template.name,
-        templateSlug: template.slug,
-        category: template.category,
-        icon: template.icon,
-        durationDays: template.duration,
-        startDate,
-        status: 'active' as const,
-        completedDays: 0,
-        currentStreak: 0,
-        shareCode,
-        groupId,
-        ...(isCodingRoadmap && {
-          hoursPerDay,
-          selectedTopics,
-          selectedLessons: Array.from(selectedLessons),
-          topicAllocation,
-          customizeMode,
-          weeklyRoomDay: scheduleWeeklyRoom ? weeklyRoomDay.toLowerCase() : undefined,
-          weeklyRoomTime: scheduleWeeklyRoom ? weeklyRoomTime : undefined,
-          dailyReminder,
-        }),
-      };
-
-      try {
-        const existing = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]');
-        existing.push(roadmap);
-        localStorage.setItem('streaksy_active_roadmaps', JSON.stringify(existing));
-      } catch { /* localStorage not available */ }
 
       // Auto-create weekly war room if scheduled
       if (scheduleWeeklyRoom && weeklyRoomDay && weeklyRoomTime) {

@@ -38,7 +38,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     authApi.logout().catch(() => {});
     localStorage.removeItem('streaksy_token');
     localStorage.removeItem('streaksy_user');
-    localStorage.removeItem('streaksy_active_roadmaps');
     localStorage.removeItem('streaksy_pending_invite');
     disconnectSocket();
     set({ user: null, token: null });

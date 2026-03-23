@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { roadmapsApi, prepApi } from '@/lib/api';
 import { templatesBySlug } from '@/lib/roadmap-templates';
 import { useAuthStore } from '@/lib/store';
-import type { UserRoadmap } from '@/lib/types';
+
 
 interface SharedRoadmap {
   id?: string;
@@ -88,27 +88,6 @@ export default function JoinRoadmapPage() {
         return;
       } catch { /* try next */ }
 
-      // Fallback: check localStorage
-      try {
-        const parsed = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]');
-        const stored = Array.isArray(parsed) ? parsed as UserRoadmap[] : [];
-        const found = stored.find((r) => r.shareCode === code);
-        if (found) {
-          const template = found.templateSlug ? templatesBySlug[found.templateSlug] : null;
-          setRoadmapData({
-            id: found.id,
-            name: found.name,
-            templateSlug: found.templateSlug,
-            icon: found.icon,
-            category: found.category,
-            durationDays: found.durationDays,
-            description: template?.description,
-          });
-          setLoading(false);
-          return;
-        }
-      } catch { /* empty */ }
-
       setError('This roadmap link is invalid or has expired.');
       setLoading(false);
     }
@@ -130,42 +109,7 @@ export default function JoinRoadmapPage() {
       if (roadmapData?.templateId) createPayload.templateId = roadmapData.templateId;
       if (roadmapData?.category) createPayload.categoryId = roadmapData.category;
 
-      let roadmapId: string;
-      let shareCode: string;
-
-      try {
-        const { data } = await roadmapsApi.create(createPayload);
-        roadmapId = data.roadmap?.id || data.id;
-        shareCode = data.roadmap?.share_code || data.share_code || Math.random().toString(36).slice(2, 8).toUpperCase();
-      } catch {
-        // Fallback to local-only creation
-        roadmapId = `rm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-        shareCode = Math.random().toString(36).slice(2, 8).toUpperCase();
-      }
-
-      // Save to localStorage
-      const newRoadmap: UserRoadmap = {
-        id: roadmapId,
-        name: roadmapData?.name || 'Joined Roadmap',
-        templateSlug: roadmapData?.templateSlug,
-        category: roadmapData?.category || 'General',
-        icon: roadmapData?.icon || '\u{1F680}',
-        durationDays: roadmapData?.durationDays || 30,
-        startDate: new Date().toISOString().split('T')[0],
-        status: 'active',
-        completedDays: 0,
-        currentStreak: 0,
-        shareCode,
-      };
-
-      try {
-        const parsed = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]');
-        const existing = Array.isArray(parsed) ? parsed : [];
-        existing.push(newRoadmap);
-        localStorage.setItem('streaksy_active_roadmaps', JSON.stringify(existing));
-      } catch {
-        localStorage.setItem('streaksy_active_roadmaps', JSON.stringify([newRoadmap]));
-      }
+      await roadmapsApi.create(createPayload);
 
       setJoined(true);
       setTimeout(() => router.push('/roadmaps'), 1000);

@@ -83,12 +83,7 @@ export default function RoadmapHistoryPage() {
         }));
         setRoadmaps(all);
       } catch {
-        // Fallback to localStorage
-        try {
-          const active = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]');
-          const history = JSON.parse(localStorage.getItem('streaksy_roadmap_history') || '[]');
-          setRoadmaps([...active, ...history]);
-        } catch { /* empty */ }
+        /* API fetch failed */
       } finally {
         setLoading(false);
       }

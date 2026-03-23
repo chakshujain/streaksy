@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { ContributionHeatmap } from '@/components/dashboard/ContributionHeatmap';
@@ -998,29 +998,34 @@ export default function DashboardPage() {
     []
   );
 
-  /* ── Roadmaps from localStorage ─── */
-  const [activeRoadmaps, setActiveRoadmaps] = useState<UserRoadmap[]>([]);
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('streaksy_active_roadmaps');
-      if (stored) setActiveRoadmaps(JSON.parse(stored));
-    } catch { /* empty */ }
-  }, []);
+  /* ── Roadmaps from API ─── */
+  const { data: activeRoadmaps } = useAsync<UserRoadmap[]>(
+    () => roadmapsApi.getActive().then(r => {
+      const roadmaps = (r.data.roadmaps || []).map((rm: Record<string, unknown>) => ({
+        id: rm.id,
+        name: rm.name,
+        templateSlug: rm.template_slug,
+        category: rm.category_slug || rm.category_id,
+        icon: rm.category_icon || '\uD83D\uDDFA\uFE0F',
+        durationDays: rm.duration_days,
+        startDate: rm.start_date,
+        status: rm.status,
+        completedDays: rm.completed_days || 0,
+        currentStreak: 0,
+        shareCode: rm.share_code,
+        groupId: rm.group_id,
+      }));
+      return roadmaps;
+    }).catch(() => []),
+    []
+  );
 
   /* ── Today's tasks ─── */
-  const todayTasks = useMemo(() => getTodayTasks(activeRoadmaps), [activeRoadmaps]);
+  const todayTasks = useMemo(() => getTodayTasks(activeRoadmaps || []), [activeRoadmaps]);
 
   const handleToggleTask = useCallback(async (roadmapId: string, dayNumber: number, done: boolean) => {
     try {
       await roadmapsApi.updateProgress(roadmapId, dayNumber, done);
-      // Optimistic update
-      setActiveRoadmaps((prev) =>
-        prev.map((rm) =>
-          rm.id === roadmapId
-            ? { ...rm, completedDays: done ? Math.max(rm.completedDays, dayNumber) : Math.min(rm.completedDays, dayNumber - 1) }
-            : rm
-        )
-      );
     } catch {
       /* silently fail */
     }
@@ -1127,8 +1132,8 @@ export default function DashboardPage() {
             <StatCard
               icon={<Map className="h-4 w-4 text-purple-400" />}
               label="Active Roadmaps"
-              value={activeRoadmaps.filter((r) => r.status === 'active').length}
-              sub={activeRoadmaps.length > 0 ? `${todayTasks.filter((t) => t.done).length}/${todayTasks.length} tasks today` : 'Start one!'}
+              value={(activeRoadmaps || []).filter((r) => r.status === 'active').length}
+              sub={(activeRoadmaps || []).length > 0 ? `${todayTasks.filter((t) => t.done).length}/${todayTasks.length} tasks today` : 'Start one!'}
               gradient="bg-gradient-to-br from-purple-500/20 to-fuchsia-500/10 border-purple-500/10"
             />
             <StatCard
@@ -1154,7 +1159,7 @@ export default function DashboardPage() {
           <TodayTasksSection tasks={todayTasks} onToggle={handleToggleTask} />
 
           {/* ═══ Section 3: Active Roadmaps (horizontal scroll) ═══ */}
-          <ActiveRoadmapsSection roadmaps={activeRoadmaps} />
+          <ActiveRoadmapsSection roadmaps={activeRoadmaps || []} />
 
           {/* ═══ Section 3b: Learning Progress ═══ */}
           <div className="animate-slide-up" style={{ animationDelay: '160ms', animationFillMode: 'both' }}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/Card';
@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import type { UserRoadmap } from '@/lib/types';
 import { roadmapTemplates } from '@/lib/roadmap-templates';
+import { roadmapsApi } from '@/lib/api';
+import { useAsync } from '@/hooks/useAsync';
 
 const templates = roadmapTemplates;
 
@@ -51,22 +53,32 @@ const difficultyColors: Record<string, string> = {
 /* ------------------------------------------------------------------ */
 export default function RoadmapsPage() {
   const [activeCategory, setActiveCategory] = useState('All');
-  const [activeRoadmaps, setActiveRoadmaps] = useState<UserRoadmap[]>([]);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('streaksy_active_roadmaps');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) setActiveRoadmaps(parsed);
-      }
-    } catch { /* empty */ }
-  }, []);
+  const { data: activeRoadmaps } = useAsync<UserRoadmap[]>(
+    () => roadmapsApi.getActive().then(r => {
+      const roadmaps = (r.data.roadmaps || []).map((rm: Record<string, unknown>) => ({
+        id: rm.id,
+        name: rm.name,
+        templateSlug: rm.template_slug,
+        category: rm.category_slug || rm.category_id,
+        icon: rm.category_icon || '\uD83D\uDDFA\uFE0F',
+        durationDays: rm.duration_days,
+        startDate: rm.start_date,
+        status: rm.status,
+        completedDays: rm.completed_days || 0,
+        currentStreak: 0,
+        shareCode: rm.share_code,
+        groupId: rm.group_id,
+      }));
+      return roadmaps;
+    }).catch(() => []),
+    []
+  );
 
   // Compute how many groups are using each template slug
   const groupCountBySlug = useMemo(() => {
     const counts: Record<string, Set<string>> = {};
-    for (const rm of activeRoadmaps) {
+    for (const rm of (activeRoadmaps || [])) {
       if (rm.templateSlug && rm.groupId) {
         if (!counts[rm.templateSlug]) counts[rm.templateSlug] = new Set();
         counts[rm.templateSlug].add(rm.groupId);
@@ -205,11 +217,11 @@ export default function RoadmapsPage() {
           </section>
 
           {/* My Active Roadmaps */}
-          {activeRoadmaps.length > 0 && (
+          {(activeRoadmaps || []).length > 0 && (
             <section>
               <h2 className="text-lg font-semibold text-white mb-4">My Active Roadmaps</h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {activeRoadmaps.map((rm) => {
+                {(activeRoadmaps || []).map((rm) => {
                   const c = colorClasses[rm.category === 'Coding & Tech' ? 'emerald' : rm.category === 'Fitness & Health' ? 'blue' : 'amber'] || colorClasses.emerald;
                   const pct = rm.durationDays > 0 ? Math.round((rm.completedDays / rm.durationDays) * 100) : 0;
                   return (

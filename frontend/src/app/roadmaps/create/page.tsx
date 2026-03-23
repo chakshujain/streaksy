@@ -15,6 +15,7 @@ import {
   User,
 } from 'lucide-react';
 import Link from 'next/link';
+import { roadmapsApi } from '@/lib/api';
 
 const categoryOptions = [
   { value: 'Coding & Tech', label: 'Coding & Tech', icon: '\u{1F4BB}', color: 'emerald' },
@@ -70,39 +71,23 @@ export default function CreateRoadmapPage() {
     setDailyTasks((prev) => prev.filter((_, i) => i !== index).map((t, i) => ({ ...t, day: i + 1 })));
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (loading) return;
     if (!name.trim()) return;
     setLoading(true);
 
-    const id = `rm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const shareCode = Math.random().toString(36).slice(2, 8).toUpperCase();
-    const catObj = categoryOptions.find((c) => c.value === category);
-
-    const roadmap = {
-      id,
-      name: name.trim(),
-      category,
-      icon: catObj?.icon || '\u2728',
-      durationDays: days,
-      startDate: new Date().toISOString().split('T')[0],
-      status: 'active' as const,
-      completedDays: 0,
-      currentStreak: 0,
-      shareCode,
-      groupId: mode === 'friends' ? `grp_${Date.now()}` : undefined,
-    };
-
     try {
-      const existing = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]');
-      if (!Array.isArray(existing)) throw new Error();
-      existing.push(roadmap);
-      localStorage.setItem('streaksy_active_roadmaps', JSON.stringify(existing));
+      await roadmapsApi.create({
+        name: name.trim(),
+        durationDays: days,
+        startDate: new Date().toISOString().split('T')[0],
+        categoryId: category,
+        groupId: mode === 'friends' ? `grp_${Date.now()}` : undefined,
+      });
+      router.push('/roadmaps');
     } catch {
-      localStorage.setItem('streaksy_active_roadmaps', JSON.stringify([roadmap]));
+      setLoading(false);
     }
-
-    router.push('/roadmaps');
   };
 
   return (
