@@ -458,8 +458,9 @@ function FindFriendsTab() {
       await friendsApi.inviteByEmail(inviteEmail.trim());
       setInviteStatus({ type: 'success', message: 'Invite sent!' });
       setInviteEmail('');
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || 'Failed to send invite';
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      const msg = axiosErr?.response?.data?.message || 'Failed to send invite';
       setInviteStatus({ type: 'error', message: msg });
     } finally {
       setInviting(false);
