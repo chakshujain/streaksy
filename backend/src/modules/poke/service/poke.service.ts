@@ -34,6 +34,7 @@ export const pokeService = {
     if (todayCount >= DAILY_POKE_LIMIT) throw AppError.badRequest(`You've reached the daily poke limit (${DAILY_POKE_LIMIT})`);
 
     const fromUser = await authRepository.findById(fromUserId);
+    if (!fromUser) throw AppError.notFound('Sender user not found');
     const toUser = await authRepository.findById(toUserId);
     if (!toUser) throw AppError.notFound('User not found');
 

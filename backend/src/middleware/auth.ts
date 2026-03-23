@@ -7,7 +7,7 @@ import { AppError } from '../common/errors/AppError';
 export function authenticate(req: AuthRequest, _res: Response, next: NextFunction): void {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
-    throw AppError.unauthorized('Missing or invalid authorization header');
+    return next(AppError.unauthorized('Missing or invalid authorization header'));
   }
 
   const token = header.slice(7);
@@ -16,6 +16,6 @@ export function authenticate(req: AuthRequest, _res: Response, next: NextFunctio
     req.user = payload;
     next();
   } catch {
-    throw AppError.unauthorized('Invalid or expired token');
+    return next(AppError.unauthorized('Invalid or expired token'));
   }
 }

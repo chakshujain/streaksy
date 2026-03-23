@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { pokeService } from '../service/poke.service';
 import { AuthRequest } from '../../../common/types';
-import { param } from '../../../common/utils/params';
+import { param, parseLimit, parseOffset } from '../../../common/utils/params';
 import { groupRepository } from '../../group/repository/group.repository';
 
 export const pokeController = {
@@ -14,8 +14,8 @@ export const pokeController = {
 
   async getMyPokes(req: Request, res: Response) {
     const { user } = req as AuthRequest;
-    const limit = parseInt(req.query.limit as string) || 20;
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseLimit(req, 20);
+    const offset = parseOffset(req);
     const pokes = await pokeService.getMyPokes(user!.userId, limit, offset);
     res.json({ pokes });
   },
