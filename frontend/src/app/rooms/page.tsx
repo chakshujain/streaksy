@@ -99,7 +99,7 @@ export default function RoomsPage() {
       .filter((f: Record<string, unknown>) => Array.isArray((f as Record<string, unknown>).active_rooms) && ((f as Record<string, unknown>).active_rooms as unknown[]).length > 0)
       .flatMap((f: Record<string, unknown>) =>
         ((f as Record<string, unknown>).active_rooms as Record<string, unknown>[]).map((r) => ({
-          room_id: r.room_id as string || r.id as string || '',
+          room_id: (r.id || r.room_id || '') as string,
           name: r.name as string || r.room_name as string || '',
           code: r.code as string || '',
           status: r.status as string || r.room_status as string || '',
