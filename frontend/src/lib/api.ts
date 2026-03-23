@@ -54,6 +54,7 @@ export const authApi = {
   exportData: () => api.get('/auth/export', { responseType: 'blob' }),
   getCalendarStatus: () => api.get('/auth/calendar/status'),
   getCalendarConnectUrl: () => api.get('/auth/google/calendar'),
+  logout: () => api.post('/auth/logout'),
   disconnectCalendar: () => api.post('/auth/calendar/disconnect'),
   uploadAvatar: (file: File) => {
     const formData = new FormData();

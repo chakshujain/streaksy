@@ -437,7 +437,9 @@ export default function PatternDetailPage() {
                 const problemSlug = prob.name
                   .toLowerCase()
                   .replace(/[^a-z0-9\s-]/g, '')
-                  .replace(/\s+/g, '-');
+                  .replace(/\s+/g, '-')
+                  .replace(/-+/g, '-')
+                  .replace(/^-|-$/g, '');
                 return (
                   <Link
                     key={i}
@@ -475,7 +477,9 @@ export default function PatternDetailPage() {
                   const problemSlug = problem
                     .toLowerCase()
                     .replace(/[^a-z0-9\s-]/g, '')
-                    .replace(/\s+/g, '-');
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .replace(/^-|-$/g, '');
                   return (
                     <Link
                       key={i}

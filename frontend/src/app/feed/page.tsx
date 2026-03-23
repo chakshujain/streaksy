@@ -26,8 +26,11 @@ export default function FeedPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const LIMIT = 20;
 
+  const [error, setError] = useState('');
+
   const { loading } = useAsync(
     () => feedApi.getFeed({ limit: LIMIT, offset }).then(r => {
+      setError('');
       const newEvents = (r.data.events ?? []) as FeedEvent[];
       if (offset === 0) {
         setAllEvents(newEvents);
@@ -36,6 +39,9 @@ export default function FeedPage() {
       }
       setHasMore(newEvents.length === LIMIT);
       return newEvents;
+    }).catch(err => {
+      setError('Failed to load feed. Please try again.');
+      throw err;
     }),
     [offset, refreshKey]
   );
@@ -112,6 +118,16 @@ export default function FeedPage() {
           <div className="animate-slide-up" style={{ animationDelay: '160ms', animationFillMode: 'both' }}>
             <SharePost onPost={() => { setOffset(0); setRefreshKey(k => k + 1); }} />
           </div>
+
+          {/* Error state */}
+          {error && (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 px-5 py-4 text-sm text-red-400 flex items-center justify-between">
+              <span>{error}</span>
+              <Button variant="ghost" size="sm" onClick={() => { setError(''); setRefreshKey(k => k + 1); }}>
+                Retry
+              </Button>
+            </div>
+          )}
 
           {/* Feed content */}
           {loading && offset === 0 ? (

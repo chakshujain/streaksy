@@ -5,6 +5,7 @@ import fs from 'fs';
 import { authService } from '../service/auth.service';
 import { AuthRequest } from '../../../common/types';
 import { param } from '../../../common/utils/params';
+import { blacklistToken } from '../../../middleware/auth';
 
 // Multer setup for avatar uploads
 const uploadsDir = path.join(__dirname, '..', '..', '..', '..', 'uploads', 'avatars');
@@ -46,6 +47,14 @@ export const authController = {
     const { email, password } = req.body;
     const result = await authService.login(email, password);
     res.json(result);
+  },
+
+  async logout(req: Request, res: Response) {
+    const header = req.headers.authorization;
+    if (header?.startsWith('Bearer ')) {
+      await blacklistToken(header.slice(7));
+    }
+    res.json({ message: 'Logged out successfully' });
   },
 
   async connectLeetcode(req: Request, res: Response) {

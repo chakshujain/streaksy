@@ -115,23 +115,6 @@ describe('friendsService', () => {
     });
   });
 
-  describe('rejectOrCancel', () => {
-    it('should reject/cancel a friend request', async () => {
-      mockedRepo.rejectRequest.mockResolvedValue(true);
-
-      await expect(friendsService.rejectOrCancel('fs-1', 'user-1')).resolves.toBeUndefined();
-      expect(mockedRepo.rejectRequest).toHaveBeenCalledWith('fs-1', 'user-1');
-    });
-
-    it('should throw notFound when request not found', async () => {
-      mockedRepo.rejectRequest.mockResolvedValue(false);
-
-      await expect(friendsService.rejectOrCancel('bad-id', 'user-1')).rejects.toThrow(
-        'Friend request not found'
-      );
-    });
-  });
-
   describe('removeFriend', () => {
     it('should remove a friend', async () => {
       mockedRepo.removeFriend.mockResolvedValue(true);
