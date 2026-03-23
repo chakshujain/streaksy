@@ -527,12 +527,18 @@ export default function RoadmapDetailPage() {
     try {
       const { data } = await roomsApi.create({
         name: `${roadmap.name} Challenge`,
-        mode: 'practice',
+        mode: 'multi',
+        groupId: roadmap.groupId || undefined,
+        roadmapId: roadmap.id || undefined,
       });
       const roomId = data.room?.id || data.id;
+      // Invite the challenged participant
+      if (roomId && participant.userId) {
+        await roomsApi.inviteFriends(roomId, [participant.userId]).catch(() => {});
+      }
       if (roomId) router.push(`/rooms/${roomId}`);
     } catch {
-      setPokeToast(`Challenge room created! Invite ${participant.name}`);
+      setPokeToast('Failed to create challenge room');
       setTimeout(() => setPokeToast(''), 2000);
     }
     setCreatingRoom(false);
@@ -544,14 +550,14 @@ export default function RoadmapDetailPage() {
     try {
       const { data } = await roomsApi.create({
         name: `${roadmap.name} - Solve Together`,
-        mode: 'practice',
+        mode: 'multi',
         groupId: roadmap.groupId || undefined,
         roadmapId: roadmap.id || undefined,
       });
       const roomId = data.room?.id || data.id;
       if (roomId) router.push(`/rooms/${roomId}`);
     } catch {
-      setPokeToast('Room created!');
+      setPokeToast('Failed to create room');
       setTimeout(() => setPokeToast(''), 2000);
     }
     setCreatingRoom(false);
