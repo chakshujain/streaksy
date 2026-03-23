@@ -33,6 +33,15 @@ function getNotificationLink(n: Notification): string | null {
     case 'roadmap_streak':
     case 'roadmap_reminder':
       return data?.roadmapId ? `/roadmaps/${data.roadmapId}` : '/roadmaps';
+    case 'roadmap_invite':
+      return data?.shareCode ? `/roadmaps/join/${data.shareCode}` :
+             data?.roadmapId ? `/roadmaps/${data.roadmapId}` : '/roadmaps';
+    case 'group_invite':
+      return data?.inviteCode ? `/invite/group/${data.inviteCode}` :
+             data?.groupId ? `/groups/${data.groupId}` : '/groups';
+    case 'room_invite':
+      return data?.code ? `/rooms/${data.roomId}` :
+             data?.roomId ? `/rooms/${data.roomId}` : '/rooms';
     case 'lagging_behind':
     case 'friend_solving':
     case 'inactivity_warning':

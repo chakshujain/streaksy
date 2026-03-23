@@ -101,21 +101,13 @@ export default function JoinRoadmapPage() {
     setError('');
 
     try {
-      const createPayload: Record<string, unknown> = {
-        name: roadmapData?.name || 'Joined Roadmap',
-        durationDays: roadmapData?.durationDays || 30,
-        startDate: new Date().toISOString().split('T')[0],
-      };
-      if (roadmapData?.templateId) createPayload.templateId = roadmapData.templateId;
-      if (roadmapData?.category) createPayload.categoryId = roadmapData.category;
-
-      await roadmapsApi.create(createPayload);
-
+      const { data } = await roadmapsApi.join(code);
       setJoined(true);
-      setTimeout(() => router.push('/roadmaps'), 1000);
+      const roadmapId = data.roadmap?.id || data.id;
+      setTimeout(() => router.push(roadmapId ? `/roadmaps/${roadmapId}` : '/roadmaps'), 1000);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string };
-      setError(e.response?.data?.error || e.message || 'Failed to join roadmap. Please try again.');
+      setError(e.response?.data?.error || e.message || 'Failed to join roadmap');
       setJoining(false);
     }
   };

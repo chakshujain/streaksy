@@ -372,9 +372,18 @@ export default function RoadmapStartPage() {
 
       try {
         const { data } = await roadmapsApi.create(createPayload);
-        roadmapId = data.roadmap?.id || data.id || `rm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      } catch {
-        roadmapId = `rm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        roadmapId = data.roadmap?.id || data.id;
+        if (!roadmapId) throw new Error('Failed to create roadmap');
+      } catch (err: unknown) {
+        const e = err as { response?: { data?: { error?: string } }; message?: string };
+        setError(e.response?.data?.error || e.message || 'Failed to create roadmap');
+        setLoading(false);
+        return;
+      }
+
+      // After group creation, invite friends to the group
+      if (groupId && selectedFriendIds.length > 0) {
+        await groupsApi.inviteFriends(groupId, selectedFriendIds).catch(() => {});
       }
 
       // Auto-create weekly war room if scheduled
@@ -405,9 +414,13 @@ export default function RoadmapStartPage() {
         } catch { /* Room creation failed — non-critical */ }
       }
 
-      // Invite selected friends
+      // Invite selected friends to the roadmap
       if (selectedFriendIds.length > 0) {
-        roadmapsApi.inviteFriends(roadmapId, selectedFriendIds).catch(() => {});
+        try {
+          await roadmapsApi.inviteFriends(roadmapId, selectedFriendIds);
+        } catch (inviteErr) {
+          console.warn('Failed to invite friends to roadmap:', inviteErr);
+        }
       }
 
       router.push(`/roadmaps/${roadmapId}`);

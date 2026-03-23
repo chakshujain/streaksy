@@ -430,6 +430,7 @@ export const roadmapsApi = {
   postDiscussion: (slug: string, content: string) => api.post(`/roadmaps/templates/${slug}/discussions`, { content }),
   getAIGuidance: (roadmapId: string) => api.post(`/roadmaps/${roadmapId}/ai-guidance`),
   inviteFriends: (roadmapId: string, userIds: string[]) => api.post(`/roadmaps/${roadmapId}/invite-friends`, { userIds }),
+  join: (code: string) => api.post(`/roadmaps/join/${code}`),
 };
 
 // ── Friends ──

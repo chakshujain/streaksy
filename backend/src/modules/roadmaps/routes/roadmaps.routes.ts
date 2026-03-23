@@ -22,6 +22,9 @@ router.post('/templates/:slug/discussions', asyncHandler(roadmapsController.crea
 // Today's tasks across all active roadmaps
 router.get('/today', asyncHandler(roadmapsController.getTodayTasks));
 
+// Join a shared roadmap
+router.post('/join/:code', asyncHandler(roadmapsController.joinByShareCode));
+
 // User roadmaps
 router.post('/', asyncHandler(roadmapsController.createUserRoadmap));
 router.get('/active', asyncHandler(roadmapsController.getActiveRoadmaps));

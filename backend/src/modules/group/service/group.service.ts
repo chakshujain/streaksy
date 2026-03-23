@@ -1,5 +1,6 @@
 import { groupRepository } from '../repository/group.repository';
 import { AppError } from '../../../common/errors/AppError';
+import { queryOne } from '../../../config/database';
 
 export const groupService = {
   async create(name: string, description: string | undefined, userId: string) {
@@ -110,15 +111,38 @@ export const groupService = {
     if (!group) throw AppError.notFound('Group not found');
     const isMember = await groupRepository.isMember(groupId, senderUserId);
     if (!isMember) throw AppError.forbidden('Not a member of this group');
+
+    // Get sender name
+    const sender = await queryOne<{ display_name: string }>('SELECT display_name FROM users WHERE id = $1', [senderUserId]);
+    const senderName = sender?.display_name || 'A friend';
+
     const { notificationService } = await import('../../notification/service/notification.service');
+
     for (const userId of recipientUserIds.slice(0, 20)) {
+      // In-app notification
       await notificationService.notify(
         userId,
         'group_invite',
-        `You've been invited to join "${group.name}"`,
-        `A friend invited you to their group. Tap to join!`,
-        { groupId, inviteCode: group.invite_code }
+        `${senderName} invited you to join "${group.name}"`,
+        `Tap to join this group and start your journey together!`,
+        { groupId, inviteCode: group.invite_code, senderName }
       ).catch(() => {});
+
+      // Email notification
+      try {
+        const recipient = await queryOne<{ email: string; display_name: string }>('SELECT email, display_name FROM users WHERE id = $1', [userId]);
+        if (recipient?.email) {
+          const { sendEmail } = await import('../../../config/email');
+          await sendEmail(
+            recipient.email,
+            `${senderName} invited you to "${group.name}" on Streaksy`,
+            `<p>Hi ${recipient.display_name || 'there'},</p>
+<p>${senderName} has invited you to join their group <strong>"${group.name}"</strong> on Streaksy.</p>
+<p><a href="https://streaksy.in/invite/group/${group.invite_code}">Join Group</a></p>
+<p>Happy learning!<br>Streaksy Team</p>`
+          ).catch(() => {});
+        }
+      } catch {}
     }
   },
 };

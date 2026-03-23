@@ -312,15 +312,67 @@ export const roadmapsService = {
     const roadmap = await roadmapsRepository.getRoadmapById(roadmapId);
     if (!roadmap) throw AppError.notFound('Roadmap not found');
     if (roadmap.user_id !== senderUserId) throw AppError.forbidden('Not your roadmap');
+
+    // Get sender name
+    const sender = await queryOne<{ display_name: string }>('SELECT display_name FROM users WHERE id = $1', [senderUserId]);
+    const senderName = sender?.display_name || 'A friend';
+
     const { notificationService } = await import('../../notification/service/notification.service');
+
     for (const userId of recipientUserIds.slice(0, 20)) {
+      // In-app notification
       await notificationService.notify(
         userId,
         'roadmap_invite',
-        `You've been invited to join "${roadmap.name}"`,
-        `A friend invited you to their roadmap. Tap to join!`,
-        { roadmapId, shareCode: roadmap.share_code }
+        `${senderName} invited you to join "${roadmap.name}"`,
+        `Tap to join this roadmap and start your journey together!`,
+        { roadmapId, shareCode: roadmap.share_code, senderName }
       ).catch(() => {});
+
+      // Email notification
+      try {
+        const recipient = await queryOne<{ email: string; display_name: string }>('SELECT email, display_name FROM users WHERE id = $1', [userId]);
+        if (recipient?.email) {
+          const { sendEmail } = await import('../../../config/email');
+          await sendEmail(
+            recipient.email,
+            `${senderName} invited you to "${roadmap.name}" on Streaksy`,
+            `<p>Hi ${recipient.display_name || 'there'},</p>
+<p>${senderName} has invited you to join their roadmap <strong>"${roadmap.name}"</strong> on Streaksy.</p>
+<p><a href="https://streaksy.in/roadmaps/join/${roadmap.share_code}">Join Roadmap</a></p>
+<p>Happy learning!<br>Streaksy Team</p>`
+          ).catch(() => {});
+        }
+      } catch {}
     }
+  },
+
+  async joinByShareCode(shareCode: string, userId: string) {
+    const original = await roadmapsRepository.getByShareCode(shareCode);
+    if (!original) throw AppError.notFound('Roadmap not found');
+
+    // Create a copy for the joining user with same template and group
+    const roadmap = await roadmapsRepository.createUserRoadmap(userId, {
+      templateId: original.template_id || undefined,
+      groupId: original.group_id || undefined,
+      name: original.name,
+      categoryId: original.category_id || undefined,
+      durationDays: original.duration_days,
+      startDate: new Date().toISOString().split('T')[0],
+    });
+
+    // Add as participant on the template
+    if (original.template_id) {
+      await roadmapsRepository.addParticipant(original.template_id, userId, roadmap.id);
+    }
+
+    // Add to group if exists
+    if (original.group_id) {
+      try {
+        await queryOne('INSERT INTO group_members (group_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [original.group_id, userId]);
+      } catch {}
+    }
+
+    return roadmap;
   },
 };

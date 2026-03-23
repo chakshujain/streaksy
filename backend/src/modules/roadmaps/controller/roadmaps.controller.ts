@@ -28,7 +28,22 @@ export const roadmapsController = {
 
   async createUserRoadmap(req: Request, res: Response) {
     const { user } = req as AuthRequest;
-    const { templateId, groupId, name, categoryId, durationDays, startDate, customTasks } = req.body;
+    let { templateId, groupId, name, categoryId, durationDays, startDate, customTasks } = req.body;
+    const { templateSlug, category } = req.body;
+
+    // Resolve templateSlug to templateId if needed
+    if (!templateId && templateSlug) {
+      const template = await roadmapsService.getTemplateBySlug(templateSlug).catch(() => null);
+      if (template) templateId = template.id;
+    }
+
+    // Resolve category name to categoryId if needed
+    if (!categoryId && category) {
+      const categories = await roadmapsService.getCategories();
+      const cat = categories.find((c: any) => c.name === category || c.slug === category);
+      if (cat) categoryId = cat.id;
+    }
+
     const roadmap = await roadmapsService.createUserRoadmap(user!.userId, {
       templateId,
       groupId,
@@ -157,6 +172,13 @@ export const roadmapsController = {
     const id = param(req, 'id');
     const guidance = await roadmapsService.getAIGuidance(id, user!.userId);
     res.json({ guidance });
+  },
+
+  async joinByShareCode(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const code = param(req, 'code');
+    const roadmap = await roadmapsService.joinByShareCode(code, user!.userId);
+    res.status(201).json({ roadmap });
   },
 
   async inviteFriends(req: Request, res: Response) {
