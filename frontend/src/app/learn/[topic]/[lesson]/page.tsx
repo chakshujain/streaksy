@@ -22,6 +22,8 @@ import {
   BookOpen,
   Brain,
   RotateCcw,
+  Play,
+  ExternalLink,
 } from 'lucide-react';
 import { useLearnProgress } from '@/hooks/useLearnProgress';
 import { BookmarkButton } from '@/components/ui/BookmarkButton';
@@ -128,6 +130,50 @@ function DiagramVisual({ text }: { text: string }) {
   return (
     <div className="rounded-xl border border-zinc-700/50 bg-zinc-950 p-4 overflow-x-auto">
       <pre className="text-xs text-emerald-400/80 font-mono leading-relaxed whitespace-pre">{text}</pre>
+    </div>
+  );
+}
+
+function YouTubeEmbed({ url, title }: { url: string; title?: string }) {
+  // Extract video ID from various YouTube URL formats
+  const getVideoId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
+  const videoId = getVideoId(url);
+  if (!videoId) return null;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Play className="h-4 w-4 text-red-400" />
+        <p className="text-sm font-medium text-zinc-300">{title || 'Watch Video Explanation'}</p>
+      </div>
+      <div className="relative w-full rounded-xl overflow-hidden border border-zinc-700/50" style={{ paddingBottom: '56.25%' }}>
+        <iframe
+          className="absolute inset-0 w-full h-full"
+          src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+          title={title || 'Video explanation'}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-400 transition-colors"
+      >
+        <ExternalLink className="h-3 w-3" />
+        Open on YouTube
+      </a>
     </div>
   );
 }
@@ -293,6 +339,13 @@ export default function LessonPage() {
           </div>
           <p className="mt-2 text-sm text-zinc-400">{lesson.description}</p>
         </div>
+
+        {/* Video Embed */}
+        {lesson.videoUrl && (
+          <Card className="p-5">
+            <YouTubeEmbed url={lesson.videoUrl} title={lesson.videoTitle} />
+          </Card>
+        )}
 
         {/* Content or Coming Soon */}
         {!hasContent ? (

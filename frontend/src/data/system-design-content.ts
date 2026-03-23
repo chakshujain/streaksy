@@ -1131,6 +1131,20 @@ async function getUserSimple(id) {
           'REST (Representational State Transfer) is the most popular API style. It uses standard HTTP methods and organizes everything around **resources**.\n\n**Key REST Principles:**\n\n1. **Resources** — Everything is a noun: users, posts, comments. The URL identifies the resource.\n2. **HTTP Methods** — Verbs that act on resources: GET (read), POST (create), PUT (replace), PATCH (partial update), DELETE (remove).\n3. **Stateless** — Each request contains all the information needed. The server doesn\'t remember previous requests.\n4. **Uniform Interface** — Consistent URL patterns, status codes, and response formats.\n\n**Good URL Design:**\n```\nGET    /api/users          → List all users\nGET    /api/users/123       → Get user 123\nPOST   /api/users           → Create a new user\nPUT    /api/users/123       → Replace user 123\nPATCH  /api/users/123       → Update parts of user 123\nDELETE /api/users/123       → Delete user 123\n```\n\n**Bad URL Design:**\n```\nGET  /api/getUser?id=123     ← Verb in URL (redundant with GET)\nPOST /api/deleteUser          ← Wrong method + verb in URL\nGET  /api/user_list            ← Inconsistent naming\n```',
         analogy:
           'Resources are like library books. Each book has a unique call number (URL). You can check it out (GET), donate a new one (POST), replace it (PUT), or remove it (DELETE). The library card system (HTTP) is the same for everyone.',
+        comparison: {
+          leftTitle: 'REST',
+          rightTitle: 'GraphQL',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Multiple endpoints (/users, /posts)', right: 'Single endpoint (/graphql)' },
+            { left: 'Server decides response shape', right: 'Client specifies exact fields needed' },
+            { left: 'Over-fetching / under-fetching common', right: 'Get exactly what you ask for' },
+            { left: 'Simple caching via HTTP (CDN-friendly)', right: 'Complex caching (POST requests)' },
+            { left: 'Easy to learn, widely adopted', right: 'Steeper learning curve, schema-driven' },
+            { left: 'Best for CRUD-heavy, simple APIs', right: 'Best for complex, nested data queries' },
+          ],
+        },
         keyTakeaway:
           'REST APIs organize around resources (nouns, not verbs). Use HTTP methods for actions, plural nouns in URLs, and keep everything consistent.',
       },
@@ -1358,6 +1372,19 @@ router.get('/posts', async (req, res) => {
           { title: 'Sliding Window Log', description: 'Track every request timestamp. Most accurate but memory-intensive.', icon: '📜', color: 'purple' },
           { title: 'Sliding Window Counter', description: 'Weighted overlap of current and previous window. Best balance of accuracy and efficiency.', icon: '📊', color: 'emerald' },
         ],
+        comparison: {
+          leftTitle: 'Token Bucket',
+          rightTitle: 'Sliding Window',
+          leftColor: 'blue',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Allows bursts up to bucket size', right: 'Smooth, even rate enforcement' },
+            { left: 'Simple: just track token count', right: 'Tracks request counts per window' },
+            { left: 'Memory: O(1) per key', right: 'Memory: O(1) per key (counter variant)' },
+            { left: 'Best for APIs needing burst tolerance', right: 'Best for strict, even rate limiting' },
+            { left: 'Used by AWS, Stripe, GitHub', right: 'Used by Cloudflare, Redis-based limiters' },
+          ],
+        },
         keyTakeaway:
           'Token Bucket is best for APIs that need burst tolerance. Sliding Window Counter is best for general-purpose rate limiting. Fixed Window is simplest but has edge-case bursts.',
       },
@@ -1911,6 +1938,12 @@ function decode(str: string): number {
           '**Bottleneck 1: Key Generation at Scale**\nIf many servers need unique codes simultaneously, a single counter becomes a bottleneck.\nSolution: Pre-generate batches. Each server grabs a batch of 1000 codes and uses them locally. When exhausted, grab another batch.\n\n**Bottleneck 2: Database Writes**\nAt 40 writes/sec, a single PostgreSQL instance is fine. But at 10x scale:\nSolution: Shard by short_code. Or use DynamoDB which auto-scales writes.\n\n**Bottleneck 3: Analytics Pipeline**\nAt 12,000 redirects/sec peak, logging every click synchronously would slow redirects.\nSolution: Publish click events to Kafka asynchronously. A separate consumer writes to ClickHouse in batches.\n\n**Bottleneck 4: Single Point of Failure**\n- Load balancers in pairs\n- Multiple API servers\n- Database with replicas and failover\n- Redis with replication\n\n**Security:**\n- Rate limit URL creation to prevent abuse\n- Scan long URLs for malware/phishing\n- Don\'t allow short codes that look like existing routes',
         keyTakeaway:
           'Key bottlenecks: key generation (batch pre-generation), DB writes (sharding), analytics (async pipeline). Always address single points of failure.',
+        cards: [
+          { title: 'Database Reads', description: 'High redirect QPS overwhelms the database. Solution: Cache short-to-long URL mappings in Redis with high TTL.', icon: '📖', color: 'blue' },
+          { title: 'Write Throughput', description: 'Synchronous DB writes slow down URL creation at scale. Solution: Async writes via message queue with batch inserts.', icon: '✍️', color: 'amber' },
+          { title: 'Single Point of Failure', description: 'Any single component going down kills the service. Solution: Replicate databases, run LB in pairs, multi-AZ deployment.', icon: '🛡️', color: 'red' },
+          { title: 'Hot Keys', description: 'Viral short URLs get millions of hits. Solution: Rate limit per key, cache aggressively, use CDN for redirects.', icon: '🔥', color: 'purple' },
+        ],
       },
     ],
     commonMistakes: [
@@ -2072,6 +2105,14 @@ wss.on('connection', (ws, req) => {
           '**Online Presence:**\nPresence seems simple ("show a green dot") but is tricky at scale with 50M users.\n\n- Each connected client sends a heartbeat every 30 seconds\n- Server updates Redis: `SET presence:{userId} "online" EX 60`\n- If no heartbeat in 60 seconds, the key expires → user appears offline\n- When User A opens a chat with User B, the client queries User B\'s presence\n- Presence changes are pushed via WebSocket to contacts (but only for visible conversations — don\'t push 500 friend updates to everyone)\n\n**Read Receipts:**\n- When User B reads messages up to msg-42, client sends: `{ "type": "read_receipt", "lastReadMsgId": "msg-42" }`\n- Server updates `conversation_members.last_read_msg_id` for User B\n- Server pushes the read receipt to User A (the sender)\n- "Delivered" = the recipient\'s device received the message\n- "Read" = the recipient\'s app opened the conversation and scrolled past the message\n\nThese are eventually consistent — a slight delay is perfectly fine.',
         keyTakeaway:
           'Presence uses Redis TTL keys with heartbeats. Read receipts track the last-read message ID per user per conversation. Both can be eventually consistent.',
+        flow: [
+          { label: 'User Types', description: 'Message sent via WebSocket', icon: '⌨️' },
+          { label: 'Server Receives', description: 'Store in DB, assign ID', icon: '🖥️' },
+          { label: 'Mark Delivered', description: 'Recipient device acknowledges', icon: '✅' },
+          { label: 'Recipient Opens', description: 'Chat conversation opened', icon: '👁️' },
+          { label: 'Mark Read', description: 'Update last_read_msg_id', icon: '📖' },
+          { label: 'Notify Sender', description: 'Push read receipt via WebSocket', icon: '📨' },
+        ],
       },
       {
         title: 'Step 7: Bottlenecks and Solutions',
@@ -2079,6 +2120,12 @@ wss.on('connection', (ws, req) => {
           '**Bottleneck 1: Group Message Fan-Out**\nA 500-person group means each message is delivered 499 times. With active groups, this creates huge fan-out.\nSolution: Use a message queue (Kafka) for group fan-out. The chat server publishes once; a fan-out service distributes to each member\'s chat server.\n\n**Bottleneck 2: Hot Conversations**\nA viral group chat creates a hot partition in Cassandra.\nSolution: Use a write-back cache. Batch messages and write to Cassandra in bulk every 1 second.\n\n**Bottleneck 3: Connection Server Failure**\nIf a chat server crashes, 50K users disconnect simultaneously.\nSolution: Clients auto-reconnect to another server. The sync protocol (send last_msg_id, receive missed messages) ensures no messages are lost.\n\n**Bottleneck 4: Media Uploads**\nUploading large images through chat servers wastes their resources.\nSolution: Pre-signed S3 URLs. Client uploads directly to S3, then sends the media URL as a message.\n\n**End-to-End Encryption:**\nFor privacy, messages can be encrypted client-side so even the server can\'t read them. Each conversation has a shared key negotiated via Diffie-Hellman. Server stores encrypted blobs.',
         keyTakeaway:
           'Key challenges: group fan-out (use Kafka), connection failures (sync protocol), media (direct S3 upload). E2E encryption adds privacy but prevents server-side search.',
+        cards: [
+          { title: 'Connection Limits', description: 'A single server can hold ~50K WebSocket connections. Solution: Horizontal scaling with connection routing via consistent hashing.', icon: '🔌', color: 'blue' },
+          { title: 'Message Storage', description: 'Billions of messages create hot partitions. Solution: Partition by conversation_id in Cassandra for write-optimized storage.', icon: '💾', color: 'amber' },
+          { title: 'Delivery Guarantees', description: 'Messages can be lost during server failures. Solution: Use a message queue (Kafka) for reliable delivery with at-least-once semantics.', icon: '📬', color: 'emerald' },
+          { title: 'Offline Users', description: 'Users not connected miss messages. Solution: Push notifications via APNs/FCM and message sync on reconnect.', icon: '📱', color: 'purple' },
+        ],
       },
     ],
     commonMistakes: [
@@ -2198,6 +2245,13 @@ GET    /api/v1/stories/feed        → Get stories from followed users`,
           'A chronological feed is simple but not engaging. Instagram\'s feed is ranked by relevance.\n\n**Ranking Signals:**\n- **Recency** — Newer posts rank higher\n- **Relationship** — Posts from users you interact with often (likes, comments, DMs)\n- **Engagement** — Posts with high like/comment rates\n- **Content type** — Your preference for photos vs videos vs carousels\n- **Time spent** — Did you pause on this user\'s posts before?\n\n**Simple Ranking Formula:**\n```\nscore = (recency_weight * recency_score)\n      + (relationship_weight * relationship_score)\n      + (engagement_weight * engagement_score)\n```\n\n**Implementation:**\n1. Pre-compute relationship scores (offline ML pipeline)\n2. When generating feed, fetch candidate posts (last 7 days from followed users)\n3. Score each post using the ranking formula\n4. Return top N by score\n\nThis is simplified — real Instagram uses deep learning models trained on billions of interactions.',
         keyTakeaway:
           'Feed ranking uses signals like recency, relationship strength, and engagement. Start simple (weighted formula) and evolve to ML models as you grow.',
+        flow: [
+          { label: 'Fetch Candidates', description: 'Posts from last 7 days of followed users', icon: '📥' },
+          { label: 'Score by Engagement', description: 'Likes, comments, shares, saves', icon: '📊' },
+          { label: 'Apply ML Model', description: 'Neural network predicts watch probability', icon: '🤖' },
+          { label: 'Rank', description: 'Sort by combined score', icon: '🏆' },
+          { label: 'Return Top N', description: 'Paginated feed response', icon: '📱' },
+        ],
       },
       {
         title: 'Step 7: Bottlenecks and Solutions',
@@ -2205,6 +2259,12 @@ GET    /api/v1/stories/feed        → Get stories from followed users`,
           '**Bottleneck 1: Celebrity Post Fan-out**\nA celebrity with 100M followers posts → 100M feed updates. Even at 50K writes/sec, that\'s 30 minutes.\nSolution: Hybrid model. Celebrity posts are pulled on read, not pushed to feeds.\n\n**Bottleneck 2: Image Storage Growth (50 TB/day)**\nSolution: Storage tiering. Recent photos on fast SSD-backed S3. Old photos on S3 Infrequent Access. Very old on Glacier. Deduplication (same photo uploaded twice = store once).\n\n**Bottleneck 3: Hot Posts (viral content)**\nA viral post gets millions of likes/comments. The post row becomes a hot spot.\nSolution: Cache like/comment counts in Redis, batch update the database periodically. Use separate counters service.\n\n**Bottleneck 4: Feed Staleness**\nPre-computed feeds can become stale if the user hasn\'t opened the app in days.\nSolution: Rebuild stale feeds on demand (first load is slower, subsequent loads are fast from cache).\n\n**Additional Considerations:**\n- Content moderation (ML-based image scanning before publishing)\n- Hashtag system (inverted index: hashtag → list of post_ids)\n- Stories (separate storage with 24-hour TTL, served from CDN)',
         keyTakeaway:
           'Celebrity fan-out uses pull model. Storage tiering manages growth. Hot posts use cached counters. Stale feeds are rebuilt on demand.',
+        cards: [
+          { title: 'Celebrity Fan-out', description: '100M followers = 30 min fan-out. Solution: Hybrid model — pull celebrity posts on read instead of pushing to feeds.', icon: '⭐', color: 'amber' },
+          { title: 'Image Storage (50 TB/day)', description: 'Massive storage growth is unsustainable. Solution: Storage tiering — SSD for recent, S3 IA for old, Glacier for archive. Deduplicate.', icon: '🗄️', color: 'blue' },
+          { title: 'Hot Posts (Viral Content)', description: 'Millions of likes create DB hot spots. Solution: Redis counters for real-time counts, batch update DB periodically.', icon: '🔥', color: 'red' },
+          { title: 'Feed Staleness', description: 'Inactive users have outdated pre-computed feeds. Solution: Rebuild stale feeds on demand at first load, then cache.', icon: '🔄', color: 'purple' },
+        ],
       },
     ],
     commonMistakes: [
@@ -2364,6 +2424,12 @@ Example:
           '**Bottleneck 1: Celebrity Tweet Storm**\nMultiple celebrities tweeting simultaneously (e.g., during an event) creates massive fan-out queue.\nSolution: Priority queues. Celebrity tweets go through the pull path (not fan-out), so they don\'t queue at all.\n\n**Bottleneck 2: Timeline Cache Memory**\n200M users * 800 tweets/timeline * 8 bytes/tweet_id = 1.3 TB of Redis.\nSolution: Only cache active users\' timelines. If a user hasn\'t logged in for 30 days, evict their timeline. Rebuild on next login.\n\n**Bottleneck 3: Hot Tweets**\nA viral tweet gets millions of likes. Each like updates the like_count.\nSolution: Use Redis counters for real-time counts. Batch update the database every 30 seconds.\n\n**Bottleneck 4: Tweet Deletions**\nWhen a tweet is deleted, it must be removed from potentially millions of timelines.\nSolution: Lazy deletion. Mark as deleted in the database. When rendering a timeline, filter out deleted tweets. Periodically clean up timelines in the background.\n\n**Availability:**\n- Multiple data centers (US-East, US-West, Europe, Asia)\n- DNS-based routing to nearest data center\n- Async replication between data centers\n- Graceful degradation: if ranking fails, fall back to chronological feed',
         keyTakeaway:
           'Handle celebrity fan-out with the pull model, cache only active timelines, use Redis for hot counters, and delete lazily. Multiple data centers ensure global availability.',
+        cards: [
+          { title: 'Fan-out Bottleneck', description: 'Celebrity tweets during events create massive queue backlogs. Solution: Hybrid push/pull — celebrities use pull path, no fan-out queuing.', icon: '📢', color: 'amber' },
+          { title: 'Celebrity Problem', description: 'Accounts with 100M followers cannot use push model. Solution: Pull on read — merge celebrity tweets into timeline at read time.', icon: '⭐', color: 'purple' },
+          { title: 'Timeline Storage', description: '200M user timelines consume 1.3 TB+ in Redis. Solution: Redis Sorted Sets for active users only, evict inactive (30d), rebuild on login.', icon: '💾', color: 'blue' },
+          { title: 'Real-time Updates', description: 'Users expect tweets to appear instantly. Solution: WebSocket connections push new tweets to open timelines in real-time.', icon: '⚡', color: 'emerald' },
+        ],
       },
     ],
     commonMistakes: [
@@ -2532,6 +2598,13 @@ async function findNearbyDrivers(
           'When demand exceeds supply (rainy night, concert ending, New Year\'s Eve), Uber implements surge pricing.\n\n**How It Works:**\n1. Divide each city into hexagonal zones (~1km each)\n2. For each zone, track: active ride requests and available drivers\n3. Compute supply/demand ratio\n4. If demand > supply by a threshold, apply a multiplier:\n   - Supply/Demand ratio < 0.5 → 1.5x surge\n   - Supply/Demand ratio < 0.3 → 2.0x surge\n   - Supply/Demand ratio < 0.1 → 3.0x surge\n5. Display surge multiplier to rider before they confirm\n6. Higher prices incentivize more drivers to come online\n\n**Implementation:**\n- Real-time stream processing (Kafka + Flink)\n- Aggregate ride requests and driver availability per zone per minute\n- Publish surge multipliers to Pricing Service\n- Cache surge data (5-minute TTL) — surge shouldn\'t fluctuate wildly\n\n**Fairness:**\n- Lock the surge multiplier at request time (don\'t change mid-ride)\n- Show estimated fare before the rider confirms\n- Cap maximum surge multiplier (e.g., 5x)\n- Gradually reduce surge as supply increases',
         keyTakeaway:
           'Surge pricing uses real-time supply/demand ratios per geographic zone. It\'s computed via stream processing and cached for stability.',
+        flow: [
+          { label: 'Monitor Demand', description: 'Track ride requests per zone per minute', icon: '📊' },
+          { label: 'Calculate Ratio', description: 'Supply/demand ratio per hex zone', icon: '🔢' },
+          { label: 'Apply Multiplier', description: '1.5x to 5x based on ratio thresholds', icon: '✖️' },
+          { label: 'Show to Rider', description: 'Display surge fare estimate before confirm', icon: '💰' },
+          { label: 'Confirm', description: 'Lock multiplier at request time', icon: '✅' },
+        ],
       },
       {
         title: 'Step 7: Bottlenecks and Solutions',
@@ -2539,6 +2612,12 @@ async function findNearbyDrivers(
           '**Bottleneck 1: Location Update Throughput (500K/sec)**\nSolution: Location Service is horizontally sharded by city/region. Each shard handles updates for a geographic area. Use Kafka for buffering bursts.\n\n**Bottleneck 2: Stale Driver Locations**\nA driver\'s location from 30 seconds ago is useless.\nSolution: TTL on Redis entries. If a driver hasn\'t sent an update in 30 seconds, remove from the active set. ETA recalculated on every update.\n\n**Bottleneck 3: Race Conditions in Matching**\nTwo riders request at the same time, both get matched to the same driver.\nSolution: Optimistic locking. When offering a ride to a driver, atomically mark them as "reserved" in Redis (SET NX with TTL). If the SET fails, another request got there first.\n\n**Bottleneck 4: ETA Accuracy**\nStraight-line distance is useless in cities with one-way streets and highways.\nSolution: Pre-compute road network graphs (Dijkstra/A* for routing). Overlay real-time traffic data from driver GPS streams. Update every few minutes.\n\n**Bottleneck 5: Payment Failures**\nRide is complete but payment fails.\nSolution: Charge asynchronously. If payment fails, retry with exponential backoff. After 3 failures, flag the rider and use the payment team to resolve.\n\n**Multi-Region:**\n- Each city runs its own Location Service and Matching Service instance\n- Trip data and user data replicated globally\n- A ride in Tokyo never needs to query the NYC location service',
         keyTakeaway:
           'Shard location service by city, use optimistic locking for matching, pre-compute road graphs for ETA, and process payments asynchronously.',
+        cards: [
+          { title: 'Location Throughput', description: '500K updates/sec overwhelms a single service. Solution: Shard Location Service by city/region, buffer bursts with Kafka.', icon: '📍', color: 'blue' },
+          { title: 'Stale Driver Locations', description: 'Old location data leads to bad matches. Solution: Redis TTL — remove drivers with no update in 30s. Recalculate ETA on every update.', icon: '⏱️', color: 'amber' },
+          { title: 'Double-Matching Race', description: 'Two riders matched to same driver simultaneously. Solution: Optimistic locking via Redis SET NX with TTL for atomic reservation.', icon: '🏎️', color: 'red' },
+          { title: 'ETA Accuracy', description: 'Straight-line distance is useless in cities. Solution: Pre-compute road network graphs (A*) with real-time traffic overlay from GPS streams.', icon: '🗺️', color: 'emerald' },
+        ],
       },
     ],
     commonMistakes: [
@@ -2705,6 +2784,12 @@ GET    /api/v1/content/:id/status            → Transcoding job status`,
         title: 'Step 6: Recommendation Engine',
         content:
           'Recommendations are Netflix\'s biggest competitive advantage — 80% of what users watch comes from recommendations.\n\n**How It Works (Simplified):**\n\n**1. Collaborative Filtering**\n"Users who watched X also watched Y."\n- Build a matrix of (user × title) ratings/watch history\n- Find similar users (cosine similarity) and recommend what they liked\n- At Netflix scale: matrix factorization (SVD) decomposes this into manageable dimensions\n\n**2. Content-Based Filtering**\n"You watched 5 sci-fi movies, here are more sci-fi movies."\n- Tag each title with genres, actors, mood, pacing, etc. (Netflix has ~2,000 micro-genres)\n- Match user\'s preference profile to title profiles\n\n**3. Hybrid: Deep Learning Model**\n- Input features: watch history, ratings, time of day, device, browse history, demographics\n- Model: Neural network that predicts probability of watching each title\n- Output: Ranked list of title recommendations\n\n**The Recommendation Pipeline:**\n1. **Offline**: Train ML models on historical data (nightly batch job)\n2. **Nearline**: Update user features in near-real-time (what they just watched)\n3. **Online**: At request time, score candidate titles using the model, rank, and return\n\n**Row-Level Personalization:**\nEven the artwork you see for each title is personalized. If you watch comedies, you see a funny scene from a thriller. If you watch romances, you see the romantic scene from the same thriller.',
+        cards: [
+          { title: 'Collaborative Filtering', description: 'Users who watched X also watched Y. Matrix factorization (SVD) finds similar users at scale from billions of interactions.', icon: '👥', color: 'blue' },
+          { title: 'Content-Based', description: 'Match user taste profile to title metadata. Netflix uses ~2,000 micro-genres to tag every title by mood, pacing, and theme.', icon: '🎬', color: 'emerald' },
+          { title: 'Trending', description: 'Surface titles spiking in popularity right now. Combines global trends with regional viewing patterns for relevance.', icon: '📈', color: 'amber' },
+          { title: 'Personalized Rows', description: 'Each row on the homepage is a mini-recommendation. Even artwork is personalized — comedy fans see funny scenes, thriller fans see tense ones.', icon: '🎨', color: 'purple' },
+        ],
         keyTakeaway:
           'Netflix recommendations use collaborative filtering, content-based filtering, and deep learning. Even the artwork is personalized. 80% of watched content comes from recommendations.',
       },
