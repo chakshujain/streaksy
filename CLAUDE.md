@@ -64,7 +64,8 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 - **Core**: users, problems, tags, sheets, groups, group_members, user_problem_status, user_streaks, notes
 - **Roadmaps**: roadmap_categories, roadmap_templates, template_tasks, user_roadmaps, roadmap_day_progress, roadmap_streaks, roadmap_participants, roadmap_discussions
 - **Features**: notifications, comments, group_activity, revision_notes, contests, badges, rooms, pokes
-- **Social**: friendships (user_id_1, user_id_2, status, created_at)
+- **Social**: friendships (requester_id, addressee_id, status, created_at)
+- **Room Links**: rooms.group_id, rooms.roadmap_id (nullable FKs for cross-linking)
 - **user_streaks.total_points**: Global streak points currency for leaderboards
 
 ## Frontend Pages
@@ -168,12 +169,29 @@ SimulationPlayer with play/pause, speed control, audio narration (Web Speech API
 
 Dashboard, Daily, Feed, Roadmaps, Learn, Problems, Groups, Friends, War Rooms, Timer, Leaderboard, Achievements, Bookmarks, Insights, Extension, Profile, Settings
 
-## Friends System
+## Friends & Cross-Linking System
 
-- **Hook**: `frontend/src/hooks/useFriends.ts` — reusable `useFriends()` hook returning `{ friends, loading, refetch }`
-- **InviteFriendsModal**: `frontend/src/components/friends/InviteFriendsModal.tsx` — portal modal for inviting friends to groups, roadmaps, rooms
-- **Invite Endpoints**: `POST /api/groups/:id/invite-friends`, `POST /api/roadmaps/:id/invite-friends`, `POST /api/rooms/:id/invite-friends` — sends notifications (capped at 20)
-- **Integrated on**: Group detail, Roadmap detail, Room detail, Leaderboard (Friends tab), Dashboard (Friends widget)
+- **Hook**: `frontend/src/hooks/useFriends.ts` — `useFriends()` and `useEnrichedFriends()` hooks
+- **Global Store**: `useFriendsStore` in `lib/store.ts` — caches friend IDs on app mount for instant friend detection
+- **InviteFriendsModal**: `frontend/src/components/friends/InviteFriendsModal.tsx` — portal modal for inviting friends
+- **Invite Endpoints**: `POST /api/groups/:id/invite-friends`, `POST /api/roadmaps/:id/invite-friends`, `POST /api/rooms/:id/invite-friends` (capped at 20)
+- **Enriched Endpoints**: `GET /api/friends/enriched` (shared groups, active roadmaps, active rooms per friend), `GET /api/friends/ids` (global cache)
+- **Group Endpoints**: `GET /api/groups/:id/roadmaps` (all members' roadmaps), `GET /api/rooms/group/:groupId` (group war rooms)
+- **Find Friends**: Shows all users by default (newest first, limit 50), no minimum search required
+
+### Cross-Linking Integration Points
+| From | Feature | Links to |
+|------|---------|----------|
+| Friends page | Shared groups/roadmaps/rooms pills per friend | Groups, Roadmaps, Rooms |
+| Groups detail | War Rooms section, friend badges on members, "Add Friend" for non-friends | Rooms, Friends |
+| Groups detail | Group Roadmaps from API (all members'), "Start Roadmap Together" | Roadmaps |
+| Roadmap detail | Group link pill, Invite Friends modal | Groups |
+| Roadmap wizard | Friend picker in Step 3, auto-invite on creation | Friends |
+| Room creation | Friend picker checklist, auto-invite on creation | Friends |
+| Room detail | Group origin badge, friend badges on participants | Groups |
+| Rooms listing | "Friends in Rooms" section with join CTAs | Friends |
+| Dashboard | Friends widget (top 5 by streak) | Friends |
+| Leaderboard | Friends tab | Friends |
 
 ## Chrome Extension
 

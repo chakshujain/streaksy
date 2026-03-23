@@ -184,7 +184,7 @@ export const friendsRepository = {
               u.display_name, u.avatar_url, u.bio,
               COALESCE(us.current_streak, 0)::int AS current_streak,
               COALESCE(us.total_points, 0)::int AS total_points,
-              u.last_active_at AS last_active
+              u.updated_at AS last_active
        FROM friendships f
        JOIN users u ON u.id = CASE WHEN f.requester_id = $1 THEN f.addressee_id ELSE f.requester_id END
        LEFT JOIN user_streaks us ON us.user_id = u.id
@@ -250,7 +250,7 @@ export const friendsRepository = {
         [`%${searchQuery}%`, userId]
       );
     }
-    // No query — return all users (suggested)
+    // No query — return all users, newest first (so recent signups show up)
     return query<UserSearchRow>(
       `SELECT
          u.id, u.display_name, u.avatar_url, u.bio,
@@ -261,8 +261,8 @@ export const friendsRepository = {
          OR (f.requester_id = u.id AND f.addressee_id = $1)
        )
        WHERE u.id != $1
-       ORDER BY f.status ASC NULLS LAST, u.display_name
-       LIMIT 30`,
+       ORDER BY f.status ASC NULLS LAST, u.created_at DESC
+       LIMIT 50`,
       [userId]
     );
   },

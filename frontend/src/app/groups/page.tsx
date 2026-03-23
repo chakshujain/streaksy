@@ -43,25 +43,25 @@ export default function GroupsPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => { setShowJoin(true); setShowCreate(false); }}
+              onClick={() => { setShowJoin(!showJoin); setShowCreate(false); }}
               className={cn(
                 'gap-1.5 rounded-xl border border-zinc-700/50 transition-all duration-200',
                 showJoin && 'border-cyan-500/30 bg-cyan-500/5 text-cyan-400'
               )}
             >
-              <LogIn className="h-4 w-4" />
-              Join
+              {showJoin ? <span className="text-xs">✕</span> : <LogIn className="h-4 w-4" />}
+              {showJoin ? 'Close' : 'Join'}
             </Button>
             <Button
               size="sm"
-              onClick={() => { setShowCreate(true); setShowJoin(false); }}
+              onClick={() => { setShowCreate(!showCreate); setShowJoin(false); }}
               className={cn(
                 'gap-1.5 rounded-xl transition-all duration-200',
-                showCreate && 'glow-sm'
+                showCreate && 'glow-sm bg-emerald-600 hover:bg-emerald-500'
               )}
             >
-              <Plus className="h-4 w-4" />
-              Create
+              {showCreate ? <span className="text-xs">✕</span> : <Plus className="h-4 w-4" />}
+              {showCreate ? 'Close' : 'Create'}
             </Button>
           </div>
         </div>
