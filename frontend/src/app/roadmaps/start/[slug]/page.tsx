@@ -31,7 +31,7 @@ import {
 import Link from 'next/link';
 
 import { templatesBySlug } from '@/lib/roadmap-templates';
-import { roadmapsApi, groupsApi, roomsApi } from '@/lib/api';
+import { roadmapsApi, groupsApi } from '@/lib/api';
 import { useFriends } from '@/hooks/useFriends';
 import { topics as learnTopics } from '@/lib/learn-data';
 import { patterns as dsaPatterns } from '@/lib/patterns-data';
