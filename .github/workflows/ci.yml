@@ -30,7 +30,7 @@ jobs:
 
       - name: Run tests
         working-directory: backend
-        run: npm test
+        run: node --max-old-space-size=4096 node_modules/.bin/jest --maxWorkers=2 --forceExit
 
   build-frontend:
     name: Frontend Build
