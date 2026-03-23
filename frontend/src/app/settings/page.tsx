@@ -8,7 +8,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { preferencesApi, authApi, notificationsApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { PageTransition } from '@/components/ui/PageTransition';
-import { Settings, Palette, LayoutGrid, Eye, Target, Check, Save, Lock, Download, CalendarDays, Link2, Unlink, BellRing } from 'lucide-react';
+import { Settings, Palette, LayoutGrid, Eye, Target, Check, Save, Lock, Download, CalendarDays, Link2, Unlink, BellRing, Puzzle } from 'lucide-react';
 import { DigestSection } from '@/components/settings/DigestSection';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import type { UserPreferences } from '@/lib/types';
@@ -505,6 +505,30 @@ export default function SettingsPage() {
                 />
               </div>
             )}
+          </SectionCard>
+        </div>
+
+        {/* LeetCode Extension */}
+        <div className="animate-slide-up" style={{ animationDelay: '240ms', animationFillMode: 'both' }}>
+          <SectionCard icon={Puzzle} iconGradient="from-violet-500/30 to-purple-500/30" title="LeetCode Extension">
+            <p className="text-sm text-zinc-400 mb-4">
+              Our Chrome extension auto-captures your LeetCode submissions — code, runtime, memory, and time spent. No manual tracking needed.
+            </p>
+            <div className="flex items-center gap-3">
+              <a href="/extension">
+                <Button variant="gradient" className="gap-2">
+                  <Puzzle className="h-4 w-4" />
+                  Get Extension
+                </Button>
+              </a>
+              <a
+                href="/streaksy-extension.tar.gz"
+                download
+                className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                Direct download (.tar.gz)
+              </a>
+            </div>
           </SectionCard>
         </div>
 

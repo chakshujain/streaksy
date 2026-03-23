@@ -33,6 +33,7 @@ import {
 import { roadmapsApi, pokesApi, roomsApi, streaksApi, problemsApi } from '@/lib/api';
 import { templatesBySlug } from '@/lib/roadmap-templates';
 import { templateContentMap } from '@/lib/roadmap-content-map';
+import { InviteFriendsModal } from '@/components/friends/InviteFriendsModal';
 import type { UserRoadmap } from '@/lib/types';
 import { AIRoadmapCoach } from '@/components/ai/AIRoadmapCoach';
 
@@ -249,10 +250,14 @@ function getNextScheduledRoom(day?: string, time?: string): { label: string; dat
 
   const nextDate = new Date(now);
   nextDate.setDate(now.getDate() + daysUntil);
-  const [h, m] = time.split(':').map(Number);
+  const parts = time.split(':');
+  const h = parseInt(parts[0]) || 0;
+  const m = parseInt(parts[1]) || 0;
   nextDate.setHours(h, m, 0, 0);
 
-  const label = `${day.charAt(0).toUpperCase() + day.slice(1)} at ${parseInt(time) > 12 ? parseInt(time) - 12 : parseInt(time)}:${time.split(':')[1]} ${parseInt(time) >= 12 ? 'PM' : 'AM'}`;
+  const displayH = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const label = `${day.charAt(0).toUpperCase() + day.slice(1)} at ${displayH}:${String(m).padStart(2, '0')} ${ampm}`;
   return { label, date: nextDate };
 }
 
@@ -270,6 +275,7 @@ export default function RoadmapDetailPage() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Discussion[]>([]);
   const [shareToast, setShareToast] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [pokeToast, setPokeToast] = useState('');
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
@@ -298,13 +304,15 @@ export default function RoadmapDetailPage() {
   // Load roadmap from localStorage
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]') as UserRoadmap[];
+      const parsed = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]');
+      const stored = Array.isArray(parsed) ? parsed as UserRoadmap[] : [];
       setAllActiveRoadmaps(stored);
       const found = stored.find((r) => r.id === id);
       if (found) {
         setRoadmap(found);
         const completed = new Set<number>();
-        for (let i = 1; i <= found.completedDays; i++) completed.add(i);
+        const maxDay = Math.min(found.completedDays || 0, found.durationDays || 0);
+        for (let i = 1; i <= maxDay; i++) completed.add(i);
         setCompletedDays(completed);
       }
     } catch { /* empty */ }
@@ -604,8 +612,10 @@ export default function RoadmapDetailPage() {
   const template = roadmap?.templateSlug ? templatesBySlug[roadmap.templateSlug] : null;
 
   // Schedule info
-  const startDate = roadmap ? new Date(roadmap.startDate) : new Date();
+  // Parse date as local (append T00:00 to avoid UTC interpretation of YYYY-MM-DD)
+  const startDate = roadmap ? new Date(roadmap.startDate + 'T00:00:00') : new Date();
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / 86400000);
   const expectedDay = Math.min(daysSinceStart + 1, totalDays);
   const daysAheadBehind = completed - expectedDay;
@@ -618,7 +628,7 @@ export default function RoadmapDetailPage() {
   const nextRoom = getNextScheduledRoom(roadmap?.weeklyRoomDay, roadmap?.weeklyRoomTime);
 
   // Leaderboard
-  const leaderboard = [...participants].sort((a, b) => b.progress - a.progress).slice(0, 5);
+  const leaderboard = [...participants].sort((a, b) => (b.progress || 0) - (a.progress || 0)).slice(0, 5);
 
   // Group days by week
   const weekGroups = useMemo(() => {
@@ -1090,9 +1100,14 @@ export default function RoadmapDetailPage() {
                   {participants.map((p, i) => renderParticipant(p, i))}
                 </div>
               )}
-              <Button variant="primary" size="sm" className="w-full" onClick={handleShare}>
-                Invite Friends
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="primary" size="sm" className="flex-1" onClick={() => setShowInviteModal(true)}>
+                  <Users className="h-3.5 w-3.5 mr-1" /> Invite Friends
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleShare}>
+                  <Share2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </Card>
 
             {/* Mini Leaderboard */}
@@ -1333,6 +1348,15 @@ export default function RoadmapDetailPage() {
           </Card>
         </div>
       </PageTransition>
+      <InviteFriendsModal
+        open={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        title={`Invite Friends to ${roadmap?.name || 'Roadmap'}`}
+        excludeUserIds={participants.map((p) => p.userId).filter(Boolean) as string[]}
+        onInvite={async (userIds) => {
+          await roadmapsApi.inviteFriends(id, userIds);
+        }}
+      />
     </AppShell>
   );
 }

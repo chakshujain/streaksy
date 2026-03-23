@@ -98,4 +98,21 @@ export const groupService = {
     if (!member || member.role !== 'admin') throw AppError.forbidden('Only admin can delete the group');
     await groupRepository.deleteGroup(groupId);
   },
+
+  async inviteFriends(groupId: string, senderUserId: string, recipientUserIds: string[]) {
+    const group = await groupRepository.findById(groupId);
+    if (!group) throw AppError.notFound('Group not found');
+    const isMember = await groupRepository.isMember(groupId, senderUserId);
+    if (!isMember) throw AppError.forbidden('Not a member of this group');
+    const { notificationService } = await import('../../notification/service/notification.service');
+    for (const userId of recipientUserIds.slice(0, 20)) {
+      await notificationService.notify(
+        userId,
+        'group_invite',
+        `You've been invited to join "${group.name}"`,
+        `A friend invited you to their group. Tap to join!`,
+        { groupId, inviteCode: group.invite_code }
+      ).catch(() => {});
+    }
+  },
 };

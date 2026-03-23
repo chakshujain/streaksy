@@ -56,7 +56,10 @@ export default function RoadmapsPage() {
   useEffect(() => {
     try {
       const stored = localStorage.getItem('streaksy_active_roadmaps');
-      if (stored) setActiveRoadmaps(JSON.parse(stored));
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) setActiveRoadmaps(parsed);
+      }
     } catch { /* empty */ }
   }, []);
 

@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { useAsync } from '@/hooks/useAsync';
 import { roomsApi } from '@/lib/api';
+import { InviteFriendsModal } from '@/components/friends/InviteFriendsModal';
 import { getSocket } from '@/lib/socket';
 import { useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/cn';
@@ -46,6 +47,7 @@ export default function RoomDetailPage() {
   const [problems, setProblems] = useState<RoomProblem[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [scheduledTimeLeft, setScheduledTimeLeft] = useState<number | null>(null);
   const [connected, setConnected] = useState(false);
@@ -310,6 +312,12 @@ export default function RoomDetailPage() {
               {copied ? 'Link Copied!' : <><span className="font-mono tracking-widest">{room.code}</span><span className="text-zinc-500 text-xs ml-1">Share</span></>}
               {copied ? <CheckCircle className="h-3.5 w-3.5 text-emerald-400 animate-bounce-in" /> : <Copy className="h-3.5 w-3.5 text-zinc-500" />}
             </button>
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+            >
+              <Users className="h-3.5 w-3.5" /> Invite
+            </button>
 
             {/* Host controls */}
             {isHost && (room.status === 'waiting' || room.status === 'scheduled') && (
@@ -531,6 +539,15 @@ export default function RoomDetailPage() {
         </div>
       </div>
       </PageTransition>
+      <InviteFriendsModal
+        open={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        title={`Invite Friends to ${room?.name || 'Room'}`}
+        excludeUserIds={participants.map((p) => p.user_id).filter(Boolean)}
+        onInvite={async (userIds) => {
+          await roomsApi.inviteFriends(roomId, userIds);
+        }}
+      />
     </AppShell>
   );
 }

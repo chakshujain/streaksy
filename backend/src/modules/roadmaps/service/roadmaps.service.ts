@@ -37,6 +37,12 @@ export const roadmapsService = {
       customTasks?: unknown;
     }
   ) {
+    if (!data.name || data.name.trim().length === 0) {
+      throw AppError.badRequest('Roadmap name is required');
+    }
+    if (!Number.isInteger(data.durationDays) || data.durationDays < 1 || data.durationDays > 365) {
+      throw AppError.badRequest('Duration must be between 1 and 365 days');
+    }
     if (data.groupId) {
       const member = await queryOne<{ user_id: string }>(
         'SELECT user_id FROM group_members WHERE group_id = $1 AND user_id = $2',
@@ -131,8 +137,21 @@ export const roadmapsService = {
   },
 
   async updateDayProgress(roadmapId: string, userId: string, dayNumber: number, completed: boolean) {
+    // Validate dayNumber
+    if (!Number.isInteger(dayNumber) || dayNumber < 1) {
+      throw AppError.badRequest('Day number must be a positive integer');
+    }
+    if (typeof completed !== 'boolean') {
+      throw AppError.badRequest('Completed must be a boolean');
+    }
+
     const roadmap = await roadmapsRepository.getRoadmapById(roadmapId);
     if (!roadmap) throw AppError.notFound('Roadmap not found');
+    if (roadmap.user_id !== userId) throw AppError.forbidden('Not your roadmap');
+
+    if (dayNumber > roadmap.duration_days) {
+      throw AppError.badRequest(`Day ${dayNumber} exceeds roadmap duration of ${roadmap.duration_days} days`);
+    }
 
     const progress = await roadmapsRepository.updateDayProgress(roadmapId, userId, dayNumber, completed);
 
@@ -159,7 +178,7 @@ export const roadmapsService = {
       // Check if roadmap is now complete
       const allProgress = await roadmapsRepository.getDayProgress(roadmapId, userId);
       const completedCount = allProgress.filter(p => p.completed).length;
-      if (completedCount >= roadmap.duration_days) {
+      if (completedCount >= roadmap.duration_days && roadmap.status !== 'completed') {
         await roadmapsRepository.updateRoadmap(roadmapId, { status: 'completed' });
 
         // Post feed event for roadmap completion
@@ -287,5 +306,21 @@ export const roadmapsService = {
     }
 
     return guidance;
+  },
+
+  async inviteFriends(roadmapId: string, senderUserId: string, recipientUserIds: string[]) {
+    const roadmap = await roadmapsRepository.getRoadmapById(roadmapId);
+    if (!roadmap) throw AppError.notFound('Roadmap not found');
+    if (roadmap.user_id !== senderUserId) throw AppError.forbidden('Not your roadmap');
+    const { notificationService } = await import('../../notification/service/notification.service');
+    for (const userId of recipientUserIds.slice(0, 20)) {
+      await notificationService.notify(
+        userId,
+        'roadmap_invite',
+        `You've been invited to join "${roadmap.name}"`,
+        `A friend invited you to their roadmap. Tap to join!`,
+        { roadmapId, shareCode: roadmap.share_code }
+      ).catch(() => {});
+    }
   },
 };

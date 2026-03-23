@@ -136,8 +136,10 @@ export const roadmapsController = {
 
   async getTemplateDiscussions(req: Request, res: Response) {
     const slug = param(req, 'slug');
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-    const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
+    const rawLimit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+    const rawOffset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
+    const limit = rawLimit && Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : undefined;
+    const offset = rawOffset && Number.isFinite(rawOffset) && rawOffset >= 0 ? rawOffset : undefined;
     const discussions = await roadmapsService.getDiscussions(slug, limit, offset);
     res.json({ discussions });
   },
@@ -155,5 +157,16 @@ export const roadmapsController = {
     const id = param(req, 'id');
     const guidance = await roadmapsService.getAIGuidance(id, user!.userId);
     res.json({ guidance });
+  },
+
+  async inviteFriends(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const id = param(req, 'id');
+    const { userIds } = req.body;
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ error: 'userIds must be a non-empty array' });
+    }
+    await roadmapsService.inviteFriends(id, user!.userId, userIds);
+    res.json({ message: 'Invitations sent' });
   },
 };

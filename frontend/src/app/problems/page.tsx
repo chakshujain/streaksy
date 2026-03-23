@@ -13,7 +13,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { problemsApi, progressApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import type { Problem, ProblemProgress, Sheet } from '@/lib/types';
-import { Upload, ChevronDown, ChevronUp, BookOpen, CheckCircle2, Target } from 'lucide-react';
+import { Upload, ChevronDown, ChevronUp, BookOpen, CheckCircle2, Target, Puzzle } from 'lucide-react';
 import { HelpTooltip } from '@/components/onboarding/HelpTooltip';
 
 export default function ProblemsPage() {
@@ -114,6 +114,14 @@ export default function ProblemsPage() {
               <SheetUpload onSuccess={refetchSheets} />
             </div>
           )}
+
+          {/* Extension prompt */}
+          <div className="animate-slide-up rounded-xl border border-violet-500/10 bg-violet-500/5 px-4 py-3 flex items-center gap-3" style={{ animationDelay: '40ms', animationFillMode: 'both' }}>
+            <Puzzle className="h-4 w-4 text-violet-400 shrink-0" />
+            <p className="text-xs text-zinc-400 flex-1">
+              Install the <a href="/extension" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">Chrome Extension</a> to auto-sync your LeetCode submissions — no manual tracking needed.
+            </p>
+          </div>
 
           {/* Sheet tabs */}
           {!sheetsLoading && sheets && (

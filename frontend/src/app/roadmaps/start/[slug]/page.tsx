@@ -186,7 +186,7 @@ export default function RoadmapStartPage() {
   useEffect(() => {
     if (contentTopics.length > 0 && customizeMode === 'ai') {
       const allLessons = new Set<string>();
-      contentTopics.forEach((ct) => ct.lessons.forEach((l) => allLessons.add(`${ct.topicSlug || ct.name}:${l.slug}`)));
+      contentTopics.forEach((ct) => ct.lessons?.forEach((l) => allLessons.add(`${ct.topicSlug || ct.name}:${l.slug}`)));
       setSelectedLessons(allLessons);
       // Also auto-select all topics
       const topicNames = contentTopics.map((ct) => ct.name);
@@ -328,6 +328,7 @@ export default function RoadmapStartPage() {
 
   /* ---- Start roadmap ---- */
   const handleStart = async () => {
+    if (loading) return;
     setLoading(true);
     setError('');
 
@@ -556,7 +557,7 @@ export default function RoadmapStartPage() {
                   className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 />
                 <p className="text-xs text-zinc-500 mt-1.5">
-                  Ends on {new Date(new Date(startDate).getTime() + (template.duration - 1) * 86400000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  Ends on {new Date(new Date(startDate + 'T00:00:00').getTime() + (template.duration - 1) * 86400000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
 
@@ -999,7 +1000,7 @@ export default function RoadmapStartPage() {
                             className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
                           >
                             {TIME_SLOTS.map((t) => (
-                              <option key={t} value={t}>{t.replace(/^(\d+):/, (_, h) => `${parseInt(h) > 12 ? parseInt(h) - 12 : h}:`)} {parseInt(t) >= 12 ? 'PM' : 'AM'}</option>
+                              <option key={t} value={t}>{(() => { const hr = parseInt(t) || 0; const displayH = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr; return `${displayH}:${(t.split(':')[1] || '00')} ${hr >= 12 ? 'PM' : 'AM'}`; })()}</option>
                             ))}
                           </select>
                         </div>

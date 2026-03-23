@@ -170,13 +170,7 @@ export const roadmapsRepository = {
       ]
     );
 
-    // Increment participant count on template
-    if (data.templateId) {
-      await query(
-        'UPDATE roadmap_templates SET participant_count = participant_count + 1 WHERE id = $1',
-        [data.templateId]
-      );
-    }
+    // Note: participant_count is incremented in addParticipant() — not here to avoid double-counting
 
     return rows[0];
   },
@@ -433,15 +427,17 @@ export const roadmapsRepository = {
     return parseInt(row?.count || '0');
   },
 
-  async getByShareCode(code: string): Promise<UserRoadmapRow | null> {
-    return queryOne<UserRoadmapRow>(
+  async getByShareCode(code: string): Promise<(UserRoadmapRow & { creator_name?: string }) | null> {
+    return queryOne<UserRoadmapRow & { creator_name?: string }>(
       `SELECT ur.*,
               rt.slug AS template_slug,
               rc.slug AS category_slug,
-              rc.icon AS category_icon
+              rc.icon AS category_icon,
+              u.display_name AS creator_name
        FROM user_roadmaps ur
        LEFT JOIN roadmap_templates rt ON rt.id = ur.template_id
        LEFT JOIN roadmap_categories rc ON rc.id = ur.category_id
+       LEFT JOIN users u ON u.id = ur.user_id
        WHERE ur.share_code = $1`,
       [code]
     );
@@ -519,6 +515,7 @@ export const roadmapsRepository = {
   },
 
   async addPoints(userId: string, points: number): Promise<void> {
+    if (points <= 0) return;
     await query(
       `INSERT INTO user_streaks (user_id, total_points, current_streak, longest_streak)
        VALUES ($1, $2, 0, 0)

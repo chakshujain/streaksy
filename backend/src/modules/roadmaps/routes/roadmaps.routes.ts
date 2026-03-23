@@ -5,6 +5,9 @@ import { asyncHandler } from '../../../common/utils/asyncHandler';
 
 const router = Router();
 
+// Public endpoints — no auth required (for share link previews)
+router.get('/share/:code', asyncHandler(roadmapsController.getByShareCode));
+
 router.use(authenticate);
 
 // Categories & templates (browsing)
@@ -23,7 +26,6 @@ router.get('/today', asyncHandler(roadmapsController.getTodayTasks));
 router.post('/', asyncHandler(roadmapsController.createUserRoadmap));
 router.get('/active', asyncHandler(roadmapsController.getActiveRoadmaps));
 router.get('/all', asyncHandler(roadmapsController.getAllRoadmaps));
-router.get('/share/:code', asyncHandler(roadmapsController.getByShareCode));
 
 // Single roadmap operations
 router.get('/:id', asyncHandler(roadmapsController.getRoadmapById));
@@ -35,5 +37,6 @@ router.get('/:id/streak', asyncHandler(roadmapsController.getStreak));
 router.get('/:id/leaderboard', asyncHandler(roadmapsController.getLeaderboard));
 router.post('/:id/link-group', asyncHandler(roadmapsController.linkGroup));
 router.post('/:id/ai-guidance', asyncHandler(roadmapsController.getAIGuidance));
+router.post('/:id/invite-friends', asyncHandler(roadmapsController.inviteFriends));
 
 export default router;

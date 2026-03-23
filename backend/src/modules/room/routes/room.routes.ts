@@ -21,5 +21,6 @@ router.get('/:id/problems', asyncHandler(roomController.getProblems));
 router.post('/:id/start', asyncHandler(roomController.start));
 router.post('/:id/end', asyncHandler(roomController.end));
 router.post('/:id/solve', validate(solveRoomSchema), asyncHandler(roomController.solve));
+router.post('/:id/invite-friends', asyncHandler(roomController.inviteFriends));
 
 export default router;

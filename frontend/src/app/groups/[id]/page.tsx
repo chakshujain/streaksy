@@ -17,6 +17,7 @@ import type { Group, LeaderboardEntry } from '@/lib/types';
 import type { UserRoadmap } from '@/lib/types';
 import Link from 'next/link';
 import { templatesBySlug } from '@/lib/roadmap-templates';
+import { InviteFriendsModal } from '@/components/friends/InviteFriendsModal';
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -33,6 +34,7 @@ export default function GroupDetailPage() {
   const [planForm, setPlanForm] = useState({ plan: '', objective: '', targetDate: '' });
   const [planSaving, setPlanSaving] = useState(false);
   const [actionError, setActionError] = useState('');
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Study plan state (from localStorage - active roadmaps for this group)
   const [groupRoadmaps, setGroupRoadmaps] = useState<UserRoadmap[]>([]);
@@ -250,6 +252,12 @@ export default function GroupDetailPage() {
                 ) : (
                   <><Share2 className="h-4 w-4" /> Copy Link</>
                 )}
+              </button>
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="shrink-0 flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+              >
+                <Users className="h-4 w-4" /> Invite Friends
               </button>
             </div>
           </div>
@@ -487,6 +495,15 @@ export default function GroupDetailPage() {
           </div>
         </div>
       </div>
+      <InviteFriendsModal
+        open={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        title={`Invite Friends to ${group?.name || 'Group'}`}
+        excludeUserIds={group?.members?.map((m) => m.user_id) || []}
+        onInvite={async (userIds) => {
+          await groupsApi.inviteFriends(groupId, userIds);
+        }}
+      />
     </AppShell>
   );
 }

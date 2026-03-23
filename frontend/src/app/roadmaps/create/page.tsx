@@ -71,6 +71,8 @@ export default function CreateRoadmapPage() {
   };
 
   const handleCreate = () => {
+    if (loading) return;
+    if (!name.trim()) return;
     setLoading(true);
 
     const id = `rm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -79,7 +81,7 @@ export default function CreateRoadmapPage() {
 
     const roadmap = {
       id,
-      name,
+      name: name.trim(),
       category,
       icon: catObj?.icon || '\u2728',
       durationDays: days,
@@ -93,9 +95,12 @@ export default function CreateRoadmapPage() {
 
     try {
       const existing = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]');
+      if (!Array.isArray(existing)) throw new Error();
       existing.push(roadmap);
       localStorage.setItem('streaksy_active_roadmaps', JSON.stringify(existing));
-    } catch { /* empty */ }
+    } catch {
+      localStorage.setItem('streaksy_active_roadmaps', JSON.stringify([roadmap]));
+    }
 
     router.push('/roadmaps');
   };

@@ -291,4 +291,22 @@ export const roomService = {
     const lb = await roomRepository.getLeaderboard(1000);
     return lb.find(e => e.user_id === userId) || null;
   },
+
+  async inviteFriends(roomId: string, senderUserId: string, recipientUserIds: string[]) {
+    const room = await roomRepository.findById(roomId);
+    if (!room) throw AppError.notFound('Room not found');
+    const participants = await roomRepository.getParticipants(roomId);
+    const isParticipant = participants.some(p => p.user_id === senderUserId);
+    if (!isParticipant) throw AppError.forbidden('Not a participant of this room');
+    const { notificationService } = await import('../../notification/service/notification.service');
+    for (const userId of recipientUserIds.slice(0, 20)) {
+      await notificationService.notify(
+        userId,
+        'room_invite',
+        `You've been invited to join "${room.name}"`,
+        `A friend invited you to their war room. Tap to join!`,
+        { roomId, code: room.code }
+      ).catch(() => {});
+    }
+  },
 };

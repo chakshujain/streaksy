@@ -20,5 +20,6 @@ router.delete('/:id/sheets/:sheetId', asyncHandler(groupController.removeSheet a
 router.get('/:id/sheets', asyncHandler(groupController.getGroupSheets as any));
 router.post('/:id/leave', asyncHandler(groupController.leaveGroup as any));
 router.delete('/:id', asyncHandler(groupController.deleteGroup as any));
+router.post('/:id/invite-friends', asyncHandler(groupController.inviteFriends));
 
 export default router;

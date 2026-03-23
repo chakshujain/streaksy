@@ -110,6 +110,7 @@ export const groupsApi = {
     api.get(`/groups/${groupId}/sheets/${sheetId}/progress`),
   leave: (id: string) => api.post(`/groups/${id}/leave`),
   delete: (id: string) => api.delete(`/groups/${id}`),
+  inviteFriends: (groupId: string, userIds: string[]) => api.post(`/groups/${groupId}/invite-friends`, { userIds }),
 };
 
 // ── Progress ──
@@ -348,6 +349,7 @@ export const roomsApi = {
     api.get(`/rooms/${id}/problems`),
   suggestProblems: (mode: string, count?: number, sheetId?: string) =>
     api.get('/rooms/suggest', { params: { mode, count, sheetId } }),
+  inviteFriends: (roomId: string, userIds: string[]) => api.post(`/rooms/${roomId}/invite-friends`, { userIds }),
 };
 
 // ── Ratings ──
@@ -413,6 +415,7 @@ export const roadmapsApi = {
   getActive: () => api.get('/roadmaps/active'),
   getAll: () => api.get('/roadmaps/all'),
   get: (id: string) => api.get(`/roadmaps/${id}`),
+  getByShareCode: (code: string) => api.get(`/roadmaps/share/${code}`),
   create: (data: Record<string, unknown>) => api.post('/roadmaps', data),
   update: (id: string, data: { status?: string; name?: string }) => api.patch(`/roadmaps/${id}`, data),
   remove: (id: string) => api.delete(`/roadmaps/${id}`),
@@ -423,6 +426,7 @@ export const roadmapsApi = {
   getDiscussions: (slug: string) => api.get(`/roadmaps/templates/${slug}/discussions`),
   postDiscussion: (slug: string, content: string) => api.post(`/roadmaps/templates/${slug}/discussions`, { content }),
   getAIGuidance: (roadmapId: string) => api.post(`/roadmaps/${roadmapId}/ai-guidance`),
+  inviteFriends: (roadmapId: string, userIds: string[]) => api.post(`/roadmaps/${roadmapId}/invite-friends`, { userIds }),
 };
 
 // ── Friends ──

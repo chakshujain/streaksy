@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/Card';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAuthStore } from '@/lib/store';
-import { groupsApi, leaderboardApi } from '@/lib/api';
-import { Trophy, Medal, Flame, Map, AlertCircle, Users } from 'lucide-react';
+import { groupsApi, leaderboardApi, friendsApi } from '@/lib/api';
+import { Trophy, Medal, Flame, Map, AlertCircle, Users, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 interface LeaderboardUser {
@@ -61,7 +62,7 @@ function normalizeUser(u: Record<string, unknown>): LeaderboardUser {
 }
 
 export default function LeaderboardPage() {
-  const [tab, setTab] = useState<'global' | 'groups' | 'mygroups'>('global');
+  const [tab, setTab] = useState<'global' | 'friends' | 'groups' | 'mygroups'>('global');
   const { user } = useAuthStore();
 
   const [groups, setGroups] = useState<GroupOption[]>([]);
@@ -126,6 +127,27 @@ export default function LeaderboardPage() {
         })
         .catch(() => {
           setError('Could not load leaderboard data.');
+          setLeaderboard([]);
+        })
+        .finally(() => setLoading(false));
+    } else if (tab === 'friends') {
+      setLoading(true);
+      setError('');
+      friendsApi.list()
+        .then(({ data }) => {
+          const list = (data.friends || data || []) as Record<string, unknown>[];
+          const mapped = list.map((f: Record<string, unknown>) => normalizeUser({
+            userId: f.user_id,
+            displayName: f.display_name,
+            solvedCount: f.total_points || 0,
+            currentStreak: f.current_streak || 0,
+            longestStreak: 0,
+          }));
+          mapped.sort((a, b) => b.solvedCount - a.solvedCount);
+          setLeaderboard(mapped);
+        })
+        .catch(() => {
+          setError('');
           setLeaderboard([]);
         })
         .finally(() => setLoading(false));
@@ -207,6 +229,7 @@ export default function LeaderboardPage() {
           <div className="flex gap-2">
             {([
               { key: 'global' as const, label: 'Global' },
+              { key: 'friends' as const, label: 'Friends' },
               { key: 'groups' as const, label: 'Groups' },
               { key: 'mygroups' as const, label: 'My Groups' },
             ]).map((t) => (
@@ -325,6 +348,15 @@ export default function LeaderboardPage() {
                 })}
               </Card>
             )
+          ) : tab === 'friends' && leaderboard.length === 0 ? (
+            <Card className="text-center py-16">
+              <UserPlus className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-zinc-400 mb-2">Friends Leaderboard</h3>
+              <p className="text-sm text-zinc-500 mb-3">Add friends to see them here.</p>
+              <Link href="/friends" className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors">
+                Find friends &rarr;
+              </Link>
+            </Card>
           ) : tab === 'mygroups' && groups.length === 0 ? (
             <Card className="text-center py-16">
               <Trophy className="h-12 w-12 text-zinc-700 mx-auto mb-4" />

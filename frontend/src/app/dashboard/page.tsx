@@ -14,6 +14,7 @@ import {
   insightsApi,
   roadmapsApi,
   dailyApi,
+  friendsApi,
 } from '@/lib/api';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Card } from '@/components/ui/Card';
@@ -47,6 +48,7 @@ import {
   GraduationCap,
   Bookmark as BookmarkIcon,
   Star,
+  UserPlus,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import type { ProblemProgress, Group, FeedEvent, LeaderboardEntry, UserRoadmap } from '@/lib/types';
@@ -455,6 +457,91 @@ function QuickActionsSection() {
         </Link>
       ))}
     </div>
+  );
+}
+
+/* ── friends widget ──────────────────────────────────── */
+
+function FriendsWidget() {
+  const { data: friendsData, loading: friendsLoading } = useAsync<Record<string, unknown>[]>(
+    () => friendsApi.list().then((r) => r.data.friends || r.data || []),
+    []
+  );
+
+  const friends = useMemo(() => {
+    if (!friendsData || !Array.isArray(friendsData)) return [];
+    return friendsData
+      .map((f: Record<string, unknown>) => ({
+        userId: (f.user_id || f.id || '') as string,
+        displayName: (f.display_name || f.name || 'Anonymous') as string,
+        avatarUrl: (f.avatar_url || null) as string | null,
+        currentStreak: (f.current_streak || 0) as number,
+        totalPoints: (f.total_points || 0) as number,
+      }))
+      .sort((a, b) => b.currentStreak - a.currentStreak)
+      .slice(0, 5);
+  }, [friendsData]);
+
+  return (
+    <Card variant="glass" className="flex flex-col h-full">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-violet-500/10">
+            <UserPlus className="h-3.5 w-3.5 text-violet-400" />
+          </div>
+          <h3 className="text-sm font-semibold text-zinc-300">Friends</h3>
+        </div>
+        <Link href="/friends" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1">
+          View all <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+      {friendsLoading ? (
+        <div className="space-y-2 flex-1">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 rounded-xl" />
+          ))}
+        </div>
+      ) : friends.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center py-4 text-center">
+          <UserPlus className="h-7 w-7 text-zinc-700 mb-2" />
+          <p className="text-xs text-zinc-500">Add friends to compete</p>
+          <Link href="/friends" className="mt-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
+            Find friends
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-1.5 flex-1">
+          {friends.map((f) => (
+            <div
+              key={f.userId}
+              className="flex items-center justify-between rounded-lg border border-zinc-800/50 px-3 py-2"
+            >
+              <div className="flex items-center gap-2.5">
+                {f.avatarUrl ? (
+                  <img
+                    src={f.avatarUrl}
+                    alt={f.displayName}
+                    className="h-7 w-7 rounded-lg object-cover border border-violet-500/10"
+                  />
+                ) : (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/15 to-pink-500/10 text-xs font-bold text-violet-400 border border-violet-500/10">
+                    {initials(f.displayName)}
+                  </div>
+                )}
+                <p className="text-xs font-medium text-zinc-200 truncate max-w-[100px]">{f.displayName}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <Flame className="h-3 w-3 text-orange-400" />
+                  <span className="text-[10px] font-medium text-zinc-300">{f.currentStreak}d</span>
+                </div>
+                <span className="text-[10px] text-amber-400 font-semibold">{f.totalPoints.toLocaleString()} pts</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -1088,6 +1175,9 @@ export default function DashboardPage() {
               <div className="animate-slide-up" style={{ animationDelay: '240ms', animationFillMode: 'both' }}>
                 <BookmarksSection bookmarks={bookmarks} />
               </div>
+              <div className="animate-slide-up" style={{ animationDelay: '280ms', animationFillMode: 'both' }}>
+                <FriendsWidget />
+              </div>
             </div>
 
             {/* Middle: Groups */}
@@ -1107,7 +1197,29 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ═══ Section 7: Contribution Heatmap ═══ */}
+          {/* ═══ Section 7: Chrome Extension Banner ═══ */}
+          <div className="animate-slide-up" style={{ animationDelay: '280ms', animationFillMode: 'both' }}>
+            <Card className="border-violet-500/10 bg-gradient-to-br from-violet-500/5 via-transparent to-transparent">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 border border-violet-500/10 shrink-0">
+                  <svg className="h-6 w-6 text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-zinc-100">LeetCode Chrome Extension</h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">Auto-sync your LeetCode submissions — code, runtime, memory, and time spent. No manual tracking needed.</p>
+                </div>
+                <Link href="/extension">
+                  <Button variant="secondary" size="sm" className="shrink-0">
+                    Get Extension <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          </div>
+
+          {/* ═══ Section 8: Contribution Heatmap ═══ */}
           <HeatmapSection
             progressLoading={progressLoading}
             progressData={progressData}

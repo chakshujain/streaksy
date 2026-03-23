@@ -97,4 +97,15 @@ export const roomController = {
     const problems = await roomRepository.getRoomProblems(roomId);
     res.json({ problems });
   },
+
+  async inviteFriends(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const roomId = param(req, 'id');
+    const { userIds } = req.body;
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ error: 'userIds must be a non-empty array' });
+    }
+    await roomService.inviteFriends(roomId, user!.userId, userIds);
+    res.json({ message: 'Invitations sent' });
+  },
 };

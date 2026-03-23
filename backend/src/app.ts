@@ -44,6 +44,9 @@ import learnRoutes from './modules/learn/routes/learn.routes';
 
 const app = express();
 
+// Trust first proxy (needed for rate-limiter + correct client IP behind reverse proxy)
+app.set('trust proxy', 1);
+
 // Request ID (first middleware)
 app.use(requestId);
 
