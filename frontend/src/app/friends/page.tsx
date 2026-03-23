@@ -22,6 +22,7 @@ import {
   Send,
   Inbox,
   Map,
+  Mail,
 } from 'lucide-react';
 
 type Tab = 'friends' | 'requests' | 'find';
@@ -407,6 +408,9 @@ function FindFriendsTab() {
   const [sending, setSending] = useState<string | null>(null);
   const [sent, setSent] = useState<Set<string>>(new Set());
   const [initialLoaded, setInitialLoaded] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [inviteStatus, setInviteStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Load suggested users on mount (show everyone)
   useEffect(() => {
@@ -446,6 +450,22 @@ function FindFriendsTab() {
     if (e.key === 'Enter') handleSearch();
   };
 
+  const handleInvite = async () => {
+    if (!inviteEmail.trim() || !inviteEmail.includes('@')) return;
+    setInviting(true);
+    setInviteStatus(null);
+    try {
+      await friendsApi.inviteByEmail(inviteEmail.trim());
+      setInviteStatus({ type: 'success', message: 'Invite sent!' });
+      setInviteEmail('');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Failed to send invite';
+      setInviteStatus({ type: 'error', message: msg });
+    } finally {
+      setInviting(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
@@ -468,6 +488,45 @@ function FindFriendsTab() {
           <Search className="h-4 w-4" />
           Search
         </Button>
+      </div>
+
+      {/* Invite via Email */}
+      <div className="glass rounded-xl border border-zinc-800/50 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Mail className="h-4 w-4 text-blue-400" />
+          <span className="text-sm font-medium text-zinc-300">Invite a friend via email</span>
+        </div>
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Input
+              id="invite-email"
+              type="email"
+              placeholder="friend@example.com"
+              value={inviteEmail}
+              onChange={(e) => { setInviteEmail(e.target.value); setInviteStatus(null); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleInvite(); }}
+              className="rounded-xl"
+            />
+          </div>
+          <Button
+            onClick={handleInvite}
+            loading={inviting}
+            disabled={inviting || !inviteEmail.trim()}
+            variant="secondary"
+            className="gap-1.5 rounded-xl"
+          >
+            <Send className="h-4 w-4" />
+            Invite
+          </Button>
+        </div>
+        {inviteStatus && (
+          <p className={cn(
+            'text-xs mt-2',
+            inviteStatus.type === 'success' ? 'text-emerald-400' : 'text-red-400'
+          )}>
+            {inviteStatus.message}
+          </p>
+        )}
       </div>
 
       {results.length > 0 ? (

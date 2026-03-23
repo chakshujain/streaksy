@@ -57,7 +57,7 @@ Modular structure: `backend/src/modules/{domain}/` with subdirectories:
 - **Prep**: prep module (legacy interview planner, being replaced by roadmaps)
 - **Engagement**: rating, powerup, digest
 - **Invite**: invite module — group and room invite code generation and joining
-- **Friends**: friends module — friend requests, accept/reject, friend list, search, invite-friends to groups/roadmaps/rooms
+- **Friends**: friends module — friend requests, accept/reject, friend list, search, invite-friends to groups/roadmaps/rooms, invite-by-email for new users
 - **Learn**: learn module (skeleton — content is frontend data-driven via `frontend/src/data/*.ts`)
 
 ### Key Database Tables
@@ -175,10 +175,10 @@ Dashboard, Daily, Feed, Roadmaps, Learn, Problems, Groups, Friends, War Rooms, T
 - **Hook**: `frontend/src/hooks/useFriends.ts` — `useFriends()` and `useEnrichedFriends()` hooks
 - **Global Store**: `useFriendsStore` in `lib/store.ts` — caches friend IDs on app mount for instant friend detection
 - **InviteFriendsModal**: `frontend/src/components/friends/InviteFriendsModal.tsx` — portal modal for inviting friends
-- **Invite Endpoints**: `POST /api/groups/:id/invite-friends`, `POST /api/roadmaps/:id/invite-friends`, `POST /api/rooms/:id/invite-friends` (capped at 20)
+- **Invite Endpoints**: `POST /api/groups/:id/invite-friends`, `POST /api/roadmaps/:id/invite-friends`, `POST /api/rooms/:id/invite-friends` (capped at 20), `POST /api/friends/invite-email` (email invite for non-users)
 - **Enriched Endpoints**: `GET /api/friends/enriched` (shared groups, active roadmaps, active rooms per friend), `GET /api/friends/ids` (global cache)
 - **Group Endpoints**: `GET /api/groups/:id/roadmaps` (all members' roadmaps), `GET /api/rooms/group/:groupId` (group war rooms)
-- **Find Friends**: Shows all users by default (newest first, limit 50), no minimum search required
+- **Find Friends**: Shows all users by default (newest first, limit 50), no minimum search required, invite-by-email for non-users
 
 ### Cross-Linking Integration Points
 | From | Feature | Links to |

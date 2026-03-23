@@ -444,6 +444,7 @@ export const friendsApi = {
   accept: (id: string) => api.patch(`/friends/${id}/accept`),
   reject: (id: string) => api.delete(`/friends/${id}`),
   remove: (id: string) => api.delete(`/friends/${id}`),
+  inviteByEmail: (email: string) => api.post('/friends/invite-email', { email }),
 };
 
 // ── Learn ──

@@ -44,6 +44,26 @@ export function welcomeEmail(displayName: string): { subject: string; html: stri
   };
 }
 
+export function friendInviteEmail(inviterName: string, signupUrl: string): { subject: string; html: string } {
+  return {
+    subject: `${escapeHtml(inviterName)} invited you to join Streaksy!`,
+    html: `<!DOCTYPE html><html><head><style>${baseStyles}</style></head><body>
+      <div class="container"><div class="card">
+        <div class="logo">🔥 <span>Streaksy</span></div>
+        <h1>${escapeHtml(inviterName)} wants you on Streaksy!</h1>
+        <p>Your friend ${escapeHtml(inviterName)} is using Streaksy to crush their goals and wants you to join them. Streaksy helps you stay consistent with curated roadmaps, streaks, and friendly competition.</p>
+        <div class="feature"><div class="feature-dot"></div><div class="feature-text"><strong>Curated roadmaps</strong> — Coding, fitness, learning, and more.</div></div>
+        <div class="feature"><div class="feature-dot"></div><div class="feature-text"><strong>Streak points</strong> — Stay consistent and climb the leaderboard.</div></div>
+        <div class="feature"><div class="feature-dot"></div><div class="feature-text"><strong>Groups & War Rooms</strong> — Collaborate and solve together in real-time.</div></div>
+        <a href="${signupUrl}" class="btn">Join Streaksy</a>
+        <hr class="divider" />
+        <p style="font-size: 13px;">Free to join. No credit card required.</p>
+      </div>
+      <div class="footer">Streaksy — Why Alone? Crush Your Goals With Friends.<br/>You're receiving this because ${escapeHtml(inviterName)} invited you.</div>
+      </div></body></html>`,
+  };
+}
+
 export function streakMilestoneEmail(displayName: string, streakDays: number): { subject: string; html: string } {
   const emoji = streakDays >= 30 ? '🏆' : streakDays >= 14 ? '🔥' : '⚡';
   return {

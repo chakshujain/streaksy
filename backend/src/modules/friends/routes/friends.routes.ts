@@ -15,5 +15,6 @@ router.get('/search', asyncHandler(friendsController.search as any));
 router.post('/request', asyncHandler(friendsController.sendRequest as any));
 router.patch('/:id/accept', asyncHandler(friendsController.accept as any));
 router.delete('/:id', asyncHandler(friendsController.remove as any));
+router.post('/invite-email', asyncHandler(friendsController.inviteByEmail as any));
 
 export default router;
