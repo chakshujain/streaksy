@@ -26,11 +26,13 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
+  UserPlus,
 } from 'lucide-react';
 import Link from 'next/link';
 
 import { templatesBySlug } from '@/lib/roadmap-templates';
 import { roadmapsApi, groupsApi, roomsApi } from '@/lib/api';
+import { useFriends } from '@/hooks/useFriends';
 import { topics as learnTopics } from '@/lib/learn-data';
 import { patterns as dsaPatterns } from '@/lib/patterns-data';
 
@@ -208,6 +210,8 @@ export default function RoadmapStartPage() {
   const [loadingGroups, setLoadingGroups] = useState(false);
 
   // Friends extras
+  const { friends: myFriends } = useFriends();
+  const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
   const [scheduleWeeklyRoom, setScheduleWeeklyRoom] = useState(false);
   const [weeklyRoomDay, setWeeklyRoomDay] = useState('Saturday');
   const [weeklyRoomTime, setWeeklyRoomTime] = useState('10:00');
@@ -317,6 +321,10 @@ export default function RoadmapStartPage() {
       return true;
     }
     return true;
+  };
+
+  const toggleFriendSelect = (id: string) => {
+    setSelectedFriendIds(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
   };
 
   const nextStep = () => {
@@ -429,6 +437,11 @@ export default function RoadmapStartPage() {
             mode: 'multi',
           });
         } catch { /* Room creation failed — non-critical */ }
+      }
+
+      // Invite selected friends
+      if (selectedFriendIds.length > 0) {
+        roadmapsApi.inviteFriends(roadmapId, selectedFriendIds).catch(() => {});
       }
 
       router.push(`/roadmaps/${roadmapId}`);
@@ -600,6 +613,49 @@ export default function RoadmapStartPage() {
                   </div>
 
                   {mode === 'friends' && <GroupOptions groupOption={groupOption} setGroupOption={(o) => { setGroupOption(o); setSelectedGroupId(null); }} groupName={groupName} setGroupName={setGroupName} joinCode={joinCode} setJoinCode={setJoinCode} loadingGroups={loadingGroups} existingGroups={existingGroups} selectedGroupId={selectedGroupId} setSelectedGroupId={setSelectedGroupId} />}
+
+                  {/* Select Friends to Invite (non-coding) */}
+                  {mode === 'friends' && myFriends.length > 0 && (
+                    <div className="mb-4 mt-4 rounded-xl border border-zinc-800 bg-zinc-900/30 p-4">
+                      <h4 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
+                        <UserPlus className="h-4 w-4 text-emerald-400" />
+                        Invite Friends ({selectedFriendIds.length})
+                      </h4>
+                      <p className="text-xs text-zinc-500 mb-3">Selected friends will get a notification when you start this roadmap.</p>
+                      <div className="max-h-48 overflow-y-auto space-y-1">
+                        {myFriends.map((f) => (
+                          <button
+                            key={f.user_id}
+                            type="button"
+                            onClick={() => toggleFriendSelect(f.user_id)}
+                            className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors ${
+                              selectedFriendIds.includes(f.user_id)
+                                ? 'bg-emerald-500/10 border border-emerald-500/20'
+                                : 'hover:bg-zinc-800/50 border border-transparent'
+                            }`}
+                          >
+                            <div className={`h-4 w-4 rounded border flex items-center justify-center shrink-0 ${
+                              selectedFriendIds.includes(f.user_id)
+                                ? 'bg-emerald-500 border-emerald-500'
+                                : 'border-zinc-600'
+                            }`}>
+                              {selectedFriendIds.includes(f.user_id) && (
+                                <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-zinc-200 truncate">{f.display_name}</p>
+                            </div>
+                            {f.current_streak > 0 && (
+                              <span className="text-[10px] text-orange-400 flex items-center gap-0.5">
+                                🔥 {f.current_streak}d
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <Button variant="gradient" size="lg" className="w-full" onClick={handleStart} loading={loading}>
                     Start Roadmap <ArrowRight className="h-4 w-4 ml-2" />
@@ -962,6 +1018,49 @@ export default function RoadmapStartPage() {
               {mode === 'friends' && (
                 <>
                   <GroupOptions groupOption={groupOption} setGroupOption={(o) => { setGroupOption(o); setSelectedGroupId(null); }} groupName={groupName} setGroupName={setGroupName} joinCode={joinCode} setJoinCode={setJoinCode} loadingGroups={loadingGroups} existingGroups={existingGroups} selectedGroupId={selectedGroupId} setSelectedGroupId={setSelectedGroupId} />
+
+                  {/* Select Friends to Invite */}
+                  {myFriends.length > 0 && (
+                    <div className="mb-4 mt-4 rounded-xl border border-zinc-800 bg-zinc-900/30 p-4">
+                      <h4 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
+                        <UserPlus className="h-4 w-4 text-emerald-400" />
+                        Invite Friends ({selectedFriendIds.length})
+                      </h4>
+                      <p className="text-xs text-zinc-500 mb-3">Selected friends will get a notification when you start this roadmap.</p>
+                      <div className="max-h-48 overflow-y-auto space-y-1">
+                        {myFriends.map((f) => (
+                          <button
+                            key={f.user_id}
+                            type="button"
+                            onClick={() => toggleFriendSelect(f.user_id)}
+                            className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors ${
+                              selectedFriendIds.includes(f.user_id)
+                                ? 'bg-emerald-500/10 border border-emerald-500/20'
+                                : 'hover:bg-zinc-800/50 border border-transparent'
+                            }`}
+                          >
+                            <div className={`h-4 w-4 rounded border flex items-center justify-center shrink-0 ${
+                              selectedFriendIds.includes(f.user_id)
+                                ? 'bg-emerald-500 border-emerald-500'
+                                : 'border-zinc-600'
+                            }`}>
+                              {selectedFriendIds.includes(f.user_id) && (
+                                <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-zinc-200 truncate">{f.display_name}</p>
+                            </div>
+                            {f.current_streak > 0 && (
+                              <span className="text-[10px] text-orange-400 flex items-center gap-0.5">
+                                🔥 {f.current_streak}d
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Weekly room scheduling */}
                   <div className="mb-4 mt-4 rounded-xl border border-zinc-800 bg-zinc-900/30 p-4 space-y-4">

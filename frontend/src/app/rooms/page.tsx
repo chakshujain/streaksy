@@ -13,11 +13,12 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import { ProblemPicker } from '@/components/search/ProblemPicker';
 import { useAsync } from '@/hooks/useAsync';
 import { roomsApi, problemsApi, friendsApi } from '@/lib/api';
-import { Swords, Plus, LogIn, Calendar, Trophy, Clock, Video, CalendarPlus, Shuffle, ListOrdered, Sparkles, RefreshCw } from 'lucide-react';
+import { Swords, Plus, LogIn, Calendar, Trophy, Clock, Video, CalendarPlus, Shuffle, ListOrdered, Sparkles, RefreshCw, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/cn';
 import type { Room, Problem, Sheet, RoomLeaderboardEntry, SuggestedProblem } from '@/lib/types';
 import { useAuthStore } from '@/lib/store';
+import { useFriends } from '@/hooks/useFriends';
 import { formatDistanceToNow } from 'date-fns';
 
 type Tab = 'rooms' | 'upcoming' | 'leaderboard';
@@ -63,6 +64,8 @@ export default function RoomsPage() {
   const [suggestCount, setSuggestCount] = useState(4);
   const [suggestedProblems, setSuggestedProblems] = useState<SuggestedProblem[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
+  const { friends } = useFriends();
+  const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
 
   const { data: rooms, loading } = useAsync<Room[]>(
     () => roomsApi.mine().then(r => r.data.rooms),
@@ -106,6 +109,10 @@ export default function RoomsPage() {
       );
   }, [enrichedFriends]);
 
+  const toggleFriend = (id: string) => {
+    setSelectedFriendIds(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
+  };
+
   const handleCreate = async () => {
     const hasProblemSelection = selectedProblem || selectedSheet || suggestedProblems.length > 0;
     if (!roomName.trim() || !hasProblemSelection) return;
@@ -124,6 +131,10 @@ export default function RoomsPage() {
         recurrence: recurrence || undefined,
         meetLink: meetLink || undefined,
       });
+      // Invite selected friends after room creation
+      if (selectedFriendIds.length > 0 && data.room?.id) {
+        roomsApi.inviteFriends(data.room.id, selectedFriendIds).catch(() => {});
+      }
       router.push(`/rooms/${data.room.id}`);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
@@ -467,6 +478,48 @@ export default function RoomsPage() {
                   ))}
                 </div>
               </div>
+              {/* Invite Friends */}
+              {friends.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    <UserPlus className="h-4 w-4 inline mr-1.5" />
+                    Invite Friends ({selectedFriendIds.length} selected)
+                  </label>
+                  <div className="max-h-40 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900/50 divide-y divide-zinc-800/50">
+                    {friends.map((f) => (
+                      <button
+                        key={f.user_id}
+                        type="button"
+                        onClick={() => toggleFriend(f.user_id)}
+                        className={cn(
+                          'w-full flex items-center gap-3 px-3 py-2 text-left transition-colors',
+                          selectedFriendIds.includes(f.user_id)
+                            ? 'bg-emerald-500/10'
+                            : 'hover:bg-zinc-800/50'
+                        )}
+                      >
+                        <div className={cn(
+                          'h-4 w-4 rounded border flex items-center justify-center shrink-0',
+                          selectedFriendIds.includes(f.user_id)
+                            ? 'bg-emerald-500 border-emerald-500'
+                            : 'border-zinc-600'
+                        )}>
+                          {selectedFriendIds.includes(f.user_id) && (
+                            <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-zinc-200 truncate">{f.display_name}</p>
+                        </div>
+                        {f.current_streak > 0 && (
+                          <span className="text-[10px] text-orange-400 shrink-0">{f.current_streak}d</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <Button onClick={handleCreate} loading={createLoading} disabled={!roomName.trim() || (!selectedProblem && !selectedSheet && suggestedProblems.length === 0)}>Create Room</Button>
             </Card>
           </div>

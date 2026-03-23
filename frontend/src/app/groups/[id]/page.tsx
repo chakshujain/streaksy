@@ -9,14 +9,12 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
 import { groupsApi, leaderboardApi, activityApi, roomsApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
-import { Copy, Check, Target, FileText, Calendar, LogOut, Trash2, Activity, UserPlus, Share2, GraduationCap, ArrowRight, Users, Swords } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Copy, Check, Target, FileText, Calendar, LogOut, Trash2, Activity, UserPlus, Share2, GraduationCap, ArrowRight, Users, Swords, Map } from 'lucide-react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import type { Group, LeaderboardEntry } from '@/lib/types';
-import type { UserRoadmap } from '@/lib/types';
 import Link from 'next/link';
-import { templatesBySlug } from '@/lib/roadmap-templates';
 import { InviteFriendsModal } from '@/components/friends/InviteFriendsModal';
 
 export default function GroupDetailPage() {
@@ -36,17 +34,6 @@ export default function GroupDetailPage() {
   const [actionError, setActionError] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  // Study plan state (from localStorage - active roadmaps for this group)
-  const [groupRoadmaps, setGroupRoadmaps] = useState<UserRoadmap[]>([]);
-
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('streaksy_active_roadmaps') || '[]') as UserRoadmap[];
-      const filtered = stored.filter((r) => r.groupId === groupId);
-      setGroupRoadmaps(filtered);
-    } catch { /* empty */ }
-  }, [groupId]);
-
   const { data: group, loading: groupLoading, refetch: refetchGroup } = useAsync<Group>(
     () => groupsApi.get(groupId).then((r) => r.data.group),
     [groupId]
@@ -64,6 +51,21 @@ export default function GroupDetailPage() {
 
   const { data: groupWarRooms, loading: roomsLoading } = useAsync<{ id: string; name: string; status: string; host_name?: string }[]>(
     () => group ? roomsApi.getByGroup(groupId).then(r => r.data.rooms || []) : Promise.resolve([]),
+    [group?.id]
+  );
+
+  const { data: groupRoadmaps, loading: roadmapsLoading } = useAsync<{
+    id: string;
+    name: string;
+    user_id: string;
+    display_name: string;
+    template_slug: string | null;
+    duration_days: number;
+    start_date: string;
+    status: string;
+    completed_days: number;
+  }[]>(
+    () => group ? groupsApi.getRoadmaps(groupId).then(r => r.data.roadmaps || []) : Promise.resolve([]),
     [group?.id]
   );
 
@@ -378,30 +380,40 @@ export default function GroupDetailPage() {
               <GraduationCap className="h-5 w-5 text-emerald-400" />
               Group Roadmaps
             </h2>
+            <Link
+              href="/roadmaps"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500 transition-colors"
+            >
+              <Map className="h-3.5 w-3.5" /> Start Roadmap Together
+            </Link>
           </div>
-          {groupRoadmaps.length > 0 ? (
+          {roadmapsLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 rounded-xl" />
+              ))}
+            </div>
+          ) : groupRoadmaps && groupRoadmaps.length > 0 ? (
             <div className="space-y-4">
               {groupRoadmaps.map((rm) => {
-                const pct = rm.durationDays > 0 ? Math.round((rm.completedDays / rm.durationDays) * 100) : 0;
-                const template = rm.templateSlug ? templatesBySlug[rm.templateSlug] : null;
-                const memberCount = group.members?.length || 0;
+                const pct = rm.duration_days > 0 ? Math.round((rm.completed_days / rm.duration_days) * 100) : 0;
                 return (
                   <div key={rm.id} className="space-y-3 rounded-lg border border-zinc-800/50 p-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{rm.icon}</span>
-                        <div>
-                          <p className="text-sm font-semibold text-zinc-100">{rm.name}</p>
-                          {template && (
-                            <p className="text-xs text-zinc-500">{template.description}</p>
-                          )}
-                          <div className="flex items-center gap-3 mt-1">
-                            <span className="text-xs text-zinc-500">Day {rm.completedDays}/{rm.durationDays}</span>
-                            <span className="text-xs text-zinc-500">{rm.durationDays} days total</span>
-                            <span className="inline-flex items-center gap-1 text-xs text-zinc-500">
-                              <Users className="h-3 w-3" /> {memberCount} members
-                            </span>
-                          </div>
+                      <div>
+                        <p className="text-sm font-semibold text-zinc-100">{rm.name}</p>
+                        <p className="text-xs text-zinc-500 mt-0.5">
+                          Started by <span className="text-zinc-400">{rm.display_name}</span>
+                        </p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-xs text-zinc-500">Day {rm.completed_days}/{rm.duration_days}</span>
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                            rm.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' :
+                            rm.status === 'completed' ? 'bg-blue-500/10 text-blue-400' :
+                            'bg-zinc-500/10 text-zinc-400'
+                          }`}>
+                            {rm.status}
+                          </span>
                         </div>
                       </div>
                       <span className="text-sm font-semibold text-emerald-400">{pct}%</span>
@@ -421,15 +433,6 @@ export default function GroupDetailPage() {
                   </div>
                 );
               })}
-              <div className="pt-2 border-t border-zinc-800/30">
-                <Link
-                  href="/roadmaps"
-                  className="inline-flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-                >
-                  Start a New Roadmap <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-                <p className="text-xs text-zinc-600 mt-1">Any member can start a roadmap for this group</p>
-              </div>
             </div>
           ) : (
             <div className="text-center py-6">
