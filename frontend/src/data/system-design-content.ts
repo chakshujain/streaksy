@@ -1131,6 +1131,20 @@ async function getUserSimple(id) {
           'REST (Representational State Transfer) is the most popular API style. It uses standard HTTP methods and organizes everything around **resources**.\n\n**Key REST Principles:**\n\n1. **Resources** — Everything is a noun: users, posts, comments. The URL identifies the resource.\n2. **HTTP Methods** — Verbs that act on resources: GET (read), POST (create), PUT (replace), PATCH (partial update), DELETE (remove).\n3. **Stateless** — Each request contains all the information needed. The server doesn\'t remember previous requests.\n4. **Uniform Interface** — Consistent URL patterns, status codes, and response formats.\n\n**Good URL Design:**\n```\nGET    /api/users          → List all users\nGET    /api/users/123       → Get user 123\nPOST   /api/users           → Create a new user\nPUT    /api/users/123       → Replace user 123\nPATCH  /api/users/123       → Update parts of user 123\nDELETE /api/users/123       → Delete user 123\n```\n\n**Bad URL Design:**\n```\nGET  /api/getUser?id=123     ← Verb in URL (redundant with GET)\nPOST /api/deleteUser          ← Wrong method + verb in URL\nGET  /api/user_list            ← Inconsistent naming\n```',
         analogy:
           'Resources are like library books. Each book has a unique call number (URL). You can check it out (GET), donate a new one (POST), replace it (PUT), or remove it (DELETE). The library card system (HTTP) is the same for everyone.',
+        comparison: {
+          leftTitle: 'REST',
+          rightTitle: 'GraphQL',
+          leftColor: 'blue',
+          rightColor: 'purple',
+          items: [
+            { left: 'Multiple endpoints (/users, /posts)', right: 'Single endpoint (/graphql)' },
+            { left: 'Server decides response shape', right: 'Client specifies exact fields needed' },
+            { left: 'Over-fetching / under-fetching common', right: 'Get exactly what you ask for' },
+            { left: 'Simple caching via HTTP (CDN-friendly)', right: 'Complex caching (POST requests)' },
+            { left: 'Easy to learn, widely adopted', right: 'Steeper learning curve, schema-driven' },
+            { left: 'Best for CRUD-heavy, simple APIs', right: 'Best for complex, nested data queries' },
+          ],
+        },
         keyTakeaway:
           'REST APIs organize around resources (nouns, not verbs). Use HTTP methods for actions, plural nouns in URLs, and keep everything consistent.',
       },
@@ -1358,6 +1372,19 @@ router.get('/posts', async (req, res) => {
           { title: 'Sliding Window Log', description: 'Track every request timestamp. Most accurate but memory-intensive.', icon: '📜', color: 'purple' },
           { title: 'Sliding Window Counter', description: 'Weighted overlap of current and previous window. Best balance of accuracy and efficiency.', icon: '📊', color: 'emerald' },
         ],
+        comparison: {
+          leftTitle: 'Token Bucket',
+          rightTitle: 'Sliding Window',
+          leftColor: 'blue',
+          rightColor: 'emerald',
+          items: [
+            { left: 'Allows bursts up to bucket size', right: 'Smooth, even rate enforcement' },
+            { left: 'Simple: just track token count', right: 'Tracks request counts per window' },
+            { left: 'Memory: O(1) per key', right: 'Memory: O(1) per key (counter variant)' },
+            { left: 'Best for APIs needing burst tolerance', right: 'Best for strict, even rate limiting' },
+            { left: 'Used by AWS, Stripe, GitHub', right: 'Used by Cloudflare, Redis-based limiters' },
+          ],
+        },
         keyTakeaway:
           'Token Bucket is best for APIs that need burst tolerance. Sliding Window Counter is best for general-purpose rate limiting. Fixed Window is simplest but has edge-case bursts.',
       },
@@ -2757,6 +2784,12 @@ GET    /api/v1/content/:id/status            → Transcoding job status`,
         title: 'Step 6: Recommendation Engine',
         content:
           'Recommendations are Netflix\'s biggest competitive advantage — 80% of what users watch comes from recommendations.\n\n**How It Works (Simplified):**\n\n**1. Collaborative Filtering**\n"Users who watched X also watched Y."\n- Build a matrix of (user × title) ratings/watch history\n- Find similar users (cosine similarity) and recommend what they liked\n- At Netflix scale: matrix factorization (SVD) decomposes this into manageable dimensions\n\n**2. Content-Based Filtering**\n"You watched 5 sci-fi movies, here are more sci-fi movies."\n- Tag each title with genres, actors, mood, pacing, etc. (Netflix has ~2,000 micro-genres)\n- Match user\'s preference profile to title profiles\n\n**3. Hybrid: Deep Learning Model**\n- Input features: watch history, ratings, time of day, device, browse history, demographics\n- Model: Neural network that predicts probability of watching each title\n- Output: Ranked list of title recommendations\n\n**The Recommendation Pipeline:**\n1. **Offline**: Train ML models on historical data (nightly batch job)\n2. **Nearline**: Update user features in near-real-time (what they just watched)\n3. **Online**: At request time, score candidate titles using the model, rank, and return\n\n**Row-Level Personalization:**\nEven the artwork you see for each title is personalized. If you watch comedies, you see a funny scene from a thriller. If you watch romances, you see the romantic scene from the same thriller.',
+        cards: [
+          { title: 'Collaborative Filtering', description: 'Users who watched X also watched Y. Matrix factorization (SVD) finds similar users at scale from billions of interactions.', icon: '👥', color: 'blue' },
+          { title: 'Content-Based', description: 'Match user taste profile to title metadata. Netflix uses ~2,000 micro-genres to tag every title by mood, pacing, and theme.', icon: '🎬', color: 'emerald' },
+          { title: 'Trending', description: 'Surface titles spiking in popularity right now. Combines global trends with regional viewing patterns for relevance.', icon: '📈', color: 'amber' },
+          { title: 'Personalized Rows', description: 'Each row on the homepage is a mini-recommendation. Even artwork is personalized — comedy fans see funny scenes, thriller fans see tense ones.', icon: '🎨', color: 'purple' },
+        ],
         keyTakeaway:
           'Netflix recommendations use collaborative filtering, content-based filtering, and deep learning. Even the artwork is personalized. 80% of watched content comes from recommendations.',
       },

@@ -1198,6 +1198,19 @@ cart.set_payment_method(PayPalPayment("alice@email.com"))
 print(cart.checkout(49.99))`,
           },
         ],
+        diagram: `┌───────────────┐       ┌──────────────────┐
+│    Context    │──────▶│    Strategy      │
+│───────────────│       │   (interface)    │
+│ - strategy    │       │──────────────────│
+│ + setStrategy()│       │ + execute()      │
+│ + doWork()    │       └────────┬─────────┘
+└───────────────┘                │
+                      ┌──────────┼──────────┐
+                      ▼          ▼          ▼
+               ┌──────────┐┌──────────┐┌──────────┐
+               │StrategyA ││StrategyB ││StrategyC │
+               │execute() ││execute() ││execute() │
+               └──────────┘└──────────┘└──────────┘`,
         keyTakeaway:
           'The context holds a reference to a strategy interface. You can swap strategies at runtime without changing the context.',
       },
@@ -1211,6 +1224,18 @@ print(cart.checkout(49.99))`,
           'If algorithms have complex logic worth unit testing, use Strategy',
           'If the same algorithm is used in multiple places, use Strategy',
         ],
+        comparison: {
+          leftTitle: 'if/else Chains',
+          rightTitle: 'Strategy Pattern',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'All logic in one function', right: 'Each algorithm in its own class' },
+            { left: 'Adding cases = editing existing code', right: 'Adding cases = adding new class' },
+            { left: 'Hard to test individual branches', right: 'Each strategy is independently testable' },
+            { left: 'Grows linearly into unreadable blocks', right: 'Stays clean regardless of count' },
+          ],
+        },
         keyTakeaway:
           'Use Strategy when algorithms are complex, independently testable, or frequently changing.',
       },
@@ -1373,6 +1398,28 @@ source.write("Hello, World!")
 print(source.read())  # "Hello, World!"`,
           },
         ],
+        diagram: `┌─────────────────┐
+│    Component    │
+│   (interface)   │
+│─────────────────│
+│ + operation()   │
+└────────┬────────┘
+         │ implements
+    ┌────┴─────────────────┐
+    ▼                      ▼
+┌──────────────┐   ┌──────────────────┐
+│  Concrete    │   │   Decorator      │
+│  Component   │   │──────────────────│
+│──────────────│   │ - wrapped: Comp  │
+│ operation()  │   │ + operation()    │
+└──────────────┘   └────────┬─────────┘
+                            │ extends
+                   ┌────────┴─────────┐
+                   ▼                  ▼
+            ┌─────────────┐   ┌─────────────┐
+            │ DecoratorA  │   │ DecoratorB  │
+            │ operation() │   │ operation() │
+            └─────────────┘   └─────────────┘`,
         keyTakeaway:
           'Each decorator wraps the previous one. They share the same interface, so the client does not know it is decorated.',
       },
@@ -1386,6 +1433,12 @@ print(source.read())  # "Hello, World!"`,
           'Express.js middleware: each middleware wraps the next handler',
           'React Higher-Order Components (HOCs): withAuth, withLogging',
           'Logging wrappers around database queries or API calls',
+        ],
+        cards: [
+          { title: 'Middleware', description: 'Express/Koa middleware chains wrap handlers with auth, logging, error handling layers.', icon: '🔗', color: 'blue' },
+          { title: 'Java I/O Streams', description: 'BufferedInputStream wraps FileInputStream wraps SocketInputStream — classic decorator stacking.', icon: '📂', color: 'emerald' },
+          { title: 'Python Decorators', description: '@login_required, @cache, @retry — language-level decorator syntax for wrapping functions.', icon: '🐍', color: 'amber' },
+          { title: 'React HOCs', description: 'withAuth(withTheme(Component)) wraps components with cross-cutting concerns.', icon: '⚛️', color: 'purple' },
         ],
         keyTakeaway:
           'Middleware chains, I/O stream wrappers, and language decorators are all implementations of the Decorator pattern.',
@@ -1512,6 +1565,12 @@ analytics: AnalyticsService = XMLAnalyticsAdapter(LegacyXMLAnalytics())
 analytics.track("page_view", {"url": "/home", "userId": "123"})`,
           },
         ],
+        diagram: `┌────────────┐    Target     ┌─────────────┐    delegates    ┌──────────────┐
+│   Client   │──interface──▶│   Adapter   │───────────────▶│   Adaptee    │
+│            │              │─────────────│                │──────────────│
+│ calls      │              │ track()     │  translates    │ sendXML()    │
+│ track()    │              │  → sendXML()│  JSON → XML    │              │
+└────────────┘              └─────────────┘                └──────────────┘`,
         keyTakeaway:
           'The adapter implements the target interface and internally calls the adaptee, translating between the two formats.',
       },
@@ -1712,6 +1771,13 @@ history.undo()
 print(editor.content)  # "Hello"`,
           },
         ],
+        flow: [
+          { label: 'Client', description: 'Creates a command and passes it to the invoker', icon: '👤' },
+          { label: 'Command', description: 'Encapsulates the action with execute() and undo()', icon: '📋' },
+          { label: 'Execute', description: 'Invoker calls command.execute() and pushes to history', icon: '▶️' },
+          { label: 'Receiver', description: 'The actual object that performs the work (e.g., TextEditor)', icon: '🎯' },
+          { label: 'Undo', description: 'Pops from history and calls command.undo() to reverse', icon: '↩️' },
+        ],
         keyTakeaway:
           'Each action is an object with execute() and undo(). A history stack enables unlimited undo/redo.',
       },
@@ -1891,6 +1957,28 @@ class JSONMiner(DataMiner):
 CSVMiner().mine("/data/users.csv")`,
           },
         ],
+        diagram: `┌──────────────────────────┐
+│     AbstractClass        │
+│──────────────────────────│
+│ templateMethod() {       │ ← fixed skeleton
+│   step1();               │
+│   step2();               │
+│   step3(); // hook       │
+│ }                        │
+│──────────────────────────│
+│ abstract step1()         │
+│ abstract step2()         │
+│ step3() { default impl }│
+└────────────┬─────────────┘
+             │
+     ┌───────┴────────┐
+     ▼                ▼
+┌──────────┐   ┌──────────┐
+│ConcreteA │   │ConcreteB │
+│──────────│   │──────────│
+│ step1()  │   │ step1()  │
+│ step2()  │   │ step2()  │
+└──────────┘   └──────────┘`,
         keyTakeaway:
           'The base class owns the algorithm flow. Subclasses only customize the steps they care about.',
       },
@@ -2084,6 +2172,23 @@ doc.review()   # Sending to review...
 doc.publish()  # Approved! Publishing...`,
           },
         ],
+        diagram: `┌───────────────┐         ┌─────────────────┐
+│    Context    │────────▶│      State      │
+│───────────────│         │   (interface)   │
+│ - state       │         │─────────────────│
+│ + request()   │         │ + handle(ctx)   │
+└───────────────┘         └────────┬────────┘
+                                   │
+                        ┌──────────┼──────────┐
+                        ▼          ▼          ▼
+                  ┌──────────┐┌──────────┐┌──────────┐
+                  │ StateA   ││ StateB   ││ StateC   │
+                  │──────────││──────────││──────────│
+                  │handle(){  ││handle(){  ││handle(){  │
+                  │ ctx.set   ││ ctx.set   ││ // final  │
+                  │ (StateB)  ││ (StateC)  ││ state     │
+                  │}         ││}         ││}         │
+                  └──────────┘└──────────┘└──────────┘`,
         keyTakeaway:
           'Each state is a class. State transitions happen by swapping the state object inside the context.',
       },
@@ -2281,6 +2386,27 @@ theater = HomeTheaterFacade()
 theater.watch_movie("Inception")`,
           },
         ],
+        diagram: `           ┌────────────┐
+           │   Client   │
+           └─────┬──────┘
+                 │ simple API
+                 ▼
+           ┌────────────┐
+           │   Facade   │
+           │────────────│
+           │ watchMovie()│
+           │ endMovie() │
+           └──┬───┬───┬─┘
+              │   │   │  delegates to
+      ┌───────┘   │   └───────┐
+      ▼           ▼           ▼
+┌───────────┐┌──────────┐┌──────────┐
+│ Projector ││  Sound   ││ Streaming│
+│           ││  System  ││ Player   │
+│ on()      ││ on()     ││ on()     │
+│ setInput()││ volume() ││ play()   │
+│ off()     ││ off()    ││ off()    │
+└───────────┘└──────────┘└──────────┘`,
         keyTakeaway:
           'The Facade coordinates multiple subsystem objects, exposing simple high-level methods to the client.',
       },

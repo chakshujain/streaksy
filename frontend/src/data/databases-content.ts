@@ -1948,6 +1948,17 @@ export const databaseLessons: Record<
           '**Stable schema** — You know the data shape upfront.',
           '**Strong consistency** — Every read returns the latest write.',
         ],
+        table: {
+          headers: ['Use Case', 'Best Choice', 'Why'],
+          rows: [
+            ['E-commerce orders', 'SQL (PostgreSQL)', 'Transactions, foreign keys, inventory consistency'],
+            ['Banking / Finance', 'SQL (PostgreSQL)', 'ACID guarantees, complex queries, audit trails'],
+            ['User profiles + auth', 'SQL (PostgreSQL/MySQL)', 'Structured data, relational links, constraints'],
+            ['Real-time analytics', 'SQL (ClickHouse)', 'Aggregations, window functions, columnar storage'],
+            ['Content management', 'SQL or Document', 'SQL if relational; Document if flexible schemas'],
+            ['IoT sensor data', 'Time-series (TimescaleDB)', 'Optimized for timestamped inserts and range queries'],
+          ],
+        },
         keyTakeaway:
           'Choose SQL for structured, relational data with strong consistency requirements. PostgreSQL is the safe default.',
       },
@@ -2063,6 +2074,20 @@ export const databaseLessons: Record<
           '**Referential integrity** — Other tables referencing this row won\'t break.',
           '**Legal requirements** — Some industries require retaining records for years.',
         ],
+        comparison: {
+          leftTitle: 'Hard Delete',
+          rightTitle: 'Soft Delete',
+          leftColor: 'red',
+          rightColor: 'emerald',
+          items: [
+            { left: 'DELETE FROM posts WHERE id = 42', right: 'UPDATE posts SET deleted_at = NOW() WHERE id = 42' },
+            { left: 'Row is permanently gone', right: 'Row stays in DB, filtered out of queries' },
+            { left: 'No undo possible', right: 'Easy restore: SET deleted_at = NULL' },
+            { left: 'Foreign keys may break', right: 'Referential integrity preserved' },
+            { left: 'No audit trail', right: 'Full history of when items were deleted' },
+            { left: 'Simpler, less storage', right: 'More storage, but safer and auditable' },
+          ],
+        },
         code: [
           {
             language: 'sql',
