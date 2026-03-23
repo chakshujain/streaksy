@@ -7,7 +7,7 @@
 INSERT INTO sheets (name, slug, description) VALUES
 ('Blind 75', 'blind-75', 'The original 75 LeetCode problems curated by a Meta engineer. The gold standard for interview prep.'),
 ('NeetCode 150', 'neetcode-150', 'Blind 75 + 75 more problems. Covers all patterns and topics for coding interviews.'),
-('Striver SDE Sheet', 'striver-sde', 'Striver''s curated list of 180+ problems for Software Development Engineer interviews at top companies.'),
+('Striver SDE Sheet', 'striver-sde', 'Striver''s curated list of 191 problems for Software Development Engineer interviews at top companies.'),
 ('Love Babbar 450', 'love-babbar-450', 'Love Babbar''s DSA Cracker sheet with 450 problems covering all DSA topics comprehensively.'),
 ('Grind 75', 'grind-75', 'Updated version of Blind 75 by the original author. Optimized ordering for maximum interview prep efficiency.')
 ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description;

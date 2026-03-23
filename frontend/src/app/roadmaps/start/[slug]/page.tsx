@@ -88,9 +88,9 @@ const CONTENT_TOPIC_MAP: Record<string, TopicContent[]> = {
       { slug: 'blind-75', title: 'Blind 75 — The Gold Standard', duration: '75 problems', difficulty: 'intermediate' },
       { slug: 'grind-75', title: 'Grind 75 — Optimized Blind 75', duration: '75 problems', difficulty: 'intermediate' },
       { slug: 'neetcode-150', title: 'NeetCode 150 — Comprehensive', duration: '150 problems', difficulty: 'intermediate' },
-      { slug: 'striver-sde', title: 'Striver SDE Sheet', duration: '194 problems', difficulty: 'advanced' },
-      { slug: 'love-babbar-450', title: 'Love Babbar 450', duration: '291 problems', difficulty: 'advanced' },
-      { slug: 'leetcode-top-150', title: 'LeetCode Top 150', duration: '15 problems', difficulty: 'beginner' },
+      { slug: 'striver-sde', title: 'Striver SDE Sheet', duration: '191 problems', difficulty: 'advanced' },
+      { slug: 'love-babbar-450', title: 'Love Babbar 450', duration: '450 problems', difficulty: 'advanced' },
+      { slug: 'leetcode-top-150', title: 'LeetCode Top 150', duration: '150 problems', difficulty: 'beginner' },
     ]},
     { name: 'Mock Interviews', icon: '🎯', lessonCount: 3, topicSlug: 'mocks', lessons: [
       { slug: 'mock-dsa', title: 'Mock Interview: DSA Round', duration: '60 min', difficulty: 'advanced' },
