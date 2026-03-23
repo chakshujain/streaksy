@@ -11,6 +11,36 @@ import { ProblemStatus } from '../../../common/types';
 import { invalidate } from '../../../common/utils/cache';
 import { logger } from '../../../config/logger';
 
+/**
+ * Fetch problem metadata from LeetCode's public GraphQL API.
+ * Returns null if the problem doesn't exist on LeetCode.
+ */
+async function fetchLeetcodeProblem(slug: string): Promise<{ title: string; difficulty: string } | null> {
+  try {
+    const resp = await fetch('https://leetcode.com/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: `query getQuestion($titleSlug: String!) {
+          question(titleSlug: $titleSlug) {
+            title
+            difficulty
+          }
+        }`,
+        variables: { titleSlug: slug },
+      }),
+    });
+    if (!resp.ok) return null;
+    const json = await resp.json() as { data?: { question?: { title?: string; difficulty?: string } } };
+    const q = json?.data?.question;
+    if (!q?.title || !q?.difficulty) return null;
+    return { title: q.title, difficulty: q.difficulty.toLowerCase() };
+  } catch (err) {
+    logger.warn({ err, slug }, 'Failed to fetch problem from LeetCode API');
+    return null;
+  }
+}
+
 export const syncService = {
   async syncLeetcode(userId: string, problemSlug: string, status: ProblemStatus, extra?: {
     language?: string;
@@ -26,9 +56,19 @@ export const syncService = {
     const user = await authRepository.findById(userId);
     if (!user) throw AppError.notFound('User not found');
 
-    // 2. Map slug to problem
-    const problem = await problemRepository.findBySlug(problemSlug);
-    if (!problem) throw AppError.notFound(`Problem not found: ${problemSlug}`);
+    // 2. Map slug to problem — auto-create from LeetCode if missing
+    let problem = await problemRepository.findBySlug(problemSlug);
+    if (!problem) {
+      const lcData = await fetchLeetcodeProblem(problemSlug);
+      if (!lcData) throw AppError.notFound(`Problem not found: ${problemSlug}`);
+      problem = await problemRepository.create({
+        title: lcData.title,
+        slug: problemSlug,
+        difficulty: lcData.difficulty,
+        url: `https://leetcode.com/problems/${problemSlug}/`,
+      });
+      logger.info({ slug: problemSlug, title: lcData.title }, 'Auto-created problem from LeetCode');
+    }
 
     // 3. Update progress
     const progress = await progressRepository.upsert(userId, problem.id, status);

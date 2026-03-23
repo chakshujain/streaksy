@@ -239,13 +239,50 @@ describe('syncService', () => {
       ).rejects.toMatchObject({ statusCode: 404 });
     });
 
-    it('should throw notFound when problem does not exist', async () => {
+    it('should throw notFound when problem does not exist and LeetCode lookup fails', async () => {
       mockedAuthRepo.findById.mockResolvedValue(mockUser as any);
       mockedProblemRepo.findBySlug.mockResolvedValue(null);
+
+      // Mock fetch to simulate LeetCode API returning no data
+      const originalFetch = global.fetch;
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: { question: null } }),
+      }) as any;
 
       await expect(
         syncService.syncLeetcode('user-1', 'nonexistent-slug', 'solved')
       ).rejects.toThrow('Problem not found: nonexistent-slug');
+
+      global.fetch = originalFetch;
+    });
+
+    it('should auto-create problem from LeetCode when slug not in DB', async () => {
+      const newProblem = { id: 'prob-new', title: 'New Problem', slug: 'new-problem', difficulty: 'medium', url: 'https://leetcode.com/problems/new-problem/', created_at: new Date() };
+      mockedAuthRepo.findById.mockResolvedValue(mockUser as any);
+      mockedProblemRepo.findBySlug.mockResolvedValue(null);
+      mockedProblemRepo.create.mockResolvedValue(newProblem as any);
+      mockedProgressRepo.upsert.mockResolvedValue({ ...mockProgress, problem_id: newProblem.id } as any);
+      mockedStreakService.recordSolve.mockResolvedValue({ currentStreak: 1, longestStreak: 1 });
+      mockedGroupRepo.getUserGroups.mockResolvedValue([]);
+
+      // Mock fetch to simulate LeetCode API returning problem data
+      const originalFetch = global.fetch;
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: { question: { title: 'New Problem', difficulty: 'Medium' } } }),
+      }) as any;
+
+      const result = await syncService.syncLeetcode('user-1', 'new-problem', 'solved');
+      expect(mockedProblemRepo.create).toHaveBeenCalledWith({
+        title: 'New Problem',
+        slug: 'new-problem',
+        difficulty: 'medium',
+        url: 'https://leetcode.com/problems/new-problem/',
+      });
+      expect(result.progress.problemId).toBe('prob-new');
+
+      global.fetch = originalFetch;
     });
 
     it('should update leaderboard scores for user groups', async () => {
