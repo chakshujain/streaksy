@@ -624,6 +624,82 @@ export default function RoadmapStartPage() {
                     </div>
                   )}
 
+                  {/* War room scheduling (non-coding) */}
+                  {mode === 'friends' && (
+                    <div className="mb-4 mt-4 rounded-xl border border-zinc-800 bg-zinc-900/30 p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-2 text-sm font-medium text-zinc-300">
+                          <CalendarDays className="h-4 w-4 text-zinc-400" />
+                          Schedule solve rooms?
+                        </label>
+                        <button
+                          onClick={() => setScheduleWeeklyRoom(!scheduleWeeklyRoom)}
+                          className={`relative h-6 w-11 rounded-full transition-colors ${scheduleWeeklyRoom ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+                        >
+                          <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${scheduleWeeklyRoom ? 'translate-x-5' : ''}`} />
+                        </button>
+                      </div>
+
+                      {scheduleWeeklyRoom && (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-xs text-zinc-500 mb-1">Frequency</label>
+                            <select
+                              value={roomRecurrence}
+                              onChange={(e) => setRoomRecurrence(e.target.value)}
+                              className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                            >
+                              {RECURRENCE_OPTIONS.map((o) => (
+                                <option key={o.value} value={o.value}>{o.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            {(roomRecurrence === 'weekly' || roomRecurrence === 'monthly') && (
+                              <div>
+                                <label className="block text-xs text-zinc-500 mb-1">Day</label>
+                                <select
+                                  value={weeklyRoomDay}
+                                  onChange={(e) => setWeeklyRoomDay(e.target.value)}
+                                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                                >
+                                  {DAYS_OF_WEEK.map((d) => (
+                                    <option key={d} value={d}>{d}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
+                            <div>
+                              <label className="block text-xs text-zinc-500 mb-1">Time</label>
+                              <select
+                                value={weeklyRoomTime}
+                                onChange={(e) => setWeeklyRoomTime(e.target.value)}
+                                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                              >
+                                {TIME_SLOTS.map((t) => (
+                                  <option key={t} value={t}>{(() => { const hr = parseInt(t) || 0; const displayH = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr; return `${displayH}:${(t.split(':')[1] || '00')} ${hr >= 12 ? 'PM' : 'AM'}`; })()}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
+                        <label className="flex items-center gap-2 text-sm font-medium text-zinc-300">
+                          <Bell className="h-4 w-4 text-zinc-400" />
+                          Daily reminders?
+                        </label>
+                        <button
+                          onClick={() => setDailyReminder(!dailyReminder)}
+                          className={`relative h-6 w-11 rounded-full transition-colors ${dailyReminder ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+                        >
+                          <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${dailyReminder ? 'translate-x-5' : ''}`} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <Button variant="gradient" size="lg" className="w-full" onClick={handleStart} loading={loading}>
                     Start Roadmap <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
