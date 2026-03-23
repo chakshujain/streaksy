@@ -11,5 +11,6 @@ router.get('/overview', asyncHandler(insightsController.getOverview as any));
 router.get('/weekly', asyncHandler(insightsController.getWeekly as any));
 router.get('/tags', asyncHandler(insightsController.getTags as any));
 router.get('/difficulty-trend', asyncHandler(insightsController.getDifficultyTrend as any));
+router.post('/ai-coach', asyncHandler(insightsController.getAICoach as any));
 
 export default router;

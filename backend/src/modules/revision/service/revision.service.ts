@@ -3,7 +3,7 @@ import { AppError } from '../../../common/errors/AppError';
 import { submissionRepository } from '../../sync/repository/submission.repository';
 import { generateRevisionNotes, generateHints, generateExplanation, reviewCode } from '../../ai/service/ai.service';
 import { env } from '../../../config/env';
-import { redis } from '../../../config/redis';
+import { checkAIRateLimit } from '../../../common/utils/aiRateLimit';
 import { query, queryOne } from '../../../config/database';
 
 export const revisionService = {
@@ -27,7 +27,7 @@ export const revisionService = {
       throw new AppError(503, 'AI generation is not available. NVIDIA_API_KEY is not configured.');
     }
 
-    await this._checkRateLimit(userId);
+    await checkAIRateLimit(userId);
 
     // Get the problem details
     const problem = await queryOne<{ id: string; title: string; difficulty: string }>(
@@ -98,7 +98,7 @@ export const revisionService = {
       throw new AppError(503, 'AI generation is not available. NVIDIA_API_KEY is not configured.');
     }
 
-    await this._checkRateLimit(userId);
+    await checkAIRateLimit(userId);
 
     const problem = await queryOne<{ id: string; title: string; difficulty: string }>(
       'SELECT id, title, difficulty FROM problems WHERE id = $1',
@@ -135,7 +135,7 @@ export const revisionService = {
       throw new AppError(503, 'AI generation is not available. NVIDIA_API_KEY is not configured.');
     }
 
-    await this._checkRateLimit(userId);
+    await checkAIRateLimit(userId);
 
     const problem = await queryOne<{ id: string; title: string; difficulty: string }>(
       'SELECT id, title, difficulty FROM problems WHERE id = $1',
@@ -166,7 +166,7 @@ export const revisionService = {
       throw new AppError(503, 'AI generation is not available. NVIDIA_API_KEY is not configured.');
     }
 
-    await this._checkRateLimit(userId);
+    await checkAIRateLimit(userId);
 
     const problem = await queryOne<{ id: string; title: string; difficulty: string }>(
       'SELECT id, title, difficulty FROM problems WHERE id = $1',
@@ -200,14 +200,4 @@ export const revisionService = {
     return review;
   },
 
-  async _checkRateLimit(userId: string) {
-    const rateLimitKey = `ai_gen:${userId}:${new Date().toISOString().slice(0, 10)}`;
-    const currentCount = await redis.incr(rateLimitKey);
-    if (currentCount === 1) {
-      await redis.expire(rateLimitKey, 86400);
-    }
-    if (currentCount > 20) {
-      throw new AppError(429, 'AI generation limit reached. Maximum 20 generations per day.');
-    }
-  },
 };

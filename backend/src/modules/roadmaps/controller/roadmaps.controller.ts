@@ -149,4 +149,11 @@ export const roadmapsController = {
     const discussion = await roadmapsService.createDiscussion(slug, user!.userId, content, parentId);
     res.status(201).json({ discussion });
   },
+
+  async getAIGuidance(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const id = param(req, 'id');
+    const guidance = await roadmapsService.getAIGuidance(id, user!.userId);
+    res.json({ guidance });
+  },
 };

@@ -152,6 +152,8 @@ export const notesApi = {
     api.get(`/notes/personal/${problemId}`),
   getGroup: (groupId: string, problemId: string) =>
     api.get(`/notes/group/${groupId}/${problemId}`),
+  enhanceWithAI: (noteId: string) =>
+    api.post(`/notes/${noteId}/enhance`),
 };
 
 // ── Insights ──
@@ -160,6 +162,7 @@ export const insightsApi = {
   weekly: () => api.get('/insights/weekly'),
   tags: () => api.get('/insights/tags'),
   difficultyTrend: () => api.get('/insights/difficulty-trend'),
+  getAICoach: () => api.post('/insights/ai-coach'),
 };
 
 // ── Sheets upload ──
@@ -216,6 +219,8 @@ export const discussionsApi = {
     api.put(`/comments/${id}`, { content }),
   deleteComment: (id: string) =>
     api.delete(`/comments/${id}`),
+  getAISummary: (slug: string) =>
+    api.post(`/problems/${slug}/ai-summary`),
 };
 
 // ── Activity ──
@@ -314,6 +319,7 @@ export const dailyApi = {
   getToday: () => api.get('/daily', { params: { count: 1 } }),
   getHistory: (days = 7) => api.get('/daily', { params: { count: days } }),
   getStreak: () => api.get('/streaks'),
+  getAIBrief: () => api.post('/daily/ai-brief'),
 };
 
 // ── Rooms ──
@@ -416,6 +422,7 @@ export const roadmapsApi = {
   getParticipants: (slug: string) => api.get(`/roadmaps/templates/${slug}/participants`),
   getDiscussions: (slug: string) => api.get(`/roadmaps/templates/${slug}/discussions`),
   postDiscussion: (slug: string, content: string) => api.post(`/roadmaps/templates/${slug}/discussions`, { content }),
+  getAIGuidance: (roadmapId: string) => api.post(`/roadmaps/${roadmapId}/ai-guidance`),
 };
 
 // ── Friends ──
@@ -427,6 +434,12 @@ export const friendsApi = {
   accept: (id: string) => api.patch(`/friends/${id}/accept`),
   reject: (id: string) => api.delete(`/friends/${id}`),
   remove: (id: string) => api.delete(`/friends/${id}`),
+};
+
+// ── Learn ──
+export const learnApi = {
+  askAI: (data: { topic: string; lesson: string; question: string }) =>
+    api.post('/learn/ask-ai', data),
 };
 
 export default api;

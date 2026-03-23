@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useAsync } from '@/hooks/useAsync';
 import { dailyApi, streaksApi } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { AIDailyBrief } from '@/components/ai/AIDailyBrief';
 import {
   Zap,
   Clock,
@@ -194,6 +195,11 @@ export default function DailyChallengePage() {
                 <p className="text-sm text-zinc-500">Solve today&apos;s problem to keep your streak alive</p>
               </div>
             </div>
+          </div>
+
+          {/* ── AI Daily Brief ── */}
+          <div className="animate-slide-up" style={{ animationDelay: '25ms' }}>
+            <AIDailyBrief />
           </div>
 
           {/* ── Hero Card: Today's Challenge ── */}

@@ -2,6 +2,9 @@ import { roadmapsRepository } from '../repository/roadmaps.repository';
 import { AppError } from '../../../common/errors/AppError';
 import { queryOne } from '../../../config/database';
 import { streaksEngine, PointBreakdown } from '../../streak/service/streaks-engine';
+import { generateRoadmapGuidance } from '../../ai/service/ai.service';
+import { checkAIRateLimit } from '../../../common/utils/aiRateLimit';
+import { env } from '../../../config/env';
 
 export const roadmapsService = {
   async getCategories() {
@@ -240,5 +243,49 @@ export const roadmapsService = {
     if (!template) throw AppError.notFound('Template not found');
     if (!content || content.trim().length === 0) throw AppError.badRequest('Content is required');
     return roadmapsRepository.createDiscussion(template.id, userId, content.trim(), parentId);
+  },
+
+  async getAIGuidance(roadmapId: string, userId: string) {
+    if (!env.ai.apiKey) {
+      throw new AppError(503, 'AI generation is not available. NVIDIA_API_KEY is not configured.');
+    }
+
+    await checkAIRateLimit(userId);
+
+    const roadmap = await roadmapsRepository.getRoadmapById(roadmapId);
+    if (!roadmap) throw AppError.notFound('Roadmap not found');
+
+    // Get progress to determine current day
+    const progress = await roadmapsRepository.getDayProgress(roadmapId, userId);
+    const completedDays = progress.filter(p => p.completed).length;
+    const currentDay = completedDays + 1;
+
+    // Get template tasks for today's task description
+    let todayTask = `Day ${currentDay} tasks`;
+    if (roadmap.template_id) {
+      const tasks = await roadmapsRepository.getTemplateTasks(roadmap.template_id);
+      const todayTaskData = tasks?.find((t: any) => t.day_number === currentDay);
+      if (todayTaskData) {
+        todayTask = (todayTaskData as any).title || (todayTaskData as any).description || todayTask;
+      }
+    }
+
+    // Get category name
+    const category = roadmap.category_slug || roadmap.category_id || 'General';
+
+    const guidance = await generateRoadmapGuidance({
+      roadmapName: roadmap.name,
+      category: String(category),
+      currentDay,
+      totalDays: roadmap.duration_days,
+      todayTask,
+      completedDays,
+    });
+
+    if (!guidance) {
+      throw new AppError(502, 'AI service failed to generate guidance. Please try again later.');
+    }
+
+    return guidance;
   },
 };

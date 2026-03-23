@@ -40,6 +40,7 @@ import inviteRoutes from './modules/invite/routes/invite.routes';
 import prepRoutes from './modules/prep/routes/prep.routes';
 import roadmapRoutes from './modules/roadmaps/routes/roadmaps.routes';
 import friendsRoutes from './modules/friends/routes/friends.routes';
+import learnRoutes from './modules/learn/routes/learn.routes';
 
 const app = express();
 
@@ -136,6 +137,7 @@ apiRouter.use('/invite', inviteRoutes);
 apiRouter.use('/prep', prepRoutes);
 apiRouter.use('/roadmaps', roadmapRoutes);
 apiRouter.use('/friends', friendsRoutes);
+apiRouter.use('/learn', learnRoutes);
 
 // Mount on both /api and /api/v1 (v1 for mobile, /api for backward compat)
 app.use('/api/v1', apiRouter);

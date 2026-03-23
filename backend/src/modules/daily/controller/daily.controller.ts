@@ -9,4 +9,10 @@ export const dailyController = {
     const problems = await dailyService.getDailyProblems(user!.userId, count);
     res.json({ problems, date: new Date().toISOString().split('T')[0] });
   },
+
+  async getAIBrief(req: Request, res: Response) {
+    const { user } = req as AuthRequest;
+    const brief = await dailyService.getAIBrief(user!.userId);
+    res.json(brief);
+  },
 };

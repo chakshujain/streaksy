@@ -420,6 +420,49 @@ export interface AICodeReview {
   spaceComplexity: string;
 }
 
+// ── AI Coach ──
+export interface AICoachTip {
+  tip: string;
+  focusArea: string;
+  encouragement: string;
+}
+
+export interface AIRoadmapGuidance {
+  todayTip: string;
+  approachSuggestion: string;
+  timeEstimate: string;
+  motivationalNote: string;
+}
+
+export interface AILessonAnswer {
+  answer: string;
+  codeExample: string | null;
+  relatedConcepts: string[];
+}
+
+export interface AIDiscussionSummary {
+  summary: string;
+  approaches: string[];
+  consensus: string;
+  keyInsight: string;
+}
+
+export interface AIEnhancedNote {
+  enhancedContent: string;
+  addedPoints: string[];
+  suggestion: string;
+}
+
+export interface AIDailyBrief {
+  briefs: {
+    problemTitle: string;
+    pattern: string;
+    whySelected: string;
+    estimatedMinutes: number;
+    warmupTip: string;
+  }[];
+}
+
 // ── Ratings ──
 export interface ProblemRating {
   avg_rating: number;
