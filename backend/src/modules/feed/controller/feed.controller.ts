@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { feedService } from '../service/feed.service';
 import { AuthRequest } from '../../../common/types';
-import { param } from '../../../common/utils/params';
+import { param, parseLimit, parseOffset } from '../../../common/utils/params';
 
 export const feedController = {
   async getFeed(req: Request, res: Response) {
     const { user } = req as AuthRequest;
-    const limit = parseInt(req.query.limit as string) || 30;
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseLimit(req, 30);
+    const offset = parseOffset(req);
     const events = await feedService.getFeed(user!.userId, limit, offset);
     res.json({ events });
   },
@@ -15,8 +15,8 @@ export const feedController = {
   async getUserFeed(req: Request, res: Response) {
     const { user } = req as AuthRequest;
     const userId = param(req, 'userId');
-    const limit = parseInt(req.query.limit as string) || 20;
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseLimit(req, 20);
+    const offset = parseOffset(req);
     const events = await feedService.getUserFeed(userId, user!.userId, limit, offset);
     res.json({ events });
   },

@@ -278,6 +278,9 @@ export const roadmapsRepository = {
        RETURNING *`,
       [roadmapId, userId, dayNumber, completed, completed ? new Date() : null]
     );
+    if (!rows[0]) {
+      throw new Error('Failed to upsert day progress');
+    }
     return rows[0];
   },
 
@@ -376,14 +379,16 @@ export const roadmapsRepository = {
   },
 
   async addParticipant(templateId: string, userId: string, roadmapId: string) {
-    await query(
-      `INSERT INTO roadmap_participants (template_id, user_id, roadmap_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
+    const inserted = await query<{ template_id: string }>(
+      `INSERT INTO roadmap_participants (template_id, user_id, roadmap_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING template_id`,
       [templateId, userId, roadmapId]
     );
-    await query(
-      `UPDATE roadmap_templates SET participant_count = participant_count + 1 WHERE id = $1`,
-      [templateId]
-    );
+    if (inserted.length > 0) {
+      await query(
+        `UPDATE roadmap_templates SET participant_count = participant_count + 1 WHERE id = $1`,
+        [templateId]
+      );
+    }
   },
 
   async getDiscussions(templateId: string, limit = 50, offset = 0) {
@@ -515,21 +520,10 @@ export const roadmapsRepository = {
 
   async addPoints(userId: string, points: number): Promise<void> {
     await query(
-      `UPDATE user_streaks SET total_points = COALESCE(total_points, 0) + $1 WHERE user_id = $2`,
-      [points, userId]
+      `INSERT INTO user_streaks (user_id, total_points, current_streak, longest_streak)
+       VALUES ($1, $2, 0, 0)
+       ON CONFLICT (user_id) DO UPDATE SET total_points = COALESCE(user_streaks.total_points, 0) + $2`,
+      [userId, points]
     );
-    // If no row exists, insert one
-    const result = await queryOne<{ user_id: string }>(
-      'SELECT user_id FROM user_streaks WHERE user_id = $1',
-      [userId]
-    );
-    if (!result) {
-      await query(
-        `INSERT INTO user_streaks (user_id, total_points, current_streak, longest_streak)
-         VALUES ($1, $2, 0, 0)
-         ON CONFLICT (user_id) DO UPDATE SET total_points = COALESCE(user_streaks.total_points, 0) + $2`,
-        [userId, points]
-      );
-    }
   },
 };

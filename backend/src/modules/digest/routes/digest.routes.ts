@@ -10,7 +10,7 @@ import { AppError } from '../../../common/errors/AppError';
 function requireAdminSecret(req: Request, _res: Response, next: NextFunction) {
   const secret = process.env.ADMIN_SECRET;
   if (!secret || req.headers['x-admin-secret'] !== secret) {
-    throw AppError.forbidden('Admin access required');
+    return next(AppError.forbidden('Admin access required'));
   }
   next();
 }

@@ -15,10 +15,9 @@ export const progressRepository = {
       await query('DELETE FROM user_problem_status WHERE user_id = $1 AND problem_id = $2', [userId, problemId]);
       return { user_id: userId, problem_id: problemId, status: 'not_started', solved_at: null, updated_at: new Date() };
     }
-    const solvedAt = status === 'solved' ? 'NOW()' : 'NULL';
     const rows = await query<ProgressRow>(
       `INSERT INTO user_problem_status (user_id, problem_id, status, solved_at)
-       VALUES ($1, $2, $3, ${solvedAt})
+       VALUES ($1, $2, $3, CASE WHEN $3 = 'solved' THEN NOW() ELSE NULL END)
        ON CONFLICT (user_id, problem_id) DO UPDATE SET
          status = EXCLUDED.status,
          solved_at = CASE WHEN EXCLUDED.status = 'solved' THEN NOW()

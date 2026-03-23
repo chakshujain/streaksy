@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import { submissionRepository } from '../repository/submission.repository';
 import { AuthRequest } from '../../../common/types';
-import { param } from '../../../common/utils/params';
+import { param, parseLimit, parseOffset } from '../../../common/utils/params';
 import { groupRepository } from '../../group/repository/group.repository';
 
 export const submissionController = {
   async getMySubmissions(req: Request, res: Response) {
     const { user } = req as AuthRequest;
-    const limit = parseInt(req.query.limit as string) || 20;
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseLimit(req, 20);
+    const offset = parseOffset(req);
     const submissions = await submissionRepository.getForUser(user!.userId, limit, offset);
     res.json({ submissions });
   },

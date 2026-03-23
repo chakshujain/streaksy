@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { discussionService } from '../service/discussion.service';
 import { AuthRequest } from '../../../common/types';
-import { param } from '../../../common/utils/params';
+import { param, parseLimit, parseOffset } from '../../../common/utils/params';
 
 export const discussionController = {
   async getComments(req: Request, res: Response) {
     const slug = param(req, 'slug');
-    const limit = parseInt(req.query.limit as string) || 50;
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseLimit(req, 50);
+    const offset = parseOffset(req);
     const comments = await discussionService.getComments(slug, limit, offset);
     res.json({ comments });
   },

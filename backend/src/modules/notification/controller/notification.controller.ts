@@ -3,12 +3,13 @@ import { notificationService } from '../service/notification.service';
 import { pushService } from '../service/push.service';
 import { notificationHub } from '../service/notification-hub';
 import { AuthRequest } from '../../../common/types';
+import { parseLimit, parseOffset } from '../../../common/utils/params';
 
 export const notificationController = {
   async list(req: Request, res: Response) {
     const { user } = req as AuthRequest;
-    const limit = parseInt(req.query.limit as string) || 20;
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseLimit(req, 20);
+    const offset = parseOffset(req);
     const notifications = await notificationService.getForUser(user!.userId, limit, offset);
     res.json({ notifications });
   },
