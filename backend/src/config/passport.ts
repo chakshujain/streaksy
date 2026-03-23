@@ -30,11 +30,19 @@ export function configurePassport() {
             // Check if user with this email already exists
             user = await authRepository.findByEmail(email);
             if (user) {
-              // Link existing account
-              await query(
-                'UPDATE users SET oauth_provider = $1, oauth_id = $2 WHERE id = $3',
-                ['google', profile.id, user.id]
-              );
+              // Only link if user has verified their email and doesn't have another OAuth provider
+              if (user.email_verified && !user.oauth_provider) {
+                await query(
+                  'UPDATE users SET oauth_provider = $1, oauth_id = $2 WHERE id = $3',
+                  ['google', profile.id, user.id]
+                );
+              } else if (user.oauth_provider && user.oauth_provider !== 'google') {
+                return done(new Error(`This email is already linked to a ${user.oauth_provider} account. Please log in with ${user.oauth_provider}.`));
+              }
+              // If email not verified, still allow login via OAuth (it confirms email ownership)
+              if (!user.email_verified) {
+                await query('UPDATE users SET email_verified = true WHERE id = $1', [user.id]);
+              }
             } else {
               user = await authRepository.createOAuth(
                 email,
@@ -71,10 +79,18 @@ export function configurePassport() {
           if (!user) {
             user = await authRepository.findByEmail(email);
             if (user) {
-              await query(
-                'UPDATE users SET oauth_provider = $1, oauth_id = $2 WHERE id = $3',
-                ['github', profile.id, user.id]
-              );
+              // Only link if user has verified their email and doesn't have another OAuth provider
+              if (user.email_verified && !user.oauth_provider) {
+                await query(
+                  'UPDATE users SET oauth_provider = $1, oauth_id = $2 WHERE id = $3',
+                  ['github', profile.id, user.id]
+                );
+              } else if (user.oauth_provider && user.oauth_provider !== 'github') {
+                return done(new Error(`This email is already linked to a ${user.oauth_provider} account. Please log in with ${user.oauth_provider}.`));
+              }
+              if (!user.email_verified) {
+                await query('UPDATE users SET email_verified = true WHERE id = $1', [user.id]);
+              }
             } else {
               user = await authRepository.createOAuth(
                 email,

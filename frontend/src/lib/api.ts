@@ -66,7 +66,7 @@ export const authApi = {
 
 // ── Problems ──
 export const problemsApi = {
-  list: (params?: { difficulty?: string; limit?: number; offset?: number }) =>
+  list: (params?: { difficulty?: string; tag?: string; limit?: number; offset?: number }) =>
     api.get('/problems', { params }),
   getBySlug: (slug: string) =>
     api.get(`/problems/${slug}`),

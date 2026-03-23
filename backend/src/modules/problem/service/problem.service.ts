@@ -3,13 +3,17 @@ import { AppError } from '../../../common/errors/AppError';
 import { cached } from '../../../common/utils/cache';
 
 export const problemService = {
-  async list(difficulty?: string, limit?: number, offset?: number) {
-    const cacheKey = `problems:list:${difficulty || 'all'}:${limit || 0}:${offset || 0}`;
-    return cached(cacheKey, 600, () => problemRepository.list(difficulty, limit, offset));
+  async list(difficulty?: string, limit?: number, offset?: number, tag?: string) {
+    const cacheKey = `problems:list:${difficulty || 'all'}:${tag || 'all'}:${limit || 0}:${offset || 0}`;
+    return cached(cacheKey, 600, () => problemRepository.list(difficulty, limit, offset, tag));
   },
 
-  async count(difficulty?: string) {
-    return problemRepository.count(difficulty);
+  async count(difficulty?: string, tag?: string) {
+    return problemRepository.count(difficulty, tag);
+  },
+
+  async getAllTags() {
+    return cached('problems:tags', 600, () => problemRepository.getAllTags());
   },
 
   async getBySlug(slug: string) {
