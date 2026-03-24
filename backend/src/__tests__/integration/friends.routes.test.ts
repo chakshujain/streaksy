@@ -105,12 +105,15 @@ describe('Friends Routes', () => {
       expect(res.body.users).toHaveLength(1);
     });
 
-    it('should return 400 for short query', async () => {
+    it('should return results for short query', async () => {
+      mockedRepo.searchUsers.mockResolvedValue([]);
+
       const res = await request(app)
         .get('/api/friends/search?q=a')
         .set('Authorization', `Bearer ${token}`);
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(200);
+      expect(res.body.users).toEqual([]);
     });
 
     it('should return 401 without token', async () => {

@@ -47,7 +47,7 @@ describe('Problem Routes', () => {
         .get('/api/problems?difficulty=hard&limit=10&offset=5')
         .set('Authorization', `Bearer ${token}`);
 
-      expect(mockedRepo.list).toHaveBeenCalledWith('hard', 10, 5);
+      expect(mockedRepo.list).toHaveBeenCalledWith('hard', 10, 5, undefined);
     });
   });
 

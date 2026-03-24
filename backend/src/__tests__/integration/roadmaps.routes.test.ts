@@ -512,9 +512,12 @@ describe('Roadmap Routes', () => {
       expect(res.status).toBe(404);
     });
 
-    it('should return 401 without token', async () => {
+    it('should return roadmap without token (public route)', async () => {
+      mockedRepo.getByShareCode.mockResolvedValue(mockRoadmap);
+
       const res = await request(app).get('/api/roadmaps/share/abc123');
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(200);
+      expect(res.body.roadmap.share_code).toBe('abc123');
     });
   });
 

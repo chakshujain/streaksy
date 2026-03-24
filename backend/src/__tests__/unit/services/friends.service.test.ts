@@ -188,19 +188,84 @@ describe('friendsService', () => {
       expect(result).toEqual(searchResults);
     });
 
-    it('should throw badRequest when query is too short', async () => {
-      await expect(friendsService.searchUsers('A', 'user-1')).rejects.toThrow(
-        'Search query must be at least 2 characters'
-      );
-      await expect(friendsService.searchUsers('A', 'user-1')).rejects.toMatchObject({
-        statusCode: 400,
-      });
+    it('should pass empty query through to repository for suggested users', async () => {
+      const suggestedUsers = [{ id: 'u-4', display_name: 'Bob', avatar_url: null, bio: null, friendship_status: null, friendship_id: null }];
+      mockedRepo.searchUsers.mockResolvedValue(suggestedUsers);
+
+      const result = await friendsService.searchUsers('', 'user-1');
+
+      expect(mockedRepo.searchUsers).toHaveBeenCalledWith('', 'user-1');
+      expect(result).toEqual(suggestedUsers);
     });
 
-    it('should throw badRequest for empty query', async () => {
-      await expect(friendsService.searchUsers('', 'user-1')).rejects.toThrow(
-        'Search query must be at least 2 characters'
-      );
+    it('should trim whitespace from query', async () => {
+      mockedRepo.searchUsers.mockResolvedValue([]);
+
+      await friendsService.searchUsers('  Alice  ', 'user-1');
+
+      expect(mockedRepo.searchUsers).toHaveBeenCalledWith('Alice', 'user-1');
+    });
+
+    it('should handle null query gracefully', async () => {
+      mockedRepo.searchUsers.mockResolvedValue([]);
+
+      await friendsService.searchUsers(null as any, 'user-1');
+
+      expect(mockedRepo.searchUsers).toHaveBeenCalledWith('', 'user-1');
+    });
+  });
+
+  describe('getFriendsEnriched', () => {
+    it('should return enriched friends from repository', async () => {
+      const enrichedFriends = [
+        {
+          friendship_id: 'fs-1',
+          user_id: 'user-2',
+          display_name: 'User Two',
+          avatar_url: null,
+          bio: null,
+          current_streak: 5,
+          total_points: 100,
+          last_active: null,
+          shared_groups: [{ id: 'g-1', name: 'Study Group' }],
+          active_roadmaps: [{ id: 'r-1', name: 'DSA Roadmap', template_slug: 'dsa' }],
+          active_rooms: [],
+        },
+      ];
+      mockedRepo.getFriendsWithContext.mockResolvedValue(enrichedFriends);
+
+      const result = await friendsService.getFriendsEnriched('user-1');
+
+      expect(mockedRepo.getFriendsWithContext).toHaveBeenCalledWith('user-1');
+      expect(result).toEqual(enrichedFriends);
+    });
+
+    it('should return empty array when user has no friends', async () => {
+      mockedRepo.getFriendsWithContext.mockResolvedValue([]);
+
+      const result = await friendsService.getFriendsEnriched('user-1');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getFriendIds', () => {
+    it('should return friend ids from repository', async () => {
+      const friendIds = ['user-2', 'user-3', 'user-4'];
+      mockedRepo.getFriendIds.mockResolvedValue(friendIds);
+
+      const result = await friendsService.getFriendIds('user-1');
+
+      expect(mockedRepo.getFriendIds).toHaveBeenCalledWith('user-1');
+      expect(result).toEqual(friendIds);
+    });
+
+    it('should return empty array when user has no friends', async () => {
+      mockedRepo.getFriendIds.mockResolvedValue([]);
+
+      const result = await friendsService.getFriendIds('user-1');
+
+      expect(result).toEqual([]);
     });
   });
 });
