@@ -1,9 +1,18 @@
 import type { LessonStep } from '@/lib/learn-data';
 
+export interface QuizQuestion {
+  type: 'mcq' | 'short-answer';
+  question: string;
+  options?: string[];
+  answer: string;
+  explanation: string;
+}
+
 export const designPatternsLessons: Record<string, {
   steps: LessonStep[];
   commonMistakes?: { mistake: string; explanation: string }[];
   practiceQuestions?: string[];
+  quiz?: QuizQuestion[];
 }> = {
   /* ──────────────────────────────────────────────
      1. WHAT ARE DESIGN PATTERNS?
@@ -130,6 +139,42 @@ export const designPatternsLessons: Record<string, {
       'Explain why the Gang of Four book is still relevant today.',
       'When should you avoid using a design pattern?',
       'What is the difference between a design pattern and an algorithm?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'How many design patterns did the Gang of Four catalog in their book?',
+        options: ['12', '15', '23', '30'],
+        answer: '23',
+        explanation: 'The Gang of Four (GoF) book cataloged 23 design patterns organized into three categories: Creational, Structural, and Behavioral.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which category of design patterns deals with how objects communicate?',
+        options: ['Creational', 'Structural', 'Behavioral', 'Functional'],
+        answer: 'Behavioral',
+        explanation: 'Behavioral patterns control how objects communicate and interact. Examples include Observer, Strategy, Command, and State.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which of these is NOT one of the four essential elements of a design pattern?',
+        options: ['Name', 'Problem', 'Implementation language', 'Consequences'],
+        answer: 'Implementation language',
+        explanation: 'The four elements are Name, Problem, Solution, and Consequences. Design patterns are language-agnostic concepts, so implementation language is not an essential element.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does the acronym YAGNI stand for, and how does it relate to design patterns?',
+        answer: 'You Aren\'t Gonna Need It',
+        explanation: 'YAGNI stands for "You Aren\'t Gonna Need It." It reminds developers not to apply design patterns preemptively. Only use a pattern when you have a clear, recurring problem that the pattern solves.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which category does the Adapter pattern belong to?',
+        options: ['Creational', 'Structural', 'Behavioral', 'Architectural'],
+        answer: 'Structural',
+        explanation: 'Adapter is a Structural pattern. Structural patterns control how objects are composed and how their interfaces relate to each other.',
+      },
     ],
   },
 
@@ -307,6 +352,42 @@ print(db1 is db2)  # True — same object`,
       'Why is Singleton considered an anti-pattern by some developers?',
       'How would you unit test a class that depends on a Singleton?',
       'Compare Singleton with static classes — when would you prefer one over the other?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which design pattern ensures a class has only one instance?',
+        options: ['Factory', 'Singleton', 'Observer', 'Builder'],
+        answer: 'Singleton',
+        explanation: 'The Singleton pattern restricts the instantiation of a class to a single instance and provides a global point of access to it.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the role of the private constructor in a Singleton?',
+        options: ['To improve performance', 'To prevent direct instantiation with new', 'To enable inheritance', 'To allow multiple instances'],
+        answer: 'To prevent direct instantiation with new',
+        explanation: 'A private constructor prevents external code from creating new instances using the new keyword. The only way to get an instance is through the static getInstance() method.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Name two real-world use cases where the Singleton pattern is appropriate.',
+        answer: 'Database connection pool and configuration manager',
+        explanation: 'Singleton is appropriate for objects that should exist exactly once, such as database connection pools, configuration managers, logging services, or thread pools. Creating multiple instances would waste resources or cause inconsistencies.',
+      },
+      {
+        type: 'mcq',
+        question: 'What problem can arise with Singleton in multi-threaded environments?',
+        options: ['Memory leaks', 'Race conditions creating multiple instances', 'Stack overflow', 'Type errors'],
+        answer: 'Race conditions creating multiple instances',
+        explanation: 'In multi-threaded environments, two threads can simultaneously check if the instance is null and both create new instances, violating the single-instance guarantee. Solutions include eager initialization or double-checked locking.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why do some developers consider Singleton an anti-pattern?',
+        options: ['It is too slow', 'It creates hidden global state and makes testing difficult', 'It uses too much memory', 'It does not work in modern languages'],
+        answer: 'It creates hidden global state and makes testing difficult',
+        explanation: 'Singleton introduces global state, creates tight coupling, and makes unit testing difficult because you cannot easily substitute mock objects. Dependency injection is often preferred.',
+      },
     ],
   },
 
@@ -506,6 +587,35 @@ service.notify("Your order shipped!")  # Email: Your order shipped!`,
       'How does Factory Method differ from Abstract Factory?',
       'When would you choose a Simple Factory over Factory Method?',
       'Draw the UML class diagram for Factory Method with a logistics example (Truck vs Ship).',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What problem does the Factory Method pattern solve?',
+        options: ['Managing object lifecycle', 'Eliminating hardcoded object creation in client code', 'Caching expensive objects', 'Synchronizing access to shared resources'],
+        answer: 'Eliminating hardcoded object creation in client code',
+        explanation: 'Factory Method delegates object creation to subclasses, so client code works with an interface rather than hardcoding specific class instantiations. This follows the Open/Closed Principle.',
+      },
+      {
+        type: 'mcq',
+        question: 'In the Factory Method pattern, who decides which concrete class to instantiate?',
+        options: ['The client', 'The abstract creator', 'The concrete creator subclass', 'The product interface'],
+        answer: 'The concrete creator subclass',
+        explanation: 'Each concrete creator subclass overrides the factory method to return a specific concrete product. The client works with the abstract creator and product interfaces.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What SOLID principle does the Factory Method pattern primarily support?',
+        answer: 'Open/Closed Principle',
+        explanation: 'Factory Method supports the Open/Closed Principle: the code is open for extension (add new creators and products) but closed for modification (existing creator code does not change).',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the difference between a Simple Factory and the Factory Method pattern?',
+        options: ['There is no difference', 'Simple Factory uses a static method; Factory Method uses inheritance and polymorphism', 'Factory Method is faster', 'Simple Factory supports more product types'],
+        answer: 'Simple Factory uses a static method; Factory Method uses inheritance and polymorphism',
+        explanation: 'A Simple Factory centralizes creation in one static method with conditionals. Factory Method uses inheritance — each subclass provides its own creation logic, making it more extensible.',
+      },
     ],
   },
 
@@ -707,6 +817,35 @@ build_ui(MacFactory())  # [Mac Button] [Mac Checkbox]`,
       'When would you choose Abstract Factory over Factory Method?',
       'How does Abstract Factory help with the Open/Closed Principle?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What distinguishes Abstract Factory from Factory Method?',
+        options: ['Abstract Factory is faster', 'Abstract Factory creates families of related objects, not just one', 'Abstract Factory uses static methods', 'There is no difference'],
+        answer: 'Abstract Factory creates families of related objects, not just one',
+        explanation: 'Factory Method creates a single product. Abstract Factory creates entire families of related objects (e.g., buttons, checkboxes, and menus for a specific UI theme) that are designed to work together.',
+      },
+      {
+        type: 'mcq',
+        question: 'In a cross-platform UI example, what role does the Abstract Factory play?',
+        options: ['It renders the UI', 'It defines methods for creating each type of UI component', 'It handles user input', 'It manages application state'],
+        answer: 'It defines methods for creating each type of UI component',
+        explanation: 'The Abstract Factory defines creation methods like createButton(), createCheckbox(), etc. Concrete factories (WindowsFactory, MacFactory) implement these to produce platform-specific components.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why is consistency important when creating families of related objects?',
+        answer: 'Mixing objects from different families causes incompatibility or visual inconsistency',
+        explanation: 'If you accidentally create a Windows button with a Mac checkbox, the UI will look broken or behave unexpectedly. Abstract Factory ensures all objects in a family are compatible by producing them from the same concrete factory.',
+      },
+      {
+        type: 'mcq',
+        question: 'When should you NOT use Abstract Factory?',
+        options: ['When you have multiple product families', 'When you only have one product type', 'When products need to be consistent', 'When you want to support new platforms'],
+        answer: 'When you only have one product type',
+        explanation: 'If you only create one kind of object, Factory Method or Simple Factory is sufficient. Abstract Factory adds unnecessary complexity when there is no family of related objects to keep consistent.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -880,6 +1019,35 @@ user = (UserBuilder()
       'How does the Builder pattern differ from the Factory pattern?',
       'What is the Director in the Builder pattern, and when do you need one?',
       'Implement a Builder with validation that throws if required fields are missing.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What problem does the Builder pattern solve?',
+        options: ['Creating objects with too few parameters', 'Constructing complex objects step by step without telescoping constructors', 'Ensuring only one instance exists', 'Observing changes in objects'],
+        answer: 'Constructing complex objects step by step without telescoping constructors',
+        explanation: 'Builder solves the telescoping constructor problem where a class has many optional parameters. Instead of multiple constructor overloads, the Builder provides a fluent API for step-by-step construction.',
+      },
+      {
+        type: 'mcq',
+        question: 'What technique makes Builder calls chainable like builder.setName("x").setAge(25).build()?',
+        options: ['Recursion', 'Returning "this" from each setter method', 'Using static methods', 'Operator overloading'],
+        answer: 'Returning "this" from each setter method',
+        explanation: 'The fluent interface pattern works by having each setter method return "this" (the builder instance), allowing method calls to be chained together in a readable sequence.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the role of the Director in the Builder pattern?',
+        answer: 'The Director defines the order of building steps and can create predefined configurations',
+        explanation: 'The Director encapsulates specific construction sequences. It tells the builder what steps to execute and in what order, allowing you to reuse the same construction process for different representations.',
+      },
+      {
+        type: 'mcq',
+        question: 'What should the build() method do if required fields are missing?',
+        options: ['Return null', 'Use default values silently', 'Throw a validation error', 'Create a partial object'],
+        answer: 'Throw a validation error',
+        explanation: 'The build() method should validate that all required fields are set and throw an error if any are missing. A builder that produces incomplete objects defeats its purpose of ensuring valid construction.',
+      },
     ],
   },
 
@@ -1064,6 +1232,42 @@ emitter.notify("user:signup", {"email": "alice@example.com"})`,
       'How does the Observer pattern relate to the Pub/Sub pattern?',
       'What is the difference between push and pull models in Observer?',
       'How would you implement Observer in a functional programming style (without classes)?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What type of relationship does the Observer pattern define?',
+        options: ['One-to-one', 'Many-to-many', 'One-to-many', 'Many-to-one'],
+        answer: 'One-to-many',
+        explanation: 'Observer defines a one-to-many dependency: one subject (publisher) notifies many observers (subscribers) when its state changes.',
+      },
+      {
+        type: 'mcq',
+        question: 'In the Observer pattern, what is the Subject responsible for?',
+        options: ['Updating the UI', 'Maintaining a list of observers and notifying them of state changes', 'Creating observer instances', 'Filtering events'],
+        answer: 'Maintaining a list of observers and notifying them of state changes',
+        explanation: 'The Subject maintains a list of observers, provides methods to subscribe/unsubscribe, and calls the update method on all registered observers when its state changes.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the difference between the push and pull models in the Observer pattern?',
+        answer: 'Push sends data to observers in the notification; pull lets observers query the subject for data',
+        explanation: 'In the push model, the subject sends detailed data with each notification. In the pull model, the subject sends a minimal notification and observers query the subject for the specific data they need. Pull is more flexible but requires more round-trips.',
+      },
+      {
+        type: 'mcq',
+        question: 'What common bug can occur when observers modify the subject during notification?',
+        options: ['Memory leak', 'Infinite notification loop', 'Null pointer exception', 'Deadlock'],
+        answer: 'Infinite notification loop',
+        explanation: 'If Observer A updates the subject during notification, the subject notifies all observers again, which triggers Observer A again, creating an infinite loop. Guard flags or deferred updates can prevent this.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which built-in browser API is an example of the Observer pattern?',
+        options: ['fetch()', 'localStorage', 'addEventListener()', 'setTimeout()'],
+        answer: 'addEventListener()',
+        explanation: 'DOM addEventListener() follows the Observer pattern: the element is the subject, event listeners are observers, and they are notified when the specified event occurs.',
+      },
     ],
   },
 
@@ -1257,6 +1461,35 @@ print(cart.checkout(49.99))`,
       'How does Strategy relate to the Open/Closed Principle?',
       'Refactor a discount calculator with if/else branches into the Strategy pattern.',
       'Compare Strategy pattern with first-class functions in JavaScript/Python — when would you prefer classes?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does the Strategy pattern allow you to do?',
+        options: ['Create objects step by step', 'Swap algorithms at runtime without changing client code', 'Ensure only one instance exists', 'Add behavior dynamically via wrapping'],
+        answer: 'Swap algorithms at runtime without changing client code',
+        explanation: 'Strategy encapsulates interchangeable algorithms behind a common interface, allowing the client to switch between them at runtime without modifying its code.',
+      },
+      {
+        type: 'mcq',
+        question: 'How does the Strategy pattern differ from the State pattern?',
+        options: ['They are identical', 'Strategy is chosen by the client; State changes automatically based on internal state', 'Strategy uses inheritance; State uses composition', 'State is faster than Strategy'],
+        answer: 'Strategy is chosen by the client; State changes automatically based on internal state',
+        explanation: 'In Strategy, the client explicitly selects which algorithm to use. In State, the object automatically transitions between states based on its internal logic. The trigger is different.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Give a real-world example where the Strategy pattern would replace if/else branches.',
+        answer: 'A payment system with different payment methods like credit card, PayPal, and cryptocurrency',
+        explanation: 'Instead of if/else blocks checking payment type, each payment method becomes a strategy implementing a common PaymentStrategy interface. Adding a new method means creating a new class, not modifying existing code.',
+      },
+      {
+        type: 'mcq',
+        question: 'In languages with first-class functions, how can Strategy be simplified?',
+        options: ['It cannot be simplified', 'Strategies can be plain functions instead of classes', 'Use global variables instead', 'Use inheritance'],
+        answer: 'Strategies can be plain functions instead of classes',
+        explanation: 'In JavaScript, Python, and other languages with first-class functions, you can pass functions directly instead of creating strategy classes. This is appropriate for simple strategies with no state.',
+      },
     ],
   },
 
@@ -1462,6 +1695,35 @@ print(source.read())  # "Hello, World!"`,
       'Implement a logging decorator for a REST API service class.',
       'Why is Decorator preferred over inheritance for adding cross-cutting concerns?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the key advantage of the Decorator pattern over inheritance?',
+        options: ['Better performance', 'You can add behavior dynamically at runtime and mix decorators freely', 'Simpler code', 'Type safety'],
+        answer: 'You can add behavior dynamically at runtime and mix decorators freely',
+        explanation: 'Inheritance creates a rigid hierarchy at compile time. Decorators can be stacked, combined, and changed at runtime. You can add logging + caching + compression in any order without creating a class for each combination.',
+      },
+      {
+        type: 'mcq',
+        question: 'In the coffee shop analogy, what is the "base component"?',
+        options: ['Milk', 'Sugar', 'Plain coffee', 'The receipt'],
+        answer: 'Plain coffee',
+        explanation: 'Plain coffee is the base component. Each add-on (milk, sugar, whipped cream) is a decorator that wraps the previous component, adding cost and description without changing the base.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why must a Decorator implement the same interface as the component it wraps?',
+        answer: 'So the client can treat decorated and undecorated objects identically',
+        explanation: 'The Decorator must implement the same interface so it can be used transparently wherever the original component is expected. This allows decorators to be stacked — each decorator wraps something that looks like the original component.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is a potential downside of using many nested decorators?',
+        options: ['Memory corruption', 'Debugging becomes difficult due to many layers of wrapping', 'The pattern breaks with more than 3 decorators', 'It violates the Single Responsibility Principle'],
+        answer: 'Debugging becomes difficult due to many layers of wrapping',
+        explanation: 'Each decorator adds a layer of indirection. With many nested decorators, it becomes hard to trace which layer is responsible for a bug. Adding logging at each layer can help.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -1605,6 +1867,35 @@ analytics.track("page_view", {"url": "/home", "userId": "123"})`,
       'What is the difference between class adapter and object adapter?',
       'When would you use Adapter vs Facade?',
       'Design an adapter for switching between different payment providers.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What real-world object best represents the Adapter pattern?',
+        options: ['A remote control', 'A power plug adapter for international outlets', 'A coffee machine', 'A vending machine'],
+        answer: 'A power plug adapter for international outlets',
+        explanation: 'A power plug adapter converts one plug shape to another without modifying either the plug or the outlet. Similarly, the Adapter pattern converts one interface to another without modifying either class.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the difference between a class adapter and an object adapter?',
+        options: ['There is no difference', 'Class adapter uses inheritance; object adapter uses composition', 'Object adapter is slower', 'Class adapter works with multiple adaptees'],
+        answer: 'Class adapter uses inheritance; object adapter uses composition',
+        explanation: 'A class adapter inherits from the adaptee (possible in languages with multiple inheritance). An object adapter holds a reference to the adaptee and delegates calls. Object adapter is more flexible and commonly used.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How does the Adapter pattern differ from the Facade pattern?',
+        answer: 'Adapter makes two incompatible interfaces work together; Facade simplifies a complex subsystem behind a single interface',
+        explanation: 'Adapter bridges incompatible interfaces (1-to-1 mapping). Facade provides a simplified interface to a complex subsystem (many-to-1 simplification). Different goals: compatibility vs simplification.',
+      },
+      {
+        type: 'mcq',
+        question: 'When is the Adapter pattern most commonly needed?',
+        options: ['When building new systems from scratch', 'When integrating legacy code or third-party libraries with incompatible interfaces', 'When optimizing performance', 'When reducing memory usage'],
+        answer: 'When integrating legacy code or third-party libraries with incompatible interfaces',
+        explanation: 'Adapter is most useful when you need to integrate existing code that you cannot modify (legacy systems, third-party APIs) with your system that expects a different interface.',
+      },
     ],
   },
 
@@ -1813,6 +2104,42 @@ print(editor.content)  # "Hello"`,
       'Design a transaction system using commands with commit and rollback.',
       'Compare Command pattern with function callbacks — when would you use each?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does the Command pattern encapsulate?',
+        options: ['Data structures', 'A request or action as an object', 'Database connections', 'UI components'],
+        answer: 'A request or action as an object',
+        explanation: 'The Command pattern turns a request into a stand-alone object containing all information about the request. This allows parameterizing methods with different requests, queuing requests, and supporting undo operations.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which feature is naturally supported by the Command pattern?',
+        options: ['Caching', 'Undo/Redo', 'Load balancing', 'Authentication'],
+        answer: 'Undo/Redo',
+        explanation: 'Since each command is an object, you can store a history of executed commands. Each command can implement an undo() method that reverses its execute() method, enabling undo/redo functionality.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Name the four main participants in the Command pattern.',
+        answer: 'Command, Receiver, Invoker, and Client',
+        explanation: 'The Command declares the execute interface. The Receiver knows how to perform the actual work. The Invoker triggers the command. The Client creates and configures command objects, linking them to receivers.',
+      },
+      {
+        type: 'mcq',
+        question: 'How does the Command pattern enable macro recording?',
+        options: ['By recording keystrokes', 'By storing a sequence of command objects that can be replayed', 'By using screen capture', 'By logging method calls'],
+        answer: 'By storing a sequence of command objects that can be replayed',
+        explanation: 'A macro is simply a list of command objects. You record commands as the user performs actions, store them in a list, and replay the entire sequence by calling execute() on each command in order.',
+      },
+      {
+        type: 'mcq',
+        question: 'What happens if a command\'s undo() does not perfectly reverse its execute()?',
+        options: ['Nothing noticeable', 'The application state becomes corrupted', 'The command is automatically retried', 'A new command is created'],
+        answer: 'The application state becomes corrupted',
+        explanation: 'If undo() does not perfectly reverse execute(), the application state becomes inconsistent. Always test the round-trip (execute then undo) to ensure the state returns to its original form.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -2019,6 +2346,35 @@ CSVMiner().mine("/data/users.csv")`,
       'What are "hooks" in the Template Method pattern?',
       'When would you prefer Template Method over Strategy?',
       'Implement a Template Method for report generation (HTML report vs PDF report).',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does the Template Method pattern define in the base class?',
+        options: ['Individual algorithm steps', 'The skeleton of an algorithm with overridable steps', 'A list of concrete implementations', 'A factory for creating objects'],
+        answer: 'The skeleton of an algorithm with overridable steps',
+        explanation: 'Template Method defines the overall structure (skeleton) of an algorithm in a base class method, then lets subclasses override specific steps without changing the overall structure.',
+      },
+      {
+        type: 'mcq',
+        question: 'What are "hooks" in the Template Method pattern?',
+        options: ['Required abstract methods', 'Optional methods with default (often empty) implementations that subclasses may override', 'Event listeners', 'Callback functions'],
+        answer: 'Optional methods with default (often empty) implementations that subclasses may override',
+        explanation: 'Hooks are optional extension points with default implementations (often empty). Subclasses can override them to inject additional behavior at specific points in the algorithm, but they are not required to.',
+      },
+      {
+        type: 'short-answer',
+        question: 'When would you choose Template Method over Strategy?',
+        answer: 'When the overall algorithm structure is fixed and only certain steps vary across subclasses',
+        explanation: 'Template Method is ideal when the algorithm skeleton is constant but specific steps differ. Strategy is better when the entire algorithm varies and needs to be swapped at runtime. Template Method uses inheritance; Strategy uses composition.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is a common mistake when implementing Template Method?',
+        options: ['Using too few abstract methods', 'Making every step abstract so subclasses must implement everything', 'Using private methods', 'Making the template method too short'],
+        answer: 'Making every step abstract so subclasses must implement everything',
+        explanation: 'If every step is abstract, subclasses end up duplicating shared logic. The base class should provide sensible defaults for common steps and only require overriding the steps that genuinely vary.',
+      },
     ],
   },
 
@@ -2229,6 +2585,42 @@ doc.publish()  # Approved! Publishing...`,
       'How does the State pattern relate to finite state machines?',
       'Design a State pattern for a media player (Playing, Paused, Stopped).',
       'When would you choose State over simple boolean flags?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What problem does the State pattern solve?',
+        options: ['Creating objects dynamically', 'Eliminating massive if/else or switch blocks that check an object\'s state', 'Sorting collections efficiently', 'Managing database connections'],
+        answer: 'Eliminating massive if/else or switch blocks that check an object\'s state',
+        explanation: 'When an object behaves differently based on its state, you end up with if/else or switch blocks in every method. The State pattern extracts each state into its own class, making behavior changes clean and extensible.',
+      },
+      {
+        type: 'mcq',
+        question: 'In the vending machine analogy, what do the state classes represent?',
+        options: ['Products in the machine', 'Different states like Idle, HasMoney, Dispensing, and OutOfStock', 'Types of coins', 'Error messages'],
+        answer: 'Different states like Idle, HasMoney, Dispensing, and OutOfStock',
+        explanation: 'Each state (Idle, HasMoney, Dispensing, OutOfStock) becomes a separate class that handles actions differently. In the Idle state, inserting a coin transitions to HasMoney. Each state knows how to respond to each action.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How does the State pattern relate to finite state machines?',
+        answer: 'The State pattern is an object-oriented implementation of a finite state machine',
+        explanation: 'A finite state machine has a fixed set of states, transitions between them, and actions triggered by events. The State pattern implements this concept using classes: each state is a class, transitions are method calls that swap the current state object.',
+      },
+      {
+        type: 'mcq',
+        question: 'Who typically controls state transitions in the State pattern?',
+        options: ['Only the client', 'The state classes themselves or the context', 'A global state manager', 'The operating system'],
+        answer: 'The state classes themselves or the context',
+        explanation: 'State transitions can be managed by the state classes (each state knows what state to transition to) or by the context object. Having states manage transitions keeps the logic localized but can create coupling between state classes.',
+      },
+      {
+        type: 'mcq',
+        question: 'When should you prefer the State pattern over simple boolean flags?',
+        options: ['Always', 'When there are only two states', 'When there are multiple states with complex transitions and state-specific behavior', 'When performance is critical'],
+        answer: 'When there are multiple states with complex transitions and state-specific behavior',
+        explanation: 'Boolean flags work fine for two simple states. But when you have multiple states, each with unique behavior and complex transition rules, the State pattern provides much cleaner, more maintainable code.',
+      },
     ],
   },
 
@@ -2457,6 +2849,42 @@ theater.watch_movie("Inception")`,
       'How does Facade differ from the Mediator pattern?',
       'When would a Facade become an "anti-pattern"?',
       'Implement a Facade for a deployment pipeline (build, test, deploy, notify).',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the primary purpose of the Facade pattern?',
+        options: ['To add new functionality to objects', 'To provide a simplified interface to a complex subsystem', 'To ensure a single instance exists', 'To decouple senders from receivers'],
+        answer: 'To provide a simplified interface to a complex subsystem',
+        explanation: 'The Facade pattern provides a simple, unified interface that hides the complexity of a subsystem. Clients interact with the Facade instead of dealing with many subsystem classes directly.',
+      },
+      {
+        type: 'mcq',
+        question: 'Does the Facade pattern prevent clients from accessing subsystem classes directly?',
+        options: ['Yes, it completely hides them', 'No, clients can still access subsystem classes if they need more control', 'Only in strongly typed languages', 'Only if the subsystem classes are private'],
+        answer: 'No, clients can still access subsystem classes if they need more control',
+        explanation: 'A Facade provides a convenient shortcut but does not block direct access. Clients who need fine-grained control can still use subsystem classes directly. The Facade is a convenience, not a restriction.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How does the Facade pattern differ from the Mediator pattern?',
+        answer: 'Facade simplifies access to a subsystem; Mediator coordinates communication between peer objects',
+        explanation: 'Facade provides a unidirectional simplified interface to a subsystem. Mediator centralizes bidirectional communication between objects that would otherwise reference each other directly. Facade simplifies; Mediator decouples.',
+      },
+      {
+        type: 'mcq',
+        question: 'What should a Facade NOT contain?',
+        options: ['Method calls to subsystem classes', 'A simplified API', 'Business logic that belongs in the subsystem', 'Error handling'],
+        answer: 'Business logic that belongs in the subsystem',
+        explanation: 'A Facade should only coordinate and delegate to subsystem classes. Business logic belongs in the subsystem classes themselves. If the Facade accumulates logic, it becomes a "God class" anti-pattern.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which is a real-world example of the Facade pattern?',
+        options: ['A car ignition that starts engine, fuel pump, and electronics with one key turn', 'A traffic light', 'A vending machine', 'A linked list'],
+        answer: 'A car ignition that starts engine, fuel pump, and electronics with one key turn',
+        explanation: 'Turning the car key is a Facade: one simple action triggers a complex sequence (engage starter motor, activate fuel pump, initialize electronics). The driver does not need to do each step manually.',
+      },
     ],
   },
 };

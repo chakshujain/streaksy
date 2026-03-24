@@ -1,4 +1,4 @@
-import type { LessonStep } from '@/lib/learn-data';
+import type { LessonStep, QuizQuestion } from '@/lib/learn-data';
 
 export const gitLessons: Record<
   string,
@@ -6,6 +6,7 @@ export const gitLessons: Record<
     steps: LessonStep[];
     commonMistakes?: { mistake: string; explanation: string }[];
     practiceQuestions?: string[];
+    quiz?: QuizQuestion[];
   }
 > = {
   // ───────────────────────────────────────────────
@@ -152,6 +153,41 @@ export const gitLessons: Record<
       'Create a new repository, make three commits, then undo the last one using both reset and revert.',
       'Why is "git add ." risky? What safer alternatives exist?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does git commit do?',
+        options: ['Uploads changes to the remote repository', 'Saves staged changes to the local repository', 'Downloads changes from a remote', 'Moves files to the staging area'],
+        answer: 'Saves staged changes to the local repository',
+        explanation: 'git commit saves a snapshot of the currently staged changes to your local repository. To upload to a remote, you need git push.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which command moves changes from the working directory to the staging area?',
+        options: ['git commit', 'git push', 'git add', 'git stash'],
+        answer: 'git add',
+        explanation: 'git add stages changes from your working directory, preparing them for the next commit. git commit then saves those staged changes.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What are the three areas in Git where files can live?',
+        answer: 'Working directory, staging area, repository',
+        explanation: 'Files move from the working directory (your edits) to the staging area (git add) to the repository (git commit). This two-step process gives you fine control over what goes into each commit.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the difference between git reset and git revert?',
+        options: ['reset creates a new undo commit, revert removes commits', 'reset removes commits from history, revert creates a new undo commit', 'They are the same command with different syntax', 'reset works on remote, revert works locally'],
+        answer: 'reset removes commits from history, revert creates a new undo commit',
+        explanation: 'git reset rewrites history by removing commits (safe for private branches). git revert creates a new commit that undoes changes (safe for shared branches because history is preserved).',
+      },
+      {
+        type: 'short-answer',
+        question: 'What command shows unstaged line-level changes in your working directory?',
+        answer: 'git diff',
+        explanation: 'git diff compares your working directory against the staging area, showing exactly which lines have changed. Use git diff --staged to see changes already staged for the next commit.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -296,6 +332,41 @@ export const gitLessons: Record<
       'Create a feature branch, make commits on both main and the feature branch, then merge and resolve a conflict.',
       'Why are short-lived feature branches preferred over long-lived ones?',
       'Explain what the conflict markers (<<<, ===, >>>) mean and how to resolve them.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is a Git branch?',
+        options: ['A copy of the entire repository', 'A lightweight pointer to a commit', 'A separate folder on disk', 'A remote server connection'],
+        answer: 'A lightweight pointer to a commit',
+        explanation: 'A branch is just a small file containing a commit hash (41 bytes). Creating a branch does not copy any files, which is why it is instant.',
+      },
+      {
+        type: 'mcq',
+        question: 'When does a fast-forward merge occur?',
+        options: ['When both branches have new commits', 'When there are merge conflicts', 'When the target branch has no new commits since you branched off', 'When you use the --force flag'],
+        answer: 'When the target branch has no new commits since you branched off',
+        explanation: 'A fast-forward merge happens when there is no divergence — the branch pointer simply moves forward to the latest commit. No merge commit is needed.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What command creates and switches to a new branch in one step?',
+        answer: 'git switch -c',
+        explanation: 'git switch -c <branch-name> creates a new branch and immediately switches to it. The older equivalent is git checkout -b <branch-name>.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does the ======= marker represent in a merge conflict?',
+        options: ['The end of the file', 'The separator between your changes and the incoming changes', 'A comment added by Git', 'The common ancestor version'],
+        answer: 'The separator between your changes and the incoming changes',
+        explanation: 'In a conflict, <<<<<<< HEAD marks your version, ======= separates the two versions, and >>>>>>> branch-name marks the incoming version. You edit the file to keep the correct code and remove all markers.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How do you abort a merge that has conflicts you do not want to resolve yet?',
+        answer: 'git merge --abort',
+        explanation: 'git merge --abort cancels the merge and restores your branch to the state before the merge started. This is useful when you realize you are not ready to handle the conflicts.',
+      },
     ],
   },
 
@@ -450,6 +521,41 @@ export const gitLessons: Record<
       'What branch protection rules would you recommend for a team of 5 developers?',
       'Explain how "Closes #42" works in a PR description.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the difference between git fetch and git pull?',
+        options: ['fetch uploads, pull downloads', 'fetch downloads without merging, pull downloads and merges', 'They are identical commands', 'fetch works on branches, pull works on tags'],
+        answer: 'fetch downloads without merging, pull downloads and merges',
+        explanation: 'git fetch downloads remote changes but does not modify your working files. git pull is a shortcut for git fetch + git merge — it downloads and immediately merges into your current branch.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What keyword in a PR description automatically closes a GitHub issue when the PR is merged?',
+        answer: 'Closes',
+        explanation: 'Using "Closes #N", "Fixes #N", or "Resolves #N" in a PR description automatically closes issue #N when the PR is merged into the default branch.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which is NOT a benefit of branch protection rules?',
+        options: ['Requiring PR reviews before merging', 'Preventing force pushes to main', 'Automatically fixing merge conflicts', 'Requiring CI checks to pass'],
+        answer: 'Automatically fixing merge conflicts',
+        explanation: 'Branch protection rules can require reviews, passing CI checks, and prevent force pushes, but they cannot automatically resolve merge conflicts. Developers must resolve conflicts manually.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why should pull requests be kept small?',
+        options: ['GitHub has a file limit per PR', 'Small PRs are easier to review thoroughly and catch bugs', 'Large PRs cannot be merged', 'Small PRs run faster in CI'],
+        answer: 'Small PRs are easier to review thoroughly and catch bugs',
+        explanation: 'Large PRs with 1000+ lines are nearly impossible to review properly. Reviewers tend to skim and miss bugs. Small, focused PRs get better feedback and faster approvals.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What command pushes a local branch to a remote and sets up tracking?',
+        answer: 'git push -u origin branch-name',
+        explanation: 'git push -u (or --set-upstream) origin <branch-name> pushes the branch to the remote and sets up tracking, so future git push and git pull commands know which remote branch to use.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -592,6 +698,41 @@ export const gitLessons: Record<
       'How would you recover a commit after accidentally running git reset --hard?',
       'Describe a scenario where cherry-pick is more appropriate than merging.',
       'What does git push --force-with-lease do differently than git push --force?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does git rebase do?',
+        options: ['Creates a merge commit combining two branches', 'Replays your commits on top of another branch for linear history', 'Deletes commits from the history permanently', 'Copies files from one branch to another'],
+        answer: 'Replays your commits on top of another branch for linear history',
+        explanation: 'Rebase takes your commits and re-applies them on top of the target branch. This creates a clean, linear history without merge commits. The rebased commits get new hashes.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What command temporarily saves uncommitted changes so you can switch branches?',
+        answer: 'git stash',
+        explanation: 'git stash saves your uncommitted changes (both staged and unstaged) to a stack. Use git stash pop to restore them later. You can add a message with git stash push -m "description".',
+      },
+      {
+        type: 'mcq',
+        question: 'Why should you never rebase commits that have been pushed to a shared branch?',
+        options: ['Rebase deletes the branch', 'Rebase changes commit hashes, causing divergent history for others', 'Rebase is slower than merge', 'Rebase does not work on remote branches'],
+        answer: 'Rebase changes commit hashes, causing divergent history for others',
+        explanation: 'Rebase creates new commits with new hashes. If others have based work on the original commits, their history will diverge from the rewritten history, causing confusion and conflicts.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does git cherry-pick do?',
+        options: ['Merges an entire branch', 'Copies a specific commit from one branch to another', 'Deletes a commit from history', 'Creates a new branch from a commit'],
+        answer: 'Copies a specific commit from one branch to another',
+        explanation: 'Cherry-pick copies a single commit (creating a new commit with a new hash but the same changes) to your current branch. It is useful for applying hotfixes without merging an entire feature branch.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How can you recover a commit that was lost after an accidental git reset --hard?',
+        answer: 'git reflog',
+        explanation: 'git reflog shows every time HEAD moved, including commits that are no longer reachable. Find the lost commit hash in the reflog and use git reset --hard <hash> or git branch recovered <hash> to restore it.',
+      },
     ],
   },
 
@@ -751,6 +892,41 @@ export const gitLessons: Record<
       'Write a GitHub Actions workflow that runs tests on every pull request.',
       'Walk through the complete fork-and-PR workflow for contributing to an open source project.',
       'What is the purpose of conventional commits? How do they enable automated releases?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which branching strategy is recommended for most web teams with continuous deployment?',
+        options: ['Git Flow', 'GitHub Flow', 'Trunk-Based Development', 'Release Branching'],
+        answer: 'GitHub Flow',
+        explanation: 'GitHub Flow uses short-lived feature branches merged to main via PRs. It is simple and works well for web apps that deploy on every merge. Git Flow is better for complex release schedules.',
+      },
+      {
+        type: 'short-answer',
+        question: 'In the conventional commits format, what type prefix indicates a new feature?',
+        answer: 'feat',
+        explanation: 'The "feat" prefix marks a new feature (e.g., "feat(auth): add Google OAuth login"). Other common types include fix, docs, refactor, test, and chore.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does the pre-commit Git hook do?',
+        options: ['Runs after a commit is created', 'Runs before a commit is created, allowing you to lint and format code', 'Runs when you push to a remote', 'Runs when you create a new branch'],
+        answer: 'Runs before a commit is created, allowing you to lint and format code',
+        explanation: 'The pre-commit hook runs before Git creates the commit. If the hook script exits with a non-zero status, the commit is aborted. Teams commonly use it to run linters and formatters on staged files.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the difference between a fork and a clone?',
+        options: ['A fork is local, a clone is remote', 'A fork creates a copy on your GitHub account, a clone downloads to your machine', 'They are the same thing', 'A clone creates a copy on GitHub, a fork downloads locally'],
+        answer: 'A fork creates a copy on your GitHub account, a clone downloads to your machine',
+        explanation: 'Forking copies the repository to your own GitHub account (you have push access). Cloning downloads a repository to your local machine. For open source contributions, you fork first, then clone your fork.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How do you keep a forked repository in sync with the original upstream repository?',
+        answer: 'git fetch upstream && git rebase upstream/main',
+        explanation: 'Add the original repo as a remote called "upstream" (git remote add upstream URL), then regularly fetch and rebase from it. This keeps your fork up to date and avoids large merge conflicts.',
+      },
     ],
   },
 };

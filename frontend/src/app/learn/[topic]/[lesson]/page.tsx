@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/Card';
 import { topics, type LessonStep } from '@/lib/learn-data';
+import { LessonQuiz } from '@/components/learn/LessonQuiz';
 import { cn } from '@/lib/cn';
 import CodeTabs from '@/components/patterns/CodeTabs';
 import {
@@ -24,6 +25,7 @@ import {
   RotateCcw,
   Play,
   ExternalLink,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useLearnProgress } from '@/hooks/useLearnProgress';
 import { BookmarkButton } from '@/components/ui/BookmarkButton';
@@ -407,6 +409,20 @@ export default function LessonPage() {
                     ))}
                   </ul>
                 </Card>
+              </div>
+            )}
+
+            {/* Lesson Quiz */}
+            {lesson.quiz && lesson.quiz.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
+                  <ClipboardCheck className="h-5 w-5 text-purple-400" /> Quiz
+                </h2>
+                <LessonQuiz
+                  quiz={lesson.quiz}
+                  topicSlug={topicSlug}
+                  lessonSlug={lessonSlug}
+                />
               </div>
             )}
 

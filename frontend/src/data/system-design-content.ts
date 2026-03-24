@@ -1,9 +1,10 @@
-import type { LessonStep } from '@/lib/learn-data';
+import type { LessonStep, QuizQuestion } from '@/lib/learn-data';
 
 export const systemDesignLessons: Record<string, {
   steps: LessonStep[];
   commonMistakes?: { mistake: string; explanation: string }[];
   practiceQuestions?: string[];
+  quiz?: QuizQuestion[];
 }> = {
 
   // ─────────────────────────────────────────────
@@ -137,6 +138,41 @@ Write QPS:                    ~32`,
       'What is the difference between availability and fault tolerance?',
       'Walk through the 4-step framework as if you were asked to "Design a parking garage management system."',
       'If you store 1 KB per user and have 100 million users, how much storage do you need?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the first step of the 4-step system design interview framework?',
+        options: ['High-level design', 'Back-of-the-envelope estimation', 'Requirements gathering', 'Deep dive'],
+        answer: 'Requirements gathering',
+        explanation: 'The framework starts with requirements gathering (5 min), where you ask clarifying questions to understand scope and constraints before designing anything.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does "availability" mean in system design?',
+        options: ['How fast each request is', 'How many requests per second the system handles', 'Whether the system is up when users need it', 'Whether all users see the same data'],
+        answer: 'Whether the system is up when users need it',
+        explanation: 'Availability measures whether the system is reachable and functional when users need it, typically measured in "nines" (e.g., 99.99% uptime).',
+      },
+      {
+        type: 'short-answer',
+        question: 'How many seconds are in a day (approximately)?',
+        answer: '86400',
+        explanation: 'There are 86,400 seconds in a day (24 x 60 x 60). This is a critical number for back-of-the-envelope calculations to convert daily traffic into QPS.',
+      },
+      {
+        type: 'mcq',
+        question: 'If a system has 10 million daily requests, what is the approximate average QPS?',
+        options: ['~12', '~116', '~1,160', '~11,600'],
+        answer: '~116',
+        explanation: '10,000,000 / 86,400 seconds per day is approximately 116 QPS. Peak traffic is usually 2-3x this average.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the difference between latency and throughput?',
+        answer: 'Latency is how fast a single request completes; throughput is how many requests the system handles per second',
+        explanation: 'Latency measures the time for one request-response cycle (in milliseconds), while throughput measures the total number of requests the system can process per unit of time (QPS/RPS).',
+      },
     ],
   },
 
@@ -296,6 +332,35 @@ app.get('/tasks', authenticate, async (req, res) => {
       'Explain the three-way handshake in TCP. Why is it necessary?',
       'What\'s the difference between PUT and PATCH?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does DNS stand for and what is its primary purpose?',
+        options: ['Data Network Service — routes data packets', 'Domain Name System — translates domain names to IP addresses', 'Distributed Node Service — manages server clusters', 'Dynamic Network Socket — establishes connections'],
+        answer: 'Domain Name System — translates domain names to IP addresses',
+        explanation: 'DNS (Domain Name System) is the phone book of the internet. It translates human-readable domain names like google.com into machine-readable IP addresses like 142.250.80.46.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which HTTP method should you use to partially update a resource?',
+        options: ['PUT', 'POST', 'PATCH', 'UPDATE'],
+        answer: 'PATCH',
+        explanation: 'PATCH is used to partially update a resource (e.g., change just the email of a user). PUT replaces the entire resource, POST creates a new one, and UPDATE is not a standard HTTP method.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What HTTP status code indicates the requested resource was not found?',
+        answer: '404',
+        explanation: '404 (Not Found) is returned when the server cannot find the requested resource. Other common codes: 200 (OK), 400 (Bad Request), 500 (Internal Server Error).',
+      },
+      {
+        type: 'mcq',
+        question: 'When would you choose WebSockets over standard HTTP?',
+        options: ['When you need to fetch a user profile', 'When you need real-time bidirectional communication', 'When you need to upload large files', 'When you need better security'],
+        answer: 'When you need real-time bidirectional communication',
+        explanation: 'WebSockets maintain a persistent connection allowing both client and server to send messages at any time. This is ideal for chat apps, live updates, and real-time collaboration where polling would be too slow.',
+      },
+    ],
   },
 
   // ─────────────────────────────────────────────
@@ -433,6 +498,35 @@ server {
       'Explain the difference between Layer 4 and Layer 7 load balancing with an example.',
       'A user complains they keep getting logged out randomly. You use round-robin load balancing. What\'s the problem and how do you fix it?',
       'How would you load-balance WebSocket connections differently from HTTP requests?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the primary purpose of a load balancer?',
+        options: ['Store data in multiple locations', 'Distribute traffic across multiple servers', 'Encrypt connections between client and server', 'Cache frequently accessed responses'],
+        answer: 'Distribute traffic across multiple servers',
+        explanation: 'A load balancer distributes incoming network traffic across multiple servers to ensure no single server becomes overwhelmed, improving reliability and performance.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which load balancing algorithm sends each new request to the server with the fewest active connections?',
+        options: ['Round Robin', 'Weighted Round Robin', 'Least Connections', 'IP Hash'],
+        answer: 'Least Connections',
+        explanation: 'Least Connections routes each new request to the server currently handling the fewest connections. This is better than Round Robin when requests have varying processing times.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the difference between Layer 4 and Layer 7 load balancing?',
+        answer: 'Layer 4 routes based on IP/port (transport layer); Layer 7 routes based on HTTP content like URL, headers, or cookies (application layer)',
+        explanation: 'Layer 4 (transport) load balancing makes routing decisions based on IP address and TCP port. Layer 7 (application) load balancing can inspect HTTP headers, URLs, and cookies to make smarter routing decisions.',
+      },
+      {
+        type: 'mcq',
+        question: 'A user keeps getting logged out randomly. The site uses round-robin load balancing with session data stored in server memory. What is the problem?',
+        options: ['The load balancer is crashing', 'Requests hit different servers that do not share session data', 'DNS cache is stale', 'The SSL certificate expired'],
+        answer: 'Requests hit different servers that do not share session data',
+        explanation: 'With round-robin, consecutive requests may go to different servers. If sessions are stored in server memory, the user appears logged out when routed to a different server. Solutions: sticky sessions, shared session store (Redis), or stateless JWT tokens.',
+      },
     ],
   },
 
@@ -591,6 +685,41 @@ async function updateUserProfile(userId: string, data: any) {
       'What is the difference between LRU and LFU eviction? Give a scenario where LFU is better.',
       'How would you cache search results when the same query is made by many different users?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is a cache stampede (thundering herd)?',
+        options: ['When the cache runs out of memory', 'When many requests hit the database simultaneously after a popular cache entry expires', 'When the cache server crashes', 'When data in the cache becomes corrupted'],
+        answer: 'When many requests hit the database simultaneously after a popular cache entry expires',
+        explanation: 'A cache stampede occurs when a popular cache entry expires and thousands of concurrent requests all miss the cache and hit the database at once, potentially overwhelming it.',
+      },
+      {
+        type: 'mcq',
+        question: 'In a cache-aside (lazy loading) strategy, when is data loaded into the cache?',
+        options: ['When data is written to the database', 'On a scheduled interval', 'On a cache miss — when a read request does not find the data in cache', 'When the application starts up'],
+        answer: 'On a cache miss — when a read request does not find the data in cache',
+        explanation: 'In cache-aside, the application first checks the cache. On a miss, it reads from the database, stores the result in the cache, then returns it. Data is only cached when actually requested.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does LRU stand for and how does it decide which cache entry to evict?',
+        answer: 'Least Recently Used — it evicts the entry that has not been accessed for the longest time',
+        explanation: 'LRU (Least Recently Used) evicts the cache entry that was accessed least recently. It assumes that data not accessed recently is less likely to be accessed soon.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which caching strategy writes data to both the cache and database simultaneously?',
+        options: ['Cache-aside', 'Write-through', 'Write-back', 'Read-through'],
+        answer: 'Write-through',
+        explanation: 'Write-through writes data to both the cache and the database at the same time. This ensures consistency but adds latency to writes. Write-back writes to cache first and asynchronously updates the database.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Name one tool commonly used as an in-memory cache in system design.',
+        answer: 'Redis',
+        explanation: 'Redis and Memcached are the two most common in-memory caching solutions. Redis is more feature-rich (supports data structures, persistence, pub/sub), while Memcached is simpler and purely for caching.',
+      },
+    ],
   },
 
   // ─────────────────────────────────────────────
@@ -720,6 +849,35 @@ Result:
       'Explain the difference between push and pull CDNs. Which would you use for a video streaming platform?',
       'You deployed a broken CSS file that\'s now cached on your CDN for 1 year. How do you fix it immediately?',
       'What HTTP header tells a CDN to cache a response for a different duration than the browser?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the primary benefit of a CDN?',
+        options: ['It replaces your origin server', 'It serves content from edge locations closer to users, reducing latency', 'It encrypts all network traffic', 'It compresses database queries'],
+        answer: 'It serves content from edge locations closer to users, reducing latency',
+        explanation: 'CDNs cache content at edge servers distributed around the world. When a user requests content, it is served from the nearest edge location instead of the distant origin server, dramatically reducing latency.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the difference between a push CDN and a pull CDN?',
+        options: ['Push CDNs are faster; pull CDNs are cheaper', 'Push CDNs require you to upload content; pull CDNs fetch from origin on first request', 'Push CDNs use HTTP; pull CDNs use FTP', 'There is no difference; they are the same'],
+        answer: 'Push CDNs require you to upload content; pull CDNs fetch from origin on first request',
+        explanation: 'With a push CDN, you manually upload content to the CDN. With a pull CDN, the CDN fetches content from your origin server on the first cache miss and caches it automatically.',
+      },
+      {
+        type: 'short-answer',
+        question: 'You deployed a broken CSS file that is cached on your CDN with a 1-year TTL. How do you fix it immediately?',
+        answer: 'Invalidate the CDN cache or deploy the file with a new filename/version hash (cache busting)',
+        explanation: 'You can either purge/invalidate the specific file from all CDN edge locations, or use cache busting by deploying the fixed file with a new filename (e.g., styles.v2.css or styles.abc123.css).',
+      },
+      {
+        type: 'mcq',
+        question: 'Which HTTP header controls how long a CDN caches a response?',
+        options: ['Content-Type', 'Cache-Control', 'Authorization', 'X-Forwarded-For'],
+        answer: 'Cache-Control',
+        explanation: 'The Cache-Control header (e.g., Cache-Control: max-age=86400) tells CDNs and browsers how long to cache a response. The s-maxage directive specifically controls CDN (shared cache) behavior separately from browser caching.',
+      },
     ],
   },
 
@@ -928,6 +1086,41 @@ async function consumeEvents() {
       'What is a dead letter queue and why is it important?',
       'Your order processing consumer occasionally processes the same order twice, causing double charges. How do you fix this?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the main advantage of using a message queue between services?',
+        options: ['It makes services faster', 'It decouples services so producers and consumers can operate independently', 'It replaces the need for a database', 'It encrypts data in transit'],
+        answer: 'It decouples services so producers and consumers can operate independently',
+        explanation: 'Message queues decouple producers from consumers. The producer sends a message and moves on without waiting. The consumer processes it at its own pace. If a consumer is down, messages are retained in the queue.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the difference between point-to-point and pub/sub messaging?',
+        options: ['Point-to-point is faster', 'In point-to-point one consumer gets each message; in pub/sub all subscribers get every message', 'Pub/sub requires a database; point-to-point does not', 'They are the same pattern with different names'],
+        answer: 'In point-to-point one consumer gets each message; in pub/sub all subscribers get every message',
+        explanation: 'In point-to-point (queue), each message is consumed by exactly one consumer. In pub/sub (topic), each message is broadcast to all subscribers. Use point-to-point for task distribution, pub/sub for event notifications.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is a dead letter queue?',
+        answer: 'A queue that stores messages that could not be processed successfully after multiple retry attempts',
+        explanation: 'A dead letter queue (DLQ) captures messages that fail processing repeatedly. This prevents poison messages from blocking the main queue and allows developers to inspect and debug failed messages later.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which tool would you choose for high-throughput event streaming with replay capability?',
+        options: ['RabbitMQ', 'Apache Kafka', 'Redis Pub/Sub', 'Amazon SES'],
+        answer: 'Apache Kafka',
+        explanation: 'Kafka is designed for high-throughput event streaming and retains messages in a log, allowing consumers to replay past events. RabbitMQ is better for traditional task queues; Redis Pub/Sub does not persist messages.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does "idempotent" mean in the context of message processing?',
+        answer: 'Processing the same message multiple times produces the same result as processing it once',
+        explanation: 'An idempotent consumer can safely process duplicate messages without side effects. This is critical because message queues may deliver the same message more than once (at-least-once delivery).',
+      },
+    ],
   },
 
   // ─────────────────────────────────────────────
@@ -1108,6 +1301,35 @@ async function getUserSimple(id) {
       'Explain the difference between vertical and horizontal database scaling. What are the trade-offs?',
       'You\'re sharding a social media app\'s database. What would you use as a shard key and why?',
       'What is replication lag and how does it affect your application?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the difference between vertical and horizontal database scaling?',
+        options: ['Vertical adds more servers; horizontal upgrades the existing server', 'Vertical upgrades the existing server (more CPU/RAM); horizontal adds more servers', 'Vertical is for SQL; horizontal is for NoSQL only', 'There is no practical difference'],
+        answer: 'Vertical upgrades the existing server (more CPU/RAM); horizontal adds more servers',
+        explanation: 'Vertical scaling (scale up) means adding more power to your existing server. Horizontal scaling (scale out) means adding more servers. Vertical has limits; horizontal scales further but adds complexity.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is database sharding?',
+        options: ['Creating backup copies of the database', 'Splitting data across multiple database instances based on a shard key', 'Compressing the database to reduce storage', 'Encrypting sensitive database columns'],
+        answer: 'Splitting data across multiple database instances based on a shard key',
+        explanation: 'Sharding partitions data across multiple database instances. Each shard holds a subset of the data (e.g., users A-M on shard 1, N-Z on shard 2). The shard key determines which shard holds each record.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is replication lag?',
+        answer: 'The delay between a write on the primary database and when that write appears on read replicas',
+        explanation: 'Replication lag is the time it takes for data written to the primary/master database to propagate to read replicas. During this delay, reads from replicas return stale data.',
+      },
+      {
+        type: 'mcq',
+        question: 'In a primary-replica setup, which node handles write operations?',
+        options: ['Any replica', 'The primary (master) only', 'All nodes equally', 'A dedicated write proxy'],
+        answer: 'The primary (master) only',
+        explanation: 'In primary-replica replication, all writes go to the primary node, which then replicates changes to read replicas. Replicas handle read traffic only, distributing the read load.',
+      },
     ],
   },
 
@@ -1344,6 +1566,41 @@ router.get('/posts', async (req, res) => {
       'A client sends a POST request with an invalid email field. What status code do you return and what does the response body look like?',
       'How would you design an API endpoint that returns a user along with their 5 most recent posts?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which of these is a key principle of RESTful API design?',
+        options: ['Use verbs in URL paths (e.g., /getUser)', 'Use nouns in URL paths and HTTP methods for actions (e.g., GET /users)', 'Always use POST for all operations', 'Return HTML responses by default'],
+        answer: 'Use nouns in URL paths and HTTP methods for actions (e.g., GET /users)',
+        explanation: 'REST APIs use nouns for resources (/users, /posts) and HTTP methods (GET, POST, PUT, DELETE) for actions. URLs like /getUser or /deletePost are not RESTful.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is cursor-based pagination and when is it preferred over offset-based?',
+        options: ['Cursor returns all results at once; offset returns pages', 'Cursor uses a pointer to the last seen item; it is preferred for large or frequently changing datasets', 'Cursor is slower but more accurate', 'They are identical in behavior'],
+        answer: 'Cursor uses a pointer to the last seen item; it is preferred for large or frequently changing datasets',
+        explanation: 'Cursor-based pagination uses an opaque cursor (often an encoded ID) pointing to the last item seen. Unlike offset-based (OFFSET 50), it handles insertions/deletions correctly and performs better on large datasets.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What HTTP status code should an API return for a validation error (e.g., invalid email format)?',
+        answer: '400',
+        explanation: '400 Bad Request is the appropriate status code when the client sends invalid data. The response body should include details about which fields failed validation and why.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is API versioning and why is it important?',
+        options: ['It tracks how many times an API is called', 'It allows you to make breaking changes without disrupting existing clients', 'It encrypts API responses', 'It limits the number of API calls per minute'],
+        answer: 'It allows you to make breaking changes without disrupting existing clients',
+        explanation: 'API versioning (e.g., /v1/users, /v2/users) lets you evolve your API while maintaining backward compatibility. Existing clients continue using v1 while new clients adopt v2.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the difference between PUT and PATCH?',
+        answer: 'PUT replaces the entire resource; PATCH partially updates specific fields',
+        explanation: 'PUT requires sending the complete resource representation and replaces the existing one entirely. PATCH only sends and updates the specific fields that changed, which is more efficient for partial updates.',
+      },
+    ],
   },
 
   // ─────────────────────────────────────────────
@@ -1520,6 +1777,35 @@ app.use('/api/auth/login', rateLimiter({
       'Your API is distributed across 8 servers. How do you ensure rate limiting is consistent across all servers?',
       'A corporate client with 5,000 employees behind one IP is getting rate limited. How do you handle this?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the primary purpose of rate limiting?',
+        options: ['Speed up API responses', 'Protect services from being overwhelmed by too many requests', 'Encrypt API traffic', 'Compress response payloads'],
+        answer: 'Protect services from being overwhelmed by too many requests',
+        explanation: 'Rate limiting controls the number of requests a client can make in a given time window. It protects against abuse, DDoS attacks, and ensures fair resource usage across all clients.',
+      },
+      {
+        type: 'mcq',
+        question: 'How does the token bucket algorithm work?',
+        options: ['It blocks all requests after a fixed count', 'Tokens are added at a steady rate; each request consumes a token; requests are rejected when the bucket is empty', 'It counts requests in fixed time windows', 'It uses a sliding log of timestamps'],
+        answer: 'Tokens are added at a steady rate; each request consumes a token; requests are rejected when the bucket is empty',
+        explanation: 'The token bucket adds tokens at a constant rate up to a maximum bucket size. Each request costs one token. If the bucket is empty, the request is rejected. The bucket size allows short bursts above the average rate.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What HTTP status code should be returned when a client exceeds the rate limit?',
+        answer: '429',
+        explanation: '429 Too Many Requests is the standard HTTP status code for rate limiting. The response should include a Retry-After header indicating when the client can try again.',
+      },
+      {
+        type: 'mcq',
+        question: 'In a distributed system with multiple API servers, where should rate limit counters be stored?',
+        options: ['In each server\'s local memory', 'In a centralized store like Redis', 'In the database', 'In the client\'s cookies'],
+        answer: 'In a centralized store like Redis',
+        explanation: 'A centralized store like Redis ensures consistent rate limiting across all servers. If counters are stored locally, a client could exceed limits by having requests routed to different servers.',
+      },
+    ],
   },
 
   // ─────────────────────────────────────────────
@@ -1660,6 +1946,35 @@ ch.removeServer('cache-server-2');`,
       'How does Cassandra use consistent hashing for data distribution?',
       'Implement a simple consistent hash ring that supports addServer, removeServer, and getServer.',
       'What is the "hot key" problem and how can consistent hashing be combined with other techniques to handle it?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What problem does consistent hashing solve compared to simple modular hashing (hash % N)?',
+        options: ['It is faster to compute', 'When a server is added or removed, only a small fraction of keys need to be remapped', 'It guarantees perfect distribution', 'It eliminates the need for replication'],
+        answer: 'When a server is added or removed, only a small fraction of keys need to be remapped',
+        explanation: 'With modular hashing (hash % N), changing N remaps almost all keys. Consistent hashing uses a hash ring so that adding or removing a server only affects keys in the adjacent segment — roughly 1/N of all keys.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What are virtual nodes in consistent hashing?',
+        answer: 'Multiple points on the hash ring for each physical server to ensure more even data distribution',
+        explanation: 'Virtual nodes place each physical server at multiple positions on the hash ring. This prevents uneven distribution that can occur when servers are not spread uniformly around the ring.',
+      },
+      {
+        type: 'mcq',
+        question: 'In consistent hashing, when a server is removed, which server takes over its keys?',
+        options: ['All remaining servers share equally', 'The next server clockwise on the ring', 'The server with the least load', 'Keys are discarded'],
+        answer: 'The next server clockwise on the ring',
+        explanation: 'When a server is removed from the consistent hash ring, its keys are redistributed to the next server found by walking clockwise around the ring. Only those keys are affected; all other mappings remain stable.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which of these systems uses consistent hashing for data distribution?',
+        options: ['MySQL', 'SQLite', 'Apache Cassandra', 'PostgreSQL'],
+        answer: 'Apache Cassandra',
+        explanation: 'Cassandra uses consistent hashing to distribute data across nodes in a cluster. Each node is responsible for a range of the hash ring, and data is replicated to adjacent nodes for fault tolerance.',
+      },
     ],
   },
 
@@ -1831,6 +2146,35 @@ services:
       'Design the service boundaries for a ride-sharing app (Uber-like). What services would you have?',
       'How would you handle a transaction that spans two microservices (e.g., placing an order deducts inventory AND charges payment)?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is a monolithic architecture?',
+        options: ['A system with one large database', 'A single deployable unit containing all application functionality', 'A system that runs on only one server', 'A system with no external dependencies'],
+        answer: 'A single deployable unit containing all application functionality',
+        explanation: 'A monolith packages all features (user auth, payments, notifications, etc.) into one codebase and one deployable unit. It is simpler to develop and deploy but harder to scale individual components independently.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is a "distributed monolith"?',
+        options: ['A monolith deployed across multiple servers', 'Microservices that are so tightly coupled they must be deployed together', 'A database shared across regions', 'A monolith that uses message queues'],
+        answer: 'Microservices that are so tightly coupled they must be deployed together',
+        explanation: 'A distributed monolith has the complexity of microservices (network calls, distributed debugging) but the coupling of a monolith (services cannot be deployed independently). It is considered the worst of both worlds.',
+      },
+      {
+        type: 'short-answer',
+        question: 'When should a startup choose a monolith over microservices?',
+        answer: 'When the team is small, the product is evolving rapidly, and simplicity of development and deployment is more valuable than independent scaling',
+        explanation: 'Startups benefit from monoliths because they are faster to develop, easier to debug, and simpler to deploy. Microservices add operational overhead that small teams cannot sustain. Start monolith, extract services when needed.',
+      },
+      {
+        type: 'mcq',
+        question: 'How do microservices typically communicate with each other?',
+        options: ['Shared memory', 'Direct function calls', 'HTTP/REST APIs or message queues', 'Shared database tables'],
+        answer: 'HTTP/REST APIs or message queues',
+        explanation: 'Microservices communicate over the network via synchronous calls (HTTP/REST, gRPC) or asynchronous messaging (message queues, event streams). They should not share databases or memory.',
+      },
+    ],
   },
 
   // ─────────────────────────────────────────────
@@ -1969,6 +2313,35 @@ function decode(str: string): number {
       'How would you add a "link preview" feature that shows the destination before redirecting?',
       'What happens if the Key Generation Service goes down?',
       'Design the analytics dashboard showing clicks over time, top referrers, and geographic distribution.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the typical approach to generating short URL codes?',
+        options: ['Use the full URL as the code', 'Base62 encode a unique counter or hash', 'Use a random UUID', 'Use the user\'s IP address'],
+        answer: 'Base62 encode a unique counter or hash',
+        explanation: 'Base62 encoding (a-z, A-Z, 0-9) of a unique ID or counter generates short, URL-safe codes. A 7-character Base62 code supports 62^7 (3.5 trillion) unique URLs.',
+      },
+      {
+        type: 'mcq',
+        question: 'Should a URL shortener use a 301 or 302 redirect?',
+        options: ['301 always — it is faster', '302 always — it is more secure', '301 for permanent links (browsers cache); 302 if you need to track every click', 'Neither — use 200 with HTML meta refresh'],
+        answer: '301 for permanent links (browsers cache); 302 if you need to track every click',
+        explanation: '301 (Permanent Redirect) lets browsers cache the redirect, reducing server load but losing analytics. 302 (Temporary Redirect) forces every click through your server, enabling accurate click tracking.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why might a Key Generation Service (KGS) pre-generate short codes instead of generating them on each request?',
+        answer: 'To avoid collision checks and ensure uniqueness without race conditions under high concurrency',
+        explanation: 'A KGS pre-generates unique codes and stores them. When a new short URL is needed, it simply grabs a pre-generated code. This eliminates race conditions and the need for collision checks at write time.',
+      },
+      {
+        type: 'mcq',
+        question: 'What database type is well-suited for storing URL shortener mappings (short code -> long URL)?',
+        options: ['Graph database', 'Time-series database', 'Key-value store or NoSQL database', 'Columnar data warehouse'],
+        answer: 'Key-value store or NoSQL database',
+        explanation: 'URL shortener lookups are simple key-value queries (short code -> long URL). A key-value store like DynamoDB or Redis provides fast O(1) lookups and scales horizontally easily.',
+      },
     ],
   },
 
@@ -2157,6 +2530,41 @@ wss.on('connection', (ws, req) => {
       'What changes if you need to support 10,000-member group chats (like Discord servers)?',
       'How would you handle message editing and deletion in a distributed system?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which protocol is best suited for real-time chat message delivery?',
+        options: ['HTTP polling every 5 seconds', 'WebSockets', 'FTP', 'SMTP'],
+        answer: 'WebSockets',
+        explanation: 'WebSockets provide a persistent, bidirectional connection between client and server, enabling instant message delivery without the overhead and latency of repeated HTTP polling.',
+      },
+      {
+        type: 'mcq',
+        question: 'How should a chat application deliver messages to users who are currently offline?',
+        options: ['Discard the message', 'Store messages in a persistent database and deliver them when the user reconnects', 'Keep retrying the WebSocket connection indefinitely', 'Send an email instead'],
+        answer: 'Store messages in a persistent database and deliver them when the user reconnects',
+        explanation: 'Messages must be persisted in a database. When the recipient comes online, the server delivers any unread messages. Push notifications can alert offline users to new messages.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How do you implement "last seen" and "online" status indicators in a chat application?',
+        answer: 'Track heartbeats from connected clients; update a last_seen timestamp periodically; show online if heartbeat is recent',
+        explanation: 'Connected clients send periodic heartbeats (e.g., every 30 seconds). The server updates a last_seen timestamp. A user is shown as "online" if their heartbeat is within the threshold, otherwise show "last seen X minutes ago".',
+      },
+      {
+        type: 'mcq',
+        question: 'In a group chat with 500 members, what is the challenge of delivering a message to all members?',
+        options: ['Messages are too large', 'The server must fan out the message to 500 connections, which is write-heavy', 'Group chats cannot use WebSockets', 'All 500 users must be online'],
+        answer: 'The server must fan out the message to 500 connections, which is write-heavy',
+        explanation: 'Each group message must be delivered to all online members (fan-out). For large groups, this means writing to hundreds of WebSocket connections. Optimization: use pub/sub channels so members subscribe to the group topic.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What are read receipts (double checkmarks) and how would you implement them?',
+        answer: 'Visual indicators that a message was delivered and read; the recipient client sends acknowledgment events back to the server',
+        explanation: 'When the recipient device receives a message, it sends a "delivered" ack. When the user actually reads it (message appears on screen), a "read" ack is sent. The server relays these status updates to the sender.',
+      },
+    ],
   },
 
   // ─────────────────────────────────────────────
@@ -2290,6 +2698,35 @@ GET    /api/v1/stories/feed        → Get stories from followed users`,
       'How would you handle a user who changes their profile picture — all their old posts still show the old picture in cached feeds?',
       'How would you implement hashtag search and trending hashtags?',
       'What changes if you need to support video posts (which are 100x larger than photos)?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Where should Instagram store uploaded photos?',
+        options: ['In the SQL database as BLOBs', 'In an object storage service like Amazon S3', 'On the application server filesystem', 'In Redis cache'],
+        answer: 'In an object storage service like Amazon S3',
+        explanation: 'Object storage (S3, GCS) is designed for large binary files like images. It scales infinitely, is highly durable, and integrates with CDNs. Databases should only store metadata and the URL pointing to the image.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the purpose of generating multiple image sizes (thumbnails) when a photo is uploaded?',
+        options: ['To use more storage space', 'To serve appropriately sized images for different devices and views, reducing bandwidth', 'To improve image quality', 'To encrypt the images'],
+        answer: 'To serve appropriately sized images for different devices and views, reducing bandwidth',
+        explanation: 'A feed thumbnail does not need a 4K image. Generating multiple sizes (thumbnail, medium, full) lets you serve the smallest appropriate version, dramatically reducing bandwidth and load times on mobile devices.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How does Instagram generate a user\'s news feed?',
+        answer: 'A combination of fan-out on write (pre-compute feeds for most users) and fan-out on read (fetch posts from celebrities at read time)',
+        explanation: 'For normal users, new posts are pushed to all followers\' pre-computed feed caches (fan-out on write). For celebrities with millions of followers, this is too expensive, so their posts are fetched at read time and merged into the feed.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why would you use a CDN for serving Instagram images?',
+        options: ['CDNs compress images automatically', 'CDNs serve images from edge locations close to users, reducing latency globally', 'CDNs provide image editing capabilities', 'CDNs are cheaper than object storage'],
+        answer: 'CDNs serve images from edge locations close to users, reducing latency globally',
+        explanation: 'With users worldwide, serving all images from one region would be slow. A CDN caches images at edge locations globally, so a user in Tokyo gets the image from a nearby server rather than from US-East.',
+      },
     ],
   },
 
@@ -2455,6 +2892,35 @@ Example:
       'How would you handle a reply chain (threads)? How deep can replies go?',
       'If Twitter needs to show a "While you were away" section with important tweets from the last 12 hours, how would you generate it?',
       'How would you implement tweet editing (allowing edits within 30 minutes of posting)?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is "fan-out on write" in the context of a Twitter-like feed?',
+        options: ['Writing tweets to multiple databases simultaneously', 'When a user posts, immediately pushing the tweet to all followers\' pre-computed timelines', 'Sending write requests to a message queue', 'Distributing writes across database shards'],
+        answer: 'When a user posts, immediately pushing the tweet to all followers\' pre-computed timelines',
+        explanation: 'Fan-out on write means when a user tweets, the system immediately writes that tweet ID to every follower\'s timeline cache. This makes reads fast (pre-computed) but writes expensive, especially for users with millions of followers.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why is fan-out on write problematic for celebrity accounts with millions of followers?',
+        options: ['Celebrities post too frequently', 'Writing to millions of timelines on each tweet is extremely slow and resource-intensive', 'Celebrity tweets are larger in size', 'Followers cannot see celebrity tweets'],
+        answer: 'Writing to millions of timelines on each tweet is extremely slow and resource-intensive',
+        explanation: 'If a celebrity with 50 million followers tweets, fan-out on write would need to update 50 million timeline caches. This is too slow and expensive. The solution is a hybrid approach: fan-out on read for celebrities.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the hybrid fan-out approach used by Twitter?',
+        answer: 'Fan-out on write for regular users; fan-out on read for celebrities — merge results at read time',
+        explanation: 'Regular users\' tweets are pre-pushed to followers\' timelines (fan-out on write). Celebrity tweets are fetched and merged at read time (fan-out on read). This balances write cost with read performance.',
+      },
+      {
+        type: 'mcq',
+        question: 'How should tweets be stored for efficient timeline retrieval?',
+        options: ['In a single relational table with complex JOINs', 'In pre-computed timeline caches (e.g., Redis lists) with tweet IDs sorted by time', 'As flat files on disk', 'In a graph database'],
+        answer: 'In pre-computed timeline caches (e.g., Redis lists) with tweet IDs sorted by time',
+        explanation: 'Each user\'s timeline is stored as a sorted list of tweet IDs in Redis. When the user opens their feed, the system reads this pre-computed list and fetches the full tweet objects. This avoids expensive real-time computation.',
+      },
     ],
   },
 
@@ -2649,6 +3115,41 @@ async function findNearbyDrivers(
       'Uber Eats uses the same platform. What changes in the architecture for food delivery?',
       'How would you implement a scheduled ride feature (book a ride for 6 AM tomorrow)?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'How does Uber efficiently find nearby drivers when a rider requests a ride?',
+        options: ['Query all drivers in the database', 'Use a geospatial index (like a QuadTree or geohash) to find drivers within a radius', 'Broadcast the request to every driver globally', 'Use DNS lookup for driver locations'],
+        answer: 'Use a geospatial index (like a QuadTree or geohash) to find drivers within a radius',
+        explanation: 'Geospatial indexes (QuadTree, geohash, S2 cells) partition the map into cells. Finding nearby drivers becomes a cell lookup plus neighbor cells, which is O(1) instead of scanning all drivers.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why do drivers send frequent location updates to the server?',
+        options: ['For billing purposes only', 'To maintain an accurate real-time map of driver positions for matching and ETA calculation', 'To keep the WebSocket connection alive', 'To track driving speed for safety'],
+        answer: 'To maintain an accurate real-time map of driver positions for matching and ETA calculation',
+        explanation: 'Drivers send GPS updates every few seconds. This keeps the location index current so the system can match riders with the nearest available driver and calculate accurate ETAs.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is surge pricing and why does Uber implement it?',
+        answer: 'Dynamic price increases when demand exceeds supply in an area, to incentivize more drivers and balance supply with demand',
+        explanation: 'When too many riders request rides and too few drivers are available, surge pricing raises fares. This encourages more drivers to go online in that area and discourages non-urgent rides, balancing supply and demand.',
+      },
+      {
+        type: 'mcq',
+        question: 'How does Uber calculate the ETA (estimated time of arrival)?',
+        options: ['Straight-line distance divided by speed limit', 'Pre-computed routing with real-time traffic data using graph algorithms on road networks', 'The driver manually estimates it', 'A fixed estimate based on distance zones'],
+        answer: 'Pre-computed routing with real-time traffic data using graph algorithms on road networks',
+        explanation: 'ETAs use road network graphs with real-time traffic data. Algorithms like Dijkstra or A* find the shortest path, adjusted for current traffic conditions, road closures, and historical patterns.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What happens in Uber\'s system if a matched driver does not accept the ride request within the timeout?',
+        answer: 'The system re-matches the rider with the next nearest available driver',
+        explanation: 'If a driver does not accept within the timeout (e.g., 15 seconds), the request is automatically sent to the next nearest available driver. This continues until a driver accepts or the rider cancels.',
+      },
+    ],
   },
 
   // ─────────────────────────────────────────────
@@ -2830,6 +3331,41 @@ GET    /api/v1/content/:id/status            → Transcoding job status`,
       'How would you implement live streaming (like Netflix Live events) on top of this architecture?',
       'Netflix needs to handle content removal (licensing expires). How do you gracefully handle a user trying to watch content that was just removed?',
       'How would you design the "Skip Intro" feature? What data pipeline detects where intros start and end?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is adaptive bitrate streaming (ABR)?',
+        options: ['Streaming at the highest quality regardless of network speed', 'Dynamically adjusting video quality based on the viewer\'s network conditions and buffer state', 'Compressing all videos to the lowest quality', 'Streaming only audio when bandwidth is low'],
+        answer: 'Dynamically adjusting video quality based on the viewer\'s network conditions and buffer state',
+        explanation: 'ABR encodes each video at multiple quality levels (360p, 720p, 1080p, 4K). The player monitors bandwidth and buffer and switches quality levels mid-stream to prevent buffering while maximizing quality.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why does Netflix encode each video into multiple resolution and bitrate variants?',
+        options: ['To use more storage', 'To support adaptive bitrate streaming so the player can switch quality based on network conditions', 'Because different countries require different formats', 'To prevent piracy'],
+        answer: 'To support adaptive bitrate streaming so the player can switch quality based on network conditions',
+        explanation: 'Netflix pre-encodes each title into hundreds of variants (different resolutions, bitrates, codecs). The player picks the best variant for the current bandwidth, switching seamlessly if conditions change.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why does Netflix use a CDN (like its own Open Connect) instead of serving all video from a central location?',
+        answer: 'To serve video from edge servers close to users, reducing latency and backbone bandwidth costs',
+        explanation: 'Netflix\'s Open Connect CDN places servers inside ISP networks. Streaming from a nearby edge server reduces latency, improves quality, and avoids sending petabytes of data across the internet backbone.',
+      },
+      {
+        type: 'mcq',
+        question: 'How does Netflix handle the recommendation system at scale?',
+        options: ['Real-time computation for every user on each page load', 'Pre-compute recommendations offline using batch processing and cache the results', 'A single algorithm runs on one server', 'Recommendations are manually curated'],
+        answer: 'Pre-compute recommendations offline using batch processing and cache the results',
+        explanation: 'Netflix uses offline batch processing (e.g., Spark) to compute personalized recommendations based on viewing history, ratings, and similar users. Results are cached and served instantly when the user opens the app.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is video transcoding and when does it happen in the Netflix pipeline?',
+        answer: 'Converting raw video into multiple formats, resolutions, and bitrates; it happens after content upload before the title becomes available to viewers',
+        explanation: 'Transcoding converts a raw master video into all the variants needed for streaming (different codecs like H.264/VP9, resolutions from 240p to 4K, and multiple bitrates). This is done ahead of time so playback is instant.',
+      },
     ],
   },
 };

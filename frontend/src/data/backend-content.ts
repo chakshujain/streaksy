@@ -1,4 +1,4 @@
-import type { LessonStep } from '@/lib/learn-data';
+import type { LessonStep, QuizQuestion } from '@/lib/learn-data';
 
 export const backendLessons: Record<
   string,
@@ -6,6 +6,7 @@ export const backendLessons: Record<
     steps: LessonStep[];
     commonMistakes?: { mistake: string; explanation: string }[];
     practiceQuestions?: string[];
+    quiz?: QuizQuestion[];
   }
 > = {
   // ───────────────────────────────────────────────
@@ -112,6 +113,42 @@ export const backendLessons: Record<
       'Explain the client-server model in your own words. What role does HTTP play?',
       'Create a Node.js HTTP server that responds to GET /api/time with the current timestamp.',
       'What is the difference between a 400 and a 500 status code? Give an example of each.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'In the client-server model, what role does the browser play?',
+        options: ['Server', 'Client', 'Database', 'Middleware'],
+        answer: 'Client',
+        explanation: 'The browser acts as the client — it sends HTTP requests to the server and displays the responses it receives back.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which HTTP status code indicates the resource was not found?',
+        options: ['200', '400', '404', '500'],
+        answer: '404',
+        explanation: '404 Not Found means the requested resource does not exist on the server. 400 is Bad Request, 200 is OK, and 500 is an Internal Server Error.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which HTTP method should be used to create a new resource?',
+        options: ['GET', 'POST', 'DELETE', 'HEAD'],
+        answer: 'POST',
+        explanation: 'POST is used to create new resources on the server. GET reads data, DELETE removes it, and HEAD retrieves headers only.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What built-in Node.js module is used to create a basic HTTP server without any framework?',
+        answer: 'http',
+        explanation: 'The built-in "http" module provides http.createServer() which accepts a callback with request and response objects. Frameworks like Express build on top of this.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does a 500 status code indicate?',
+        options: ['Client sent bad data', 'User is not authenticated', 'Server encountered an internal error', 'Resource was successfully created'],
+        answer: 'Server encountered an internal error',
+        explanation: '500 Internal Server Error means something went wrong on the server side, typically an unhandled exception or bug in the code.',
+      },
     ],
   },
 
@@ -265,6 +302,42 @@ export const backendLessons: Record<
       'Build a REST API with Express that supports GET, POST, PUT, and DELETE for a "notes" resource.',
       'Create a logging middleware that logs the HTTP method, URL, and response time for every request.',
       'What is the difference between app.use() and app.get()? When would you use each?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What happens if you forget to call next() in an Express middleware function?',
+        options: ['The server crashes', 'The request hangs indefinitely', 'The next middleware runs anyway', 'An error is automatically thrown'],
+        answer: 'The request hangs indefinitely',
+        explanation: 'If a middleware does not call next() or send a response, Express has no way to continue the pipeline. The request will hang until the client times out.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which middleware must be added before routes to parse JSON request bodies?',
+        options: ['express.static()', 'express.json()', 'express.urlencoded()', 'express.raw()'],
+        answer: 'express.json()',
+        explanation: 'express.json() parses incoming requests with JSON payloads and populates req.body. Without it, req.body is undefined for JSON POST/PUT requests.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How many parameters does an Express error-handling middleware function take?',
+        answer: '4',
+        explanation: 'Express error handlers must have exactly 4 parameters: (err, req, res, next). This signature is how Express distinguishes error handlers from regular middleware.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the main advantage of Node.js\'s non-blocking event loop for API servers?',
+        options: ['It uses multiple threads for every request', 'It can handle many concurrent I/O operations efficiently', 'It runs JavaScript faster than any other language', 'It automatically caches all responses'],
+        answer: 'It can handle many concurrent I/O operations efficiently',
+        explanation: 'Node.js uses a single-threaded event loop that does not block while waiting for I/O (database queries, file reads). This allows it to handle thousands of concurrent requests efficiently.',
+      },
+      {
+        type: 'mcq',
+        question: 'Where should Express error-handling middleware be defined?',
+        options: ['Before all routes', 'Inside each route handler', 'After all routes', 'In a separate file only'],
+        answer: 'After all routes',
+        explanation: 'Error-handling middleware must be defined after all routes and other middleware. If placed before routes, it will never catch errors thrown by route handlers.',
+      },
     ],
   },
 
@@ -426,6 +499,42 @@ export const backendLessons: Record<
       'Implement cursor-based pagination instead of offset-based. What are the advantages?',
       'When should you use PATCH vs PUT? Give a practical example.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which URL follows REST best practices for fetching a specific user?',
+        options: ['GET /getUser?id=123', 'GET /api/users/123', 'POST /api/fetchUser/123', 'GET /api/user_detail/123'],
+        answer: 'GET /api/users/123',
+        explanation: 'REST URLs use plural nouns (/users) and the HTTP method (GET) conveys the action. The resource ID goes in the path, not as a verb or query parameter.',
+      },
+      {
+        type: 'mcq',
+        question: 'What HTTP status code should be returned when a new resource is successfully created?',
+        options: ['200', '201', '204', '301'],
+        answer: '201',
+        explanation: '201 Created indicates a new resource was successfully created, typically in response to a POST request. 200 is for general success, 204 is for successful operations with no body.',
+      },
+      {
+        type: 'short-answer',
+        question: 'In REST, should URL paths use verbs or nouns to represent resources?',
+        answer: 'nouns',
+        explanation: 'REST URLs should use nouns (e.g., /users, /posts) because the HTTP method (GET, POST, PUT, DELETE) already conveys the action being performed.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the key advantage of cursor-based pagination over offset-based pagination?',
+        options: ['It is simpler to implement', 'It allows jumping to any page', 'It handles data insertions consistently', 'It requires fewer query parameters'],
+        answer: 'It handles data insertions consistently',
+        explanation: 'Cursor-based pagination uses a pointer (e.g., last seen ID) so new rows inserted between requests do not cause items to be skipped or duplicated, unlike offset-based pagination.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the difference between PUT and PATCH?',
+        options: ['PUT creates, PATCH deletes', 'PUT replaces the entire resource, PATCH partially updates it', 'They are identical', 'PATCH replaces the entire resource, PUT partially updates it'],
+        answer: 'PUT replaces the entire resource, PATCH partially updates it',
+        explanation: 'PUT sends a complete replacement for the resource. PATCH sends only the fields that should change. Use PATCH when updating one field (e.g., just the email).',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -576,6 +685,42 @@ export const backendLessons: Record<
       'When would you choose raw SQL over an ORM? Give two scenarios.',
       'Design a database schema for a blog with users, posts, comments, and tags.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the primary purpose of a database connection pool?',
+        options: ['To encrypt database connections', 'To reuse existing connections instead of creating new ones per request', 'To replicate data across servers', 'To cache query results'],
+        answer: 'To reuse existing connections instead of creating new ones per request',
+        explanation: 'Creating a new database connection is expensive. A connection pool maintains a set of reusable connections, and requests borrow and return them as needed.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which SQL operation retrieves data from a database table?',
+        options: ['INSERT', 'UPDATE', 'SELECT', 'DELETE'],
+        answer: 'SELECT',
+        explanation: 'SELECT reads data from one or more tables. INSERT adds rows, UPDATE modifies existing rows, and DELETE removes rows.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What technique prevents SQL injection when using the pg library in Node.js?',
+        answer: 'parameterized queries',
+        explanation: 'Parameterized queries use placeholders ($1, $2) instead of string concatenation. The database driver safely escapes values, preventing attackers from injecting malicious SQL.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does a LEFT JOIN return that an INNER JOIN does not?',
+        options: ['Rows that match in both tables', 'Rows from the right table with no match', 'All rows from the left table, even without matches in the right table', 'Duplicate rows from both tables'],
+        answer: 'All rows from the left table, even without matches in the right table',
+        explanation: 'LEFT JOIN returns every row from the left table. If there is no matching row in the right table, the right columns are filled with NULL. INNER JOIN only returns rows with matches in both tables.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the N+1 query problem?',
+        options: ['Querying N tables plus 1 index', 'Fetching a list then running a separate query for each item', 'Running N queries in parallel plus 1 final merge', 'Using N joins plus 1 subquery'],
+        answer: 'Fetching a list then running a separate query for each item',
+        explanation: 'The N+1 problem occurs when you query a list (1 query) then loop through it and query related data for each item (N queries). Fix it with JOINs or ORM eager loading.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -707,6 +852,42 @@ export const backendLessons: Record<
       'Walk through the JWT authentication flow from login to accessing a protected endpoint.',
       'Implement a signup endpoint that hashes the password and a login endpoint that returns a JWT.',
       'Describe the OAuth 2.0 authorization code flow. What does each step accomplish?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Why should passwords be hashed rather than encrypted?',
+        options: ['Hashing is faster', 'Encryption uses more storage', 'Hashing is one-way — even if the database leaks, passwords cannot be reversed', 'Encryption requires a paid license'],
+        answer: 'Hashing is one-way — even if the database leaks, passwords cannot be reversed',
+        explanation: 'Hashing is irreversible. If the database is breached, attackers cannot recover the original passwords. Encryption is two-way — if the key is compromised, all encrypted passwords can be decrypted.',
+      },
+      {
+        type: 'mcq',
+        question: 'What are the three parts of a JSON Web Token (JWT)?',
+        options: ['Username, password, token', 'Header, payload, signature', 'Key, value, expiry', 'Method, URL, body'],
+        answer: 'Header, payload, signature',
+        explanation: 'A JWT consists of a header (algorithm and type), payload (claims like userId and expiration), and signature (cryptographic proof the token was not tampered with).',
+      },
+      {
+        type: 'mcq',
+        question: 'What HTTP status code should be returned when a user is authenticated but does not have permission to access a resource?',
+        options: ['400', '401', '403', '404'],
+        answer: '403',
+        explanation: '403 Forbidden means the user is logged in (authenticated) but lacks permission (authorization). 401 Unauthorized means the user is not logged in at all.',
+      },
+      {
+        type: 'short-answer',
+        question: 'In OAuth 2.0, what does the server exchange with the provider to obtain an access token after the user approves?',
+        answer: 'authorization code',
+        explanation: 'After the user approves, the provider redirects back with an authorization code. The server exchanges this code (plus its client secret) for an access token that can fetch user data.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which is a key disadvantage of JWT-based authentication compared to session-based?',
+        options: ['JWTs cannot store user data', 'JWTs are hard to revoke before expiration', 'JWTs require a database lookup on every request', 'JWTs do not support HTTPS'],
+        answer: 'JWTs are hard to revoke before expiration',
+        explanation: 'JWTs are stateless — the server does not track them. To revoke a JWT before it expires, you need a blocklist (which reintroduces server-side state). Sessions can be instantly revoked by deleting them.',
+      },
     ],
   },
 
@@ -844,6 +1025,42 @@ export const backendLessons: Record<
       'Build a validate middleware that can validate req.body, req.params, and req.query.',
       'What information should a production error log include? What should it never include?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Why is server-side validation necessary even if the frontend already validates input?',
+        options: ['Frontend validation is slower', 'Attackers can bypass the frontend entirely using tools like curl', 'Server-side validation is optional for trusted users', 'It improves database performance'],
+        answer: 'Attackers can bypass the frontend entirely using tools like curl',
+        explanation: 'Frontend validation improves UX but provides no security. Anyone can send requests directly to your API using curl, Postman, or scripts, bypassing all frontend checks.',
+      },
+      {
+        type: 'mcq',
+        question: 'In Zod, what does safeParse() return when validation fails?',
+        options: ['It throws an exception', 'An object with success: false and an error property', 'null', 'An empty object'],
+        answer: 'An object with success: false and an error property',
+        explanation: 'Unlike parse() which throws on failure, safeParse() returns { success: false, error: ZodError } so you can handle validation errors without try/catch.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What type of logger output format should be used in production for searchability and alerting?',
+        answer: 'JSON',
+        explanation: 'Structured JSON logs can be parsed by log management tools like Datadog, ELK, or CloudWatch. Unstructured text from console.log is difficult to search, filter, and alert on.',
+      },
+      {
+        type: 'mcq',
+        question: 'What information should NEVER be included in error responses sent to clients in production?',
+        options: ['Error message', 'HTTP status code', 'Stack traces and internal file paths', 'A request ID for support'],
+        answer: 'Stack traces and internal file paths',
+        explanation: 'Stack traces expose internal implementation details like file paths, library versions, and code structure. Only include them in development mode, never in production responses.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the purpose of a custom AppError class with factory methods like badRequest() and notFound()?',
+        options: ['To replace try/catch blocks', 'To provide consistent, structured error responses with appropriate status codes', 'To log errors to the database', 'To send errors to the frontend as HTML'],
+        answer: 'To provide consistent, structured error responses with appropriate status codes',
+        explanation: 'A custom AppError class standardizes error creation across the codebase. Factory methods make it easy to throw errors with the right status code, and a global handler formats them consistently.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -948,6 +1165,35 @@ export const backendLessons: Record<
       'Explain the difference between multipart/form-data and application/json. When is each used?',
       'Build an avatar upload endpoint with Multer that limits files to 2 MB and only accepts PNG/JPEG.',
       'What are the advantages of presigned URLs over routing file uploads through your server?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What content type is used to send file uploads in HTTP requests?',
+        options: ['application/json', 'text/plain', 'multipart/form-data', 'application/octet-stream'],
+        answer: 'multipart/form-data',
+        explanation: 'multipart/form-data encodes binary file data alongside text fields in separate boundary-delimited sections. application/json cannot represent binary file data.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does Multer\'s fileFilter option allow you to do?',
+        options: ['Compress uploaded files', 'Restrict which file types are accepted', 'Rename files after upload', 'Convert files to a different format'],
+        answer: 'Restrict which file types are accepted',
+        explanation: 'fileFilter is a callback that checks the file extension or MIME type and accepts or rejects the upload. This prevents users from uploading disallowed file types.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the main benefit of using presigned URLs for file uploads instead of routing files through your server?',
+        answer: 'Clients upload directly to cloud storage, reducing server load',
+        explanation: 'With presigned URLs, the file goes straight from the client to S3 (or similar). Your server only generates the signed URL, avoiding the bandwidth and memory cost of proxying large files.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why should you always generate unique filenames for uploaded files?',
+        options: ['To improve download speed', 'To prevent two users uploading files with the same name from overwriting each other', 'To reduce file size', 'To enable file compression'],
+        answer: 'To prevent two users uploading files with the same name from overwriting each other',
+        explanation: 'If two users both upload "photo.jpg," one would overwrite the other. Prefixing with a timestamp or UUID ensures every file has a unique name on storage.',
+      },
     ],
   },
 
@@ -1085,6 +1331,42 @@ export const backendLessons: Record<
       'Explain the difference between PaaS (Railway) and IaaS (EC2). When would you use each?',
       'Set up a docker-compose.yml that runs your API, PostgreSQL, and Redis together.',
       'What should a /health endpoint check and return?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the main benefit of using a multi-stage Docker build?',
+        options: ['It runs the app faster', 'It produces a smaller final image by excluding build-time dependencies', 'It enables hot reloading', 'It encrypts the source code'],
+        answer: 'It produces a smaller final image by excluding build-time dependencies',
+        explanation: 'Multi-stage builds use one stage for compiling (with dev dependencies) and copy only the production artifacts to a clean final stage, resulting in much smaller images.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does PM2 do when your Node.js application crashes in production?',
+        options: ['Sends an email to the developer', 'Shuts down the server gracefully', 'Automatically restarts the application', 'Rolls back to the previous version'],
+        answer: 'Automatically restarts the application',
+        explanation: 'PM2 monitors your process and automatically restarts it when it crashes. It also supports cluster mode for multi-core utilization and log management.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Where should secrets like database URLs and API keys be stored instead of hardcoding them in source code?',
+        answer: 'environment variables',
+        explanation: 'Environment variables keep secrets out of source code and version control. Use .env files locally (git-ignored) and platform-specific env var settings in production.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the purpose of Docker Compose?',
+        options: ['To build Docker images faster', 'To orchestrate multiple containers (API, database, Redis) as a single stack', 'To deploy containers to production', 'To replace Kubernetes'],
+        answer: 'To orchestrate multiple containers (API, database, Redis) as a single stack',
+        explanation: 'Docker Compose defines multi-container applications in a single YAML file. It creates a shared network so services can communicate, and manages their lifecycle with one command.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why should you include a /health endpoint in your backend application?',
+        options: ['To display server metrics to users', 'To allow deployment platforms to verify the app is running correctly', 'To speed up API responses', 'To automatically fix server errors'],
+        answer: 'To allow deployment platforms to verify the app is running correctly',
+        explanation: 'Health endpoints let load balancers, orchestrators, and monitoring tools check if the app is alive and its dependencies (database, Redis) are reachable. Failed health checks trigger alerts or automatic restarts.',
+      },
     ],
   },
 };

@@ -1,9 +1,10 @@
-import type { LessonStep } from '@/lib/learn-data';
+import type { LessonStep, QuizQuestion } from '@/lib/learn-data';
 
 export const multithreadingLessons: Record<string, {
   steps: LessonStep[];
   commonMistakes?: { mistake: string; explanation: string }[];
   practiceQuestions?: string[];
+  quiz?: QuizQuestion[];
 }> = {
   /* ──────────────────────────────────────────────
      1. WHAT IS A THREAD?
@@ -135,6 +136,41 @@ print(f"Threaded time: {time.time() - start:.1f}s")  # ~4.0s (max of 3,2,4)`,
       'Why is creating a thread cheaper than creating a process?',
       'Draw the thread lifecycle diagram and explain each state.',
       'Give a real-world example where multi-threading improves performance.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which of the following is NOT shared between threads in the same process?',
+        options: ['Heap memory', 'File handles', 'Stack', 'Code segment'],
+        answer: 'Stack',
+        explanation: 'Each thread has its own private stack (local variables and function call chain), program counter, and register state. Heap memory, file handles, and code are shared among all threads in a process.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the correct order of thread lifecycle states?',
+        options: ['New -> Running -> Runnable -> Terminated', 'New -> Runnable -> Running -> Terminated', 'Runnable -> New -> Running -> Terminated', 'New -> Blocked -> Running -> Terminated'],
+        answer: 'New -> Runnable -> Running -> Terminated',
+        explanation: 'A thread starts in the New state when created, becomes Runnable when start() is called, enters Running when the scheduler picks it, and reaches Terminated when execution completes. It can also go to Blocked/Waiting from Running.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the smallest unit of execution within a process?',
+        answer: 'A thread',
+        explanation: 'A thread is the smallest unit of execution within a process. It has its own program counter, stack, and registers, but shares heap memory and resources with other threads in the same process.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why does multi-threading improve performance for I/O-bound tasks?',
+        options: ['It uses more CPU cores for computation', 'Other threads can run while one thread waits for I/O', 'It reduces the total amount of I/O needed', 'It compresses data before sending to disk'],
+        answer: 'Other threads can run while one thread waits for I/O',
+        explanation: 'When a thread is blocked waiting for I/O (network, disk), the CPU is idle. Multi-threading allows other threads to use that CPU time productively, improving overall throughput.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What prevents true parallel execution of Python threads for CPU-bound tasks?',
+        answer: 'The Global Interpreter Lock (GIL)',
+        explanation: 'CPython has a Global Interpreter Lock (GIL) that allows only one thread to execute Python bytecode at a time. For CPU-bound tasks, use the multiprocessing module instead.',
+      },
     ],
   },
 
@@ -318,6 +354,35 @@ public class SharedMemoryExample {
       'When would you choose multiprocessing over multithreading in Python?',
       'What is the GIL and how does it affect threading in Python?',
       'Give an example where process isolation is critical (hint: browser tabs).',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Why is a thread context switch faster than a process context switch?',
+        options: ['Threads have smaller stacks', 'Threads do not require saving registers', 'Memory mapping and TLB do not need to change', 'Threads run at higher priority'],
+        answer: 'Memory mapping and TLB do not need to change',
+        explanation: 'During a thread context switch, the memory mapping (page tables) stays the same because threads share the same address space. Process switches require a full page table swap and TLB flush, making them 5-10x slower.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which communication method is used between threads in the same process?',
+        options: ['Pipes', 'Sockets', 'Shared variables', 'Message queues'],
+        answer: 'Shared variables',
+        explanation: 'Threads share the same heap memory, so they can communicate directly by reading and writing shared variables. Processes need IPC mechanisms like pipes, sockets, or message queues because they have separate memory spaces.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What type of tasks should you use processes for in Python instead of threads?',
+        answer: 'CPU-bound tasks',
+        explanation: 'Due to the GIL, Python threads cannot run CPU-bound code in parallel. Use multiprocessing for compute-heavy tasks (math, compression, data processing) and threads for I/O-bound tasks (network requests, file operations).',
+      },
+      {
+        type: 'mcq',
+        question: 'What happens if one thread crashes in a multi-threaded process?',
+        options: ['Only that thread stops', 'The entire process may crash', 'Other threads automatically restart it', 'The OS isolates the crash'],
+        answer: 'The entire process may crash',
+        explanation: 'Since threads share the same memory space, a crash (e.g., segfault, unhandled exception) in one thread can corrupt shared state and take down the entire process. Processes are isolated, so one crashing does not affect others.',
+      },
     ],
   },
 
@@ -637,6 +702,41 @@ t.start(); // prints "Running in: Thread-0"
       'Why is Runnable preferred over extending Thread in Java?',
       'Show what happens when you call run() instead of start() — explain the output.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What happens if you call run() instead of start() on a Thread object in Java?',
+        options: ['The thread starts in the background', 'The code executes on the current thread, not a new one', 'A RuntimeException is thrown', 'The thread is queued for later execution'],
+        answer: 'The code executes on the current thread, not a new one',
+        explanation: 'Calling run() directly just invokes the method on the current thread like any normal method call. You must call start() to create a new OS thread that will then invoke run() internally.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why is implementing Runnable preferred over extending Thread in Java?',
+        options: ['Runnable is faster at runtime', 'Java does not support multiple inheritance, so extending Thread wastes your one inheritance slot', 'Thread class is deprecated', 'Runnable allows returning values'],
+        answer: 'Java does not support multiple inheritance, so extending Thread wastes your one inheritance slot',
+        explanation: 'Since Java only allows single class inheritance, extending Thread prevents your class from extending anything else. Implementing Runnable (an interface) keeps your inheritance free and separates the task from the threading mechanism.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What method do you call to wait for a thread to finish execution?',
+        answer: 'join()',
+        explanation: 'The join() method blocks the calling thread until the target thread completes execution. This is how you wait for a thread to finish before proceeding with code that depends on its results.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is a daemon thread?',
+        options: ['A thread with highest priority', 'A background thread that does not prevent the JVM from exiting', 'A thread that cannot be interrupted', 'A thread that runs on a separate CPU core'],
+        answer: 'A background thread that does not prevent the JVM from exiting',
+        explanation: 'Daemon threads are background service threads (e.g., garbage collection). The JVM exits when all non-daemon threads finish, even if daemon threads are still running. Set with setDaemon(true) before calling start().',
+      },
+      {
+        type: 'short-answer',
+        question: 'In Python threading, what parameter do you pass to Thread() to specify the function to execute?',
+        answer: 'target',
+        explanation: 'You pass the function as the target parameter: threading.Thread(target=my_function, args=(arg1, arg2)). The args parameter is a tuple of positional arguments for the target function.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -857,6 +957,41 @@ print(f"Counter: {counter}")`,
       'Explain why `counter++` is not atomic.',
       'What is a TOCTOU race condition? Give an example.',
       'How would you prove that a race condition exists in code (testing strategy)?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is a race condition?',
+        options: ['Two threads competing for CPU time', 'When output depends on uncontrollable timing of events', 'A deadlock between two processes', 'A thread running faster than expected'],
+        answer: 'When output depends on uncontrollable timing of events',
+        explanation: 'A race condition occurs when the behavior of a program depends on the relative timing of events, such as the order in which threads execute, leading to unpredictable results.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why is counter++ not an atomic operation?',
+        options: ['It is too slow for the CPU', 'It involves three steps: read, increment, write', 'The compiler optimizes it away', 'It locks the entire memory bus'],
+        answer: 'It involves three steps: read, increment, write',
+        explanation: 'counter++ is actually three separate CPU operations: (1) read the current value, (2) add 1 to it, (3) write the new value back. Another thread can intervene between any of these steps, causing a lost update.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does TOCTOU stand for in the context of race conditions?',
+        answer: 'Time Of Check to Time Of Use',
+        explanation: 'TOCTOU (Time Of Check to Time Of Use) is a class of race condition where a condition is checked and then acted upon, but the state changes between the check and the use. For example, checking if a file exists and then reading it — another thread could delete it in between.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which of the following is NOT a required condition for a race condition?',
+        options: ['Shared mutable state', 'Concurrent access by multiple threads', 'At least one thread performing a write', 'Threads running on different CPU cores'],
+        answer: 'Threads running on different CPU cores',
+        explanation: 'Race conditions can occur even on a single-core CPU with time-slicing. The three requirements are: shared mutable state, concurrent access, and at least one write operation. No multiple cores needed.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the region of code that accesses shared resources and must not be executed by more than one thread at a time?',
+        answer: 'Critical section',
+        explanation: 'A critical section is a code segment that accesses shared resources and must be executed atomically (by one thread at a time) to prevent race conditions. Locks, mutexes, and synchronized blocks are used to protect critical sections.',
+      },
     ],
   },
 
@@ -1196,6 +1331,41 @@ try {
       'What is the difference between synchronized and ReentrantLock in Java?',
       'Explain Compare-And-Swap (CAS) and when AtomicInteger is better than locks.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the primary purpose of a mutex?',
+        options: ['To speed up thread execution', 'To ensure only one thread accesses a critical section at a time', 'To create new threads efficiently', 'To communicate between processes'],
+        answer: 'To ensure only one thread accesses a critical section at a time',
+        explanation: 'A mutex (mutual exclusion) ensures that only one thread can enter a critical section at a time. Other threads that try to acquire the locked mutex will block until the owning thread releases it.',
+      },
+      {
+        type: 'mcq',
+        question: 'What advantage does ReentrantLock have over the synchronized keyword in Java?',
+        options: ['It is faster', 'It supports tryLock with timeout and fairness policies', 'It does not require unlocking', 'It works across processes'],
+        answer: 'It supports tryLock with timeout and fairness policies',
+        explanation: 'ReentrantLock offers tryLock() (non-blocking attempt), tryLock(timeout) (timed attempt), fairness policy (FIFO ordering), and the ability to check lock status. synchronized is simpler but less flexible.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does "reentrant" mean in the context of locks?',
+        answer: 'A thread that already holds the lock can acquire it again without deadlocking',
+        explanation: 'A reentrant lock allows the same thread to acquire the lock multiple times (e.g., in recursive methods or nested synchronized blocks). An internal counter tracks how many times the lock has been acquired, and it is fully released only when the counter reaches zero.',
+      },
+      {
+        type: 'mcq',
+        question: 'When is a ReadWriteLock more efficient than a regular mutex?',
+        options: ['When all operations are writes', 'When reads are far more frequent than writes', 'When there is only one thread', 'When the critical section is very short'],
+        answer: 'When reads are far more frequent than writes',
+        explanation: 'A ReadWriteLock allows multiple threads to read simultaneously (shared lock) while writes require exclusive access. This is ideal for read-heavy workloads like caches, where most operations are reads and writes are infrequent.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is Compare-And-Swap (CAS)?',
+        answer: 'An atomic CPU instruction that updates a value only if it matches an expected value',
+        explanation: 'CAS atomically checks if a variable equals an expected value and, if so, updates it to a new value. It is the foundation of lock-free algorithms and atomic classes like AtomicInteger. If the CAS fails (another thread changed the value), the operation retries.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -1480,6 +1650,41 @@ public class DeadlockDetector {
       'How would you detect a deadlock in production?',
       'What is a livelock? How is it different from a deadlock?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which of the following is NOT one of the four Coffman conditions for deadlock?',
+        options: ['Mutual exclusion', 'Hold and wait', 'Starvation', 'Circular wait'],
+        answer: 'Starvation',
+        explanation: 'The four Coffman conditions are: (1) Mutual Exclusion, (2) Hold and Wait, (3) No Preemption, (4) Circular Wait. All four must be present simultaneously for deadlock. Starvation is a separate problem where a thread never gets access to a resource.',
+      },
+      {
+        type: 'mcq',
+        question: 'How does lock ordering prevent deadlock?',
+        options: ['It makes locks faster to acquire', 'It ensures all threads acquire locks in the same global order, preventing circular wait', 'It limits the number of locks a thread can hold', 'It allows the OS to preempt locks'],
+        answer: 'It ensures all threads acquire locks in the same global order, preventing circular wait',
+        explanation: 'If all threads always acquire locks in the same predetermined order (e.g., by lock ID), circular wait becomes impossible. Thread A locks 1 then 2, Thread B also locks 1 then 2 — no cycle can form.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the difference between a deadlock and a livelock?',
+        answer: 'In a deadlock threads are blocked forever; in a livelock threads are active but making no progress',
+        explanation: 'Deadlocked threads are permanently blocked, waiting for each other. Livelocked threads keep retrying (e.g., releasing and re-acquiring locks) but never make progress because they keep interfering with each other. Adding random backoff can break livelocks.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which strategy breaks the "Hold and Wait" condition?',
+        options: ['Lock ordering', 'Requiring threads to acquire all needed locks at once before proceeding', 'Using tryLock with timeout', 'Using semaphores instead of mutexes'],
+        answer: 'Requiring threads to acquire all needed locks at once before proceeding',
+        explanation: 'If a thread must acquire all locks atomically (all-or-nothing), it never holds some locks while waiting for others. This breaks the Hold and Wait condition but can reduce concurrency.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What Java tool can you use to detect deadlocks in a running application?',
+        answer: 'jstack or ThreadMXBean',
+        explanation: 'jstack prints thread dumps showing which threads are blocked and what locks they hold/wait for. Programmatically, ThreadMXBean.findDeadlockedThreads() detects cycles in lock dependencies at runtime.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -1731,6 +1936,41 @@ t1.join(); t2.join()`,
       'Build a print queue that allows 2 printers to process jobs concurrently.',
       'Explain why a semaphore has no ownership while a mutex does.',
       'Can you implement a mutex using a semaphore? Can you implement a semaphore using a mutex?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the key difference between a semaphore and a mutex?',
+        options: ['A semaphore is faster', 'A semaphore can allow multiple threads to access a resource simultaneously', 'A mutex works across processes', 'A semaphore can only be used in Java'],
+        answer: 'A semaphore can allow multiple threads to access a resource simultaneously',
+        explanation: 'A mutex allows exactly one thread at a time (binary). A counting semaphore maintains a permit count and allows up to N threads to access a resource concurrently. For example, a semaphore with 3 permits allows 3 simultaneous database connections.',
+      },
+      {
+        type: 'mcq',
+        question: 'What happens when a thread calls acquire() on a semaphore with 0 available permits?',
+        options: ['It throws an exception', 'It returns false immediately', 'It blocks until a permit becomes available', 'It creates a new permit'],
+        answer: 'It blocks until a permit becomes available',
+        explanation: 'acquire() is a blocking call. If no permits are available, the thread will wait until another thread calls release() to return a permit. Use tryAcquire() for a non-blocking attempt.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is a binary semaphore?',
+        answer: 'A semaphore with a maximum count of 1',
+        explanation: 'A binary semaphore has only two states: available (1) or unavailable (0). It behaves similarly to a mutex but with a key difference: any thread can release a binary semaphore, while a mutex can only be released by the thread that acquired it (ownership).',
+      },
+      {
+        type: 'mcq',
+        question: 'In a connection pool of size 5, what initial permit count should the semaphore have?',
+        options: ['0', '1', '5', '10'],
+        answer: '5',
+        explanation: 'The semaphore permit count should match the number of available resources. With 5 connections in the pool, initialize with 5 permits. Each thread acquires a permit before taking a connection and releases it when returning the connection.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why does a semaphore have no concept of ownership unlike a mutex?',
+        answer: 'Any thread can call release(), not just the thread that called acquire()',
+        explanation: 'A mutex has ownership: only the locking thread can unlock it. A semaphore has no ownership: any thread can release a permit. This makes semaphores suitable for signaling between threads (one thread signals another by releasing a permit).',
+      },
     ],
   },
 
@@ -2039,6 +2279,41 @@ for i in range(NUM_CONSUMERS):
       'Design a logging system where the application produces log entries and a background thread writes them.',
       'What happens if the producer is much faster than the consumer? How does a bounded buffer help?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Why must you use while() instead of if() when checking a condition before wait()?',
+        options: ['while() is faster than if()', 'Spurious wakeups can occur, so the condition must be re-checked after waking', 'if() does not work with monitors', 'while() prevents deadlocks'],
+        answer: 'Spurious wakeups can occur, so the condition must be re-checked after waking',
+        explanation: 'Threads can wake up without being notified (spurious wakeups), or another thread may have consumed the item between notify() and the waiting thread re-acquiring the lock. Using while() ensures the condition is re-verified after every wakeup.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the purpose of a bounded buffer in the producer-consumer pattern?',
+        options: ['To make producers faster', 'To limit memory usage and apply backpressure when the buffer is full', 'To ensure LIFO ordering', 'To prevent deadlocks'],
+        answer: 'To limit memory usage and apply backpressure when the buffer is full',
+        explanation: 'A bounded buffer has a fixed capacity. When full, producers block until consumers free space. This prevents unbounded memory growth when producers are faster than consumers and creates natural flow control (backpressure).',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the "poison pill" pattern in producer-consumer?',
+        answer: 'A special sentinel value placed in the queue to signal consumers to shut down',
+        explanation: 'The producer sends a special value (poison pill) into the queue. When a consumer receives it, it knows there is no more work and terminates gracefully. For multiple consumers, send one poison pill per consumer.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which Java class provides a thread-safe bounded queue for producer-consumer?',
+        options: ['ArrayList', 'LinkedList', 'ArrayBlockingQueue', 'PriorityQueue'],
+        answer: 'ArrayBlockingQueue',
+        explanation: 'ArrayBlockingQueue is a bounded, thread-safe queue that blocks producers when full and consumers when empty. It handles all synchronization internally, making producer-consumer implementation straightforward.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What two operations do wait() and notify() coordinate in the producer-consumer pattern?',
+        answer: 'Producers wait when the buffer is full; consumers wait when the buffer is empty',
+        explanation: 'Producers call wait() when the buffer is full (no space to add items) and consumers call wait() when the buffer is empty (nothing to consume). notify() or notifyAll() wakes up waiting threads when the state changes.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -2301,6 +2576,41 @@ try {
       'Implement a custom thread pool with a bounded task queue and rejection policy.',
       'When should you use CachedThreadPool vs FixedThreadPool?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the recommended thread pool size for CPU-bound tasks?',
+        options: ['1 thread', 'Number of CPU cores', 'Number of CPU cores * 10', 'As many as possible'],
+        answer: 'Number of CPU cores',
+        explanation: 'For CPU-bound tasks, the optimal pool size is the number of CPU cores (or cores + 1). More threads would cause excessive context switching without benefit since every core is already busy computing.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the difference between shutdown() and shutdownNow() in Java ExecutorService?',
+        options: ['shutdown() is faster', 'shutdown() completes pending tasks then stops; shutdownNow() attempts to cancel running tasks immediately', 'shutdownNow() waits for tasks; shutdown() does not', 'There is no difference'],
+        answer: 'shutdown() completes pending tasks then stops; shutdownNow() attempts to cancel running tasks immediately',
+        explanation: 'shutdown() stops accepting new tasks but lets queued and running tasks complete. shutdownNow() attempts to interrupt running tasks and returns the list of queued tasks that were never started.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why is creating a new thread for every task inefficient?',
+        answer: 'Thread creation has overhead (memory allocation, OS calls), and too many threads cause excessive context switching',
+        explanation: 'Each thread consumes ~1MB of stack memory and requires OS-level allocation. Creating and destroying threads frequently wastes resources. Thread pools reuse a fixed set of threads, amortizing the creation cost across many tasks.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which thread pool type creates new threads as needed and reuses idle ones?',
+        options: ['FixedThreadPool', 'SingleThreadExecutor', 'CachedThreadPool', 'ScheduledThreadPool'],
+        answer: 'CachedThreadPool',
+        explanation: 'CachedThreadPool creates new threads on demand and reuses threads that have been idle for 60 seconds. It is good for many short-lived tasks but dangerous for long-running tasks since it can create unbounded threads.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What interface does a thread pool task implement when it needs to return a result?',
+        answer: 'Callable',
+        explanation: 'Callable<V> is like Runnable but its call() method returns a value of type V and can throw checked exceptions. Submit a Callable to an ExecutorService and get a Future<V> to retrieve the result later.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -2546,6 +2856,35 @@ adder.sum();        // aggregate all cells — eventually consistent`,
       'Compare ConcurrentHashMap with Collections.synchronizedMap — which is better and why?',
       'Implement a thread-safe bounded set that rejects additions when full.',
       'Why is CopyOnWriteArrayList good for event listener lists?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'How does ConcurrentHashMap achieve better performance than Collections.synchronizedMap?',
+        options: ['It uses no locks at all', 'It locks individual segments/buckets instead of the entire map', 'It is stored in faster memory', 'It limits the number of entries'],
+        answer: 'It locks individual segments/buckets instead of the entire map',
+        explanation: 'ConcurrentHashMap uses fine-grained locking (segment/bucket-level in older versions, CAS + synchronized on individual nodes in Java 8+). This allows multiple threads to read and write different buckets concurrently, unlike synchronizedMap which locks the entire map.',
+      },
+      {
+        type: 'mcq',
+        question: 'When is CopyOnWriteArrayList a good choice?',
+        options: ['When writes are very frequent', 'When reads far outnumber writes', 'When the list is very large', 'When elements must be unique'],
+        answer: 'When reads far outnumber writes',
+        explanation: 'CopyOnWriteArrayList creates a new copy of the entire array on every write, making writes expensive O(n). But reads require no locking and are very fast. It is ideal for event listener lists or configuration that is read often but rarely modified.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What advantage does LongAdder have over AtomicLong for high-contention counters?',
+        answer: 'LongAdder distributes updates across multiple cells to reduce contention',
+        explanation: 'AtomicLong uses a single CAS variable, causing contention when many threads update simultaneously. LongAdder splits the counter into multiple cells, each updated independently, and sums them when reading. This dramatically reduces CAS failures under high contention.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does a BlockingQueue do when you try to take() from an empty queue?',
+        options: ['Returns null', 'Throws NoSuchElementException', 'Blocks until an element becomes available', 'Returns a default value'],
+        answer: 'Blocks until an element becomes available',
+        explanation: 'take() is a blocking operation that waits until an element is available. For non-blocking alternatives, use poll() (returns null if empty) or poll(timeout) (waits up to a specified duration).',
+      },
     ],
   },
 
@@ -2817,6 +3156,41 @@ async function safe() {
       'When is async/await better than threading? When is threading better?',
       'Chain three API calls where each depends on the previous result using CompletableFuture.',
       'Implement Promise.race() equivalent in Python (return first completed result).',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the key difference between async/await and traditional threading?',
+        options: ['Async/await uses multiple CPU cores', 'Async/await uses cooperative scheduling on a single thread via an event loop', 'Async/await is always faster', 'Async/await requires more memory'],
+        answer: 'Async/await uses cooperative scheduling on a single thread via an event loop',
+        explanation: 'Async/await uses an event loop that cooperatively schedules coroutines on one (or few) threads. Tasks yield control at await points, allowing other tasks to run. There is no OS thread per task, making it very lightweight for I/O-bound workloads.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does Future.get() do if the result is not yet available?',
+        options: ['Returns null', 'Throws an exception', 'Blocks the calling thread until the result is ready', 'Starts a new thread to compute it'],
+        answer: 'Blocks the calling thread until the result is ready',
+        explanation: 'Future.get() is a blocking call that waits until the asynchronous computation completes and returns the result. Use CompletableFuture.thenApply() for non-blocking composition instead.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What Python function runs multiple coroutines concurrently and waits for all to complete?',
+        answer: 'asyncio.gather()',
+        explanation: 'asyncio.gather() takes multiple coroutines or futures, runs them concurrently on the event loop, and returns a list of their results in the same order. It is the async equivalent of starting multiple threads and joining them all.',
+      },
+      {
+        type: 'mcq',
+        question: 'When is threading better than async/await?',
+        options: ['For network I/O', 'For CPU-bound tasks that need true parallelism', 'For handling many concurrent connections', 'For event-driven programming'],
+        answer: 'For CPU-bound tasks that need true parallelism',
+        explanation: 'Async/await excels at I/O-bound concurrency (thousands of network connections) but runs on a single thread. For CPU-bound parallelism (computation, data processing), real OS threads (or processes) are needed to utilize multiple CPU cores.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does thenApply() do on a CompletableFuture in Java?',
+        answer: 'Chains a transformation function that runs when the future completes, without blocking',
+        explanation: 'thenApply() attaches a callback that transforms the result of a CompletableFuture when it completes. It returns a new CompletableFuture with the transformed result, enabling non-blocking composition of asynchronous operations.',
+      },
     ],
   },
 
@@ -3156,6 +3530,41 @@ class DiningPhilosophersTimeout:
       'What is the difference between deadlock, livelock, and starvation?',
       'Modify the timeout solution to add fair scheduling (prevent starvation).',
       'How does the Dining Philosophers relate to database deadlocks? Give a real example.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'In the Dining Philosophers problem, what causes deadlock?',
+        options: ['Too many philosophers', 'Each philosopher picks up their left fork and waits for the right fork, creating a circular wait', 'The forks are too slow to use', 'Philosophers eat too quickly'],
+        answer: 'Each philosopher picks up their left fork and waits for the right fork, creating a circular wait',
+        explanation: 'If all 5 philosophers simultaneously pick up their left fork, each waits for the right fork held by their neighbor. This creates a circular dependency (circular wait) — one of the four Coffman conditions — resulting in deadlock.',
+      },
+      {
+        type: 'mcq',
+        question: 'How does the resource ordering solution prevent deadlock in the Dining Philosophers?',
+        options: ['It adds more forks', 'It forces philosophers to always pick up the lower-numbered fork first', 'It limits philosophers to one fork', 'It removes one philosopher'],
+        answer: 'It forces philosophers to always pick up the lower-numbered fork first',
+        explanation: 'By numbering forks and always acquiring the lower-numbered one first, the circular wait condition is broken. The last philosopher must pick up fork 0 before fork 4, competing with philosopher 0 instead of creating a cycle.',
+      },
+      {
+        type: 'short-answer',
+        question: 'In the arbitrator solution, what is the minimum number of semaphore permits needed for 5 philosophers to avoid deadlock?',
+        answer: '4',
+        explanation: 'With 4 permits, at most 4 philosophers can attempt to eat simultaneously. This guarantees at least one philosopher can acquire both forks and complete, breaking the circular wait. 5 permits would allow deadlock again.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is starvation in the context of the Dining Philosophers?',
+        options: ['A philosopher runs out of memory', 'A philosopher never gets to eat because neighbors always grab the forks first', 'All philosophers stop eating', 'The program throws a StackOverflowError'],
+        answer: 'A philosopher never gets to eat because neighbors always grab the forks first',
+        explanation: 'Starvation occurs when a thread (philosopher) is perpetually denied access to resources, even though the system is not deadlocked. Fairness mechanisms like fair locks or fair semaphores ensure every philosopher eventually gets to eat.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Name a real-world system that faces the same problem as the Dining Philosophers.',
+        answer: 'Database transactions acquiring locks on multiple tables or rows',
+        explanation: 'Database transactions that need to lock multiple rows or tables face the same circular dependency problem. If transaction A locks row 1 and waits for row 2, while transaction B locks row 2 and waits for row 1, deadlock occurs. Databases use lock ordering and deadlock detection to handle this.',
+      },
     ],
   },
 };
