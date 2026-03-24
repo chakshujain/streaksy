@@ -13,6 +13,9 @@ jest.mock('../../modules/notification/service/notification-hub', () => ({
     sendToMany: jest.fn().mockResolvedValue(undefined),
   },
 }));
+jest.mock('../../config/email', () => ({
+  sendEmail: jest.fn().mockResolvedValue(true),
+}));
 
 const mockedNotifRepo = notificationRepository as jest.Mocked<typeof notificationRepository>;
 const mockedDigestRepo = digestRepository as jest.Mocked<typeof digestRepository>;
@@ -209,6 +212,18 @@ describe('E2E Journey: Notification & Digest', () => {
 
   describe('Step 6: Preview digest content', () => {
     it('should preview morning digest', async () => {
+      mockedDigestRepo.getDigestPreferences.mockResolvedValue({
+        user_id: userId,
+        email,
+        display_name: 'Notif User',
+        digest_enabled: true,
+        digest_time: '08:00',
+        digest_frequency: 'daily',
+        evening_reminder: true,
+        weekly_report: true,
+      } as any);
+      mockedDigestRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedDigestRepo.logDigest.mockResolvedValue(undefined);
       mockedDigestRepo.getUserStats.mockResolvedValue({
         current_streak: 7,
         longest_streak: 14,
@@ -225,10 +240,22 @@ describe('E2E Journey: Notification & Digest', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.sent).toBeDefined();
+      expect(res.body.sent).toBe(true);
     });
 
     it('should preview weekly report', async () => {
+      mockedDigestRepo.getDigestPreferences.mockResolvedValue({
+        user_id: userId,
+        email,
+        display_name: 'Notif User',
+        digest_enabled: true,
+        digest_time: '08:00',
+        digest_frequency: 'daily',
+        evening_reminder: true,
+        weekly_report: true,
+      } as any);
+      mockedDigestRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedDigestRepo.logDigest.mockResolvedValue(undefined);
       mockedDigestRepo.getUserStats.mockResolvedValue({
         current_streak: 7,
         longest_streak: 14,
@@ -253,7 +280,7 @@ describe('E2E Journey: Notification & Digest', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.sent).toBeDefined();
+      expect(res.body.sent).toBe(true);
     });
   });
 });

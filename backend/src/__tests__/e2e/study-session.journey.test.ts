@@ -73,6 +73,8 @@ describe('E2E Journey: Study Session', () => {
     recurrence: null,
     meet_link: 'https://meet.jit.si/streaksy-study123',
     calendar_event_id: null,
+    group_id: null,
+    roadmap_id: null,
     problem_title: 'Two Sum',
     problem_slug: 'two-sum',
     problem_difficulty: 'easy',

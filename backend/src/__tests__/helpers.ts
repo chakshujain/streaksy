@@ -35,6 +35,10 @@ export function mockUserRow(overrides?: Partial<Record<string, unknown>>) {
     location: null,
     github_url: null,
     linkedin_url: null,
+    oauth_provider: null,
+    oauth_id: null,
+    google_refresh_token: null,
+    google_calendar_connected: false,
     created_at: new Date('2024-01-01'),
     ...overrides,
   };

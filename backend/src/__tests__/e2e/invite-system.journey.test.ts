@@ -48,6 +48,8 @@ describe('E2E Journey: Invite System', () => {
     recurrence: null,
     meet_link: null,
     calendar_event_id: null,
+    group_id: null,
+    roadmap_id: null,
   };
 
   beforeEach(() => {
