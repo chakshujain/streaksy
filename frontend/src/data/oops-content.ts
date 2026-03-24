@@ -1,9 +1,10 @@
-import type { LessonStep } from '@/lib/learn-data';
+import type { LessonStep, QuizQuestion } from '@/lib/learn-data';
 
 export const oopsLessons: Record<string, {
   steps: LessonStep[];
   commonMistakes?: { mistake: string; explanation: string }[];
   practiceQuestions?: string[];
+  quiz?: QuizQuestion[];
 }> = {
   /* ──────────────────────────────────────────────
      1. WHAT IS OOP?
@@ -195,6 +196,41 @@ my_dog.bark()  # Rex says Woof!`,
       'Rewrite a procedural "calculate area of shapes" program using OOP.',
       'Why does Java force everything into a class while Python does not?',
       'Give a real-world analogy for each of the four OOP pillars.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which of the following is NOT one of the four pillars of OOP?',
+        options: ['Encapsulation', 'Compilation', 'Polymorphism', 'Abstraction'],
+        answer: 'Compilation',
+        explanation: 'The four pillars of OOP are Encapsulation, Inheritance, Polymorphism, and Abstraction. Compilation is a build process, not an OOP principle.',
+      },
+      {
+        type: 'mcq',
+        question: 'In OOP, what is the primary advantage over procedural programming?',
+        options: ['Faster execution speed', 'Data and functions are bundled together', 'Uses less memory', 'Requires fewer lines of code'],
+        answer: 'Data and functions are bundled together',
+        explanation: 'OOP bundles data with the functions that operate on it into objects, making code easier to organize, reuse, and maintain compared to procedural programming where data and functions are separate.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does the word "polymorphism" literally mean in Greek?',
+        answer: 'many forms',
+        explanation: 'In Greek, "poly" means many and "morph" means forms. Polymorphism allows one interface to have many implementations.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which language enforces OOP by requiring everything to live inside a class?',
+        options: ['Python', 'JavaScript', 'Java', 'C'],
+        answer: 'Java',
+        explanation: 'Java enforces OOP — every piece of code must exist inside a class. Python is multi-paradigm and supports OOP but does not require it.',
+      },
+      {
+        type: 'short-answer',
+        question: 'In OOP, what is the relationship between a class and an object?',
+        answer: 'A class is a blueprint and an object is an instance of that class',
+        explanation: 'A class defines the structure and behavior (like an architectural blueprint), while an object is a concrete instance built from that class (like a house built from the blueprint).',
+      },
     ],
   },
 
@@ -502,6 +538,41 @@ print(car3.speed)  # 150 (independent)`,
       'Explain what happens in memory when you write `Dog d = new Dog("Rex")` in Java.',
       'Create a `Counter` class with a static variable that tracks how many Counter objects have been created.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the process of creating an object from a class called?',
+        options: ['Compilation', 'Instantiation', 'Encapsulation', 'Serialization'],
+        answer: 'Instantiation',
+        explanation: 'Creating an object from a class is called instantiation. Each object (instance) gets its own copy of the instance variables defined in the class.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What keyword is used to create a new object in Java?',
+        answer: 'new',
+        explanation: 'In Java, the "new" keyword is used to instantiate an object, e.g., Car car1 = new Car("Toyota", "Camry", 2024).',
+      },
+      {
+        type: 'mcq',
+        question: 'Which of the following is true about static (class) members?',
+        options: ['Each object gets its own copy', 'They are shared across all instances of the class', 'They can only be accessed inside the constructor', 'They are always private'],
+        answer: 'They are shared across all instances of the class',
+        explanation: 'Static members belong to the class itself, not to any particular instance. All objects share the same static variable, so changing it in one place affects all.',
+      },
+      {
+        type: 'mcq',
+        question: 'What are the three core components of a class?',
+        options: ['Variables, loops, conditions', 'Properties, constructor, methods', 'Import, export, return', 'Header, body, footer'],
+        answer: 'Properties, constructor, methods',
+        explanation: 'Every class has properties (data/fields), a constructor (initialization logic), and methods (behaviors/actions the object can perform).',
+      },
+      {
+        type: 'short-answer',
+        question: 'In Python, what is the name of the constructor method?',
+        answer: '__init__',
+        explanation: 'In Python, the __init__ method serves as the constructor. It is automatically called when a new object is created from the class.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -755,6 +826,41 @@ print(user.check_password("wrong"))      # False
       'Explain the difference between data hiding and encapsulation.',
       'Why is returning a mutable list from a getter dangerous? Show an example.',
       'Refactor a class with all public fields to use proper encapsulation with validation.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which OOP principle involves hiding internal implementation details and exposing only a controlled interface?',
+        options: ['Inheritance', 'Polymorphism', 'Encapsulation', 'Abstraction'],
+        answer: 'Encapsulation',
+        explanation: 'Encapsulation bundles data with the methods that operate on it and restricts direct access to internal details, exposing only a controlled interface.',
+      },
+      {
+        type: 'mcq',
+        question: 'In Java, which access modifier restricts access to the class itself only?',
+        options: ['public', 'protected', 'default', 'private'],
+        answer: 'private',
+        explanation: 'The private access modifier makes a field or method accessible only within the class that declares it. Not even subclasses can access it directly.',
+      },
+      {
+        type: 'short-answer',
+        question: 'In Python, what naming convention indicates a private variable?',
+        answer: 'double underscore prefix',
+        explanation: 'Python uses __double_underscore prefix (name mangling) to indicate private variables. A single underscore _ is the convention for protected.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why should setters include validation logic?',
+        options: ['To make the code run faster', 'To prevent invalid data from corrupting the object state', 'To reduce memory usage', 'To enable polymorphism'],
+        answer: 'To prevent invalid data from corrupting the object state',
+        explanation: 'Setters act as gatekeepers. By validating input before assignment (e.g., age cannot be negative, email must contain @), they protect the object from entering an invalid state.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the difference between data hiding and encapsulation?',
+        answer: 'Data hiding restricts access to fields; encapsulation bundles data and methods together',
+        explanation: 'Data hiding is about restricting access (using private/protected). Encapsulation is the broader concept of bundling data with behavior. Data hiding is a technique used to achieve encapsulation.',
+      },
     ],
   },
 
@@ -1062,6 +1168,41 @@ tesla.start_engine()
       'What is the diamond problem? How does Python solve it?',
       'Why should you prefer composition over inheritance? Give an example where inheritance is wrong.',
       'Build a 3-level hierarchy: Vehicle → Car → ElectricCar, each adding new behavior.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What keyword is used to inherit from a class in Java?',
+        options: ['implements', 'inherits', 'extends', 'super'],
+        answer: 'extends',
+        explanation: 'In Java, the extends keyword is used to create a subclass that inherits from a parent class. For example: class Dog extends Animal.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which type of inheritance is NOT directly supported in Java?',
+        options: ['Single inheritance', 'Multilevel inheritance', 'Multiple inheritance of classes', 'Hierarchical inheritance'],
+        answer: 'Multiple inheritance of classes',
+        explanation: 'Java does not support multiple inheritance of classes (a class extending two classes) to avoid the diamond problem. However, a class can implement multiple interfaces.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does the super keyword do in inheritance?',
+        answer: 'It refers to the parent class, allowing access to parent methods and constructors',
+        explanation: 'The super keyword is used to call the parent class constructor (super()) or to invoke a parent method that has been overridden in the child class (super.methodName()).',
+      },
+      {
+        type: 'mcq',
+        question: 'When a child class provides its own version of a method already defined in the parent, this is called:',
+        options: ['Method overloading', 'Method overriding', 'Method hiding', 'Method chaining'],
+        answer: 'Method overriding',
+        explanation: 'Method overriding occurs when a subclass provides a specific implementation for a method that is already defined in its parent class. The method signature must match exactly.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What annotation should you use in Java when overriding a parent method?',
+        answer: '@Override',
+        explanation: 'The @Override annotation tells the compiler you intend to override a parent method. If the method signature does not match any parent method, the compiler will throw an error, catching bugs early.',
+      },
     ],
   },
 
@@ -1402,6 +1543,41 @@ public double totalArea(Shape[] shapes) {
       'Can you override a static method? Explain.',
       'Write a polymorphic calculateArea() function that works with any Shape.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Method overloading is an example of which type of polymorphism?',
+        options: ['Runtime polymorphism', 'Compile-time polymorphism', 'Dynamic dispatch', 'Late binding'],
+        answer: 'Compile-time polymorphism',
+        explanation: 'Method overloading (same method name, different parameters) is resolved at compile time based on the argument types. This is also called static polymorphism.',
+      },
+      {
+        type: 'mcq',
+        question: 'Method overriding is an example of which type of polymorphism?',
+        options: ['Compile-time polymorphism', 'Static polymorphism', 'Runtime polymorphism', 'Parametric polymorphism'],
+        answer: 'Runtime polymorphism',
+        explanation: 'Method overriding is resolved at runtime based on the actual object type, not the reference type. The JVM decides which overridden method to call using dynamic dispatch.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does "polymorphism" literally mean?',
+        answer: 'many forms',
+        explanation: 'From Greek: "poly" = many, "morph" = forms. Polymorphism allows the same interface (method name) to exhibit different behaviors depending on the actual object type.',
+      },
+      {
+        type: 'mcq',
+        question: 'Given: Animal a = new Dog(); a.speak(); — which speak() method is called?',
+        options: ['Animal\'s speak()', 'Dog\'s speak()', 'Depends on the compiler', 'Neither — it throws an error'],
+        answer: 'Dog\'s speak()',
+        explanation: 'Even though the reference type is Animal, the actual object is a Dog. At runtime, Java uses dynamic dispatch to call Dog\'s overridden speak() method. This is runtime polymorphism in action.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Does Python support traditional method overloading like Java?',
+        answer: 'No',
+        explanation: 'Python does not support traditional method overloading. If you define two methods with the same name but different parameters, the latest definition wins. You can simulate overloading using default arguments or *args.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -1638,6 +1814,35 @@ processor.process_payment(49.99)  # abstracted!`,
       'Explain the difference between abstraction and encapsulation with examples.',
       'Name 3 real-world abstraction layers you use daily as a programmer.',
       'When would you use an abstract class vs a regular class?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the key difference between abstraction and encapsulation?',
+        options: ['They are the same thing', 'Abstraction hides complexity; encapsulation hides data', 'Encapsulation hides complexity; abstraction hides data', 'Abstraction is for interfaces; encapsulation is for classes'],
+        answer: 'Abstraction hides complexity; encapsulation hides data',
+        explanation: 'Abstraction focuses on hiding implementation complexity and showing only relevant features (the "what"). Encapsulation focuses on hiding data by restricting access to internal fields (access control).',
+      },
+      {
+        type: 'mcq',
+        question: 'Can you create an instance of an abstract class directly?',
+        options: ['Yes, always', 'Yes, if it has a constructor', 'No, abstract classes cannot be instantiated', 'Only in Python'],
+        answer: 'No, abstract classes cannot be instantiated',
+        explanation: 'Abstract classes are incomplete by design — they contain abstract methods without implementations. You must create a concrete subclass that implements all abstract methods before instantiation.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What keyword is used to declare an abstract class in Java?',
+        answer: 'abstract',
+        explanation: 'In Java, you use the abstract keyword before the class declaration: public abstract class Shape { ... }. This prevents direct instantiation and allows abstract method declarations.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which of the following is a real-world example of abstraction?',
+        options: ['A locked safe', 'A car dashboard hiding engine details', 'A password-protected file', 'A private variable'],
+        answer: 'A car dashboard hiding engine details',
+        explanation: 'A car dashboard abstracts away the complexity of the engine, transmission, and fuel injection, giving you simple controls (steering wheel, pedals). A locked safe and password-protected file are examples of encapsulation (access control).',
+      },
     ],
   },
 
@@ -1930,6 +2135,41 @@ render(Square())  # Drawing square
       'What is the diamond problem with interfaces? How does Java handle it?',
       'Refactor a fat Worker interface into segregated interfaces. Show the before and after.',
       'Explain Python\'s Protocol and how it differs from ABC.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What keyword does a Java class use to adopt an interface?',
+        options: ['extends', 'implements', 'inherits', 'uses'],
+        answer: 'implements',
+        explanation: 'In Java, a class uses the implements keyword to adopt an interface: class Dog implements Walkable, Barkable. A class can implement multiple interfaces.',
+      },
+      {
+        type: 'mcq',
+        question: 'Can a Java class implement multiple interfaces?',
+        options: ['No, only one interface is allowed', 'Yes, and this is Java\'s answer to multiple inheritance', 'Only if the interfaces have no default methods', 'Only with Java 11+'],
+        answer: 'Yes, and this is Java\'s answer to multiple inheritance',
+        explanation: 'Java does not allow multiple class inheritance but allows a class to implement multiple interfaces. This provides the benefits of multiple inheritance without the diamond problem.',
+      },
+      {
+        type: 'short-answer',
+        question: 'In Python, what module provides the ABC class for creating abstract base classes?',
+        answer: 'abc',
+        explanation: 'Python\'s abc module provides the ABC class and @abstractmethod decorator. You create abstract classes by inheriting from ABC and decorating methods with @abstractmethod.',
+      },
+      {
+        type: 'mcq',
+        question: 'When should you use an interface over an abstract class?',
+        options: ['When you need shared state between subclasses', 'When you want to define a pure contract with no implementation', 'When you need a constructor', 'When you have only one implementing class'],
+        answer: 'When you want to define a pure contract with no implementation',
+        explanation: 'Interfaces define pure contracts (what must be done). Use an abstract class when you need shared code or state. Use an interface when unrelated classes need to share a capability.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is structural typing (duck typing) in Python, and how do Protocols support it?',
+        answer: 'Structural typing checks if an object has required methods regardless of its class hierarchy; Protocols define expected method signatures without requiring explicit inheritance',
+        explanation: 'Python Protocols (typing.Protocol) enable structural typing — if a class has the right methods, it satisfies the protocol without explicitly inheriting from it. This is "duck typing" with type checker support.',
+      },
     ],
   },
 
@@ -2263,6 +2503,41 @@ service = UserService(PostgreSQLDatabase())  # inject any implementation
       'Design segregated interfaces for a smart home device that can be a light, thermostat, and security camera.',
       'Refactor a hardcoded database dependency to use Dependency Inversion.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does the "S" in SOLID stand for?',
+        options: ['Serialization Principle', 'Single Responsibility Principle', 'Static Binding Principle', 'Substitution Principle'],
+        answer: 'Single Responsibility Principle',
+        explanation: 'The Single Responsibility Principle states that a class should have only one reason to change — it should do one thing and do it well.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does the Open/Closed Principle state?',
+        answer: 'Classes should be open for extension but closed for modification',
+        explanation: 'The Open/Closed Principle means you should be able to add new behavior (open for extension) without changing existing code (closed for modification). This is typically achieved through inheritance or composition.',
+      },
+      {
+        type: 'mcq',
+        question: 'The Liskov Substitution Principle states that:',
+        options: ['Subclasses should hide parent methods', 'Objects of a superclass should be replaceable with objects of a subclass without breaking the program', 'Every class should implement all interfaces', 'Dependencies should be injected'],
+        answer: 'Objects of a superclass should be replaceable with objects of a subclass without breaking the program',
+        explanation: 'If class B is a subclass of class A, then you should be able to use B anywhere A is expected without unexpected behavior. The classic violation is Square extending Rectangle.',
+      },
+      {
+        type: 'mcq',
+        question: 'The Interface Segregation Principle recommends:',
+        options: ['Using one large interface for everything', 'Many small, specific interfaces instead of one fat interface', 'Avoiding interfaces entirely', 'Using abstract classes instead of interfaces'],
+        answer: 'Many small, specific interfaces instead of one fat interface',
+        explanation: 'Clients should not be forced to depend on methods they do not use. Split large interfaces into smaller, focused ones so classes only implement what they actually need.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Who introduced the SOLID principles?',
+        answer: 'Robert C. Martin',
+        explanation: 'Robert C. Martin (also known as Uncle Bob) introduced the SOLID principles. They are considered the gold standard for writing maintainable, extensible, and testable object-oriented code.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -2549,6 +2824,35 @@ public class NotificationFactory {
       'Create a ShapeFactory that returns Circle, Rectangle, or Triangle based on a string input.',
       'Explain why Singleton can make unit testing difficult. How would you solve it?',
       'Design an Abstract Factory for creating UI components (Button, TextBox) for Windows and Mac.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does the Singleton pattern ensure?',
+        options: ['A class can only have one method', 'A class has exactly one instance with a global access point', 'A class cannot be inherited', 'A class is immutable'],
+        answer: 'A class has exactly one instance with a global access point',
+        explanation: 'The Singleton pattern restricts a class to a single instance and provides a global point of access to it. Common examples include database connection pools and configuration managers.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How do you make a Singleton constructor private in Java and what does this achieve?',
+        answer: 'Declare the constructor as private to prevent external instantiation',
+        explanation: 'A private constructor prevents other classes from using "new" to create instances. The only way to get an instance is through the static getInstance() method, which creates the instance once and returns it thereafter.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which design pattern category does the Factory pattern belong to?',
+        options: ['Behavioral', 'Structural', 'Creational', 'Architectural'],
+        answer: 'Creational',
+        explanation: 'Factory is a creational pattern — it deals with object creation mechanisms. It provides an interface for creating objects without specifying the exact class to instantiate.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is a key disadvantage of the Singleton pattern?',
+        options: ['It uses too much memory', 'It makes unit testing difficult due to global state', 'It is too slow', 'It requires multiple inheritance'],
+        answer: 'It makes unit testing difficult due to global state',
+        explanation: 'Singletons introduce global state, making it hard to isolate tests. You cannot easily substitute a mock object for the singleton. Dependency injection is often preferred for testability.',
+      },
     ],
   },
 
@@ -2918,6 +3222,41 @@ cart.checkout()  # Paid $79.98 via PayPal (alice@mail.com)`,
       'When would you use Observer over simple callbacks?',
       'Design a compression system using Strategy (gzip, brotli, no compression).',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'The Observer pattern defines what type of relationship?',
+        options: ['One-to-one', 'Many-to-many', 'One-to-many', 'Many-to-one'],
+        answer: 'One-to-many',
+        explanation: 'The Observer pattern defines a one-to-many dependency: one subject notifies many observers when its state changes. Think of a YouTube channel (one subject) notifying many subscribers (observers).',
+      },
+      {
+        type: 'short-answer',
+        question: 'In the Observer pattern, what are the two main roles called?',
+        answer: 'Subject and Observer',
+        explanation: 'The Subject (or Publisher) maintains a list of observers and notifies them of state changes. The Observer (or Subscriber) registers with the subject and receives updates.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does the Strategy pattern allow you to do?',
+        options: ['Create only one instance of a class', 'Select an algorithm at runtime from a family of algorithms', 'Notify multiple objects of state changes', 'Adapt one interface to another'],
+        answer: 'Select an algorithm at runtime from a family of algorithms',
+        explanation: 'The Strategy pattern defines a family of interchangeable algorithms and lets you swap between them at runtime. For example, a GPS app switching between fastest route, shortest route, and scenic route.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which design pattern category do Observer and Strategy belong to?',
+        options: ['Creational', 'Structural', 'Behavioral', 'Architectural'],
+        answer: 'Behavioral',
+        explanation: 'Both Observer and Strategy are behavioral patterns. They deal with how objects communicate and distribute responsibility, rather than how they are created (creational) or composed (structural).',
+      },
+      {
+        type: 'short-answer',
+        question: 'Give a real-world example of the Strategy pattern.',
+        answer: 'A navigation app choosing between different route algorithms (fastest, shortest, scenic)',
+        explanation: 'GPS navigation is a classic Strategy example. The routing algorithm can be swapped at runtime without changing the navigation system itself. Other examples include payment processing (credit card, PayPal, crypto) and compression (gzip, brotli).',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -3218,6 +3557,41 @@ analytics.track_event('{"event": "click", "page": "home"}')
       'When would you use Builder vs a constructor with default parameters?',
       'Design an Adapter for a payment gateway that expects dollars but receives euros.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'When is the Builder pattern most useful?',
+        options: ['When a class has no constructor', 'When an object has many optional parameters', 'When you need exactly one instance', 'When objects need to observe each other'],
+        answer: 'When an object has many optional parameters',
+        explanation: 'The Builder pattern shines when constructing complex objects with many optional fields. Instead of a constructor with 15 parameters, you chain readable method calls and set only what you need.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does the Adapter pattern do?',
+        answer: 'It converts one interface into another that clients expect',
+        explanation: 'The Adapter pattern acts as a bridge between two incompatible interfaces. Like a power adapter that lets a US plug work in a European socket, it wraps an existing class to make it compatible with a different interface.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which design pattern category does the Adapter belong to?',
+        options: ['Creational', 'Structural', 'Behavioral', 'Concurrency'],
+        answer: 'Structural',
+        explanation: 'Adapter is a structural pattern. Structural patterns deal with how classes and objects are composed to form larger structures. The Adapter wraps one interface to make it compatible with another.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which feature of the Builder pattern makes code more readable?',
+        options: ['Static methods', 'Method chaining (fluent interface)', 'Abstract classes', 'Multiple constructors'],
+        answer: 'Method chaining (fluent interface)',
+        explanation: 'Builder uses method chaining (each setter returns "this") to create a fluent, readable interface: new RequestBuilder().setUrl("...").setMethod("GET").addHeader("...").build().',
+      },
+      {
+        type: 'short-answer',
+        question: 'Which design pattern category does the Builder belong to?',
+        answer: 'Creational',
+        explanation: 'Builder is a creational pattern — it provides a flexible solution for constructing complex objects step by step, separating the construction process from the final representation.',
+      },
+    ],
   },
 
   /* ──────────────────────────────────────────────
@@ -3494,6 +3868,35 @@ urgent_email.send("Server down")  # Email: [URGENT] Server down`,
       'Design a character system for a game using composition (abilities: fly, swim, shoot, shield).',
       'Explain the "combinatorial explosion" problem with inheritance.',
       'Show how composition enables runtime behavior changes that inheritance cannot.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What relationship does composition model?',
+        options: ['IS-A relationship', 'HAS-A relationship', 'USES-A relationship', 'KNOWS-A relationship'],
+        answer: 'HAS-A relationship',
+        explanation: 'Composition models HAS-A relationships: a Dog HAS-A ability to bark, HAS-A ability to walk. Inheritance models IS-A: a Dog IS-A Animal. Composition builds objects from reusable parts.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the main problem with deep inheritance hierarchies?',
+        options: ['They use too much memory', 'They cause combinatorial explosion of classes for every combination of behaviors', 'They run slower than flat classes', 'They cannot have constructors'],
+        answer: 'They cause combinatorial explosion of classes for every combination of behaviors',
+        explanation: 'With deep inheritance, adding each new capability multiplies the number of classes needed. A FlyingFireWarrior, SwimmingFireMage, etc. Composition avoids this by assembling abilities as components.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the common saying that summarizes preferring composition?',
+        answer: 'Favor composition over inheritance',
+        explanation: 'This principle from the Gang of Four book advises building objects by combining small, reusable components (composition) rather than creating rigid class hierarchies (inheritance). It leads to more flexible and maintainable code.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which advantage does composition have over inheritance at runtime?',
+        options: ['Faster method calls', 'Ability to change behavior dynamically at runtime', 'Less memory usage', 'Automatic method resolution'],
+        answer: 'Ability to change behavior dynamically at runtime',
+        explanation: 'With composition, you can swap components at runtime (e.g., change a character\'s movement strategy from walking to flying). Inheritance locks the class hierarchy at compile time and cannot be changed.',
+      },
     ],
   },
 
@@ -3856,6 +4259,41 @@ def create_parking_lot():
       'Design the payment system (cash, card, mobile) using the Strategy pattern.',
       'How would you make spot assignment thread-safe?',
       'Add an electric vehicle charging spot type.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which design pattern is most appropriate for the ParkingLot class to ensure only one instance exists?',
+        options: ['Factory', 'Observer', 'Singleton', 'Strategy'],
+        answer: 'Singleton',
+        explanation: 'The ParkingLot should be a Singleton since there is only one parking lot system. This ensures a single point of coordination for all entry/exit operations.',
+      },
+      {
+        type: 'mcq',
+        question: 'In the parking lot design, which OOP concept is used when Motorcycle, Car, and Truck all extend Vehicle?',
+        options: ['Encapsulation', 'Inheritance', 'Composition', 'Singleton'],
+        answer: 'Inheritance',
+        explanation: 'Motorcycle, Car, and Truck are subclasses of the Vehicle base class. They inherit common properties (license plate, required spot size) and each specifies its own spot size requirement.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What design pattern would you use for implementing different pricing strategies (hourly, daily, monthly) in the parking lot?',
+        answer: 'Strategy pattern',
+        explanation: 'The Strategy pattern is ideal for interchangeable fee calculation algorithms. You can define a FeeCalculator interface with different implementations (HourlyFee, DailyFee, MonthlyFee) and swap them at runtime.',
+      },
+      {
+        type: 'mcq',
+        question: 'What relationship does ParkingLot have with Floor in this design?',
+        options: ['IS-A (inheritance)', 'HAS-A (composition)', 'USES-A (dependency)', 'None'],
+        answer: 'HAS-A (composition)',
+        explanation: 'A ParkingLot HAS many Floors. This is a composition relationship — the floors are contained within the parking lot. Similarly, a Floor HAS many ParkingSpots.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why should the Vehicle class be abstract in this design?',
+        answer: 'Because you never create a generic Vehicle — you always create a specific type like Car, Motorcycle, or Truck',
+        explanation: 'Making Vehicle abstract prevents instantiation of a generic vehicle. Each vehicle must be a concrete type (Motorcycle, Car, Truck) that specifies its required spot size. This enforces correct usage through the type system.',
+      },
     ],
   },
 
@@ -4357,6 +4795,41 @@ atm.eject_card()                     # Ejecting card. Thank you!
       'Design a PIN change flow with proper validation.',
       'Add daily withdrawal limits to the ATM system.',
       'How would you add support for multiple currencies?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which design pattern is used to manage the ATM flow (Idle → Authentication → MainMenu → Transaction)?',
+        options: ['Observer', 'Strategy', 'State', 'Factory'],
+        answer: 'State',
+        explanation: 'The State pattern is used for ATM flow control. Each state (Idle, Authentication, MainMenu, Transaction) is a separate class that handles user actions differently. The ATM delegates behavior to the current state object.',
+      },
+      {
+        type: 'mcq',
+        question: 'In the ATM design, why is Transaction an abstract class with Withdrawal, Deposit, and Transfer as subclasses?',
+        options: ['To save memory', 'Because each transaction type has different execution logic but shares common structure', 'To prevent instantiation of the ATM class', 'To implement the Singleton pattern'],
+        answer: 'Because each transaction type has different execution logic but shares common structure',
+        explanation: 'Transaction as an abstract class captures shared behavior (timestamp, amount, status) while forcing each subclass to implement its own execute() logic. A withdrawal debits, a deposit credits, and a transfer does both.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Which design pattern would you use for the CashDispenser to break down a withdrawal amount into available bill denominations?',
+        answer: 'Chain of Responsibility',
+        explanation: 'The Chain of Responsibility pattern is ideal for denomination breakdown. Each handler tries to dispense its denomination (100s, then 50s, then 20s, then 10s) and passes the remaining amount to the next handler in the chain.',
+      },
+      {
+        type: 'mcq',
+        question: 'What OOP principle justifies separating Account, Card, CashDispenser, and Transaction into different classes?',
+        options: ['Open/Closed Principle', 'Single Responsibility Principle', 'Liskov Substitution Principle', 'Dependency Inversion Principle'],
+        answer: 'Single Responsibility Principle',
+        explanation: 'Each class has one responsibility: Account handles money, Card handles authentication, CashDispenser manages physical bills, and Transaction handles logic. This makes each class easier to understand, test, and modify independently.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why is the ATM class typically implemented as a Singleton?',
+        answer: 'Because each physical ATM machine should have exactly one software instance coordinating its operations',
+        explanation: 'A Singleton ensures there is only one ATM controller per physical machine, preventing conflicts in cash inventory, session management, and state transitions. Multiple instances could cause race conditions with the cash dispenser.',
+      },
     ],
   },
 };

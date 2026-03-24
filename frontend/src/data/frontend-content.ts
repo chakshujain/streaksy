@@ -1,4 +1,4 @@
-import type { LessonStep } from '@/lib/learn-data';
+import type { LessonStep, QuizQuestion } from '@/lib/learn-data';
 
 export const frontendLessons: Record<
   string,
@@ -6,6 +6,7 @@ export const frontendLessons: Record<
     steps: LessonStep[];
     commonMistakes?: { mistake: string; explanation: string }[];
     practiceQuestions?: string[];
+    quiz?: QuizQuestion[];
   }
 > = {
   // ───────────────────────────────────────────────
@@ -169,6 +170,41 @@ export const frontendLessons: Record<
       'Explain why the viewport meta tag is important for mobile devices.',
       'How does a screen reader interpret a page that uses only <div> elements vs one with semantic HTML?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which HTML tag is used for the largest heading?',
+        options: ['<heading>', '<h6>', '<h1>', '<head>'],
+        answer: '<h1>',
+        explanation: 'HTML headings range from <h1> (largest) to <h6> (smallest). <h1> is used for the main heading of a page.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which of these is a semantic HTML element?',
+        options: ['<div>', '<span>', '<article>', '<b>'],
+        answer: '<article>',
+        explanation: '<article> is a semantic element that describes self-contained content. <div> and <span> are generic containers with no semantic meaning.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What attribute should you always add to an <img> tag for accessibility?',
+        answer: 'alt',
+        explanation: 'The alt attribute provides alternative text that screen readers announce and that displays when the image cannot load.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which element is a block-level element?',
+        options: ['<span>', '<a>', '<strong>', '<div>'],
+        answer: '<div>',
+        explanation: 'Block-level elements like <div>, <p>, and <h1> take the full width of their parent and start on a new line. <span>, <a>, and <strong> are inline.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What HTML attribute on a form input prevents the form from being submitted when the field is empty?',
+        answer: 'required',
+        explanation: 'The required attribute tells the browser to validate that the field has a value before allowing form submission.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -308,6 +344,46 @@ export const frontendLessons: Record<
       'Create a navigation bar with a logo on the left and links on the right using Flexbox.',
       'Build a responsive 3-column layout that collapses to 1 column on mobile using CSS Grid.',
       'What is specificity? How would you resolve two conflicting CSS rules targeting the same element?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does box-sizing: border-box do?',
+        options: [
+          'Makes the element invisible',
+          'Includes padding and border in the element\'s total width and height',
+          'Removes the border from the element',
+          'Adds a default margin to the element',
+        ],
+        answer: 'Includes padding and border in the element\'s total width and height',
+        explanation: 'With border-box, the width and height properties include content, padding, and border. Without it (content-box), padding and border are added on top of the specified width.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What CSS property is used to change the text color of an element?',
+        answer: 'color',
+        explanation: 'The CSS color property sets the foreground color of text content and text decorations.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which selector has the highest specificity?',
+        options: ['p', '.card', '#header', '*'],
+        answer: '#header',
+        explanation: 'ID selectors (#header) have a specificity of 1-0-0, which is higher than class selectors (0-1-0), element selectors (0-0-1), and the universal selector (0-0-0).',
+      },
+      {
+        type: 'mcq',
+        question: 'Which CSS property distributes space between flex items along the main axis?',
+        options: ['align-items', 'flex-wrap', 'justify-content', 'flex-direction'],
+        answer: 'justify-content',
+        explanation: 'justify-content controls spacing along the main axis (horizontal by default). align-items controls alignment on the cross axis.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What CSS display value creates a two-dimensional layout with rows and columns?',
+        answer: 'grid',
+        explanation: 'display: grid enables CSS Grid, which handles rows and columns simultaneously. Flexbox (display: flex) is one-dimensional.',
+      },
     ],
   },
 
@@ -462,6 +538,46 @@ export const frontendLessons: Record<
       'Explain event delegation and why it is more efficient than adding listeners to every child element.',
       'Use destructuring and spread to merge two objects, with the second object overriding shared keys.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which keyword should you use by default to declare a variable in modern JavaScript?',
+        options: ['var', 'let', 'const', 'function'],
+        answer: 'const',
+        explanation: 'const is preferred by default because it prevents reassignment, making code more predictable. Use let only when the value needs to change.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What method would you use to select the first element matching a CSS selector in the DOM?',
+        answer: 'querySelector',
+        explanation: 'document.querySelector() returns the first element that matches the given CSS selector. querySelectorAll() returns all matches.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does event.preventDefault() do?',
+        options: [
+          'Removes the event listener',
+          'Stops the event from bubbling up',
+          'Prevents the browser\'s default action for the event',
+          'Deletes the target element',
+        ],
+        answer: 'Prevents the browser\'s default action for the event',
+        explanation: 'preventDefault() stops the browser\'s built-in behavior, like navigating on a link click or submitting a form. stopPropagation() is what stops bubbling.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does typeof [] return in JavaScript?',
+        options: ['"array"', '"object"', '"list"', '"undefined"'],
+        answer: '"object"',
+        explanation: 'In JavaScript, arrays are a special kind of object. typeof [] returns "object". Use Array.isArray() to check if a value is an array.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What ES6 syntax allows you to embed expressions inside a string using backticks?',
+        answer: 'template literals',
+        explanation: 'Template literals use backticks (`) and ${expression} syntax to embed JavaScript expressions directly in strings.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -607,6 +723,41 @@ export const frontendLessons: Record<
       'Write CSS that creates a 3-column layout on desktop, 2 columns on tablet, and 1 column on mobile.',
       'Explain how srcset and sizes attributes work together for responsive images.',
       'Use clamp() to create a heading that scales from 1.5rem on mobile to 3rem on desktop.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which media query approach is considered mobile-first?',
+        options: ['max-width', 'min-width', 'exact-width', 'device-width'],
+        answer: 'min-width',
+        explanation: 'Mobile-first uses min-width media queries because the base styles target mobile, and min-width progressively adds styles for larger screens.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What CSS function sets a minimum, preferred, and maximum value for fluid sizing?',
+        answer: 'clamp()',
+        explanation: 'clamp(MIN, PREFERRED, MAX) smoothly scales a value between a minimum and maximum. For example, clamp(1rem, 4vw, 2.5rem) for fluid font sizing.',
+      },
+      {
+        type: 'mcq',
+        question: 'What CSS unit is relative to the root element\'s font size?',
+        options: ['px', 'em', 'rem', 'vw'],
+        answer: 'rem',
+        explanation: 'rem stands for "root em" and is relative to the root (<html>) font size. em is relative to the parent element\'s font size, and px is an absolute unit.',
+      },
+      {
+        type: 'mcq',
+        question: 'What HTML attribute serves different image sizes based on screen width?',
+        options: ['alt', 'src', 'srcset', 'loading'],
+        answer: 'srcset',
+        explanation: 'The srcset attribute provides a list of image sources with their widths, allowing the browser to choose the most appropriate size for the current viewport.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What meta tag must be included for responsive design to work on mobile browsers?',
+        answer: 'viewport',
+        explanation: 'The <meta name="viewport" content="width=device-width, initial-scale=1.0"> tag tells mobile browsers to use the device width instead of rendering at desktop width.',
+      },
     ],
   },
 
@@ -757,6 +908,46 @@ export const frontendLessons: Record<
       'What is the difference between props and state? When would you use each?',
       'Create a UserCard component that accepts name, email, and avatar props and renders a card.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'In JSX, which attribute is used instead of "class" for CSS classes?',
+        options: ['cssClass', 'class', 'className', 'classList'],
+        answer: 'className',
+        explanation: 'Since "class" is a reserved keyword in JavaScript, JSX uses "className" to assign CSS classes to elements.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is required when rendering a list of elements in React?',
+        options: ['An id attribute', 'A key prop', 'A ref attribute', 'A name prop'],
+        answer: 'A key prop',
+        explanation: 'React uses the key prop to track which list items changed, were added, or removed. Keys must be unique among siblings for efficient DOM updates.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What React hook is used to add state to a functional component?',
+        answer: 'useState',
+        explanation: 'useState returns a pair: the current state value and a setter function. Calling the setter triggers a re-render with the new value.',
+      },
+      {
+        type: 'mcq',
+        question: 'How do props flow in a React component tree?',
+        options: [
+          'From child to parent',
+          'From parent to child',
+          'In both directions',
+          'Between siblings',
+        ],
+        answer: 'From parent to child',
+        explanation: 'React has a one-way data flow. Props are passed from parent components down to child components. Events (callbacks) flow up from child to parent.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What syntax do you use to embed a JavaScript expression inside JSX?',
+        answer: 'curly braces',
+        explanation: 'Curly braces {} in JSX let you embed any JavaScript expression, such as variables, function calls, or ternary operators.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -896,6 +1087,51 @@ export const frontendLessons: Record<
       'Why does updating an object in state require spreading instead of direct mutation?',
       'Build a component that fetches data from an API on mount, shows a loading spinner, and handles errors.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'When does a useEffect with an empty dependency array ([]) run?',
+        options: [
+          'After every render',
+          'Only on the first render (mount)',
+          'Never',
+          'Only when state changes',
+        ],
+        answer: 'Only on the first render (mount)',
+        explanation: 'An empty dependency array tells React to run the effect only once after the initial render (mount), equivalent to componentDidMount in class components.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the correct way to add an item to a state array in React?',
+        options: [
+          'items.push(newItem)',
+          'setItems([...items, newItem])',
+          'items[items.length] = newItem',
+          'setItems(items.concat) without calling it',
+        ],
+        answer: 'setItems([...items, newItem])',
+        explanation: 'You must create a new array reference for React to detect the change. Spread syntax creates a new array with all existing items plus the new one.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What function do you return from useEffect to clean up subscriptions or timers?',
+        answer: 'cleanup function',
+        explanation: 'Returning a function from useEffect acts as cleanup. React calls it before the component unmounts and before re-running the effect, preventing memory leaks.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which hook holds a mutable value that does NOT cause re-renders when changed?',
+        options: ['useState', 'useEffect', 'useRef', 'useCallback'],
+        answer: 'useRef',
+        explanation: 'useRef returns a mutable ref object whose .current property can be changed without triggering a re-render. It is commonly used for DOM references and persistent values.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What naming convention must custom hooks follow in React?',
+        answer: 'start with use',
+        explanation: 'Custom hooks must be prefixed with "use" (e.g., useWindowSize, useLocalStorage). This convention lets React enforce the Rules of Hooks via linting.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -1031,6 +1267,46 @@ export const frontendLessons: Record<
       'Explain the difference between PUT and PATCH. When would you use each?',
       'How would you handle token refresh when a 401 response is returned?',
       'Build a search component that calls an API as the user types, with debouncing to avoid too many requests.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which HTTP method is used to create a new resource?',
+        options: ['GET', 'POST', 'DELETE', 'PATCH'],
+        answer: 'POST',
+        explanation: 'POST is used to create new resources on the server. GET reads data, PATCH partially updates, and DELETE removes resources.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What property on the fetch Response object should you check to determine if the request was successful?',
+        answer: 'ok',
+        explanation: 'response.ok is true when the HTTP status is in the 200-299 range. Unlike other libraries, fetch does not throw on 4xx or 5xx status codes.',
+      },
+      {
+        type: 'mcq',
+        question: 'What HTTP status code indicates the resource was not found?',
+        options: ['200', '301', '404', '500'],
+        answer: '404',
+        explanation: '404 means the server could not find the requested resource. 200 is success, 301 is a redirect, and 500 is an internal server error.',
+      },
+      {
+        type: 'mcq',
+        question: 'Where is a JWT token typically sent in authenticated API requests?',
+        options: [
+          'In the URL query string',
+          'In the Authorization header as a Bearer token',
+          'In the request body',
+          'In a cookie only',
+        ],
+        answer: 'In the Authorization header as a Bearer token',
+        explanation: 'The standard approach is to send the JWT in the Authorization header with the format "Bearer <token>". This keeps the token out of URLs and request bodies.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What HTTP method performs a partial update on an existing resource?',
+        answer: 'PATCH',
+        explanation: 'PATCH applies a partial modification to a resource. PUT replaces the entire resource, while PATCH only updates the specified fields.',
+      },
     ],
   },
 
@@ -1196,6 +1472,46 @@ export const frontendLessons: Record<
       'Set up a Vite project with React and TypeScript, then deploy it to Vercel.',
       'What is tree-shaking and how does it reduce bundle size?',
       'Use React.lazy and Suspense to lazy-load a page component.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does tree-shaking do during the build process?',
+        options: [
+          'Compiles TypeScript to JavaScript',
+          'Removes unused code from the final bundle',
+          'Minifies variable names',
+          'Splits code into multiple files',
+        ],
+        answer: 'Removes unused code from the final bundle',
+        explanation: 'Tree-shaking analyzes import/export statements and eliminates code that is never used, reducing the final bundle size.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What prefix must environment variables have in Vite to be exposed to the frontend?',
+        answer: 'VITE_',
+        explanation: 'Vite only exposes environment variables prefixed with VITE_ to the client-side bundle. This prevents accidentally leaking server-side secrets.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which React API is used to lazy-load a component?',
+        options: ['React.memo()', 'React.lazy()', 'React.createRef()', 'React.forwardRef()'],
+        answer: 'React.lazy()',
+        explanation: 'React.lazy() accepts a function that calls a dynamic import() and returns a component. It must be wrapped in a <Suspense> component with a fallback.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which Core Web Vital measures how quickly the largest visible element loads?',
+        options: ['FID', 'CLS', 'LCP', 'TTFB'],
+        answer: 'LCP',
+        explanation: 'LCP (Largest Contentful Paint) measures when the largest content element becomes visible. Google recommends keeping it under 2.5 seconds.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What build tool uses native ES modules for instant dev server startup and Rollup for production builds?',
+        answer: 'Vite',
+        explanation: 'Vite leverages native ES modules during development for instant cold starts and uses Rollup under the hood for optimized production bundling.',
+      },
     ],
   },
 };

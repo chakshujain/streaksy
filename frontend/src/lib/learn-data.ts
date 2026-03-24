@@ -49,6 +49,14 @@ export interface LessonStep {
   keyTakeaway?: string;
 }
 
+export interface QuizQuestion {
+  type: 'mcq' | 'short-answer';
+  question: string;
+  options?: string[];           // For MCQ questions
+  answer: string;               // Correct answer (option text for MCQ, keyword/phrase for short-answer)
+  explanation: string;           // Why this answer is correct
+}
+
 export interface Lesson {
   slug: string;
   title: string;
@@ -61,6 +69,7 @@ export interface Lesson {
   videoTitle?: string;
   commonMistakes?: { mistake: string; explanation: string }[];
   practiceQuestions?: string[];
+  quiz?: QuizQuestion[];
 }
 
 export interface Topic {
@@ -1247,7 +1256,7 @@ export const topics: Topic[] = [
 // ── Populate lessons from content files ────────────────────────────────
 // Content is in separate files to keep this file manageable
 
-function populateLessons(topicSlug: string, contentMap: Record<string, { steps: LessonStep[]; commonMistakes?: { mistake: string; explanation: string }[]; practiceQuestions?: string[] }>) {
+function populateLessons(topicSlug: string, contentMap: Record<string, { steps: LessonStep[]; commonMistakes?: { mistake: string; explanation: string }[]; practiceQuestions?: string[]; quiz?: QuizQuestion[] }>) {
   const topic = topics.find(t => t.slug === topicSlug);
   if (!topic) return;
   for (const lesson of topic.lessons) {
@@ -1256,6 +1265,7 @@ function populateLessons(topicSlug: string, contentMap: Record<string, { steps: 
       lesson.steps = content.steps;
       if (content.commonMistakes) lesson.commonMistakes = content.commonMistakes;
       if (content.practiceQuestions) lesson.practiceQuestions = content.practiceQuestions;
+      if (content.quiz) lesson.quiz = content.quiz;
     }
   }
 }

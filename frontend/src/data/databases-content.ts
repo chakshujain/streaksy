@@ -1,4 +1,4 @@
-import type { LessonStep } from '@/lib/learn-data';
+import type { LessonStep, QuizQuestion } from '@/lib/learn-data';
 
 export const databaseLessons: Record<
   string,
@@ -6,6 +6,7 @@ export const databaseLessons: Record<
     steps: LessonStep[];
     commonMistakes?: { mistake: string; explanation: string }[];
     practiceQuestions?: string[];
+    quiz?: QuizQuestion[];
   }
 > = {
   // ───────────────────────────────────────────────
@@ -150,6 +151,41 @@ export const databaseLessons: Record<
       'You are building a social network. Which type(s) of database would you consider and why?',
       'Explain the difference between a relational database and a document database in your own words.',
       'What is polyglot persistence, and when would you use it?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which of the following is NOT an advantage of databases over plain files?',
+        options: ['Concurrent access control', 'Crash recovery', 'Smaller file size on disk', 'Data integrity constraints'],
+        answer: 'Smaller file size on disk',
+        explanation: 'Databases actually often use more disk space than plain files due to indexes, metadata, and WAL logs. Their advantages are concurrency, crash recovery, querying speed, and data integrity.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which type of database is best suited for storing social network relationships?',
+        options: ['Relational (PostgreSQL)', 'Key-Value (Redis)', 'Graph (Neo4j)', 'Column-Family (Cassandra)'],
+        answer: 'Graph (Neo4j)',
+        explanation: 'Graph databases store nodes and edges (relationships) as first-class citizens, making them ideal for social networks, recommendations, and any data with complex interconnections.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is polyglot persistence?',
+        answer: 'Using multiple database types in one application',
+        explanation: 'Polyglot persistence means using the right database for each job — for example, PostgreSQL for core data, Redis for caching, and Elasticsearch for search — rather than forcing one database to handle everything.',
+      },
+      {
+        type: 'mcq',
+        question: 'What mechanism do databases use to recover from crashes without losing committed data?',
+        options: ['Regular backups', 'Write-Ahead Log (WAL)', 'Data compression', 'Automatic replication'],
+        answer: 'Write-Ahead Log (WAL)',
+        explanation: 'The Write-Ahead Log records changes to disk before modifying actual data pages. On crash recovery, the database replays the WAL to restore committed transactions.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What does a foreign key enforce in a relational database?',
+        answer: 'Referential integrity',
+        explanation: 'A foreign key ensures that a value in one table references a valid row in another table. For example, every order must reference an existing customer, preventing orphaned records.',
+      },
     ],
   },
 
@@ -370,6 +406,46 @@ export const databaseLessons: Record<
       'Explain why SELECT * is discouraged in production code.',
       'Write a pagination query to get employees 11-20 sorted by name alphabetically.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the correct SQL execution order?',
+        options: [
+          'SELECT → FROM → WHERE → GROUP BY → ORDER BY',
+          'FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT',
+          'FROM → SELECT → WHERE → GROUP BY → ORDER BY',
+          'SELECT → FROM → WHERE → HAVING → GROUP BY → ORDER BY',
+        ],
+        answer: 'FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT',
+        explanation: 'SQL processes FROM first (which table), then WHERE (filter rows), GROUP BY (form groups), HAVING (filter groups), SELECT (pick columns), ORDER BY (sort), and LIMIT (cap output). This is why you cannot use a column alias from SELECT in a WHERE clause.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What keyword do you use to filter grouped results (e.g., departments with average salary above 80k)?',
+        answer: 'HAVING',
+        explanation: 'HAVING filters groups after aggregation, while WHERE filters individual rows before grouping. Use HAVING with aggregate functions like AVG(), COUNT(), SUM().',
+      },
+      {
+        type: 'mcq',
+        question: 'What does SELECT DISTINCT do?',
+        options: ['Selects the first row only', 'Removes duplicate rows from the result', 'Sorts results in ascending order', 'Selects columns that have unique constraints'],
+        answer: 'Removes duplicate rows from the result',
+        explanation: 'DISTINCT eliminates duplicate rows from the query result. For example, SELECT DISTINCT department FROM employees returns each department name only once.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which comparison works correctly with NULL values in SQL?',
+        options: ['salary = NULL', 'salary == NULL', 'salary IS NULL', 'salary EQUALS NULL'],
+        answer: 'salary IS NULL',
+        explanation: 'NULL is not a value — it represents the absence of a value. Comparisons with = always return false for NULL. You must use IS NULL or IS NOT NULL to check for null values.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why should you always use ORDER BY with LIMIT?',
+        answer: 'Without ORDER BY, the database returns rows in an arbitrary order',
+        explanation: 'Without ORDER BY, the database can return rows in any order it chooses. LIMIT 10 without ORDER BY gives you 10 arbitrary rows, not the "top 10" of anything meaningful.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -575,6 +651,40 @@ export const databaseLessons: Record<
       'Explain what a Cartesian product is and how an accidental CROSS JOIN can cause one.',
       'You have three tables: students, enrollments, and courses. Write a query to list each student with the courses they are enrolled in.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which JOIN type returns ALL rows from the left table, even if there is no match in the right table?',
+        options: ['INNER JOIN', 'LEFT JOIN', 'CROSS JOIN', 'RIGHT JOIN'],
+        answer: 'LEFT JOIN',
+        explanation: 'LEFT JOIN keeps every row from the left table. Where there is no match in the right table, the right-side columns are filled with NULL values.',
+      },
+      {
+        type: 'mcq',
+        question: 'What happens if you forget the ON clause when joining two tables?',
+        options: ['The query fails with a syntax error', 'Only matching rows are returned', 'You get a Cartesian product (every row paired with every other row)', 'The database uses the primary key automatically'],
+        answer: 'You get a Cartesian product (every row paired with every other row)',
+        explanation: 'Without an ON clause, the database performs a CROSS JOIN, creating every possible combination of rows. With 10K rows in each table, this produces 100 million rows.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is a self JOIN?',
+        answer: 'A table joined to itself',
+        explanation: 'A self JOIN is when a table is joined to itself, typically using aliases to distinguish the two instances. It is commonly used for hierarchical data like employee-manager relationships.',
+      },
+      {
+        type: 'mcq',
+        question: 'You want to find customers who have never placed an order. Which query pattern is correct?',
+        options: [
+          'SELECT * FROM customers INNER JOIN orders ON customers.id = orders.customer_id WHERE orders.id IS NULL',
+          'SELECT * FROM customers LEFT JOIN orders ON customers.id = orders.customer_id WHERE orders.id IS NULL',
+          'SELECT * FROM customers CROSS JOIN orders WHERE orders.id IS NULL',
+          'SELECT * FROM customers RIGHT JOIN orders ON customers.id = orders.customer_id',
+        ],
+        answer: 'SELECT * FROM customers LEFT JOIN orders ON customers.id = orders.customer_id WHERE orders.id IS NULL',
+        explanation: 'LEFT JOIN keeps all customers. Those without orders have NULL in the orders columns. Filtering WHERE orders.id IS NULL returns only customers with no orders. INNER JOIN would exclude them entirely.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -713,6 +823,46 @@ export const databaseLessons: Record<
       'You have: SELECT * FROM orders WHERE customer_id = 5 AND status = \'shipped\' ORDER BY created_at DESC. What composite index would you create?',
       'Why does an index on a boolean column provide little benefit?',
       'What is a partial index, and when would you use one?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the time complexity of a B-tree index lookup?',
+        options: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'],
+        answer: 'O(log n)',
+        explanation: 'B-trees are balanced tree structures that cut the search space at each level. For 1 million rows, a B-tree finds any value in about 20 comparisons — that is O(log n).',
+      },
+      {
+        type: 'mcq',
+        question: 'You have a composite index on (department, salary). Which query can NOT use this index?',
+        options: [
+          'WHERE department = \'Engineering\'',
+          'WHERE department = \'Engineering\' AND salary > 100000',
+          'WHERE salary > 100000',
+          'WHERE department = \'Engineering\' ORDER BY salary',
+        ],
+        answer: 'WHERE salary > 100000',
+        explanation: 'Composite indexes follow the "leftmost prefix" rule. An index on (department, salary) can help queries on department alone or department + salary, but NOT salary alone — it skips the leftmost column.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why is indexing a boolean column usually not beneficial?',
+        answer: 'Low cardinality means roughly half the rows match either value',
+        explanation: 'A boolean column has only two values (true/false), so an index on it splits the table roughly in half. The database often decides a full table scan is faster than using such a low-selectivity index. Consider a partial index instead.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which PostgreSQL index type is best for full-text search on a JSONB column?',
+        options: ['B-tree', 'Hash', 'GIN', 'BRIN'],
+        answer: 'GIN',
+        explanation: 'GIN (Generalized Inverted Index) is designed for full-text search, arrays, and JSONB queries. It indexes the individual elements within composite values, enabling fast lookups inside documents.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What SQL command shows you the execution plan for a query, including actual timing?',
+        answer: 'EXPLAIN ANALYZE',
+        explanation: 'EXPLAIN shows the planned execution strategy. EXPLAIN ANALYZE actually runs the query and shows real timing data, letting you see exactly where time is spent and whether indexes are being used.',
+      },
     ],
   },
 
@@ -873,6 +1023,46 @@ export const databaseLessons: Record<
       'Explain the difference between 2NF and 3NF in your own words.',
       'When would you intentionally denormalize a schema?',
       'Is a table with a single-column primary key automatically in 2NF?',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which normal form requires that every column contain only atomic (single) values?',
+        options: ['First Normal Form (1NF)', 'Second Normal Form (2NF)', 'Third Normal Form (3NF)', 'Boyce-Codd Normal Form (BCNF)'],
+        answer: 'First Normal Form (1NF)',
+        explanation: '1NF requires atomic values in every cell — no comma-separated lists, no repeating groups, and every row must be unique. It is the foundation for all higher normal forms.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What are the three types of anomalies that normalization prevents?',
+        answer: 'Update anomaly, insert anomaly, delete anomaly',
+        explanation: 'Update anomalies occur when the same data must be changed in multiple places. Insert anomalies prevent adding data without unrelated data. Delete anomalies cause unintended loss of information when a row is removed.',
+      },
+      {
+        type: 'mcq',
+        question: 'What does Second Normal Form (2NF) specifically address?',
+        options: ['Repeating groups', 'Partial dependencies on composite keys', 'Transitive dependencies between non-key columns', 'Multi-valued dependencies'],
+        answer: 'Partial dependencies on composite keys',
+        explanation: '2NF requires that every non-key column depends on the ENTIRE composite primary key, not just part of it. If student_name depends only on student_id (part of a composite key), it should be moved to its own table.',
+      },
+      {
+        type: 'mcq',
+        question: 'When should you intentionally denormalize a schema?',
+        options: [
+          'When the data is write-heavy and frequently updated',
+          'When you need strong data integrity',
+          'When the application is read-heavy and JOINs are a performance bottleneck',
+          'When the schema changes frequently',
+        ],
+        answer: 'When the application is read-heavy and JOINs are a performance bottleneck',
+        explanation: 'Denormalization adds redundancy to reduce JOINs and speed up reads. This is a strategic trade-off for read-heavy applications like analytics dashboards and data warehouses, where query speed matters more than write efficiency.',
+      },
+      {
+        type: 'short-answer',
+        question: 'In 3NF, what type of dependency must be eliminated?',
+        answer: 'Transitive dependencies',
+        explanation: 'Third Normal Form removes transitive dependencies — where a non-key column depends on another non-key column. For example, if course_code determines instructor, the instructor belongs in the courses table, not the enrollments table.',
+      },
     ],
   },
 
@@ -1052,6 +1242,51 @@ export const databaseLessons: Record<
       'Write a SQL transaction that transfers funds with a check for sufficient balance.',
       'What is the Write-Ahead Log (WAL) and why is it essential?',
       'Describe a scenario where SAVEPOINT is more useful than a full ROLLBACK.',
+    ],
+    quiz: [
+      {
+        type: 'short-answer',
+        question: 'What does ACID stand for in database transactions?',
+        answer: 'Atomicity, Consistency, Isolation, Durability',
+        explanation: 'ACID properties ensure reliable transaction processing: Atomicity (all or nothing), Consistency (valid state transitions), Isolation (concurrent transactions don\'t interfere), Durability (committed data survives crashes).',
+      },
+      {
+        type: 'mcq',
+        question: 'What happens if a system crash occurs in the middle of a transaction before COMMIT?',
+        options: [
+          'The completed steps are saved, incomplete steps are lost',
+          'The entire transaction is rolled back as if it never happened',
+          'The database becomes corrupted',
+          'The transaction is automatically retried',
+        ],
+        answer: 'The entire transaction is rolled back as if it never happened',
+        explanation: 'Atomicity guarantees all-or-nothing. If a crash occurs before COMMIT, the database uses the Write-Ahead Log (WAL) to undo any partial changes on restart, restoring the database to its state before the transaction began.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the purpose of a SAVEPOINT in a transaction?',
+        options: [
+          'To permanently save the transaction',
+          'To create a checkpoint you can roll back to without discarding the entire transaction',
+          'To improve transaction performance',
+          'To synchronize data across replicas',
+        ],
+        answer: 'To create a checkpoint you can roll back to without discarding the entire transaction',
+        explanation: 'SAVEPOINT creates a named checkpoint inside a transaction. You can ROLLBACK TO SAVEPOINT to undo work after that point while keeping earlier work in the transaction intact.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which ACID property is primarily guaranteed by the Write-Ahead Log (WAL)?',
+        options: ['Atomicity', 'Consistency', 'Isolation', 'Durability'],
+        answer: 'Durability',
+        explanation: 'The WAL ensures durability by writing changes to a persistent log before confirming the commit. If the server crashes after COMMIT, the WAL can be replayed on restart to recover all committed data.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why should you avoid holding transactions open for a long time?',
+        answer: 'Long transactions hold locks that block other users',
+        explanation: 'Long-running transactions hold locks on rows and tables, preventing other transactions from modifying or sometimes even reading those resources. This degrades concurrent performance and can lead to deadlocks.',
+      },
     ],
   },
 
@@ -1241,6 +1476,52 @@ export const databaseLessons: Record<
       'Why does Serializable require retry logic?',
       'What isolation level does your preferred database default to?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is a dirty read?',
+        options: [
+          'Reading data from a corrupted table',
+          'Reading uncommitted data that may be rolled back',
+          'Reading outdated data from a cache',
+          'Reading data without proper authentication',
+        ],
+        answer: 'Reading uncommitted data that may be rolled back',
+        explanation: 'A dirty read occurs when Transaction A reads data that Transaction B has modified but not yet committed. If B rolls back, A has acted on data that never actually existed in the database.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which isolation level is the default for PostgreSQL?',
+        options: ['Read Uncommitted', 'Read Committed', 'Repeatable Read', 'Serializable'],
+        answer: 'Read Committed',
+        explanation: 'PostgreSQL defaults to Read Committed, where each statement sees only data committed before it began. MySQL/InnoDB defaults to Repeatable Read. Always check your database\'s default.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What anomaly does Repeatable Read prevent that Read Committed does not?',
+        answer: 'Non-repeatable reads',
+        explanation: 'In Read Committed, the same query can return different results within one transaction if another transaction commits in between. Repeatable Read takes a snapshot at transaction start, ensuring consistent reads throughout.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why does the Serializable isolation level require retry logic in application code?',
+        options: [
+          'It is slower and may time out',
+          'It can abort transactions with serialization errors when conflicts are detected',
+          'It does not support all SQL operations',
+          'It requires exclusive table locks',
+        ],
+        answer: 'It can abort transactions with serialization errors when conflicts are detected',
+        explanation: 'Serializable detects conflicts between concurrent transactions and aborts one of them with a serialization failure. The application must catch this error and retry the transaction.',
+      },
+      {
+        type: 'mcq',
+        question: 'For a social media feed, which isolation level is typically appropriate?',
+        options: ['Read Uncommitted', 'Read Committed', 'Repeatable Read', 'Serializable'],
+        answer: 'Read Committed',
+        explanation: 'Social feeds can tolerate a few seconds of staleness. Read Committed is the safe default that prevents dirty reads while offering good performance. Serializable would be overkill for this use case.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -1415,6 +1696,50 @@ export const databaseLessons: Record<
       'What is cursor-based pagination and why is it faster?',
       'Design a covering index for: SELECT title, author FROM books WHERE category = \'fiction\' ORDER BY published_date DESC.',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does a Seq Scan in an EXPLAIN output indicate?',
+        options: [
+          'The query is using an index efficiently',
+          'The database is reading every row in the table sequentially',
+          'The query has a syntax error',
+          'The database is doing a parallel scan',
+        ],
+        answer: 'The database is reading every row in the table sequentially',
+        explanation: 'A Sequential Scan (Seq Scan) means the database is reading every row in the table to find matches. On large tables (millions of rows), this is very slow and usually indicates a missing index.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is the N+1 query problem?',
+        answer: 'One query to fetch a list, then N separate queries to fetch details for each item',
+        explanation: 'The N+1 problem occurs when code fetches a list (1 query) then loops through results making a separate query for each item (N queries). The fix is to use a JOIN or batch query (WHERE id IN (...)) to combine them into a single query.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why is WHERE EXTRACT(YEAR FROM created_at) = 2024 slower than a range condition?',
+        options: [
+          'EXTRACT is a deprecated function',
+          'The function prevents the database from using an index on created_at',
+          'EXTRACT returns a string instead of a number',
+          'Range conditions are always faster regardless of indexes',
+        ],
+        answer: 'The function prevents the database from using an index on created_at',
+        explanation: 'When you apply a function to an indexed column in WHERE, the database must evaluate the function for every row, preventing index use. A range condition like WHERE created_at >= \'2024-01-01\' AND created_at < \'2025-01-01\' can use the index directly.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is cursor-based pagination?',
+        options: [
+          'Using database cursors to stream results',
+          'Paginating by remembering the last seen ID and using WHERE id > last_id',
+          'Using OFFSET with increasing values',
+          'Loading all results into memory and slicing',
+        ],
+        answer: 'Paginating by remembering the last seen ID and using WHERE id > last_id',
+        explanation: 'Cursor-based pagination uses WHERE id > last_seen_id LIMIT N instead of OFFSET. It performs an index seek directly to the next page instead of scanning and discarding rows, giving consistent performance regardless of page depth.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -1579,6 +1904,56 @@ export const databaseLessons: Record<
       'Why are cross-shard JOINs problematic?',
       'At what point should you consider sharding?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the primary difference between horizontal and vertical sharding?',
+        options: [
+          'Horizontal splits columns, vertical splits rows',
+          'Horizontal splits rows across servers, vertical splits tables across servers',
+          'Horizontal uses hashing, vertical uses ranges',
+          'Horizontal is for SQL, vertical is for NoSQL',
+        ],
+        answer: 'Horizontal splits rows across servers, vertical splits tables across servers',
+        explanation: 'Horizontal sharding distributes rows of the same table across servers (e.g., users 1-1M on server 1, 1M-2M on server 2). Vertical sharding puts different tables on different servers (e.g., users on server 1, orders on server 2).',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is a shard key?',
+        answer: 'The column that determines which shard holds a given row',
+        explanation: 'The shard key is used to route data to the correct shard. A good shard key distributes data evenly, groups related data together, and is commonly used in queries to avoid cross-shard lookups.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the main disadvantage of hash sharding compared to range sharding?',
+        options: [
+          'Uneven data distribution',
+          'Range queries become impossible or very expensive',
+          'It requires more servers',
+          'It does not support composite shard keys',
+        ],
+        answer: 'Range queries become impossible or very expensive',
+        explanation: 'Hash sharding distributes data evenly using hash(key) % N, but consecutive key values end up on different shards. Range queries like "find all users with IDs 1000-2000" must fan out to every shard.',
+      },
+      {
+        type: 'mcq',
+        question: 'Why are cross-shard JOINs problematic?',
+        options: [
+          'They are not supported by any database',
+          'They require sending data between servers and merging results, making them much slower',
+          'They always result in data corruption',
+          'They only work with NoSQL databases',
+        ],
+        answer: 'They require sending data between servers and merging results, making them much slower',
+        explanation: 'Cross-shard JOINs must fan out queries to multiple shards, transfer data across the network, and merge results. This is orders of magnitude slower than a single-shard JOIN and adds significant complexity.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What should you exhaust before considering sharding?',
+        answer: 'Vertical scaling, read replicas, caching, and query optimization',
+        explanation: 'Sharding adds enormous operational complexity. Before sharding, try upgrading hardware (vertical scaling), offloading reads to replicas, adding caching layers (Redis), and optimizing slow queries with indexes.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -1729,6 +2104,51 @@ export const databaseLessons: Record<
       'Why is replication not a substitute for backups?',
       'Your app has users in the US and Europe. What replication topology?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'In leader-follower replication, where do write operations go?',
+        options: ['To any server', 'Only to the leader (primary)', 'Only to followers (replicas)', 'To the server with the least load'],
+        answer: 'Only to the leader (primary)',
+        explanation: 'In leader-follower replication, all writes go to the single leader. The leader then streams changes to followers. Reads can go to any server, distributing the read load across replicas.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is replication lag?',
+        answer: 'The delay between a write on the leader and that write appearing on followers',
+        explanation: 'With asynchronous replication, followers are always slightly behind the leader. This lag, typically milliseconds to seconds, can cause users to not see their own recent writes if they read from a lagging follower.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the "read-after-write consistency" problem?',
+        options: [
+          'The database cannot read data that was just written due to locking',
+          'A user writes data but reads from a lagging follower and does not see their own write',
+          'Write operations are slower than read operations',
+          'Cached data is returned instead of the latest write',
+        ],
+        answer: 'A user writes data but reads from a lagging follower and does not see their own write',
+        explanation: 'When a user writes to the leader but their next read goes to a follower that has not yet received the change, the user does not see their own update. The fix is to route recent writers to the leader for reads temporarily.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is split-brain in the context of database replication?',
+        options: [
+          'When a database is split across multiple shards',
+          'When the old leader recovers after failover and both nodes accept writes simultaneously',
+          'When a query is split across multiple indexes',
+          'When read and write traffic is split across different servers',
+        ],
+        answer: 'When the old leader recovers after failover and both nodes accept writes simultaneously',
+        explanation: 'Split-brain occurs when the original leader comes back online after a failover, unaware that a new leader was promoted. Both accept writes, causing data to diverge. Fencing mechanisms prevent the old leader from accepting writes.',
+      },
+      {
+        type: 'short-answer',
+        question: 'Why is replication alone not a substitute for backups?',
+        answer: 'Destructive operations like DELETE replicate to all followers',
+        explanation: 'If you accidentally DELETE all rows or run a bad migration, that change replicates to every follower. You still need point-in-time recovery backups to restore data to a state before the destructive operation.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -1844,6 +2264,45 @@ export const databaseLessons: Record<
       'For an e-commerce checkout inventory check: CP or AP? Why?',
       'Difference between strong consistency and eventual consistency?',
       'Give an example of a system that chooses availability over consistency.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What does the CAP theorem state about distributed systems during a network partition?',
+        options: [
+          'You can have all three: Consistency, Availability, and Partition Tolerance',
+          'You must choose between Consistency and Availability',
+          'You must sacrifice Partition Tolerance',
+          'All operations must be paused until the partition heals',
+        ],
+        answer: 'You must choose between Consistency and Availability',
+        explanation: 'During a network partition (which is inevitable in distributed systems), you must choose: either reject requests to maintain consistency (CP), or serve potentially stale data to maintain availability (AP). Partition Tolerance is not optional.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is eventual consistency?',
+        answer: 'All replicas will converge to the same state given enough time without new updates',
+        explanation: 'Eventual consistency means that if no new writes occur, all replicas will eventually return the same data. The convergence window is typically milliseconds to seconds. It is acceptable for social feeds but dangerous for bank balances.',
+      },
+      {
+        type: 'mcq',
+        question: 'Which system would benefit most from a CP (Consistency over Availability) approach?',
+        options: ['Social media news feed', 'Shopping cart service', 'Bank account balance system', 'Product catalog display'],
+        answer: 'Bank account balance system',
+        explanation: 'Bank balances must always be accurate — showing a wrong balance could lead to overdrafts or double spending. It is better to reject a request temporarily (sacrifice availability) than to show an incorrect balance (sacrifice consistency).',
+      },
+      {
+        type: 'mcq',
+        question: 'Which databases are typically classified as AP (Availability over Consistency)?',
+        options: [
+          'PostgreSQL and MySQL',
+          'Cassandra and DynamoDB',
+          'etcd and ZooKeeper',
+          'SQLite and SQL Server',
+        ],
+        answer: 'Cassandra and DynamoDB',
+        explanation: 'Cassandra and DynamoDB prioritize availability and partition tolerance, using eventual consistency. They always respond to requests even during partitions, but may return slightly stale data. PostgreSQL and etcd are CP systems.',
+      },
     ],
   },
 
@@ -2027,6 +2486,56 @@ export const databaseLessons: Record<
       'Your team chose MongoDB for e-commerce but struggles with transactions. What went wrong?',
       'How does PostgreSQL JSONB blur the SQL/NoSQL line?',
     ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'Which of the following is a key advantage of SQL databases over NoSQL?',
+        options: [
+          'Flexible schemas that adapt to any data shape',
+          'Built-in horizontal scaling across servers',
+          'ACID transactions and complex JOIN queries',
+          'Higher write throughput for massive workloads',
+        ],
+        answer: 'ACID transactions and complex JOIN queries',
+        explanation: 'SQL databases excel at ACID transactions (atomic, consistent operations) and powerful multi-table JOINs. NoSQL databases trade these for schema flexibility and horizontal scalability.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is PostgreSQL JSONB and why is it significant?',
+        answer: 'A binary JSON column type that allows document-store flexibility inside a relational database',
+        explanation: 'JSONB stores JSON data in a binary format that can be indexed and queried efficiently. It lets you combine the flexibility of document databases with the power of SQL, often eliminating the need for a separate NoSQL store.',
+      },
+      {
+        type: 'mcq',
+        question: 'When would you choose a document database like MongoDB over PostgreSQL?',
+        options: [
+          'When you need ACID transactions for financial data',
+          'When your data has complex relationships requiring JOINs',
+          'When each record may have a wildly different structure and you need flexible schemas',
+          'When you need strong consistency guarantees',
+        ],
+        answer: 'When each record may have a wildly different structure and you need flexible schemas',
+        explanation: 'Document databases shine when data shapes vary significantly between records — like a product catalog where electronics have specs fields and clothing has sizes. If your data is relational with consistent structure, SQL is usually better.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the recommended approach for a new project that is unsure about database choice?',
+        options: [
+          'Use MongoDB for flexibility',
+          'Start with PostgreSQL and add specialized databases as needed',
+          'Use multiple databases from the start',
+          'Use Redis as the primary database',
+        ],
+        answer: 'Start with PostgreSQL and add specialized databases as needed',
+        explanation: 'PostgreSQL is the most versatile choice — it handles relational data, JSONB for flexible documents, full-text search, and more. Start with one database and adopt polyglot persistence only when a concrete need arises.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What type of NoSQL database would you use for caching and session storage?',
+        answer: 'Key-value store (Redis)',
+        explanation: 'Key-value stores like Redis provide ultra-low latency lookups — give a key, get a value. They are ideal for caching frequently accessed data, storing user sessions, and implementing features like rate limiting and leaderboards.',
+      },
+    ],
   },
 
   // ───────────────────────────────────────────────
@@ -2206,6 +2715,51 @@ export const databaseLessons: Record<
       'Explain event sourcing to a non-technical stakeholder.',
       'When is CQRS overkill? When is it essential?',
       'Design a "likes" feature for posts, comments, and photos using polymorphic associations.',
+    ],
+    quiz: [
+      {
+        type: 'mcq',
+        question: 'What is the star schema primarily used for?',
+        options: ['Real-time transaction processing', 'Data warehousing and analytics', 'Caching frequently accessed data', 'Managing user sessions'],
+        answer: 'Data warehousing and analytics',
+        explanation: 'The star schema organizes data with a central fact table (measurable events like sales) surrounded by dimension tables (descriptive attributes like product, date, customer). It is optimized for fast analytical queries and aggregations.',
+      },
+      {
+        type: 'short-answer',
+        question: 'How does a soft delete work?',
+        answer: 'Set a deleted_at timestamp instead of actually deleting the row',
+        explanation: 'Soft deletes mark rows as deleted by setting a deleted_at timestamp rather than using DELETE. The row stays in the database but is filtered out of normal queries with WHERE deleted_at IS NULL. This enables audit trails, undo functionality, and preserves referential integrity.',
+      },
+      {
+        type: 'mcq',
+        question: 'What is the key principle of event sourcing?',
+        options: [
+          'Store only the current state of data',
+          'Store the sequence of events that led to the current state',
+          'Store data in multiple formats simultaneously',
+          'Store events only in memory for fast access',
+        ],
+        answer: 'Store the sequence of events that led to the current state',
+        explanation: 'Event sourcing stores an immutable append-only log of events (deposit $1000, withdraw $200, fee $50) rather than just the current state (balance $750). The current state is derived by replaying events, enabling full audit trails and time travel.',
+      },
+      {
+        type: 'mcq',
+        question: 'In CQRS, what is the main benefit of separating read and write models?',
+        options: [
+          'It reduces the total amount of data stored',
+          'Each model can be independently optimized for its specific workload',
+          'It eliminates the need for a database',
+          'It makes the code simpler in all cases',
+        ],
+        answer: 'Each model can be independently optimized for its specific workload',
+        explanation: 'CQRS lets you use a normalized relational schema for writes (ensuring data integrity) and denormalized materialized views for reads (ensuring query speed). Reads are typically 10-100x more frequent than writes, so optimizing them independently is valuable.',
+      },
+      {
+        type: 'short-answer',
+        question: 'What is a polymorphic association in database design?',
+        answer: 'One table references rows from multiple different tables using type and id columns',
+        explanation: 'Polymorphic associations use a commentable_type and commentable_id pattern to let one table (e.g., comments) reference multiple parent tables (posts, photos, videos). The type column identifies which table, and the id column identifies which row.',
+      },
     ],
   },
 };
