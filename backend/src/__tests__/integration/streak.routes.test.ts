@@ -5,13 +5,6 @@ import { redis } from '../../config/redis';
 import { generateTestToken } from '../helpers';
 
 jest.mock('../../modules/streak/repository/streak.repository');
-jest.mock('../../config/redis', () => ({
-  redis: {
-    get: jest.fn(),
-    set: jest.fn(),
-  },
-  connectRedis: jest.fn(),
-}));
 
 const mockedRepo = streakRepository as jest.Mocked<typeof streakRepository>;
 const mockedRedis = redis as jest.Mocked<typeof redis>;
@@ -25,9 +18,11 @@ describe('Streak Routes', () => {
 
   describe('GET /api/streaks', () => {
     it('should return streak from cache', async () => {
-      mockedRedis.get.mockResolvedValue(
-        JSON.stringify({ currentStreak: 5, longestStreak: 10 })
-      );
+      (mockedRedis.get as jest.Mock).mockImplementation((key: string) => {
+        if (key.startsWith('bl:')) return Promise.resolve(null);
+        if (key.startsWith('streak:')) return Promise.resolve(JSON.stringify({ currentStreak: 5, longestStreak: 10 }));
+        return Promise.resolve(null);
+      });
 
       const res = await request(app)
         .get('/api/streaks')
@@ -40,8 +35,8 @@ describe('Streak Routes', () => {
 
     it('should return streak from DB when cache miss', async () => {
       const today = new Date().toISOString().split('T')[0];
-      mockedRedis.get.mockResolvedValue(null);
-      mockedRedis.set.mockResolvedValue(null as any);
+      (mockedRedis.get as jest.Mock).mockResolvedValue(null);
+      (mockedRedis.set as jest.Mock).mockResolvedValue('OK');
       mockedRepo.get.mockResolvedValue({
         user_id: 'user-1',
         current_streak: 3,
@@ -58,7 +53,7 @@ describe('Streak Routes', () => {
     });
 
     it('should return zero streak for new user', async () => {
-      mockedRedis.get.mockResolvedValue(null);
+      (mockedRedis.get as jest.Mock).mockResolvedValue(null);
       mockedRepo.get.mockResolvedValue(null);
 
       const res = await request(app)

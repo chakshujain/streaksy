@@ -28,6 +28,8 @@ describe('roomService', () => {
     recurrence: null,
     meet_link: null,
     calendar_event_id: null,
+    group_id: null,
+    roadmap_id: null,
   };
 
   const mockParticipants = [
@@ -330,6 +332,67 @@ describe('roomService', () => {
 
       expect(mockedRepo.getUpcoming).toHaveBeenCalled();
       expect(result).toEqual([mockRoom]);
+    });
+  });
+
+  describe('inviteFriends', () => {
+    it('should invite friends to a room', async () => {
+      mockedRepo.findById.mockResolvedValue(mockRoom);
+      mockedRepo.getParticipants.mockResolvedValue(mockParticipants);
+
+      await roomService.inviteFriends('room-1', 'user-1', ['user-2', 'user-3']);
+
+      expect(mockedRepo.findById).toHaveBeenCalledWith('room-1');
+      expect(mockedRepo.getParticipants).toHaveBeenCalledWith('room-1');
+    });
+
+    it('should throw notFound when room does not exist', async () => {
+      mockedRepo.findById.mockResolvedValue(null);
+
+      await expect(roomService.inviteFriends('bad-id', 'user-1', ['user-2'])).rejects.toThrow('Room not found');
+    });
+
+    it('should throw forbidden when sender is not a participant', async () => {
+      mockedRepo.findById.mockResolvedValue(mockRoom);
+      mockedRepo.getParticipants.mockResolvedValue(mockParticipants);
+
+      await expect(roomService.inviteFriends('room-1', 'user-999', ['user-2'])).rejects.toThrow(
+        'Not a participant of this room'
+      );
+    });
+  });
+
+  describe('getRoomsByGroup', () => {
+    it('should get rooms by group ID', async () => {
+      mockedRepo.getRoomsByGroupId.mockResolvedValue([mockRoom]);
+
+      const result = await roomService.getRoomsByGroup('group-1');
+
+      expect(mockedRepo.getRoomsByGroupId).toHaveBeenCalledWith('group-1');
+      expect(result).toEqual([mockRoom]);
+    });
+  });
+
+  describe('getUserStats', () => {
+    it('should return user room stats', async () => {
+      const stats = { user_id: 'user-1', display_name: 'User One', rooms_participated: 5, rooms_won: 2, total_solves: 10 };
+      mockedRepo.updateStats.mockResolvedValue();
+      mockedRepo.getLeaderboard.mockResolvedValue([stats]);
+
+      const result = await roomService.getUserStats('user-1');
+
+      expect(mockedRepo.updateStats).toHaveBeenCalledWith('user-1');
+      expect(mockedRepo.getLeaderboard).toHaveBeenCalledWith(1000);
+      expect(result).toEqual(stats);
+    });
+
+    it('should return null when user has no stats', async () => {
+      mockedRepo.updateStats.mockResolvedValue();
+      mockedRepo.getLeaderboard.mockResolvedValue([]);
+
+      const result = await roomService.getUserStats('user-1');
+
+      expect(result).toBeNull();
     });
   });
 

@@ -44,6 +44,8 @@ describe('inviteService', () => {
     recurrence: null,
     meet_link: null,
     calendar_event_id: null,
+    group_id: null,
+    roadmap_id: null,
     problem_title: 'Two Sum',
     problem_difficulty: 'easy',
   };

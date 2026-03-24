@@ -118,6 +118,20 @@ describe('digestService', () => {
       expect(htmlArg).toContain('3 friends');
     });
 
+    it('should show start-new-streak text when current_streak is 0', async () => {
+      const zeroStreakStats = { ...mockStats, current_streak: 0 };
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(zeroStreakStats);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendMorningDigest('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('Start a new streak');
+    });
+
     it('should show fallback text when no friends solved yesterday', async () => {
       const noFriendsStats = { ...mockStats, friends_solved_yesterday: 0 };
       mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
@@ -207,6 +221,34 @@ describe('digestService', () => {
       expect(htmlArg).toContain('5-day streak');
       expect(htmlArg).toContain('will break');
     });
+
+    it('should not log when email fails to send', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.hasNoActivityToday.mockResolvedValue(true);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedSendEmail.mockResolvedValue(false);
+
+      const result = await digestService.sendEveningReminder('user-1');
+
+      expect(result).toBe(false);
+      expect(mockedRepo.logDigest).not.toHaveBeenCalled();
+    });
+
+    it('should show start-streak text when current_streak is 0', async () => {
+      const zeroStreakStats = { ...mockStats, current_streak: 0 };
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.hasNoActivityToday.mockResolvedValue(true);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedRepo.getUserStats.mockResolvedValue(zeroStreakStats);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendEveningReminder('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('start building a streak');
+    });
   });
 
   describe('sendWeeklyReport', () => {
@@ -263,6 +305,48 @@ describe('digestService', () => {
       const htmlArg = mockedSendEmail.mock.calls[0][2];
       expect(htmlArg).toContain('Easy');
       expect(htmlArg).toContain('Medium');
+    });
+
+    it('should not log when email fails to send', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.getWeekStats.mockResolvedValue(mockWeekData);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(false);
+
+      const result = await digestService.sendWeeklyReport('user-1');
+
+      expect(result).toBe(false);
+      expect(mockedRepo.logDigest).not.toHaveBeenCalled();
+    });
+
+    it('should return false when stats not found', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(null);
+      mockedRepo.getWeekStats.mockResolvedValue(mockWeekData);
+
+      const result = await digestService.sendWeeklyReport('user-1');
+
+      expect(result).toBe(false);
+      expect(mockedSendEmail).not.toHaveBeenCalled();
+    });
+
+    it('should show encouragement when no problems solved this week', async () => {
+      const emptyWeekData = {
+        solvedByDay: [],
+        difficultyBreakdown: [],
+      };
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.getWeekStats.mockResolvedValue(emptyWeekData);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendWeeklyReport('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('No problems solved this week');
     });
   });
 
@@ -327,6 +411,33 @@ describe('digestService', () => {
       expect(mockedRepo.getDigestUsers).toHaveBeenCalledWith('evening');
       expect(sent).toBe(1);
     });
+
+    it('should return 0 when no users to send to', async () => {
+      mockedRepo.getDigestUsers.mockResolvedValue([]);
+
+      const sent = await digestService.runEveningReminders();
+
+      expect(sent).toBe(0);
+    });
+
+    it('should continue processing when one user fails', async () => {
+      mockedRepo.getDigestUsers.mockResolvedValue([
+        { ...mockUser, user_id: 'user-1' },
+        { ...mockUser, user_id: 'user-2' },
+      ]);
+      mockedRepo.getDigestPreferences
+        .mockRejectedValueOnce(new Error('DB error'))
+        .mockResolvedValueOnce(mockUser);
+      mockedRepo.hasNoActivityToday.mockResolvedValue(true);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      const sent = await digestService.runEveningReminders();
+
+      expect(sent).toBe(1);
+    });
   });
 
   describe('runWeeklyReports', () => {
@@ -342,6 +453,33 @@ describe('digestService', () => {
       const sent = await digestService.runWeeklyReports();
 
       expect(mockedRepo.getDigestUsers).toHaveBeenCalledWith('weekly');
+      expect(sent).toBe(1);
+    });
+
+    it('should return 0 when no users to send to', async () => {
+      mockedRepo.getDigestUsers.mockResolvedValue([]);
+
+      const sent = await digestService.runWeeklyReports();
+
+      expect(sent).toBe(0);
+    });
+
+    it('should continue processing when one user fails', async () => {
+      mockedRepo.getDigestUsers.mockResolvedValue([
+        { ...mockUser, user_id: 'user-1' },
+        { ...mockUser, user_id: 'user-2' },
+      ]);
+      mockedRepo.getDigestPreferences
+        .mockRejectedValueOnce(new Error('DB error'))
+        .mockResolvedValueOnce(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.getWeekStats.mockResolvedValue(mockWeekData);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      const sent = await digestService.runWeeklyReports();
+
       expect(sent).toBe(1);
     });
   });
@@ -379,6 +517,272 @@ describe('digestService', () => {
         evening_reminder: false,
       });
       expect(result).toEqual({ success: true });
+    });
+
+    it('should update all preference fields at once', async () => {
+      mockedRepo.updateDigestPreferences.mockResolvedValue();
+
+      const prefs = {
+        digest_enabled: true,
+        digest_time: '09:00',
+        digest_frequency: 'weekly',
+        evening_reminder: true,
+        weekly_report: false,
+      };
+
+      const result = await digestService.updatePreferences('user-1', prefs);
+
+      expect(mockedRepo.updateDigestPreferences).toHaveBeenCalledWith('user-1', prefs);
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should update a single preference field', async () => {
+      mockedRepo.updateDigestPreferences.mockResolvedValue();
+
+      const result = await digestService.updatePreferences('user-1', {
+        digest_time: '10:00',
+      });
+
+      expect(mockedRepo.updateDigestPreferences).toHaveBeenCalledWith('user-1', {
+        digest_time: '10:00',
+      });
+      expect(result).toEqual({ success: true });
+    });
+  });
+
+  describe('sendMorningDigest - edge cases', () => {
+    it('should include singular friend text when exactly 1 friend solved yesterday', async () => {
+      const singleFriendStats = { ...mockStats, friends_solved_yesterday: 1 };
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(singleFriendStats);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendMorningDigest('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('1 friends');
+    });
+
+    it('should include total solved count in email', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendMorningDigest('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('50');
+    });
+
+    it('should include week solved count in email', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendMorningDigest('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('7');
+    });
+
+    it('should include the user display name in the greeting', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendMorningDigest('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('Test User');
+    });
+
+    it('should escape HTML in display name', async () => {
+      const xssUser = { ...mockUser, display_name: '<script>alert("xss")</script>' };
+      mockedRepo.getDigestPreferences.mockResolvedValue(xssUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendMorningDigest('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).not.toContain('<script>');
+      expect(htmlArg).toContain('&lt;script&gt;');
+    });
+  });
+
+  describe('sendEveningReminder - edge cases', () => {
+    it('should include the user display name in the email', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.hasNoActivityToday.mockResolvedValue(true);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendEveningReminder('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('Test User');
+    });
+
+    it('should include streak count in the email subject', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.hasNoActivityToday.mockResolvedValue(true);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendEveningReminder('user-1');
+
+      const subjectArg = mockedSendEmail.mock.calls[0][1];
+      expect(subjectArg).toContain('5-day streak');
+    });
+  });
+
+  describe('sendWeeklyReport - edge cases', () => {
+    it('should include points in the weekly report email', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.getWeekStats.mockResolvedValue(mockWeekData);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendWeeklyReport('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('200');
+    });
+
+    it('should include daily activity breakdown in the email', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.getWeekStats.mockResolvedValue(mockWeekData);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendWeeklyReport('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('2025-01-01');
+      expect(htmlArg).toContain('2025-01-02');
+    });
+
+    it('should include Hard difficulty with zero count when not present', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.getWeekStats.mockResolvedValue(mockWeekData);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendWeeklyReport('user-1');
+
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('Hard');
+    });
+
+    it('should include week_solved in the email subject', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.getWeekStats.mockResolvedValue(mockWeekData);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      await digestService.sendWeeklyReport('user-1');
+
+      const subjectArg = mockedSendEmail.mock.calls[0][1];
+      expect(subjectArg).toContain('7 problems solved');
+    });
+
+    it('should return false when weekData is missing but still handle gracefully', async () => {
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.getWeekStats.mockResolvedValue({ solvedByDay: [], difficultyBreakdown: [] });
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      const result = await digestService.sendWeeklyReport('user-1');
+
+      expect(result).toBe(true);
+      const htmlArg = mockedSendEmail.mock.calls[0][2];
+      expect(htmlArg).toContain('No problems solved this week');
+    });
+  });
+
+  describe('batch runners - additional', () => {
+    it('runMorningDigests should count only successfully sent digests', async () => {
+      mockedRepo.getDigestUsers.mockResolvedValue([
+        { ...mockUser, user_id: 'user-1' },
+        { ...mockUser, user_id: 'user-2' },
+        { ...mockUser, user_id: 'user-3' },
+      ]);
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      // First succeeds, second fails email, third succeeds
+      mockedSendEmail
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      const sent = await digestService.runMorningDigests();
+
+      expect(sent).toBe(2);
+    });
+
+    it('runEveningReminders should count only users with no activity', async () => {
+      mockedRepo.getDigestUsers.mockResolvedValue([
+        { ...mockUser, user_id: 'user-1' },
+        { ...mockUser, user_id: 'user-2' },
+      ]);
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      // First user has no activity, second has activity
+      mockedRepo.hasNoActivityToday
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedSendEmail.mockResolvedValue(true);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      const sent = await digestService.runEveningReminders();
+
+      expect(sent).toBe(1);
+    });
+
+    it('runWeeklyReports should count only successfully sent reports', async () => {
+      mockedRepo.getDigestUsers.mockResolvedValue([
+        { ...mockUser, user_id: 'user-1' },
+        { ...mockUser, user_id: 'user-2' },
+      ]);
+      mockedRepo.getDigestPreferences.mockResolvedValue(mockUser);
+      mockedRepo.getUserStats.mockResolvedValue(mockStats);
+      mockedRepo.getWeekStats.mockResolvedValue(mockWeekData);
+      mockedRepo.wasDigestSentToday.mockResolvedValue(false);
+      mockedSendEmail
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false);
+      mockedRepo.logDigest.mockResolvedValue();
+
+      const sent = await digestService.runWeeklyReports();
+
+      expect(sent).toBe(1);
     });
   });
 });
